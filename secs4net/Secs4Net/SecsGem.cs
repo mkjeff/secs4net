@@ -45,17 +45,20 @@ namespace Secs4Net {
         readonly byte[] _recvBuffer;
         static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         static readonly byte[] ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
-
+        static readonly ISecsTracer DefaultTracer = new DefaultSecsTracer();
         int _SystemBytes = new Random(int.MaxValue).Next();
         int NewSystemBytes() { return Interlocked.Increment(ref _SystemBytes); }
 
         public SecsGem(IPAddress ip, int port, bool isActive, int receiveBufferSize, ISecsTracer tracer, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler) {
+            ip.CheckNull("ip");
+            primaryMsgHandler.CheckNull("primaryMsgHandler");
+
             _ip = ip;
             _port = port;
             _isActive = isActive;
             _recvBuffer = new byte[receiveBufferSize];
             _secsDecoder = new SecsDecoder(HandleControlMessage, HandleDataMessage);
-            _tracer = tracer;
+            _tracer = tracer ?? DefaultTracer;
             PrimaryMessageHandler = primaryMsgHandler;
             T3 = 45000;
             T5 = 10000;
@@ -792,6 +795,29 @@ namespace Secs4Net {
             #region IEnumerable Members
             IEnumerator IEnumerable.GetEnumerator() { return this.GetEnumerator(); }
             #endregion
+        }
+        #endregion
+        #region DefaultSecsTracer
+        sealed class DefaultSecsTracer : ISecsTracer {
+            public void TraceMessageIn(SecsMessage msg, int systembyte) {
+                Trace.WriteLine("Received Message[id=0x" + systembyte.ToString("X8") + "]");
+            }
+
+            public void TraceMessageOut(SecsMessage msg, int systembyte) {
+                Trace.WriteLine("Sent Message[id=0x" + systembyte.ToString("X8") + "]");
+            }
+
+            public void TraceInfo(string msg) {
+                Trace.WriteLine("Info:" + msg);
+            }
+
+            public void TraceWarning(string msg) {
+                Trace.WriteLine("Warning:" + msg);
+            }
+
+            public void TraceError(string msg) {
+                Trace.WriteLine("Error:" + msg);
+            }
         }
         #endregion
     }

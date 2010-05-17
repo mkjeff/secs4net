@@ -11,6 +11,10 @@ namespace Secs4Net {
             return SecsFormatStrMap[format];
         }
 
+        internal static void CheckNull(this object arg, string argName) {
+            if (arg == null) throw new ArgumentNullException(argName);
+        }
+
         static readonly IDictionary<SecsFormat, string> SecsFormatStrMap = new Dictionary<SecsFormat, string>(15) {
             { SecsFormat.List   ,   "L"         },
 			{ SecsFormat.ASCII  ,	"A"         },
