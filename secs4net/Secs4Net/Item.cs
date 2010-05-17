@@ -30,7 +30,7 @@ namespace Secs4Net {
         }
 
         public T Value<T>() {
-            if (_value == null) 
+            if (_value == null)
                 throw new InvalidOperationException("This is a List.");
 
             if (_value is T)
@@ -58,7 +58,7 @@ namespace Secs4Net {
         readonly Lazy<string> _sml;
         readonly ReadOnlyCollection<Item> _list;  //  當Format為List時 _list才有值,否則為null
         readonly object _value;      //  當Format不為List時 _value才有值,否則為null;不是string就是Array
-        
+
         /// <summary>
         /// Encode Item header+value(init only)
         /// </summary>
@@ -107,7 +107,7 @@ namespace Secs4Net {
             _sml = EmptySml;
             _rawBytes = Lazy.Create(() => {
                 int _;
-                return new RawData(EncodeItemHeader(Count,out _));
+                return new RawData(EncodeItemHeader(Count, out _));
             });
         }
 
@@ -126,7 +126,7 @@ namespace Secs4Net {
                 Array val = (Array)_value;
                 int bytelength = Buffer.ByteLength(val);
                 int headerLength;
-                byte[] result = EncodeItemHeader(bytelength,out headerLength);
+                byte[] result = EncodeItemHeader(bytelength, out headerLength);
                 Buffer.BlockCopy(val, 0, result, headerLength, bytelength);
                 result.Reverse(headerLength, headerLength + bytelength, bytelength / val.Length);
                 return new RawData(result);
@@ -317,37 +317,37 @@ namespace Secs4Net {
             return new Item(SecsFormat.Binary, value, new Lazy<string>(value.ToHexString));
         }
         public static Item U1(params byte[] value) {
-            return new Item(SecsFormat.U1, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.U1, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item U2(params ushort[] value) {
-            return new Item(SecsFormat.U2, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.U2, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item U4(params uint[] value) {
-            return new Item(SecsFormat.U4, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.U4, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item U8(params ulong[] value) {
-            return new Item(SecsFormat.U8, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.U8, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item I1(params sbyte[] value) {
-            return new Item(SecsFormat.I1, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.I1, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item I2(params short[] value) {
-            return new Item(SecsFormat.I2, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.I2, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item I4(params int[] value) {
-            return new Item(SecsFormat.I4, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.I4, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item I8(params long[] value) {
-            return new Item(SecsFormat.I8, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.I8, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item F4(params float[] value) {
-            return new Item(SecsFormat.F4, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.F4, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item F8(params double[] value) {
-            return new Item(SecsFormat.F8, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.F8, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item Boolean(params bool[] value) {
-            return new Item(SecsFormat.Boolean, value, value.ToSml(Convert.ToString));
+            return new Item(SecsFormat.Boolean, value, new Lazy<string>(value.ToSmlString));
         }
         public static Item A(string value) {
             return new Item(SecsFormat.ASCII, value, Encoding.ASCII);

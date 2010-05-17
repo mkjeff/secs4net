@@ -31,20 +31,20 @@ namespace Secs4Net {
 
         #region Bytes To Item
         internal static readonly IDictionary<SecsFormat, Func<byte[], int, int, Item>> BytesDecoders = new Dictionary<SecsFormat, Func<byte[], int, int, Item>>(14){
-            { SecsFormat.ASCII  ,	ToDecoder(Item.A,Item.A,Encoding.ASCII)		    },
-            { SecsFormat.JIS8   ,   ToDecoder(Item.J,Item.J,Item.JIS8Encoding)         },
-        	{ SecsFormat.Binary ,	ToDecoder<byte>(Item.B,Item.B,sizeof(byte))        },
-            { SecsFormat.U1     ,	ToDecoder<byte>(Item.U1,Item.U1,sizeof(byte))       },
-        	{ SecsFormat.U2     ,	ToDecoder<ushort>(Item.U2,Item.U2, sizeof(ushort))  },
-        	{ SecsFormat.U4     ,	ToDecoder<uint>(Item.U4,Item.U4, sizeof(uint))	    },
-        	{ SecsFormat.U8     ,	ToDecoder<ulong>(Item.U8,Item.U8, sizeof(ulong))	},
-        	{ SecsFormat.I1     ,	ToDecoder<sbyte>(Item.I1,Item.I1, sizeof(sbyte))	},
-        	{ SecsFormat.I2     ,	ToDecoder<short>(Item.I2,Item.I2, sizeof(short))	},
-        	{ SecsFormat.I4     ,	ToDecoder<int>(Item.I4,Item.I4, sizeof(int))	    },
-        	{ SecsFormat.I8     ,	ToDecoder<long>(Item.I8,Item.I8, sizeof(long))	    },
-        	{ SecsFormat.F4     ,	ToDecoder<float>(Item.F4,Item.F4, sizeof(float))	},
-        	{ SecsFormat.F8     ,	ToDecoder<double>(Item.F8,Item.F8, sizeof(double))	},
-            { SecsFormat.Boolean,	ToDecoder<bool>(Item.Boolean,Item.Boolean, sizeof(bool))	}
+            { SecsFormat.ASCII  ,	ToDecoder(Item.A, Item.A, Encoding.ASCII)		            },
+            { SecsFormat.JIS8   ,   ToDecoder(Item.J, Item.J, Item.JIS8Encoding)                },
+        	{ SecsFormat.Binary ,	ToDecoder<byte>(Item.B, Item.B, sizeof(byte))               },
+            { SecsFormat.U1     ,	ToDecoder<byte>(Item.U1, Item.U1, sizeof(byte))             },
+        	{ SecsFormat.U2     ,	ToDecoder<ushort>(Item.U2, Item.U2, sizeof(ushort))         },
+        	{ SecsFormat.U4     ,	ToDecoder<uint>(Item.U4, Item.U4, sizeof(uint))	            },
+        	{ SecsFormat.U8     ,	ToDecoder<ulong>(Item.U8, Item.U8, sizeof(ulong))	        },
+        	{ SecsFormat.I1     ,	ToDecoder<sbyte>(Item.I1, Item.I1, sizeof(sbyte))	        },
+        	{ SecsFormat.I2     ,	ToDecoder<short>(Item.I2, Item.I2, sizeof(short))	        },
+        	{ SecsFormat.I4     ,	ToDecoder<int>(Item.I4, Item.I4, sizeof(int))	            },
+        	{ SecsFormat.I8     ,	ToDecoder<long>(Item.I8, Item.I8, sizeof(long))	            },
+        	{ SecsFormat.F4     ,	ToDecoder<float>(Item.F4, Item.F4, sizeof(float))	        },
+        	{ SecsFormat.F8     ,	ToDecoder<double>(Item.F8, Item.F8, sizeof(double))	        },
+            { SecsFormat.Boolean,	ToDecoder<bool>(Item.Boolean, Item.Boolean, sizeof(bool))   }
         };
 
         static Func<byte[], int, int, Item> ToDecoder(Func<string, Item> creator, Func<Item> emptyCreator, Encoding decode) {
@@ -63,7 +63,7 @@ namespace Secs4Net {
         #endregion
 
         #region Value To SML
-        public static string ToHexString(this byte[] value) {
+        internal static string ToHexString(this byte[] value) {
             if (value.Length == 0) return string.Empty;
             int length = value.Length * 3;
             char[] chs = new char[length];
@@ -80,11 +80,8 @@ namespace Secs4Net {
             return (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
         }
 
-        internal static Lazy<string> ToSml<T>(this T[] value, Converter<T, string> converter) where T : struct {
-            return Lazy.Create(() =>
-                //value.Length == 0 ? string.Empty :
-                value.Length == 1 ? converter(value[0]) :
-                string.Join(" ", Array.ConvertAll(value, converter)));
+        internal static string ToSmlString<T>(this T[] value) where T : struct {
+            return value.Length == 1 ? value[0].ToString() : string.Join(" ", Array.ConvertAll(value, v => v.ToString()));
         }
         #endregion
 
