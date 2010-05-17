@@ -45,7 +45,7 @@ namespace Secs4Net {
         readonly byte[] _recvBuffer;
         static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         static readonly byte[] ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
-        static readonly ISecsTracer DefaultTracer = new DefaultSecsTracer();
+        static readonly ISecsTracer DefaultTracer = new NullTracer();
         int _SystemBytes = new Random(int.MaxValue).Next();
         int NewSystemBytes() { return Interlocked.Increment(ref _SystemBytes); }
 
@@ -798,26 +798,12 @@ namespace Secs4Net {
         }
         #endregion
         #region DefaultSecsTracer
-        sealed class DefaultSecsTracer : ISecsTracer {
-            public void TraceMessageIn(SecsMessage msg, int systembyte) {
-                Trace.WriteLine("Received Message[id=0x" + systembyte.ToString("X8") + "]");
-            }
-
-            public void TraceMessageOut(SecsMessage msg, int systembyte) {
-                Trace.WriteLine("Sent Message[id=0x" + systembyte.ToString("X8") + "]");
-            }
-
-            public void TraceInfo(string msg) {
-                Trace.WriteLine("Info:" + msg);
-            }
-
-            public void TraceWarning(string msg) {
-                Trace.WriteLine("Warning:" + msg);
-            }
-
-            public void TraceError(string msg) {
-                Trace.WriteLine("Error:" + msg);
-            }
+        sealed class NullTracer : ISecsTracer {
+            public void TraceMessageIn(SecsMessage msg, int systembyte) { }
+            public void TraceMessageOut(SecsMessage msg, int systembyte) { }
+            public void TraceInfo(string msg) { }
+            public void TraceWarning(string msg) { }
+            public void TraceError(string msg) { }
         }
         #endregion
     }
