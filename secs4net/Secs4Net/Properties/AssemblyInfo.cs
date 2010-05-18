@@ -11,7 +11,7 @@ using System;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("mkjeff@gmail.com")]
 [assembly: AssemblyProduct("Secs4Net")]
-[assembly: AssemblyCopyright("Copyright © dogmouse 2010")]
+[assembly: AssemblyCopyright("Copyright © 2010")]
 [assembly: AssemblyTrademark("Dogmouse")]
 [assembly: AssemblyCulture("")]
 
