@@ -95,6 +95,42 @@ namespace Secs4Net {
                     Array.Reverse(bytes, i, offSet);
         }
 
+        /// <summary>
+        /// Encode Item header+value(init only)
+        /// </summary>
+        /// <param name="dataLength">Item value bytes length</param>
+        /// <param name="headerlength">return header bytes length</param>
+        /// <returns>header bytes + init value bytes space</returns>
+        internal static byte[] EncodeItem(this SecsFormat format, int valueCount, out int headerlength) {
+            byte[] lengthBytes = BitConverter.GetBytes(valueCount);
+            int resultLength = format == SecsFormat.List ? 0 : valueCount;
+
+            if (valueCount <= 0xff) {//	1 byte
+                headerlength = 2;
+                var result = new byte[resultLength + 2];
+                result[0] = (byte)((byte)format | 1);
+                result[1] = lengthBytes[0];
+                return result;
+            }
+            if (valueCount <= 0xffff) {//	2 byte
+                headerlength = 3;
+                var result = new byte[resultLength + 3];
+                result[0] = (byte)((byte)format | 2);
+                result[1] = lengthBytes[1];
+                result[2] = lengthBytes[0];
+                return result;
+            }
+            if (valueCount <= 0xffffff) {//	3 byte
+                headerlength = 4;
+                var result = new byte[resultLength + 4];
+                result[0] = (byte)((byte)format | 3);
+                result[1] = lengthBytes[2];
+                result[2] = lengthBytes[1];
+                result[3] = lengthBytes[0];
+                return result;
+            }
+            throw new ArgumentOutOfRangeException("byteLength", valueCount, "Item data length(" + valueCount + ") is overflow");
+        }
         #region SML Factory
         public static SecsMessage ToSecsMessage(this string sml) {
             using (var rd = new StringReader(sml))

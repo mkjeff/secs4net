@@ -59,42 +59,7 @@ namespace Secs4Net {
         readonly ReadOnlyCollection<Item> _list;  //  當Format為List時 _list才有值,否則為null
         readonly object _value;      //  當Format不為List時 _value才有值,否則為null;不是string就是Array
 
-        /// <summary>
-        /// Encode Item header+value(init only)
-        /// </summary>
-        /// <param name="dataLength">Item value bytes length</param>
-        /// <param name="headerlength">return header bytes length</param>
-        /// <returns>header bytes + init value bytes space</returns>
-        byte[] EncodeItemHeader(int dataLength, out int headerlength) {
-            byte[] lengthBytes = BitConverter.GetBytes(dataLength);
-            int resultLength = Format == SecsFormat.List ? 0 : dataLength;
-
-            if (dataLength <= 0xff) {//	1 byte
-                headerlength = 2;
-                var result = new byte[resultLength + 2];
-                result[0] = (byte)((byte)Format | 1);
-                result[1] = lengthBytes[0];
-                return result;
-            }
-            if (dataLength <= 0xffff) {//	2 byte
-                headerlength = 3;
-                var result = new byte[resultLength + 3];
-                result[0] = (byte)((byte)Format | 2);
-                result[1] = lengthBytes[1];
-                result[2] = lengthBytes[0];
-                return result;
-            }
-            if (dataLength <= 0xffffff) {//	3 byte
-                headerlength = 4;
-                var result = new byte[resultLength + 4];
-                result[0] = (byte)((byte)Format | 3);
-                result[1] = lengthBytes[2];
-                result[2] = lengthBytes[1];
-                result[3] = lengthBytes[0];
-                return result;
-            }
-            throw new ArgumentOutOfRangeException("byteLength", dataLength, "Item data length(" + dataLength + ") is overflow");
-        }
+        
 
         #region Constructor
         /// <summary>
@@ -107,7 +72,7 @@ namespace Secs4Net {
             _sml = EmptySml;
             _rawBytes = Lazy.Create(() => {
                 int _;
-                return new RawData(EncodeItemHeader(Count, out _));
+                return new RawData(Format.EncodeItem(Count, out _));
             });
         }
 
@@ -126,7 +91,7 @@ namespace Secs4Net {
                 Array val = (Array)_value;
                 int bytelength = Buffer.ByteLength(val);
                 int headerLength;
-                byte[] result = EncodeItemHeader(bytelength, out headerLength);
+                byte[] result = Format.EncodeItem(bytelength, out headerLength);
                 Buffer.BlockCopy(val, 0, result, headerLength, bytelength);
                 result.Reverse(headerLength, headerLength + bytelength, bytelength / val.Length);
                 return new RawData(result);
@@ -144,7 +109,7 @@ namespace Secs4Net {
             _rawBytes = Lazy.Create(() => {
                 string str = (string)_value;
                 int headerLength;
-                byte[] result = EncodeItemHeader(str.Length, out headerLength);
+                byte[] result = Format.EncodeItem(str.Length, out headerLength);
                 encoder.GetBytes(str, 0, str.Length, result, headerLength);
                 return new RawData(result);
             });
