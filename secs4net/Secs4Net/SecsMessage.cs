@@ -37,6 +37,8 @@ namespace Secs4Net {
 
         public ReadOnlyCollection<RawData> RawDatas { get { return _rawDatas.Value; } }
         readonly Lazy<ReadOnlyCollection<RawData>> _rawDatas;
+
+        static readonly RawData dummyHeaderDatas = new RawData(new byte[10]);
         static readonly Lazy<ReadOnlyCollection<RawData>> emptyMsgDatas = Lazy.Create(new List<RawData> { new RawData(new byte[] { 0, 0, 0, 10 }), null }.AsReadOnly());
         #region Constructor
 
@@ -51,7 +53,7 @@ namespace Secs4Net {
             this.SecsItem = item;
 
             this._rawDatas = item == null ? emptyMsgDatas : Lazy.Create(() => {
-                var result = new List<RawData> { null, null };
+                var result = new List<RawData> { null, dummyHeaderDatas };
                 uint length = 10 + Encode(SecsItem, result);
                 byte[] msgLengthByte = BitConverter.GetBytes(length);
                 Array.Reverse(msgLengthByte);
@@ -63,9 +65,9 @@ namespace Secs4Net {
         static uint Encode(Item item, List<RawData> buffer) {
             uint length = (uint)item.RawData.Count;
             buffer.Add(item.RawData);
-            if (item.Format == SecsFormat.List)
-                foreach (var secsItem in item.Items)
-                    length += Encode(secsItem, buffer);
+            if (item.Format == SecsFormat.List) 
+                for (int i = 0, count = item.Count; i < count; i++)
+                    length += Encode(item.Items[i], buffer);
             return length;
         }
 
@@ -152,20 +154,17 @@ namespace Secs4Net {
             int length = BitConverter.ToInt32(itemLengthBytes, 0);  // max to 3 byte length
             index += lengthBits;
 
-            Item item = null;
             if (format == SecsFormat.List) {
                 if (length == 0)
-                    item = Item.L();
-                else {
-                    var list = new List<Item>(length);
-                    for (int i = 0; i < length; i++)
-                        list.Add(Decode(bytes, ref index));
-                    item = Item.L(list);
-                }
-            } else {
-                item = SecsExtension.BytesDecoders[format](bytes, index, length);
-                index += length;
+                    return Item.L();
+
+                var list = new List<Item>(length);
+                for (int i = 0; i < length; i++)
+                    list.Add(Decode(bytes, ref index));
+                return Item.L(list);
             }
+            var item = SecsExtension.BytesDecoders[format](bytes, index, length);
+            index += length;
             return item;
         }
     }
