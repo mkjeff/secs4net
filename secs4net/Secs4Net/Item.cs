@@ -39,8 +39,8 @@ namespace Secs4Net {
             if (_value is T[])
                 return ((T[])_value)[0];
 
-            Type nullableType = Nullable.GetUnderlyingType(typeof(T));
-            if (nullableType != null && _value.GetType().GetElementType() == nullableType)
+            Type valueType = Nullable.GetUnderlyingType(typeof(T));
+            if (valueType != null && _value.GetType().GetElementType() == valueType)
                 return ((IEnumerable)_value).Cast<T>().FirstOrDefault();
 
             throw new SecsException("Access item value with wrong type.");
@@ -57,9 +57,7 @@ namespace Secs4Net {
         readonly Lazy<RawData> _rawBytes;
         readonly Lazy<string> _sml;
         readonly ReadOnlyCollection<Item> _list;  //  當Format為List時 _list才有值,否則為null
-        readonly object _value;      //  當Format不為List時 _value才有值,否則為null;不是string就是Array
-
-        
+        readonly object _value;      //  當Format不為List時 _value才有值,否則為null;不是string就是Array   
 
         #region Constructor
         /// <summary>

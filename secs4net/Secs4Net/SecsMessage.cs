@@ -65,9 +65,12 @@ namespace Secs4Net {
         static uint Encode(Item item, List<RawData> buffer) {
             uint length = (uint)item.RawData.Count;
             buffer.Add(item.RawData);
-            if (item.Format == SecsFormat.List) 
-                for (int i = 0, count = item.Count; i < count; i++)
-                    length += Encode(item.Items[i], buffer);
+            if (item.Format == SecsFormat.List) {
+                var items = item.Items;
+                int count = items.Count;
+                for (int i = 0; i < count; i++)
+                    length += Encode(items[i], buffer);
+            }
             return length;
         }
 
@@ -102,8 +105,10 @@ namespace Secs4Net {
             switch (item.Format) {
                 case SecsFormat.List:
                     writer.WriteLine();
-                    foreach (var subItem in item.Items)
-                        Write(writer, subItem, indent + SmlIndent);
+                    var items = item.Items;
+                    int count = items.Count;
+                    for (int i = 0; i < count; i++)
+                        Write(writer, items[i], indent + SmlIndent);
                     writer.Write(indentStr);
                     break;
                 case SecsFormat.ASCII:
