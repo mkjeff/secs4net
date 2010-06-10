@@ -456,7 +456,6 @@ namespace Secs4Net {
                 if (replyMsg != null) {
                     _secondary = replyMsg;
                     _secondary.Name = Primary.Name;
-                    _secondary.Tag = Primary.Tag;
                 }
                 _timeout = timeout;
                 IsCompleted = !timeout;
