@@ -46,8 +46,8 @@ namespace Secs4Net {
         static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         static readonly byte[] ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
         static readonly ISecsTracer DefaultTracer = new NullTracer();
-        int _SystemBytes = new Random(int.MaxValue).Next();
-        int NewSystemBytes() { return Interlocked.Increment(ref _SystemBytes); }
+        int _systemByte = new Random(int.MaxValue).Next();
+        int NewSystemByte() { return Interlocked.Increment(ref _systemByte); }
 
         public SecsGem(IPAddress ip, int port, bool isActive, int receiveBufferSize, ISecsTracer tracer, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler) {
             ip.CheckNull("ip");
@@ -80,7 +80,7 @@ namespace Secs4Net {
 
             _timerLinkTest.Elapsed += delegate {
                 if (this.State == ConnectionState.Selected)
-                    this.SendControlMessage(MessageType.Linktest_req, NewSystemBytes());
+                    this.SendControlMessage(MessageType.Linktest_req, NewSystemByte());
             };
             #endregion
             if (_isActive) {
@@ -99,7 +99,7 @@ namespace Secs4Net {
                         socket.Connect(_ip, _port);
                         this.CommunicationStateChanging(ConnectionState.Connected);
                         this._socket = socket;
-                        this.SendControlMessage(MessageType.Select_req, NewSystemBytes());
+                        this.SendControlMessage(MessageType.Select_req, NewSystemByte());
                         this._socket.BeginReceive(_recvBuffer, 0, _recvBuffer.Length, SocketFlags.None, ReceiveComplete, null);
                     } catch (Exception ex) {
                         if (_isDisposed) return;
@@ -226,7 +226,7 @@ namespace Secs4Net {
                 _tracer.TraceMessageIn(msg, systembyte);
                 _tracer.TraceWarning("Received Unrecognized Device Id Message");
                 try {
-                    this.SendDataMessage(new SecsMessage(9, 1, "UnrecognizedDeviceId", false, Item.B(header.Bytes)), NewSystemBytes(), null, null);
+                    this.SendDataMessage(new SecsMessage(9, 1, "UnrecognizedDeviceId", false, Item.B(header.Bytes)), NewSystemByte(), null, null);
                 } catch (Exception ex) {
                     _tracer.TraceError("Send S9F1 Error:" + ex.Message);
                 }
@@ -242,7 +242,7 @@ namespace Secs4Net {
                             secondary = secondary ?? new SecsMessage(9, 7, "Unknow Message", false, Item.B(header.Bytes));
                             secondary.ReplyExpected = false;
                             try {
-                                this.SendDataMessage(secondary, secondary.S == 9 ? NewSystemBytes() : header.SystemBytes, null, null);
+                                this.SendDataMessage(secondary, secondary.S == 9 ? NewSystemByte() : header.SystemBytes, null, null);
                             } catch (Exception ex) {
                                 _tracer.TraceError("Reply Secondary Message Error:" + ex.Message);
                             }
@@ -399,7 +399,7 @@ namespace Secs4Net {
         /// <param name="state">synchronize state object</param>
         /// <returns>An IAsyncResult that references the asynchronous send if msg.ReplyExpected is true;otherwise, null.</returns>
         public IAsyncResult BeginSend(SecsMessage msg, AsyncCallback callback, object state) {
-            return this.SendDataMessage(msg, NewSystemBytes(), callback, state);
+            return this.SendDataMessage(msg, NewSystemByte(), callback, state);
         }
 
         /// <summary>
@@ -423,7 +423,7 @@ namespace Secs4Net {
                 _isDisposed = true;
                 ConnectionChanged = null;
                 if (State == ConnectionState.Selected)
-                    this.SendControlMessage(MessageType.Seperate_req, NewSystemBytes());
+                    this.SendControlMessage(MessageType.Seperate_req, NewSystemByte());
                 Reset();
             }
         }

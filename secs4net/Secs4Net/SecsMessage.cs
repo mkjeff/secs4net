@@ -84,46 +84,6 @@ namespace Secs4Net {
             : this(s, f, "Unknown", replyExpected, Decode(itemBytes, ref index)) { }
 
         #endregion
-        #region SecsMessage => SML
-        const int SmlIndent = 2;
-
-        public void WriteTo(TextWriter writer) {
-            writer.WriteLine(this.ToString());
-            Write(writer, SecsItem, SmlIndent);
-            writer.Write('.');
-        }
-
-        static void Write(TextWriter writer, Item item, int indent) {
-            if (item == null) return;
-            var indentStr = new string(' ', indent);
-            writer.Write(indentStr);
-            writer.Write('<');
-            writer.Write(item.Format.ToSML());
-            writer.Write(" [");
-            writer.Write(item.Count);
-            writer.Write("] ");
-            switch (item.Format) {
-                case SecsFormat.List:
-                    writer.WriteLine();
-                    var items = item.Items;
-                    int count = items.Count;
-                    for (int i = 0; i < count; i++)
-                        Write(writer, items[i], indent + SmlIndent);
-                    writer.Write(indentStr);
-                    break;
-                case SecsFormat.ASCII:
-                case SecsFormat.JIS8:
-                    writer.Write('\'');
-                    writer.Write(item.ToString());
-                    writer.Write('\'');
-                    break;
-                default:
-                    writer.Write(item.ToString());
-                    break;
-            }
-            writer.WriteLine('>');
-        }
-        #endregion
         #region ISerializable Members
         SecsMessage(SerializationInfo info, StreamingContext context) {
             this.S = info.GetByte("s");
