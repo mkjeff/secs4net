@@ -33,7 +33,6 @@ namespace Secs4Net {
         public bool ReplyExpected { get; internal set; }
         public Item SecsItem { get; private set; }
         public string Name { get; set; }
-        public object Tag { get; set; }
 
         public ReadOnlyCollection<RawData> RawDatas { get { return _rawDatas.Value; } }
         readonly Lazy<ReadOnlyCollection<RawData>> _rawDatas;
