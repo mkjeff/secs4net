@@ -4,31 +4,9 @@ using System.Text;
 
 namespace Secs4Net {
     public static class SecsExtension {
-        public static string ToSML(this SecsFormat format) {
-            return SecsFormatStrMap[format];
-        }
-
         internal static void CheckNull(this object arg, string argName) {
             if (arg == null) throw new ArgumentNullException(argName);
         }
-
-        static readonly IDictionary<SecsFormat, string> SecsFormatStrMap = new Dictionary<SecsFormat, string>(15) {
-            { SecsFormat.List   ,   "L"         },
-			{ SecsFormat.ASCII  ,	"A"         },
-			{ SecsFormat.JIS8   ,	"J"			},
-			{ SecsFormat.Boolean,	"Boolean"	},
-			{ SecsFormat.Binary ,	"B"			},
-			{ SecsFormat.I1     ,	"I1"		},
-			{ SecsFormat.I2     ,	"I2"		},
-			{ SecsFormat.I4     ,	"I4"		},
-			{ SecsFormat.I8     ,	"I8"		},
-			{ SecsFormat.U1     ,	"U1"		},
-			{ SecsFormat.U2     ,	"U2"		},
-			{ SecsFormat.U4     ,	"U4"		},
-			{ SecsFormat.U8     ,	"U8"		},
-			{ SecsFormat.F4     ,	"F4"		},
-			{ SecsFormat.F8     ,	"F8"		}
-		};
 
         #region Bytes To Item
         internal static readonly IDictionary<SecsFormat, Func<byte[], int, int, Item>> BytesDecoders = new Dictionary<SecsFormat, Func<byte[], int, int, Item>>(14){
