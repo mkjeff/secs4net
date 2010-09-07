@@ -8,6 +8,13 @@ namespace Secs4Net {
     public static class SecsMessageExtenstion {
         const int SmlIndent = 2;
 
+        public static string ToSML(this SecsMessage msg) {
+            using (var sw = new StringWriter()) {
+                msg.WriteTo(sw);
+                return sw.ToString();
+            }
+        }
+
         public static void WriteTo(this SecsMessage msg, TextWriter writer) {
             writer.WriteLine(msg.ToString());
             Write(writer, msg.SecsItem, SmlIndent);
@@ -66,6 +73,15 @@ namespace Secs4Net {
 			{ SecsFormat.F4     ,	"F4"		},
 			{ SecsFormat.F8     ,	"F8"		}
 		};
+
+        public static SecsMessage ToSecsMessage(this string str) {
+            try {
+                using (var sr = new StringReader(str))
+                    return sr.ToSecsMessage();
+            } catch (Exception ex) {
+                throw new SecsException("Not well known SML format");
+            }
+        }
 
         public static SecsMessage ToSecsMessage(this TextReader sr) {
             string line = sr.ReadLine();
