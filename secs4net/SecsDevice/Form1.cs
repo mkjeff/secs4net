@@ -69,10 +69,11 @@ namespace SecsDevice {
             btnEnable.Enabled = true;
             btnDisable.Enabled = false;
             lbStatus.Text = "Disable";
+            recvBuffer.Clear();
         }
 
         private void Form1_Load(object sender, EventArgs e) {
-            _logform.Show();
+            _logform.Show(this);
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e) {
@@ -113,7 +114,6 @@ namespace SecsDevice {
             recvBuffer.Remove(recv);
             txtRecvPrimary.Clear();
         }
-
     }
 
     public sealed class RecvMessage {
