@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using Secs4Net;
 using System.Net;
-using System.IO;
-using System.Collections.ObjectModel;
 
 namespace SecsDevice {
     public partial class Form1 : Form {

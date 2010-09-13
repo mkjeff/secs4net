@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using Secs4Net;
-using System.IO;
 
 namespace SecsDevice {
     public partial class FormLog : Form,ISecsTracer {
