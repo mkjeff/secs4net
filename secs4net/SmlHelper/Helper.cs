@@ -53,26 +53,24 @@ namespace Secs4Net {
         }
 
         public static string ToSML(this SecsFormat format) {
-            return SecsFormatStrMap[format];
+            switch (format) {
+                case SecsFormat.List: return "L";
+                case SecsFormat.Binary: return "B";
+                case SecsFormat.Boolean: return "Boolean";
+                case SecsFormat.ASCII: return "A";
+                case SecsFormat.JIS8: return "J";
+                case SecsFormat.I8: return "I8";
+                case SecsFormat.I1: return "I1";
+                case SecsFormat.I2: return "I2";
+                case SecsFormat.I4: return "I4";
+                case SecsFormat.F8: return "F8";
+                case SecsFormat.F4: return "F4";
+                case SecsFormat.U8: return "U8";
+                case SecsFormat.U1: return "U1";
+                case SecsFormat.U2: return "U2";
+                default/* SecsFormat.U4 */: return "U4";
+            }
         }
-
-        static readonly IDictionary<SecsFormat, string> SecsFormatStrMap = new Dictionary<SecsFormat, string>(15) {
-            { SecsFormat.List   ,   "L"         },
-			{ SecsFormat.ASCII  ,	"A"         },
-			{ SecsFormat.JIS8   ,	"J"			},
-			{ SecsFormat.Boolean,	"Boolean"	},
-			{ SecsFormat.Binary ,	"B"			},
-			{ SecsFormat.I1     ,	"I1"		},
-			{ SecsFormat.I2     ,	"I2"		},
-			{ SecsFormat.I4     ,	"I4"		},
-			{ SecsFormat.I8     ,	"I8"		},
-			{ SecsFormat.U1     ,	"U1"		},
-			{ SecsFormat.U2     ,	"U2"		},
-			{ SecsFormat.U4     ,	"U4"		},
-			{ SecsFormat.U8     ,	"U8"		},
-			{ SecsFormat.F4     ,	"F4"		},
-			{ SecsFormat.F8     ,	"F8"		}
-		};
 
         public static SecsMessage ToSecsMessage(this string str) {
             try {
