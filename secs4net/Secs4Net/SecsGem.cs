@@ -602,7 +602,7 @@ namespace Secs4Net {
                     } else {
                         if (!CheckAvailable(length, index, _itemLength, out need)) return 4;
 
-                        item = SecsExtension.BytesDecoders[_format](data, index, length);
+                        item = SecsExtension.BytesDecode(_format, data, index, _itemLength);
                         index += _itemLength;
                         _messageLength -= (uint)_itemLength;
                     }
