@@ -9,22 +9,40 @@ namespace Secs4Net {
         }
 
         #region Bytes To Item
-        internal static readonly IDictionary<SecsFormat, Func<byte[], int, int, Item>> BytesDecoders = new Dictionary<SecsFormat, Func<byte[], int, int, Item>>(14){
-            { SecsFormat.ASCII  ,	ToDecoder(Item.A, Item.A, Encoding.ASCII)		            },
-            { SecsFormat.JIS8   ,   ToDecoder(Item.J, Item.J, Item.JIS8Encoding)                },
-        	{ SecsFormat.Binary ,	ToDecoder<byte>(Item.B, Item.B, sizeof(byte))               },
-            { SecsFormat.U1     ,	ToDecoder<byte>(Item.U1, Item.U1, sizeof(byte))             },
-        	{ SecsFormat.U2     ,	ToDecoder<ushort>(Item.U2, Item.U2, sizeof(ushort))         },
-        	{ SecsFormat.U4     ,	ToDecoder<uint>(Item.U4, Item.U4, sizeof(uint))	            },
-        	{ SecsFormat.U8     ,	ToDecoder<ulong>(Item.U8, Item.U8, sizeof(ulong))	        },
-        	{ SecsFormat.I1     ,	ToDecoder<sbyte>(Item.I1, Item.I1, sizeof(sbyte))	        },
-        	{ SecsFormat.I2     ,	ToDecoder<short>(Item.I2, Item.I2, sizeof(short))	        },
-        	{ SecsFormat.I4     ,	ToDecoder<int>(Item.I4, Item.I4, sizeof(int))	            },
-        	{ SecsFormat.I8     ,	ToDecoder<long>(Item.I8, Item.I8, sizeof(long))	            },
-        	{ SecsFormat.F4     ,	ToDecoder<float>(Item.F4, Item.F4, sizeof(float))	        },
-        	{ SecsFormat.F8     ,	ToDecoder<double>(Item.F8, Item.F8, sizeof(double))	        },
-            { SecsFormat.Boolean,	ToDecoder<bool>(Item.Boolean, Item.Boolean, sizeof(bool))   }
-        };
+
+        static readonly Func<byte[], int, int, Item> decoder_A = ToDecoder(Item.A, Item.A, Encoding.ASCII);
+        static readonly Func<byte[], int, int, Item> decoder_J = ToDecoder(Item.J, Item.J, Item.JIS8Encoding);
+        static readonly Func<byte[], int, int, Item> decoder_Binary = ToDecoder<byte>(Item.B, Item.B, sizeof(byte));
+        static readonly Func<byte[], int, int, Item> decoder_Boolean = ToDecoder<bool>(Item.Boolean, Item.Boolean, sizeof(bool));
+        static readonly Func<byte[], int, int, Item> decoder_U1 = ToDecoder<byte>(Item.U1, Item.U1, sizeof(byte));
+        static readonly Func<byte[], int, int, Item> decoder_U2 = ToDecoder<ushort>(Item.U2, Item.U2, sizeof(ushort));
+        static readonly Func<byte[], int, int, Item> decoder_U4 = ToDecoder<uint>(Item.U4, Item.U4, sizeof(uint));
+        static readonly Func<byte[], int, int, Item> decoder_U8 = ToDecoder<ulong>(Item.U8, Item.U8, sizeof(ulong));
+        static readonly Func<byte[], int, int, Item> decoder_I1 = ToDecoder<sbyte>(Item.I1, Item.I1, sizeof(sbyte));
+        static readonly Func<byte[], int, int, Item> decoder_I2 = ToDecoder<short>(Item.I2, Item.I2, sizeof(short));
+        static readonly Func<byte[], int, int, Item> decoder_I4 = ToDecoder<int>(Item.I4, Item.I4, sizeof(int));
+        static readonly Func<byte[], int, int, Item> decoder_I8 = ToDecoder<long>(Item.I8, Item.I8, sizeof(long));
+        static readonly Func<byte[], int, int, Item> decoder_F4 = ToDecoder<float>(Item.F4, Item.F4, sizeof(float));
+        static readonly Func<byte[], int, int, Item> decoder_F8 = ToDecoder<double>(Item.F8, Item.F8, sizeof(double));
+
+        internal static Item BytesDecode(SecsFormat format, byte[] bytes, int index, int length) {
+            switch (format) {
+                case SecsFormat.ASCII: return decoder_A(bytes, index, length);
+                case SecsFormat.JIS8: return decoder_J(bytes, index, length);
+                case SecsFormat.Binary: return decoder_Binary(bytes, index, length);
+                case SecsFormat.U1: return decoder_U1(bytes, index, length);
+                case SecsFormat.U2: return decoder_U2(bytes, index, length);
+                case SecsFormat.U4: return decoder_U4(bytes, index, length);
+                case SecsFormat.U8: return decoder_U8(bytes, index, length);
+                case SecsFormat.I1: return decoder_I1(bytes, index, length);
+                case SecsFormat.I2: return decoder_I2(bytes, index, length);
+                case SecsFormat.I4: return decoder_I4(bytes, index, length);
+                case SecsFormat.I8: return decoder_I8(bytes, index, length);
+                case SecsFormat.F4: return decoder_F4(bytes, index, length);
+                case SecsFormat.F8: return decoder_F8(bytes, index, length);
+                default/*SecsFormat.Boolean*/: return decoder_Boolean(bytes, index, length);
+            }
+        }
 
         static Func<byte[], int, int, Item> ToDecoder(Func<string, Item> creator, Func<Item> emptyCreator, Encoding decode) {
             return (bytes, index, length) => length == 0 ? emptyCreator() : creator(decode.GetString(bytes, index, length));
@@ -66,8 +84,12 @@ namespace Secs4Net {
 
         internal static void Reverse(this byte[] bytes, int begin, int end, int offSet) {
             if (offSet > 1)
-                for (int i = begin; i < end; i += offSet)
-                    Array.Reverse(bytes, i, offSet);
+                try {
+                    for (int i = begin; i < end; i += offSet)
+                        Array.Reverse(bytes, i, offSet);
+                } catch (Exception ex) {
+
+                }
         }
 
         /// <summary>

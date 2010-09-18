@@ -127,7 +127,7 @@ namespace Secs4Net {
                     list.Add(Decode(bytes, ref index));
                 return Item.L(list);
             }
-            var item = SecsExtension.BytesDecoders[format](bytes, index, length);
+            var item = SecsExtension.BytesDecode(format, bytes, index, length);
             index += length;
             return item;
         }
