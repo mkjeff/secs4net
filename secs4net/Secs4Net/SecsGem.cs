@@ -56,10 +56,10 @@ namespace Secs4Net {
             _ip = ip;
             _port = port;
             _isActive = isActive;
-            _recvBuffer = new byte[receiveBufferSize];
+            _recvBuffer = new byte[receiveBufferSize < 0x4000 ? 0x4000 : receiveBufferSize];
             _secsDecoder = new SecsDecoder(HandleControlMessage, HandleDataMessage);
             _tracer = tracer ?? DefaultTracer;
-            PrimaryMessageHandler = primaryMsgHandler;
+            PrimaryMessageHandler = primaryMsgHandler ?? ((primary, reply) => { reply(null); });
             T3 = 45000;
             T5 = 10000;
             T6 = 5000;
