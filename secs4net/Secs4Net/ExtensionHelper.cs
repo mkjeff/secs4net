@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Secs4Net {
-    public static class SecsExtension {
+    static class SecsExtension {
         internal static void CheckNull(this object arg, string argName) {
             if (arg == null) throw new ArgumentNullException(argName);
         }
