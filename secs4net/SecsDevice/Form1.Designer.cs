@@ -116,6 +116,7 @@
             // 
             // btnDisable
             // 
+            this.btnDisable.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnDisable.Enabled = false;
             this.btnDisable.Location = new System.Drawing.Point(545, 25);
             this.btnDisable.Name = "btnDisable";
@@ -353,8 +354,10 @@
             // 
             // Form1
             // 
+            this.AcceptButton = this.btnEnable;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.btnDisable;
             this.ClientSize = new System.Drawing.Size(891, 647);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.groupBox1);
