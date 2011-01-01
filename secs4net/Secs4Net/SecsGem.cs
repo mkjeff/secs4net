@@ -26,7 +26,7 @@ namespace Secs4Net {
             }
         }
 
-        bool _isActive;
+        readonly bool _isActive;
         readonly IPAddress _ip;
         readonly int _port;
         Socket _socket;
