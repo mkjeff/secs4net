@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecsCore", "SecsCore.csproj", "{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecsDevice", "..\SecsDevice\SecsDevice.csproj", "{8BF9676F-4514-4C43-A33A-23B9A098DC63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmlHelper", "..\SmlHelper\SmlHelper.csproj", "{36A2C439-8771-4F98-B33F-390E6D7821A2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BF9676F-4514-4C43-A33A-23B9A098DC63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BF9676F-4514-4C43-A33A-23B9A098DC63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BF9676F-4514-4C43-A33A-23B9A098DC63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BF9676F-4514-4C43-A33A-23B9A098DC63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36A2C439-8771-4F98-B33F-390E6D7821A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36A2C439-8771-4F98-B33F-390E6D7821A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36A2C439-8771-4F98-B33F-390E6D7821A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36A2C439-8771-4F98-B33F-390E6D7821A2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
