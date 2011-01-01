@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
 using System.IO;
+using System.Collections.Concurrent;
 
 namespace Secs4Net {
     public static class SecsMessageExtenstion {
@@ -147,27 +148,30 @@ namespace Secs4Net {
         static readonly Func<string, Item> SmlParser_U8 = CreateSmlParser<ulong>(Item.U8, Item.U8, ulong.Parse);
         static readonly Func<string, Item> SmlParser_F4 = CreateSmlParser<float>(Item.F4, Item.F4, float.Parse);
         static readonly Func<string, Item> SmlParser_F8 = CreateSmlParser<double>(Item.F8, Item.F8, double.Parse);
+        static readonly ConcurrentDictionary<string, Item> Cache = new ConcurrentDictionary<string, Item>();
 
         static byte HexStringToByte(string str) {
             return byte.Parse(str, NumberStyles.HexNumber);
         }
 
         static Func<string, Item> CreateSmlParser(Func<string, Item> itemCreator, Func<Item> emptyCreator) {
-            return valueStr => {
-                valueStr = valueStr.TrimStart(' ', '\'', '"').TrimEnd(' ', '\'', '"');
-                return string.IsNullOrEmpty(valueStr) ?
-                        emptyCreator() :
-                        itemCreator(valueStr);
-            };
+            return valueStr =>
+                Cache.GetOrAdd(valueStr, str => {
+                    str = str.TrimStart(' ', '\'', '"').TrimEnd(' ', '\'', '"');
+                    return string.IsNullOrEmpty(str) ?
+                            emptyCreator() :
+                            itemCreator(str);
+                });
         }
 
         static Func<string, Item> CreateSmlParser<T>(Func<T[], Item> creator, Func<Item> emptyCreator, Converter<string, T> converter) where T : struct {
-            return valueStr => {
-                var valueStrs = valueStr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                return (valueStrs.Length == 0) ?
-                    emptyCreator() :
-                    creator(Array.ConvertAll(valueStrs, converter));
-            };
+            return valueStr =>
+                Cache.GetOrAdd(valueStr, str => {
+                    var valueStrs = str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    return (valueStrs.Length == 0) ?
+                        emptyCreator() :
+                        creator(Array.ConvertAll(valueStrs, converter));
+                });
         }
 
         public static Item Create(this string format, string smlValue) {
