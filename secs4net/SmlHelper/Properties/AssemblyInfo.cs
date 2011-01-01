@@ -10,8 +10,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("mkjeff@gmail.com")]
 [assembly: AssemblyProduct("SmlHelper")]
-[assembly: AssemblyCopyright("Copyright © 2010")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCopyright("Copyright © dogmouse 2010")]
+[assembly: AssemblyTrademark("Dogmouse")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
