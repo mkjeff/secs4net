@@ -77,14 +77,18 @@ namespace SecsDevice {
         private void btnSendPrimary_Click(object sender, EventArgs e) {
             if (_secsGem.State != ConnectionState.Selected)
                 return;
-            _secsGem.BeginSend(txtSendPrimary.Text.ToSecsMessage(), ar => {
+
+            var msg = txtSendPrimary.Text.ToSecsMessage();
+            _secsGem.BeginSend(msg, ar => {
                 try {
                    var reply =  _secsGem.EndSend(ar);
                    this.Invoke((MethodInvoker)delegate {
                        txtRecvSecondary.Text = reply.ToSML();
                    });
                 } catch (SecsException ex) {
-                    txtRecvSecondary.Text = ex.Message;
+                    this.Invoke((MethodInvoker)delegate {
+                        txtRecvSecondary.Text = ex.Message;
+                    });
                 }
             }, null);
         }
