@@ -89,11 +89,11 @@ namespace Secs4Net {
         }
 
         /// <summary>
-        /// Encode Item header+value(init only)
+        /// Encode Item header + value (initial array only)
         /// </summary>
         /// <param name="dataLength">Item value bytes length</param>
         /// <param name="headerlength">return header bytes length</param>
-        /// <returns>header bytes + init value bytes space</returns>
+        /// <returns>header bytes + initial bytes of value </returns>
         internal static byte[] EncodeItem(this SecsFormat format, int valueCount, out int headerlength) {
             byte[] lengthBytes = BitConverter.GetBytes(valueCount);
             int resultLength = format == SecsFormat.List ? 0 : valueCount;
