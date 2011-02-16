@@ -12,9 +12,9 @@ namespace Secs4Net {
     public sealed class SecsMessage : MarshalByRefObject, ISerializable {
         static SecsMessage() {
             if (!BitConverter.IsLittleEndian)
-                throw new InvalidProgramException("This version is only work on little endian hardware.");
+                throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
         }
-
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.Infrastructure)]
         public override object InitializeLifetimeService() {
             ILease lease = (ILease)base.InitializeLifetimeService();
             if (lease.CurrentState == LeaseState.Initial) {
