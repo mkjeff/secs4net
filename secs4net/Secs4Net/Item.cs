@@ -6,10 +6,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Remoting.Lifetime;
 using System.Text;
+using System.Security.Permissions;
 
 namespace Secs4Net {
     [DebuggerDisplay("<{Format} [{Count}] { (Format==SecsFormat.List) ? string.Empty : ToString() ,nq}>")]
     public sealed class Item : MarshalByRefObject {
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.Infrastructure)]
         public override object InitializeLifetimeService() {
             ILease lease = (ILease)base.InitializeLifetimeService();
             if (lease.CurrentState == LeaseState.Initial) {
