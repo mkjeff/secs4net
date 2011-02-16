@@ -35,7 +35,7 @@ namespace Secs4Net {
         readonly Dictionary<int, SecsAsyncResult> _replyExpectedMsgs = new Dictionary<int, SecsAsyncResult>();
         readonly Action<SecsMessage, Action<SecsMessage>> PrimaryMessageHandler;
         readonly ISecsTracer _tracer;
-        readonly System.Timers.Timer _timer7 = new System.Timers.Timer();	// between socket connected and recived Select.req timer
+        readonly System.Timers.Timer _timer7 = new System.Timers.Timer();	// between socket connected and received Select.req timer
         readonly System.Timers.Timer _timer8 = new System.Timers.Timer();
         readonly System.Timers.Timer _timerLinkTest = new System.Timers.Timer();
 
@@ -49,7 +49,7 @@ namespace Secs4Net {
         int _systemByte = new Random(int.MaxValue).Next();
         int NewSystemByte() { return Interlocked.Increment(ref _systemByte); }
 
-        public SecsGem(IPAddress ip, int port, bool isActive, int receiveBufferSize, ISecsTracer tracer, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler) {
+        public SecsGem(IPAddress ip, int port, bool isActive, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler, ISecsTracer tracer, int receiveBufferSize = 0x4000) {
             ip.CheckNull("ip");
             primaryMsgHandler.CheckNull("primaryMsgHandler");
 
@@ -85,9 +85,9 @@ namespace Secs4Net {
             #endregion
             if (_isActive) {
                 #region Active Impl
-                var _timer5 = new System.Timers.Timer();
-                _timer5.Elapsed += delegate {
-                    _timer5.Enabled = false;
+                var timer5 = new System.Timers.Timer();
+                timer5.Elapsed += delegate {
+                    timer5.Enabled = false;
                     _tracer.TraceError("T5 Timeout");
                     this.CommunicationStateChanging(ConnectionState.Retry);
                 };
@@ -105,13 +105,14 @@ namespace Secs4Net {
                         if (_isDisposed) return;
                         _tracer.TraceError(ex.Message);
                         _tracer.TraceInfo("Start T5 Timer");
-                        _timer5.Interval = T5;
-                        _timer5.Enabled = true;
+                        timer5.Interval = T5;
+                        timer5.Enabled = true;
                     }
                 };
 
                 StopImpl = delegate {
-                    _timer5.Stop();
+                    timer5.Stop();
+                    if (_isDisposed) timer5.Dispose();
                 };
                 #endregion
                 StartImpl.BeginInvoke(null, null);
@@ -239,7 +240,7 @@ namespace Secs4Net {
                     _tracer.TraceMessageIn(msg, systembyte);
                     PrimaryMessageHandler(msg, secondary => {
                         if (header.ReplyExpected && State == ConnectionState.Selected) {
-                            secondary = secondary ?? new SecsMessage(9, 7, "Unknow Message", false, Item.B(header.Bytes));
+                            secondary = secondary ?? new SecsMessage(9, 7, "Unknown Message", false, Item.B(header.Bytes));
                             secondary.ReplyExpected = false;
                             try {
                                 this.SendDataMessage(secondary, secondary.S == 9 ? NewSystemByte() : header.SystemBytes, null, null);
@@ -406,7 +407,7 @@ namespace Secs4Net {
         /// Ends a asynchronous send.
         /// </summary>
         /// <param name="iar">An IAsyncResult that references the asynchronous send</param>
-        /// <returns>Device's reply msg if iar is an IAsyncResult that references the asynchronous send;otherwise, null.</returns>
+        /// <returns>Device's reply message if <paramref name="iar"/> is an IAsyncResult that references the asynchronous send, otherwise null.</returns>
         public SecsMessage EndSend(IAsyncResult iar) {
             if (iar == null)
                 return null;
@@ -425,6 +426,9 @@ namespace Secs4Net {
                 if (State == ConnectionState.Selected)
                     this.SendControlMessage(MessageType.Seperate_req, NewSystemByte());
                 Reset();
+                _timer7.Dispose();
+                _timer8.Dispose();
+                _timerLinkTest.Dispose();
             }
         }
 
@@ -466,19 +470,19 @@ namespace Secs4Net {
 
             internal SecsMessage Secondary {
                 get {
-                    if (_timeout) throw new SecsException(Primary, "T3 Timeout!");
+                    if (_timeout) throw new SecsException(Primary, Properties.Resources.T3Timeout);
                     if (_secondary == null) return null;
-                    if (_secondary.F == 0) throw new SecsException(Primary, "Equipment is not online mode");
+                    if (_secondary.F == 0) throw new SecsException(Primary, Properties.Resources.SxF0);
                     if (_secondary.S == 9) {
                         switch (_secondary.F) {
-                            case 1: throw new SecsException(Primary, "Unrecognized Device Id");
-                            case 3: throw new SecsException(Primary, "Unrecognized Stream Type");
-                            case 5: throw new SecsException(Primary, "Unrecognized Function Type");
-                            case 7: throw new SecsException(Primary, "Illegal Data");
-                            case 9: throw new SecsException(Primary, "Transaction Timer Timeout");
-                            case 11: throw new SecsException(Primary, "Data Too Long");
-                            case 13: throw new SecsException(Primary, "Conversation Timeout");
-                            default: throw new SecsException(Primary, "S9Fy message reply.");
+                            case 1: throw new SecsException(Primary, Properties.Resources.S9F1);
+                            case 3: throw new SecsException(Primary, Properties.Resources.S9F3);
+                            case 5: throw new SecsException(Primary, Properties.Resources.S9F5);
+                            case 7: throw new SecsException(Primary, Properties.Resources.S9F7);
+                            case 9: throw new SecsException(Primary, Properties.Resources.S9F9);
+                            case 11: throw new SecsException(Primary, Properties.Resources.S9F11);
+                            case 13: throw new SecsException(Primary, Properties.Resources.S9F13);
+                            default: throw new SecsException(Primary, Properties.Resources.S9Fy);
                         }
                     }
                     return _secondary;
@@ -489,7 +493,7 @@ namespace Secs4Net {
 
             public object AsyncState { get; private set; }
 
-            public System.Threading.WaitHandle AsyncWaitHandle { get { return _ev; } }
+            public WaitHandle AsyncWaitHandle { get { return _ev; } }
 
             public bool CompletedSynchronously { get { return false; } }
 
@@ -531,7 +535,7 @@ namespace Secs4Net {
 
                     Array.Reverse(data, index, 4);
                     _messageLength = BitConverter.ToUInt32(data, index);
-                    Trace.WriteLine("Get Message Length=" + _messageLength);
+                    Trace.WriteLine("Get Message Length =" + _messageLength);
                     index += 4;
 
                     return 1;
