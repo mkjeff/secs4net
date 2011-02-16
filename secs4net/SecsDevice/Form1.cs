@@ -29,13 +29,11 @@ namespace SecsDevice {
             if (_secsGem != null)
                 _secsGem.Dispose();
 
- 
+
             _secsGem = new SecsGem(
-                IPAddress.Parse(txtAddress.Text), 
+                IPAddress.Parse(txtAddress.Text),
                 (int)numPort.Value,
                 radioActiveMode.Checked,
-                0x4000,
-                _logform,
                 (primaryMsg, reply) => {
                     this.Invoke((MethodInvoker)delegate {
                         recvBuffer.Add(new RecvMessage {
@@ -43,7 +41,8 @@ namespace SecsDevice {
                             ReplyAction = reply
                         });
                     });
-                });
+                },
+                _logform);
 
             _secsGem.ConnectionChanged += delegate {
                 this.Invoke((MethodInvoker)delegate {
@@ -81,10 +80,10 @@ namespace SecsDevice {
             var msg = txtSendPrimary.Text.ToSecsMessage();
             _secsGem.BeginSend(msg, ar => {
                 try {
-                   var reply =  _secsGem.EndSend(ar);
-                   this.Invoke((MethodInvoker)delegate {
-                       txtRecvSecondary.Text = reply.ToSML();
-                   });
+                    var reply = _secsGem.EndSend(ar);
+                    this.Invoke((MethodInvoker)delegate {
+                        txtRecvSecondary.Text = reply.ToSML();
+                    });
                 } catch (SecsException ex) {
                     this.Invoke((MethodInvoker)delegate {
                         txtRecvSecondary.Text = ex.Message;
