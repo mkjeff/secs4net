@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Secs4Net.Properties;
+using System.Collections.Concurrent;
 
 namespace Secs4Net {
     public sealed class SecsGem : IDisposable {
@@ -32,9 +34,9 @@ namespace Secs4Net {
         Socket _socket;
 
         readonly SecsDecoder _secsDecoder;
-        readonly Dictionary<int, SecsAsyncResult> _replyExpectedMsgs = new Dictionary<int, SecsAsyncResult>();
+        readonly ConcurrentDictionary<int, SecsAsyncResult> _replyExpectedMsgs = new ConcurrentDictionary<int, SecsAsyncResult>();
         readonly Action<SecsMessage, Action<SecsMessage>> PrimaryMessageHandler;
-        readonly ISecsTracer _tracer;
+        readonly SecsTracer _tracer;
         readonly System.Timers.Timer _timer7 = new System.Timers.Timer();	// between socket connected and received Select.req timer
         readonly System.Timers.Timer _timer8 = new System.Timers.Timer();
         readonly System.Timers.Timer _timerLinkTest = new System.Timers.Timer();
@@ -45,13 +47,11 @@ namespace Secs4Net {
         readonly byte[] _recvBuffer;
         static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         static readonly byte[] ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
-        static readonly ISecsTracer DefaultTracer = new NullTracer();
-        int _systemByte = new Random(int.MaxValue).Next();
-        int NewSystemByte() { return Interlocked.Increment(ref _systemByte); }
+        static readonly SecsTracer DefaultTracer = new SecsTracer();
+        readonly Func<int> NewSystemByte;
 
-        public SecsGem(IPAddress ip, int port, bool isActive, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler, ISecsTracer tracer, int receiveBufferSize = 0x4000) {
+        public SecsGem(IPAddress ip, int port, bool isActive, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler, SecsTracer tracer, int receiveBufferSize = 0x4000) {
             ip.CheckNull("ip");
-            primaryMsgHandler.CheckNull("primaryMsgHandler");
 
             _ip = ip;
             _port = port;
@@ -66,6 +66,9 @@ namespace Secs4Net {
             T7 = 10000;
             T8 = 5000;
             LinkTestInterval = 60000;
+
+            int _systemByte = new Random(int.MaxValue).Next();
+            NewSystemByte = () => Interlocked.Increment(ref _systemByte);
 
             #region Timer Action
             _timer7.Elapsed += delegate {
@@ -182,11 +185,11 @@ namespace Secs4Net {
                 if (_replyExpectedMsgs.TryGetValue(systembyte, out ar)) {
                     ar.EndProcess(ControlMessage, false);
                 } else {
-                    _tracer.TraceWarning("Received Unexpected Control Message: " + header.MessageType.ToString());
+                    _tracer.TraceWarning("Received Unexpected Control Message: " + header.MessageType);
                     return;
                 }
             }
-            _tracer.TraceInfo("Receive Control message: " + header.MessageType.ToString());
+            _tracer.TraceInfo("Receive Control message: " + header.MessageType);
             switch (header.MessageType) {
                 case MessageType.Select_req:
                     this.SendControlMessage(MessageType.Select_rsp, systembyte);
@@ -194,20 +197,15 @@ namespace Secs4Net {
                     break;
                 case MessageType.Select_rsp:
                     switch (header.F) {
-                        case 0:
-                            this.CommunicationStateChanging(ConnectionState.Selected);
+                        case 0: this.CommunicationStateChanging(ConnectionState.Selected);
                             break;
-                        case 1:
-                            _tracer.TraceError("Communication Already Active.");
+                        case 1: _tracer.TraceError("Communication Already Active.");
                             break;
-                        case 2:
-                            _tracer.TraceError("Connection Not Ready.");
+                        case 2: _tracer.TraceError("Connection Not Ready.");
                             break;
-                        case 3:
-                            _tracer.TraceError("Connection Exhaust.");
+                        case 3: _tracer.TraceError("Connection Exhaust.");
                             break;
-                        default:
-                            _tracer.TraceError("Connection Status Is Unknown.");
+                        default: _tracer.TraceError("Connection Status Is Unknown.");
                             break;
                     }
                     break;
@@ -239,14 +237,15 @@ namespace Secs4Net {
                     //Primary message
                     _tracer.TraceMessageIn(msg, systembyte);
                     PrimaryMessageHandler(msg, secondary => {
-                        if (header.ReplyExpected && State == ConnectionState.Selected) {
-                            secondary = secondary ?? new SecsMessage(9, 7, "Unknown Message", false, Item.B(header.Bytes));
-                            secondary.ReplyExpected = false;
-                            try {
-                                this.SendDataMessage(secondary, secondary.S == 9 ? NewSystemByte() : header.SystemBytes, null, null);
-                            } catch (Exception ex) {
-                                _tracer.TraceError("Reply Secondary Message Error:" + ex.Message);
-                            }
+                        if (!header.ReplyExpected || State != ConnectionState.Selected)
+                            return;
+
+                        secondary = secondary ?? new SecsMessage(9, 7, "Unknown Message", false, Item.B(header.Bytes));
+                        secondary.ReplyExpected = false;
+                        try {
+                            this.SendDataMessage(secondary, secondary.S == 9 ? NewSystemByte() : header.SystemBytes, null, null);
+                        } catch (Exception ex) {
+                            _tracer.TraceError("Reply Secondary Message Error:" + ex.Message);
                         }
                     });
                     return;
@@ -270,16 +269,15 @@ namespace Secs4Net {
 
             if ((byte)msgType % 2 == 1 && msgType != MessageType.Seperate_req) {
                 var ar = new SecsAsyncResult(ControlMessage, 0, null, null);
-                lock (((ICollection)_replyExpectedMsgs).SyncRoot)
-                    _replyExpectedMsgs[systembyte] = ar;
+                _replyExpectedMsgs[systembyte] = ar;
 
                 ThreadPool.RegisterWaitForSingleObject(ar.AsyncWaitHandle,
                     (state, timeout) => {
-                        lock (((ICollection)_replyExpectedMsgs).SyncRoot)
-                            if (_replyExpectedMsgs.Remove((int)state) && timeout) {
-                                _tracer.TraceError("T6 Timeout");
-                                this.CommunicationStateChanging(ConnectionState.Retry);
-                            }
+                        SecsAsyncResult ars;
+                        if (_replyExpectedMsgs.TryRemove((int)state, out ars) && timeout) {
+                            _tracer.TraceError("T6 Timeout");
+                            this.CommunicationStateChanging(ConnectionState.Retry);
+                        }
                     }, systembyte, T6, true);
             }
 
@@ -300,32 +298,28 @@ namespace Secs4Net {
             if (this.State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
 
-            bool replyExpected = msg.ReplyExpected;
             var header = new Header(new byte[10]) {
                 S = msg.S,
                 F = msg.F,
-                ReplyExpected = replyExpected,
+                ReplyExpected = msg.ReplyExpected,
                 DeviceId = this.DeviceId,
                 SystemBytes = systembyte
             };
             var buffer = new EncodedBuffer(header.Bytes, msg.RawDatas);
 
             SecsAsyncResult ar = null;
-            if (replyExpected) {
+            if (msg.ReplyExpected) {
                 ar = new SecsAsyncResult(msg, systembyte, callback, syncState);
-                lock (((ICollection)_replyExpectedMsgs).SyncRoot)
-                    _replyExpectedMsgs[systembyte] = ar;
+                _replyExpectedMsgs[systembyte] = ar;
 
                 ThreadPool.RegisterWaitForSingleObject(ar.AsyncWaitHandle,
                    (state, timeout) => {
-                       var ars = (SecsAsyncResult)state;
-                       lock (((ICollection)_replyExpectedMsgs).SyncRoot)
-                           _replyExpectedMsgs.Remove(ars.SystemByte);
-                       if (timeout) {
-                           _tracer.TraceError("T3 Timeout[id=0x" + ars.SystemByte.ToString("X8") + "]");
+                       SecsAsyncResult ars;
+                       if (_replyExpectedMsgs.TryRemove((int)state, out ars) && timeout) {
+                           _tracer.TraceError(string.Format("T3 Timeout[id=0x{0:X8}]", ars.SystemByte));
                            ars.EndProcess(null, timeout);
                        }
-                   }, ar, T3, true);
+                   }, systembyte, T3, true);
             }
 
             SocketError error;
@@ -377,8 +371,7 @@ namespace Secs4Net {
                 _socket.Close();
                 _socket = null;
             }
-            lock (((ICollection)_replyExpectedMsgs).SyncRoot)
-                this._replyExpectedMsgs.Clear();
+            this._replyExpectedMsgs.Clear();
             StopImpl();
         }
         #endregion
@@ -406,14 +399,14 @@ namespace Secs4Net {
         /// <summary>
         /// Ends a asynchronous send.
         /// </summary>
-        /// <param name="iar">An IAsyncResult that references the asynchronous send</param>
-        /// <returns>Device's reply message if <paramref name="iar"/> is an IAsyncResult that references the asynchronous send, otherwise null.</returns>
-        public SecsMessage EndSend(IAsyncResult iar) {
-            if (iar == null)
+        /// <param name="asyncResult">An IAsyncResult that references the asynchronous send</param>
+        /// <returns>Device's reply message if <paramref name="asyncResult"/> is an IAsyncResult that references the asynchronous send, otherwise null.</returns>
+        public SecsMessage EndSend(IAsyncResult asyncResult) {
+            if (asyncResult == null)
                 return null;
-            var ar = iar as SecsAsyncResult;
+            var ar = asyncResult as SecsAsyncResult;
             if (ar == null)
-                throw new ArgumentException("參數IAsyncResult不是BeginSend所取得的", "iar");
+                throw new InvalidOperationException("參數asyncResult不是BeginSend所取得的");
             ar.AsyncWaitHandle.WaitOne();
             return ar.Secondary;
         }
@@ -470,19 +463,19 @@ namespace Secs4Net {
 
             internal SecsMessage Secondary {
                 get {
-                    if (_timeout) throw new SecsException(Primary, Properties.Resources.T3Timeout);
+                    if (_timeout) throw new SecsException(Primary, Resources.T3Timeout);
                     if (_secondary == null) return null;
-                    if (_secondary.F == 0) throw new SecsException(Primary, Properties.Resources.SxF0);
+                    if (_secondary.F == 0) throw new SecsException(Primary, Resources.SxF0);
                     if (_secondary.S == 9) {
                         switch (_secondary.F) {
-                            case 1: throw new SecsException(Primary, Properties.Resources.S9F1);
-                            case 3: throw new SecsException(Primary, Properties.Resources.S9F3);
-                            case 5: throw new SecsException(Primary, Properties.Resources.S9F5);
-                            case 7: throw new SecsException(Primary, Properties.Resources.S9F7);
-                            case 9: throw new SecsException(Primary, Properties.Resources.S9F9);
-                            case 11: throw new SecsException(Primary, Properties.Resources.S9F11);
-                            case 13: throw new SecsException(Primary, Properties.Resources.S9F13);
-                            default: throw new SecsException(Primary, Properties.Resources.S9Fy);
+                            case 1: throw new SecsException(Primary, Resources.S9F1);
+                            case 3: throw new SecsException(Primary, Resources.S9F3);
+                            case 5: throw new SecsException(Primary, Resources.S9F5);
+                            case 7: throw new SecsException(Primary, Resources.S9F7);
+                            case 9: throw new SecsException(Primary, Resources.S9F9);
+                            case 11: throw new SecsException(Primary, Resources.S9F11);
+                            case 13: throw new SecsException(Primary, Resources.S9F13);
+                            default: throw new SecsException(Primary, Resources.S9Fy);
                         }
                     }
                     return _secondary;
@@ -529,7 +522,7 @@ namespace Secs4Net {
 
                 decoders = new Decoder[5];
 
-                #region decoders[0]: get total message length
+                #region decoders[0]: get total message length 4 bytes
                 decoders[0] = (byte[] data, int length, ref int index, out int need) => {
                     if (!CheckAvailable(length, index, 4, out need)) return 0;
 
@@ -566,7 +559,7 @@ namespace Secs4Net {
                     return 2;
                 };
                 #endregion
-                #region decoders[2]: get format + lengthBits(2bit) 1 byte
+                #region decoders[2]: get _format + lengthBits(2bit) 1 byte
                 decoders[2] = (byte[] data, int length, ref int index, out int need) => {
                     if (!CheckAvailable(length, index, 1, out need)) return 2;
 
@@ -577,7 +570,7 @@ namespace Secs4Net {
                     return 3;
                 };
                 #endregion
-                #region decoders[3]: get length _lengthBits bytes
+                #region decoders[3]: get _itemLength _lengthBits bytes
                 decoders[3] = (byte[] data, int length, ref int index, out int need) => {
                     if (!CheckAvailable(length, index, _lengthBits, out need)) return 3;
 
@@ -800,21 +793,5 @@ namespace Secs4Net {
             #endregion
         }
         #endregion
-        #region DefaultSecsTracer
-        sealed class NullTracer : ISecsTracer {
-            public void TraceMessageIn(SecsMessage msg, int systembyte) { }
-            public void TraceMessageOut(SecsMessage msg, int systembyte) { }
-            public void TraceInfo(string msg) { }
-            public void TraceWarning(string msg) { }
-            public void TraceError(string msg) { }
-        }
-        #endregion
-    }
-
-    public enum ConnectionState {
-        Connecting,
-        Connected,
-        Selected,
-        Retry
     }
 }
