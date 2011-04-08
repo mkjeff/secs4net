@@ -10,52 +10,31 @@ namespace Secs4Net {
 
         #region Bytes To Item
 
-        static readonly Func<byte[], int, int, Item> decoder_A = ToDecoder(Item.A, Item.A, Encoding.ASCII);
-        static readonly Func<byte[], int, int, Item> decoder_J = ToDecoder(Item.J, Item.J, Item.JIS8Encoding);
-        static readonly Func<byte[], int, int, Item> decoder_Binary = ToDecoder<byte>(Item.B, Item.B, sizeof(byte));
-        static readonly Func<byte[], int, int, Item> decoder_Boolean = ToDecoder<bool>(Item.Boolean, Item.Boolean, sizeof(bool));
-        static readonly Func<byte[], int, int, Item> decoder_U1 = ToDecoder<byte>(Item.U1, Item.U1, sizeof(byte));
-        static readonly Func<byte[], int, int, Item> decoder_U2 = ToDecoder<ushort>(Item.U2, Item.U2, sizeof(ushort));
-        static readonly Func<byte[], int, int, Item> decoder_U4 = ToDecoder<uint>(Item.U4, Item.U4, sizeof(uint));
-        static readonly Func<byte[], int, int, Item> decoder_U8 = ToDecoder<ulong>(Item.U8, Item.U8, sizeof(ulong));
-        static readonly Func<byte[], int, int, Item> decoder_I1 = ToDecoder<sbyte>(Item.I1, Item.I1, sizeof(sbyte));
-        static readonly Func<byte[], int, int, Item> decoder_I2 = ToDecoder<short>(Item.I2, Item.I2, sizeof(short));
-        static readonly Func<byte[], int, int, Item> decoder_I4 = ToDecoder<int>(Item.I4, Item.I4, sizeof(int));
-        static readonly Func<byte[], int, int, Item> decoder_I8 = ToDecoder<long>(Item.I8, Item.I8, sizeof(long));
-        static readonly Func<byte[], int, int, Item> decoder_F4 = ToDecoder<float>(Item.F4, Item.F4, sizeof(float));
-        static readonly Func<byte[], int, int, Item> decoder_F8 = ToDecoder<double>(Item.F8, Item.F8, sizeof(double));
-
         internal static Item BytesDecode(SecsFormat format, byte[] bytes, int index, int length) {
             switch (format) {
-                case SecsFormat.ASCII: return decoder_A(bytes, index, length);
-                case SecsFormat.JIS8: return decoder_J(bytes, index, length);
-                case SecsFormat.Binary: return decoder_Binary(bytes, index, length);
-                case SecsFormat.U1: return decoder_U1(bytes, index, length);
-                case SecsFormat.U2: return decoder_U2(bytes, index, length);
-                case SecsFormat.U4: return decoder_U4(bytes, index, length);
-                case SecsFormat.U8: return decoder_U8(bytes, index, length);
-                case SecsFormat.I1: return decoder_I1(bytes, index, length);
-                case SecsFormat.I2: return decoder_I2(bytes, index, length);
-                case SecsFormat.I4: return decoder_I4(bytes, index, length);
-                case SecsFormat.I8: return decoder_I8(bytes, index, length);
-                case SecsFormat.F4: return decoder_F4(bytes, index, length);
-                case SecsFormat.F8: return decoder_F8(bytes, index, length);
-                default/*SecsFormat.Boolean*/: return decoder_Boolean(bytes, index, length);
+                case SecsFormat.ASCII: return length == 0 ? Item.A() : Item.A(Encoding.ASCII.GetString(bytes, index, length));
+                case SecsFormat.JIS8: return length == 0 ? Item.J() : Item.J(Item.JIS8Encoding.GetString(bytes, index, length));
+                case SecsFormat.Boolean: return length == 0 ? Item.Boolean() : Item.Boolean(Decoder<bool>(sizeof(bool), bytes, index, length));
+                case SecsFormat.Binary: return length == 0 ? Item.B() : Item.B(Decoder<byte>(sizeof(byte), bytes, index, length));
+                case SecsFormat.U1: return length == 0 ? Item.U1() : Item.U1(Decoder<byte>(sizeof(byte), bytes, index, length));
+                case SecsFormat.U2: return length == 0 ? Item.U2() : Item.U2(Decoder<ushort>(sizeof(ushort), bytes, index, length));
+                case SecsFormat.U4: return length == 0 ? Item.U4() : Item.U4(Decoder<uint>(sizeof(uint), bytes, index, length));
+                case SecsFormat.U8: return length == 0 ? Item.U8() : Item.U8(Decoder<ulong>(sizeof(ulong), bytes, index, length));
+                case SecsFormat.I1: return length == 0 ? Item.I1() : Item.I1(Decoder<sbyte>(sizeof(sbyte), bytes, index, length));
+                case SecsFormat.I2: return length == 0 ? Item.I2() : Item.I2(Decoder<short>(sizeof(short), bytes, index, length));
+                case SecsFormat.I4: return length == 0 ? Item.I4() : Item.I4(Decoder<int>(sizeof(int), bytes, index, length));
+                case SecsFormat.I8: return length == 0 ? Item.I8() : Item.I8(Decoder<long>(sizeof(long), bytes, index, length));
+                case SecsFormat.F4: return length == 0 ? Item.F4() : Item.F4(Decoder<float>(sizeof(float), bytes, index, length));
+                case SecsFormat.F8: return length == 0 ? Item.F8() : Item.F8(Decoder<double>(sizeof(double), bytes, index, length));
+                default:/* case SecsFormat.List*/ throw new ArgumentException("Invalid format:" + format, "format");
             }
         }
 
-        static Func<byte[], int, int, Item> ToDecoder(Func<string, Item> creator, Func<Item> emptyCreator, Encoding decode) {
-            return (bytes, index, length) => length == 0 ? emptyCreator() : creator(decode.GetString(bytes, index, length));
-        }
-
-        static Func<byte[], int, int, Item> ToDecoder<T>(Func<T[], Item> ctor, Func<Item> emptyCreator, int elmSize) where T : struct {
-            return (bytes, index, length) => {
-                if (length == 0) return emptyCreator();
-                bytes.Reverse(index, index + length, elmSize);
-                var values = new T[length / elmSize];
-                Buffer.BlockCopy(bytes, index, values, 0, length);
-                return ctor(values);
-            };
+        static T[] Decoder<T>(int elmSize, byte[] bytes, int index, int length) where T : struct {
+            bytes.Reverse(index, index + length, elmSize);
+            var values = new T[length / elmSize];
+            Buffer.BlockCopy(bytes, index, values, 0, length);
+            return values;
         }
         #endregion
 
@@ -122,7 +101,7 @@ namespace Secs4Net {
                 result[3] = lengthBytes[0];
                 return result;
             }
-            throw new ArgumentOutOfRangeException("byteLength", valueCount, "Item data length(" + valueCount + ") is overflow");
+            throw new ArgumentOutOfRangeException("byteLength", valueCount, String.Format("Item data length({0}) is overflow", valueCount));
         }
     }
 }
