@@ -30,9 +30,7 @@ namespace SecsDevice {
                 _secsGem.Dispose();
 
 
-            _secsGem = new SecsGem(
-                IPAddress.Parse(txtAddress.Text),
-                (int)numPort.Value,
+            _secsGem = new SecsGem(IPAddress.Parse(txtAddress.Text), (int)numPort.Value,
                 radioActiveMode.Checked,
                 (primaryMsg, reply) => {
                     this.Invoke((MethodInvoker)delegate {
@@ -42,7 +40,7 @@ namespace SecsDevice {
                         });
                     });
                 },
-                _logform);
+                _logform.Logger);
 
             _secsGem.ConnectionChanged += delegate {
                 this.Invoke((MethodInvoker)delegate {
