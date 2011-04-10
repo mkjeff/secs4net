@@ -5,8 +5,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Remoting.Lifetime;
-using System.Text;
 using System.Security.Permissions;
+using System.Text;
 
 namespace Secs4Net {
     [DebuggerDisplay("<{Format} [{Count}] { (Format==SecsFormat.List) ? string.Empty : ToString() ,nq}>")]
@@ -343,21 +343,21 @@ namespace Secs4Net {
         #region Share Object
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
         internal static readonly Lazy<string> EmptySml = Lazy.Create(string.Empty);
-        static readonly Item Empty_L = new Item(Array.AsReadOnly(new Item[0]));
-        static readonly Item Empty_A = new Item(SecsFormat.ASCII, string.Empty);
-        static readonly Item Empty_J = new Item(SecsFormat.JIS8, string.Empty);
+        static readonly Item Empty_L       = new Item(Array.AsReadOnly(new Item[0]));
+        static readonly Item Empty_A       = new Item(SecsFormat.ASCII, string.Empty);
+        static readonly Item Empty_J       = new Item(SecsFormat.JIS8, string.Empty);
         static readonly Item Empty_Boolean = new Item(SecsFormat.Boolean, new bool[0]);
-        static readonly Item Empty_Binary = new Item(SecsFormat.Binary, new byte[0]);
-        static readonly Item Empty_U1 = new Item(SecsFormat.U1, new byte[0]);
-        static readonly Item Empty_U2 = new Item(SecsFormat.U2, new ushort[0]);
-        static readonly Item Empty_U4 = new Item(SecsFormat.U4, new uint[0]);
-        static readonly Item Empty_U8 = new Item(SecsFormat.U8, new ulong[0]);
-        static readonly Item Empty_I1 = new Item(SecsFormat.I1, new sbyte[0]);
-        static readonly Item Empty_I2 = new Item(SecsFormat.I2, new short[0]);
-        static readonly Item Empty_I4 = new Item(SecsFormat.I4, new int[0]);
-        static readonly Item Empty_I8 = new Item(SecsFormat.I8, new long[0]);
-        static readonly Item Empty_F4 = new Item(SecsFormat.F4, new float[0]);
-        static readonly Item Empty_F8 = new Item(SecsFormat.F8, new double[0]);
+        static readonly Item Empty_Binary  = new Item(SecsFormat.Binary, new byte[0]);
+        static readonly Item Empty_U1      = new Item(SecsFormat.U1, new byte[0]);
+        static readonly Item Empty_U2      = new Item(SecsFormat.U2, new ushort[0]);
+        static readonly Item Empty_U4      = new Item(SecsFormat.U4, new uint[0]);
+        static readonly Item Empty_U8      = new Item(SecsFormat.U8, new ulong[0]);
+        static readonly Item Empty_I1      = new Item(SecsFormat.I1, new sbyte[0]);
+        static readonly Item Empty_I2      = new Item(SecsFormat.I2, new short[0]);
+        static readonly Item Empty_I4      = new Item(SecsFormat.I4, new int[0]);
+        static readonly Item Empty_I8      = new Item(SecsFormat.I8, new long[0]);
+        static readonly Item Empty_F4      = new Item(SecsFormat.F4, new float[0]);
+        static readonly Item Empty_F8      = new Item(SecsFormat.F8, new double[0]);
         #endregion
     }
 }

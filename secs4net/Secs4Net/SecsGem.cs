@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using Secs4Net.Properties;
-using System.Collections.Concurrent;
 
 namespace Secs4Net {
     public sealed class SecsGem : IDisposable {
@@ -37,8 +37,8 @@ namespace Secs4Net {
         readonly ConcurrentDictionary<int, SecsAsyncResult> _replyExpectedMsgs = new ConcurrentDictionary<int, SecsAsyncResult>();
         readonly Action<SecsMessage, Action<SecsMessage>> PrimaryMessageHandler;
         readonly SecsTracer _tracer;
-        readonly System.Timers.Timer _timer7 = new System.Timers.Timer();	// between socket connected and received Select.req timer
-        readonly System.Timers.Timer _timer8 = new System.Timers.Timer();
+        readonly System.Timers.Timer _timer7        = new System.Timers.Timer();	// between socket connected and received Select.req timer
+        readonly System.Timers.Timer _timer8        = new System.Timers.Timer();
         readonly System.Timers.Timer _timerLinkTest = new System.Timers.Timer();
 
         readonly Action StartImpl;
@@ -50,8 +50,9 @@ namespace Secs4Net {
         static readonly SecsTracer DefaultTracer = new SecsTracer();
         readonly Func<int> NewSystemByte;
 
-        public SecsGem(IPAddress ip, int port, bool isActive, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler, SecsTracer tracer, int receiveBufferSize = 0x4000) {
-            ip.CheckNull("ip");
+        public SecsGem(IPAddress ip, int port, bool isActive, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler, SecsTracer tracer, int receiveBufferSize) {
+            if (ip == null)
+                throw new ArgumentNullException("ip");
 
             _ip = ip;
             _port = port;
@@ -59,7 +60,7 @@ namespace Secs4Net {
             _recvBuffer = new byte[receiveBufferSize < 0x4000 ? 0x4000 : receiveBufferSize];
             _secsDecoder = new SecsDecoder(HandleControlMessage, HandleDataMessage);
             _tracer = tracer ?? DefaultTracer;
-            PrimaryMessageHandler = primaryMsgHandler ?? ((primary, reply) => { reply(null); });
+            PrimaryMessageHandler = primaryMsgHandler ?? ((primary, reply) => reply(null));
             T3 = 45000;
             T5 = 10000;
             T6 = 5000;
