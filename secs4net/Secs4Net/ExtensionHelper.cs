@@ -1,36 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Secs4Net {
     static class SecsExtension {
-        internal static void CheckNull(this object arg, string argName) {
-            if (arg == null) throw new ArgumentNullException(argName);
-        }
-
-        #region Bytes To Item
-
+        #region Bytes To Item Value
         internal static Item BytesDecode(SecsFormat format, byte[] bytes, int index, int length) {
             switch (format) {
                 case SecsFormat.ASCII: return length == 0 ? Item.A() : Item.A(Encoding.ASCII.GetString(bytes, index, length));
                 case SecsFormat.JIS8: return length == 0 ? Item.J() : Item.J(Item.JIS8Encoding.GetString(bytes, index, length));
-                case SecsFormat.Boolean: return length == 0 ? Item.Boolean() : Item.Boolean(Decoder<bool>(sizeof(bool), bytes, index, length));
-                case SecsFormat.Binary: return length == 0 ? Item.B() : Item.B(Decoder<byte>(sizeof(byte), bytes, index, length));
-                case SecsFormat.U1: return length == 0 ? Item.U1() : Item.U1(Decoder<byte>(sizeof(byte), bytes, index, length));
-                case SecsFormat.U2: return length == 0 ? Item.U2() : Item.U2(Decoder<ushort>(sizeof(ushort), bytes, index, length));
-                case SecsFormat.U4: return length == 0 ? Item.U4() : Item.U4(Decoder<uint>(sizeof(uint), bytes, index, length));
-                case SecsFormat.U8: return length == 0 ? Item.U8() : Item.U8(Decoder<ulong>(sizeof(ulong), bytes, index, length));
-                case SecsFormat.I1: return length == 0 ? Item.I1() : Item.I1(Decoder<sbyte>(sizeof(sbyte), bytes, index, length));
-                case SecsFormat.I2: return length == 0 ? Item.I2() : Item.I2(Decoder<short>(sizeof(short), bytes, index, length));
-                case SecsFormat.I4: return length == 0 ? Item.I4() : Item.I4(Decoder<int>(sizeof(int), bytes, index, length));
-                case SecsFormat.I8: return length == 0 ? Item.I8() : Item.I8(Decoder<long>(sizeof(long), bytes, index, length));
-                case SecsFormat.F4: return length == 0 ? Item.F4() : Item.F4(Decoder<float>(sizeof(float), bytes, index, length));
-                case SecsFormat.F8: return length == 0 ? Item.F8() : Item.F8(Decoder<double>(sizeof(double), bytes, index, length));
+                case SecsFormat.Boolean: return length == 0 ? Item.Boolean() : Item.Boolean(Decode<bool>(sizeof(bool), bytes, index, length));
+                case SecsFormat.Binary: return length == 0 ? Item.B() : Item.B(Decode<byte>(sizeof(byte), bytes, index, length));
+                case SecsFormat.U1: return length == 0 ? Item.U1() : Item.U1(Decode<byte>(sizeof(byte), bytes, index, length));
+                case SecsFormat.U2: return length == 0 ? Item.U2() : Item.U2(Decode<ushort>(sizeof(ushort), bytes, index, length));
+                case SecsFormat.U4: return length == 0 ? Item.U4() : Item.U4(Decode<uint>(sizeof(uint), bytes, index, length));
+                case SecsFormat.U8: return length == 0 ? Item.U8() : Item.U8(Decode<ulong>(sizeof(ulong), bytes, index, length));
+                case SecsFormat.I1: return length == 0 ? Item.I1() : Item.I1(Decode<sbyte>(sizeof(sbyte), bytes, index, length));
+                case SecsFormat.I2: return length == 0 ? Item.I2() : Item.I2(Decode<short>(sizeof(short), bytes, index, length));
+                case SecsFormat.I4: return length == 0 ? Item.I4() : Item.I4(Decode<int>(sizeof(int), bytes, index, length));
+                case SecsFormat.I8: return length == 0 ? Item.I8() : Item.I8(Decode<long>(sizeof(long), bytes, index, length));
+                case SecsFormat.F4: return length == 0 ? Item.F4() : Item.F4(Decode<float>(sizeof(float), bytes, index, length));
+                case SecsFormat.F8: return length == 0 ? Item.F8() : Item.F8(Decode<double>(sizeof(double), bytes, index, length));
                 default:/* case SecsFormat.List*/ throw new ArgumentException("Invalid format:" + format, "format");
             }
         }
 
-        static T[] Decoder<T>(int elmSize, byte[] bytes, int index, int length) where T : struct {
+        static T[] Decode<T>(int elmSize, byte[] bytes, int index, int length) where T : struct {
             bytes.Reverse(index, index + length, elmSize);
             var values = new T[length / elmSize];
             Buffer.BlockCopy(bytes, index, values, 0, length);
@@ -44,9 +38,9 @@ namespace Secs4Net {
             int length = value.Length * 3;
             char[] chs = new char[length];
             for (int ci = 0, i = 0; ci < length; ci += 3) {
-                byte num5 = value[i++];
-                chs[ci] = GetHexValue(num5 / 0x10);
-                chs[ci + 1] = GetHexValue(num5 % 0x10);
+                byte num = value[i++];
+                chs[ci] = GetHexValue(num / 0x10);
+                chs[ci + 1] = GetHexValue(num % 0x10);
                 chs[ci + 2] = ' ';
             }
             return new string(chs, 0, length - 1);
