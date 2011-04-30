@@ -40,7 +40,7 @@ namespace SecsDevice {
                         });
                     });
                 },
-                _logform.Logger);
+                _logform.Logger, 0);
 
             _secsGem.ConnectionChanged += delegate {
                 this.Invoke((MethodInvoker)delegate {
