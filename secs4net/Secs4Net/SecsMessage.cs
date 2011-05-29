@@ -53,24 +53,12 @@ namespace Secs4Net {
 
             this._rawDatas = item == null ? emptyMsgDatas : Lazy.Create(() => {
                 var result = new List<RawData> { null, dummyHeaderDatas };
-                uint length = 10 + Encode(SecsItem, result);
+                uint length = 10 + SecsItem.Encode(result);
                 byte[] msgLengthByte = BitConverter.GetBytes(length);
                 Array.Reverse(msgLengthByte);
                 result[0] = new RawData(msgLengthByte);
                 return result.AsReadOnly();
             });
-        }
-
-        static uint Encode(Item item, List<RawData> buffer) {
-            uint length = (uint)item.RawData.Count;
-            buffer.Add(item.RawData);
-            if (item.Format == SecsFormat.List) {
-                var items = item.Items;
-                int count = items.Count;
-                for (int i = 0; i < count; i++)
-                    length += Encode(items[i], buffer);
-            }
-            return length;
         }
 
         public SecsMessage(byte s, byte f, string name, Item item)
@@ -127,7 +115,7 @@ namespace Secs4Net {
                     list.Add(Decode(bytes, ref index));
                 return Item.L(list);
             }
-            var item = SecsExtension.BytesDecode(format, bytes, index, length);
+            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, index, length);
             index += length;
             return item;
         }

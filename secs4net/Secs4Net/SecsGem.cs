@@ -46,7 +46,7 @@ namespace Secs4Net {
 
         readonly byte[] _recvBuffer;
         static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
-        static readonly byte[] ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
+        static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
         static readonly SecsTracer DefaultTracer = new SecsTracer();
         readonly Func<int> NewSystemByte;
 
@@ -289,7 +289,7 @@ namespace Secs4Net {
             header.Bytes[0] = 0xFF;
             header.Bytes[1] = 0xFF;
             _socket.Send(new List<ArraySegment<byte>>(2){
-                new ArraySegment<byte>(ControlMessageLengthBytes),
+                ControlMessageLengthBytes,
                 new ArraySegment<byte>(header.Bytes)
             });
             _tracer.TraceInfo("Sent Control Message: " + header.MessageType);
@@ -600,7 +600,7 @@ namespace Secs4Net {
                     } else {
                         if (!CheckAvailable(length, index, _itemLength, out need)) return 4;
 
-                        item = SecsExtension.BytesDecode(_format, data, index, _itemLength);
+                        item = _itemLength == 0 ? _format.BytesDecode() : _format.BytesDecode(data, index, _itemLength);
                         index += _itemLength;
                         _messageLength -= (uint)_itemLength;
                     }
@@ -758,10 +758,10 @@ namespace Secs4Net {
         #region EncodedByteList Wrapper just need IList<T>.Count and Indexer
         sealed class EncodedBuffer : IList<ArraySegment<byte>> {
             readonly IList<RawData> _data;// raw data include first message length 4 byte
-            readonly ArraySegment<byte> _header;
+            readonly byte[] _header;
 
             internal EncodedBuffer(byte[] header, IList<RawData> msgRawDatas) {
-                _header = new ArraySegment<byte>(header);
+                _header = header;
                 _data = msgRawDatas;
             }
 
@@ -770,7 +770,7 @@ namespace Secs4Net {
             void IList<ArraySegment<byte>>.Insert(int index, ArraySegment<byte> item) { }
             void IList<ArraySegment<byte>>.RemoveAt(int index) { }
             ArraySegment<byte> IList<ArraySegment<byte>>.this[int index] {
-                get { return (index == 1) ? _header : new ArraySegment<byte>(_data[index].Bytes); }
+                get { return new ArraySegment<byte>(index == 1 ? _header : _data[index].Bytes); }
                 set { }
             }
             #endregion
@@ -786,7 +786,7 @@ namespace Secs4Net {
             #region IEnumerable<ArraySegment<byte>> Members
             public IEnumerator<ArraySegment<byte>> GetEnumerator() {
                 for (int i = 0, length = _data.Count; i < length; i++)
-                    yield return i == 1 ? _header : new ArraySegment<byte>(_data[i].Bytes);
+                    yield return new ArraySegment<byte>(i == 1 ? _header : _data[i].Bytes);
             }
             #endregion
             #region IEnumerable Members
