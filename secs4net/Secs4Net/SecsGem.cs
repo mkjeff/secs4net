@@ -693,8 +693,8 @@ namespace Secs4Net {
             /// <param name="index">位元組的起始索引</param>
             /// <returns>回傳_currentStep不足的byte數</returns>
             int Decode(byte[] bytes, int length, ref int index) {
-                int nexStep = _currentStep;
                 int need;
+                int nexStep = _currentStep;
                 do {
                     _currentStep = nexStep;
                     nexStep = decoders[_currentStep](bytes, length, ref index, out need);
