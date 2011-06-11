@@ -68,8 +68,8 @@ namespace Secs4Net {
             T8 = 5000;
             LinkTestInterval = 60000;
 
-            int _systemByte = new Random(int.MaxValue).Next();
-            NewSystemByte = () => Interlocked.Increment(ref _systemByte);
+            int systemByte = new Random(Guid.NewGuid().GetHashCode()).Next();
+            NewSystemByte = () => Interlocked.Increment(ref systemByte);
 
             #region Timer Action
             _timer7.Elapsed += delegate {
@@ -404,10 +404,10 @@ namespace Secs4Net {
         /// <returns>Device's reply message if <paramref name="asyncResult"/> is an IAsyncResult that references the asynchronous send, otherwise null.</returns>
         public SecsMessage EndSend(IAsyncResult asyncResult) {
             if (asyncResult == null)
-                return null;
+                throw new ArgumentNullException("asyncResult");
             var ar = asyncResult as SecsAsyncResult;
             if (ar == null)
-                throw new InvalidOperationException("參數asyncResult不是BeginSend所取得的");
+                throw new ArgumentException("參數asyncResult不是BeginSend所取得的", "asyncResult");
             ar.AsyncWaitHandle.WaitOne();
             return ar.Secondary;
         }
