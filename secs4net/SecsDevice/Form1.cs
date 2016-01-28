@@ -3,11 +3,12 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using Secs4Net;
 using System.Net;
+using System.Drawing;
 
 namespace SecsDevice {
     public partial class Form1 : Form {
         SecsGem _secsGem;
-        readonly FormLog _logform = new FormLog();
+        readonly SecsTracer Logger;
         readonly BindingList<RecvMessage> recvBuffer = new BindingList<RecvMessage>();
         public Form1() {
             InitializeComponent();
@@ -19,95 +20,137 @@ namespace SecsDevice {
             numDeviceId.DataBindings.Add("Enabled", btnEnable, "Enabled");
             recvMessageBindingSource.DataSource = recvBuffer;
             Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
+
+            Logger = new SecsLogger(this);
         }
 
         void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e) {
             MessageBox.Show(e.Exception.ToString());
         }
 
-        private void btnEnable_Click(object sender, EventArgs e) {
-            if (_secsGem != null)
-                _secsGem.Dispose();
-
-
-            _secsGem = new SecsGem(IPAddress.Parse(txtAddress.Text), (int)numPort.Value,
-                radioActiveMode.Checked,
-                (primaryMsg, reply) => {
-                    this.Invoke((MethodInvoker)delegate {
-                        recvBuffer.Add(new RecvMessage {
+        private async void btnEnable_Click(object sender, EventArgs e)
+        {
+            _secsGem?.Dispose();
+            _secsGem = new SecsGem(
+                ip: IPAddress.Parse(txtAddress.Text),
+                port: (int)numPort.Value,
+                isActive: radioActiveMode.Checked,
+                tracer: Logger,
+                primaryMsgHandler: (primaryMsg, replyAction) =>
+                    this.Invoke(new MethodInvoker(() =>
+                        recvBuffer.Add(new RecvMessage
+                        {
                             Msg = primaryMsg,
-                            ReplyAction = reply
-                        });
-                    });
-                },
-                _logform.Logger, 0);
+                            ReplyAction = replyAction
+                        }))));
 
-            _secsGem.ConnectionChanged += delegate {
-                this.Invoke((MethodInvoker)delegate {
+            _secsGem.ConnectionChanged += delegate
+            {
+                this.Invoke((MethodInvoker)delegate
+                {
                     lbStatus.Text = _secsGem.State.ToString();
                 });
             };
 
             btnEnable.Enabled = false;
+            await _secsGem.Start();
             btnDisable.Enabled = true;
         }
 
-        private void btnDisable_Click(object sender, EventArgs e) {
-            if (_secsGem != null) {
-                _secsGem.Dispose();
-                _secsGem = null;
-            }
+        private void btnDisable_Click(object sender, EventArgs e)
+        {
+            _secsGem?.Dispose();
+            _secsGem = null;
             btnEnable.Enabled = true;
             btnDisable.Enabled = false;
             lbStatus.Text = "Disable";
             recvBuffer.Clear();
         }
 
-        private void Form1_Load(object sender, EventArgs e) {
-            _logform.Show(this);
-        }
-
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e) {
-            _logform.Close();
-        }
-
-        private void btnSendPrimary_Click(object sender, EventArgs e) {
+        private async void btnSendPrimary_Click(object sender, EventArgs e)
+        {
             if (_secsGem.State != ConnectionState.Selected)
                 return;
+            if (string.IsNullOrWhiteSpace(txtSendPrimary.Text))
+                return;
 
-            var msg = txtSendPrimary.Text.ToSecsMessage();
-            _secsGem.BeginSend(msg, ar => {
-                try {
-                    var reply = _secsGem.EndSend(ar);
-                    this.Invoke((MethodInvoker)delegate {
-                        txtRecvSecondary.Text = reply.ToSML();
-                    });
-                } catch (SecsException ex) {
-                    this.Invoke((MethodInvoker)delegate {
-                        txtRecvSecondary.Text = ex.Message;
-                    });
-                }
-            }, null);
+            try
+            {
+                var reply = await _secsGem.SendAsync(txtSendPrimary.Text.ToSecsMessage());
+                txtRecvSecondary.Text = reply.ToSML();
+            }
+            catch (SecsException ex)
+            {
+                txtRecvSecondary.Text = ex.Message;
+            }
         }
 
         private void lstUnreplyMsg_SelectedIndexChanged(object sender, EventArgs e) {
-            RecvMessage recv = lstUnreplyMsg.SelectedItem as RecvMessage;
-            if (recv == null)
-                return;
-            txtRecvPrimary.Text = recv.Msg.ToSML();
+            var recv = lstUnreplyMsg.SelectedItem as RecvMessage;
+            txtRecvPrimary.Text = recv?.Msg.ToSML();
         }
 
         private void btnReplySecondary_Click(object sender, EventArgs e) {
-            RecvMessage recv = lstUnreplyMsg.SelectedItem as RecvMessage;
+            var recv = lstUnreplyMsg.SelectedItem as RecvMessage;
             if (recv == null)
                 return;
 
-            if (string.IsNullOrEmpty(txtReplySeconary.Text))
+            if (string.IsNullOrWhiteSpace(txtReplySeconary.Text))
                 return;
 
             recv.ReplyAction(txtReplySeconary.Text.ToSecsMessage());
             recvBuffer.Remove(recv);
             txtRecvPrimary.Clear();
+        }
+
+        class SecsLogger : SecsTracer
+        {
+            readonly Form1 _form;
+            internal SecsLogger(Form1 form)
+            {
+                _form = form;
+            }
+            public override void TraceMessageIn(SecsMessage msg, int systembyte)
+            {
+                _form.Invoke((MethodInvoker)delegate {
+                    _form.richTextBox1.SelectionColor = Color.Black;
+                    _form.richTextBox1.AppendText($"<-- [0x{systembyte:X8}] {msg.ToSML()}\n");
+                });
+            }
+
+            public override void TraceMessageOut(SecsMessage msg, int systembyte)
+            {
+                _form.Invoke((MethodInvoker)delegate {
+                    _form.richTextBox1.SelectionColor = Color.Black;
+                    _form.richTextBox1.AppendText($"--> [0x{systembyte:X8}] {msg.ToSML()}\n");
+                });
+            }
+
+            public override void TraceInfo(string msg)
+            {
+                _form.Invoke((MethodInvoker)delegate {
+                    _form.richTextBox1.SelectionColor = Color.Blue;
+                    _form.richTextBox1.AppendText($"{msg}\n");
+                });
+            }
+
+            public override void TraceWarning(string msg)
+            {
+                _form.Invoke((MethodInvoker)delegate {
+                    _form.richTextBox1.SelectionColor = Color.Green;
+                    _form.richTextBox1.AppendText($"{msg}\n");
+                });
+            }
+
+            public override void TraceError(string msg, Exception ex = null)
+            {
+                _form.Invoke((MethodInvoker)delegate {
+                    _form.richTextBox1.SelectionColor = Color.Red;
+                    _form.richTextBox1.AppendText($"{msg}\n");
+                    _form.richTextBox1.SelectionColor = Color.Gray;
+                    _form.richTextBox1.AppendText($"{ex?.ToString()}\n");
+                });
+            }
         }
     }
 

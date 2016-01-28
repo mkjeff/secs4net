@@ -8,49 +8,46 @@ using System.Runtime.Remoting.Lifetime;
 using System.Security.Permissions;
 using System.Text;
 
-namespace Secs4Net {
+namespace Secs4Net
+{
     [DebuggerDisplay("<{Format} [{Count}] { (Format==SecsFormat.List) ? string.Empty : ToString() ,nq}>")]
     public sealed class Item : MarshalByRefObject {
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.Infrastructure)]
         public override object InitializeLifetimeService() {
-            ILease lease = (ILease)base.InitializeLifetimeService();
-            if (lease.CurrentState == LeaseState.Initial) {
+            var lease = (ILease)base.InitializeLifetimeService();
+            if (lease != null && lease.CurrentState == LeaseState.Initial) {
                 lease.InitialLeaseTime = TimeSpan.FromSeconds(10);
                 lease.RenewOnCallTime = TimeSpan.FromSeconds(10);
             }
             return lease;
         }
 
-        public SecsFormat Format { get; private set; }
-        public int Count { get; private set; }
+        public SecsFormat Format { get; }
+        public int Count { get; }
 
-        public ReadOnlyCollection<Item> Items {
-            get {
-                if (_list == null) throw new InvalidOperationException("This is not a List.");
-                return _list;
-            }
-        }
+        public IReadOnlyList<Item> Items { get; }
+        public object Value { get; }//  當Format不為List時 _value才有值,否則為null;不是string就是Array  
 
-        public T Value<T>() {
-            if (_value == null)
-                throw new InvalidOperationException("This is a List.");
+        public T GetValue<T>() {
+            if (Value == null)
+                throw new InvalidOperationException("Item format is List");
 
-            if (_value is T)
-                return (T)((ICloneable)_value).Clone();
+            if (Value is T)
+                return (T)((ICloneable)Value).Clone();
 
-            if (_value is T[])
-                return ((T[])_value)[0];
+            if (Value is T[])
+                return ((T[])Value)[0];
 
             Type valueType = Nullable.GetUnderlyingType(typeof(T));
-            if (valueType != null && _value.GetType().GetElementType() == valueType)
-                return ((IEnumerable)_value).Cast<T>().FirstOrDefault();
+            if (valueType != null && Value.GetType().GetElementType() == valueType)
+                return ((IEnumerable)Value).Cast<T>().FirstOrDefault();
 
-            throw new SecsException("Access item value with wrong type.");
+            throw new InvalidOperationException("Item value type is incompatible");
         }
 
-        public RawData RawData { get { return _rawBytes.Value; } }
+        internal RawData RawData => _rawBytes.Value;
 
-        public override string ToString() { return _sml.Value; }
+        public override string ToString() => _sml.Value;
 
         /// <summary>
         /// if Format is List RawBytes is only header bytes.
@@ -58,17 +55,15 @@ namespace Secs4Net {
         /// </summary>
         readonly Lazy<RawData> _rawBytes;
         readonly Lazy<string> _sml;
-        readonly ReadOnlyCollection<Item> _list;  //  當Format為List時 _list才有值,否則為null
-        readonly object _value;      //  當Format不為List時 _value才有值,否則為null;不是string就是Array   
 
         #region Constructor
         /// <summary>
         /// List
         /// </summary>
-        Item(ReadOnlyCollection<Item> items) {
+        Item(IReadOnlyList<Item> items) {
             Format = SecsFormat.List;
             Count = items.Count;
-            _list = items;
+            Items = items;
             _sml = EmptySml;
             _rawBytes = Lazy.Create(() => {
                 int _;
@@ -82,13 +77,13 @@ namespace Secs4Net {
         /// F4,F8
         /// Boolean
         /// </summary>
-        Item(SecsFormat format, Array value, Lazy<string> sml) {
+        Item(SecsFormat format, Array value, Func<string> sml) {
             Format = format;
             Count = value.Length;
-            _value = value;
-            _sml = sml;
+            Value = value;
+            _sml = Lazy.Create(sml);
             _rawBytes = Lazy.Create(() => {
-                Array val = (Array)_value;
+                Array val = (Array)Value;
                 int bytelength = Buffer.ByteLength(val);
                 int headerLength;
                 byte[] result = Format.EncodeItem(bytelength, out headerLength);
@@ -104,10 +99,10 @@ namespace Secs4Net {
         Item(SecsFormat format, string value, Encoding encoder) {
             Format = format;
             Count = value.Length;
-            _value = value;
+            Value = value;
             _sml = Lazy.Create(value);
             _rawBytes = Lazy.Create(() => {
-                string str = (string)_value;
+                string str = (string)Value;
                 int headerLength;
                 byte[] result = Format.EncodeItem(str.Length, out headerLength);
                 encoder.GetBytes(str, 0, str.Length, result, headerLength);
@@ -122,242 +117,111 @@ namespace Secs4Net {
         /// <param name="value"></param>
         Item(SecsFormat format, ICloneable value) {
             Format = format;
-            _value = value;
+            Value = value;
             _rawBytes = Lazy.Create(new RawData(new byte[] { (byte)((byte)Format | 1), 0 }));
             _sml = EmptySml;
         }
         #endregion
 
         #region Value Access Operator
-
-        public static explicit operator string(Item item) {
-            return item.Value<string>();
-        }
-
-        public static explicit operator byte(Item item) {
-            return item.Value<byte>();
-        }
-
-        public static explicit operator sbyte(Item item) {
-            return item.Value<sbyte>();
-        }
-
-        public static explicit operator ushort(Item item) {
-            return item.Value<ushort>();
-        }
-
-        public static explicit operator short(Item item) {
-            return item.Value<short>();
-        }
-
-        public static explicit operator uint(Item item) {
-            return item.Value<uint>();
-        }
-
-        public static explicit operator int(Item item) {
-            return item.Value<int>();
-        }
-
-        public static explicit operator ulong(Item item) {
-            return item.Value<ulong>();
-        }
-
-        public static explicit operator long(Item item) {
-            return item.Value<long>();
-        }
-
-        public static explicit operator float(Item item) {
-            return item.Value<float>();
-        }
-
-        public static explicit operator double(Item item) {
-            return item.Value<double>();
-        }
-
-        public static explicit operator bool(Item item) {
-            return item.Value<bool>();
-        }
-
-        public static explicit operator byte?(Item item) {
-            return item.Value<byte?>();
-        }
-
-        public static explicit operator sbyte?(Item item) {
-            return item.Value<sbyte?>();
-        }
-
-        public static explicit operator ushort?(Item item) {
-            return item.Value<ushort?>();
-        }
-
-        public static explicit operator short?(Item item) {
-            return item.Value<short?>();
-        }
-
-        public static explicit operator uint?(Item item) {
-            return item.Value<uint?>();
-        }
-
-        public static explicit operator int?(Item item) {
-            return item.Value<int?>();
-        }
-
-        public static explicit operator ulong?(Item item) {
-            return item.Value<ulong?>();
-        }
-
-        public static explicit operator long?(Item item) {
-            return item.Value<long?>();
-        }
-
-        public static explicit operator float?(Item item) {
-            return item.Value<float?>();
-        }
-
-        public static explicit operator double?(Item item) {
-            return item.Value<double?>();
-        }
-
-        public static explicit operator bool?(Item item) {
-            return item.Value<bool?>();
-        }
-
-        public static explicit operator byte[](Item item) {
-            return item.Value<byte[]>();
-        }
-
-        public static explicit operator sbyte[](Item item) {
-            return item.Value<sbyte[]>();
-        }
-
-        public static explicit operator ushort[](Item item) {
-            return item.Value<ushort[]>();
-        }
-
-        public static explicit operator short[](Item item) {
-            return item.Value<short[]>();
-        }
-
-        public static explicit operator uint[](Item item) {
-            return item.Value<uint[]>();
-        }
-
-        public static explicit operator int[](Item item) {
-            return item.Value<int[]>();
-        }
-
-        public static explicit operator ulong[](Item item) {
-            return item.Value<ulong[]>();
-        }
-
-        public static explicit operator long[](Item item) {
-            return item.Value<long[]>();
-        }
-
-        public static explicit operator float[](Item item) {
-            return item.Value<float[]>();
-        }
-
-        public static explicit operator double[](Item item) {
-            return item.Value<double[]>();
-        }
-
-        public static explicit operator bool[](Item item) {
-            return item.Value<bool[]>();
-        }
-
+        public static explicit operator string (Item item) => item.GetValue<string>();
+        public static explicit operator byte (Item item) => item.GetValue<byte>();
+        public static explicit operator sbyte (Item item) => item.GetValue<sbyte>();
+        public static explicit operator ushort (Item item) => item.GetValue<ushort>();
+        public static explicit operator short (Item item) => item.GetValue<short>();
+        public static explicit operator uint (Item item) => item.GetValue<uint>();
+        public static explicit operator int (Item item) => item.GetValue<int>();
+        public static explicit operator ulong (Item item) => item.GetValue<ulong>();
+        public static explicit operator long (Item item) => item.GetValue<long>();
+        public static explicit operator float (Item item) => item.GetValue<float>();
+        public static explicit operator double (Item item) => item.GetValue<double>();
+        public static explicit operator bool (Item item) => item.GetValue<bool>();
+        public static explicit operator byte? (Item item) => item.GetValue<byte?>();
+        public static explicit operator sbyte? (Item item) => item.GetValue<sbyte?>();
+        public static explicit operator ushort? (Item item) => item.GetValue<ushort?>();
+        public static explicit operator short? (Item item) => item.GetValue<short?>();
+        public static explicit operator uint? (Item item) => item.GetValue<uint?>();
+        public static explicit operator int? (Item item) => item.GetValue<int?>();
+        public static explicit operator ulong? (Item item) => item.GetValue<ulong?>();
+        public static explicit operator long? (Item item) => item.GetValue<long?>();
+        public static explicit operator float? (Item item) => item.GetValue<float?>();
+        public static explicit operator double? (Item item) => item.GetValue<double?>();
+        public static explicit operator bool? (Item item) => item.GetValue<bool?>();
+        public static explicit operator byte[] (Item item) => item.GetValue<byte[]>();
+        public static explicit operator sbyte[] (Item item) => item.GetValue<sbyte[]>();
+        public static explicit operator ushort[] (Item item) => item.GetValue<ushort[]>();
+        public static explicit operator short[] (Item item) => item.GetValue<short[]>();
+        public static explicit operator uint[] (Item item) => item.GetValue<uint[]>();
+        public static explicit operator int[] (Item item) => item.GetValue<int[]>();
+        public static explicit operator ulong[] (Item item) => item.GetValue<ulong[]>();
+        public static explicit operator long[] (Item item) => item.GetValue<long[]>();
+        public static explicit operator float[] (Item item) => item.GetValue<float[]>();
+        public static explicit operator double[] (Item item) => item.GetValue<double[]>();
+        public static explicit operator bool[] (Item item) => item.GetValue<bool[]>();
         #endregion
 
         #region Factory Methods
-        internal static Item L(IList<Item> items) {
-            return new Item(new ReadOnlyCollection<Item>(items));
+        internal static Item L(IList<Item> items) => new Item(new ReadOnlyCollection<Item>(items));
+        public static Item L(IEnumerable<Item> items)
+        {
+            var enumerable = items as Item[] ?? items.ToArray();
+            return enumerable.Any() ? L(enumerable) : L();
         }
-        public static Item L(IEnumerable<Item> items) {
-            return items.Any() ? L(items.ToList()) : L();
-        }
-        public static Item L(params Item[] items) {
-            return L(items.ToList());
-        }
-        public static Item B(params byte[] value) {
-            return new Item(SecsFormat.Binary, value, new Lazy<string>(value.ToHexString));
-        }
-        public static Item U1(params byte[] value) {
-            return new Item(SecsFormat.U1, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item U2(params ushort[] value) {
-            return new Item(SecsFormat.U2, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item U4(params uint[] value) {
-            return new Item(SecsFormat.U4, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item U8(params ulong[] value) {
-            return new Item(SecsFormat.U8, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item I1(params sbyte[] value) {
-            return new Item(SecsFormat.I1, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item I2(params short[] value) {
-            return new Item(SecsFormat.I2, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item I4(params int[] value) {
-            return new Item(SecsFormat.I4, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item I8(params long[] value) {
-            return new Item(SecsFormat.I8, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item F4(params float[] value) {
-            return new Item(SecsFormat.F4, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item F8(params double[] value) {
-            return new Item(SecsFormat.F8, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item Boolean(params bool[] value) {
-            return new Item(SecsFormat.Boolean, value, new Lazy<string>(value.ToSmlString));
-        }
-        public static Item A(string value) {
-            return new Item(SecsFormat.ASCII, value, Encoding.ASCII);
-        }
-        public static Item J(string value) {
-            return new Item(SecsFormat.JIS8, value, JIS8Encoding);
-        }
+
+        public static Item L(params Item[] items) => L(items.ToList());
+        public static Item B(params byte[] value) => new Item(SecsFormat.Binary, value, value.ToHexString);
+        public static Item U1(params byte[] value) => new Item(SecsFormat.U1, value, value.ToSmlString);
+        public static Item U2(params ushort[] value) => new Item(SecsFormat.U2, value, value.ToSmlString);
+        public static Item U4(params uint[] value) => new Item(SecsFormat.U4, value, value.ToSmlString);
+        public static Item U8(params ulong[] value) => new Item(SecsFormat.U8, value, value.ToSmlString);
+        public static Item I1(params sbyte[] value) => new Item(SecsFormat.I1, value, value.ToSmlString);
+        public static Item I2(params short[] value) => new Item(SecsFormat.I2, value, value.ToSmlString);
+        public static Item I4(params int[] value) => new Item(SecsFormat.I4, value, value.ToSmlString);
+        public static Item I8(params long[] value) => new Item(SecsFormat.I8, value, value.ToSmlString);
+        public static Item F4(params float[] value) => new Item(SecsFormat.F4, value, value.ToSmlString);
+        public static Item F8(params double[] value) => new Item(SecsFormat.F8, value, value.ToSmlString);
+        public static Item Boolean(params bool[] value) => new Item(SecsFormat.Boolean, value, value.ToSmlString);
+        public static Item A(string value) => new Item(SecsFormat.ASCII, value, Encoding.ASCII);
+        public static Item J(string value) => new Item(SecsFormat.JIS8, value, JIS8Encoding);
         #endregion
 
         #region Empty Item Factory
-        public static Item L() { return Empty_L; }
-        public static Item B() { return Empty_Binary; }
-        public static Item U1() { return Empty_U1; }
-        public static Item U2() { return Empty_U2; }
-        public static Item U4() { return Empty_U4; }
-        public static Item U8() { return Empty_U8; }
-        public static Item I1() { return Empty_I1; }
-        public static Item I2() { return Empty_I2; }
-        public static Item I4() { return Empty_I4; }
-        public static Item I8() { return Empty_I8; }
-        public static Item F4() { return Empty_F4; }
-        public static Item F8() { return Empty_F8; }
-        public static Item Boolean() { return Empty_Boolean; }
-        public static Item A() { return Empty_A; }
-        public static Item J() { return Empty_J; }
+        public static Item L() => EmptyL;
+        public static Item B() => EmptyBinary;
+        public static Item U1() => EmptyU1;
+        public static Item U2() => EmptyU2;
+        public static Item U4() => EmptyU4;
+        public static Item U8() => EmptyU8;
+        public static Item I1() => EmptyI1;
+        public static Item I2() => EmptyI2;
+        public static Item I4() => EmptyI4;
+        public static Item I8() => EmptyI8;
+        public static Item F4() => EmptyF4;
+        public static Item F8() => EmptyF8;
+        public static Item Boolean() => EmptyBoolean;
+        public static Item A() => EmptyA;
+        public static Item J() => EmptyJ;
         #endregion
 
         #region Share Object
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
         internal static readonly Lazy<string> EmptySml = Lazy.Create(string.Empty);
-        static readonly Item Empty_L       = new Item(Array.AsReadOnly(new Item[0]));
-        static readonly Item Empty_A       = new Item(SecsFormat.ASCII, string.Empty);
-        static readonly Item Empty_J       = new Item(SecsFormat.JIS8, string.Empty);
-        static readonly Item Empty_Boolean = new Item(SecsFormat.Boolean, new bool[0]);
-        static readonly Item Empty_Binary  = new Item(SecsFormat.Binary, new byte[0]);
-        static readonly Item Empty_U1      = new Item(SecsFormat.U1, new byte[0]);
-        static readonly Item Empty_U2      = new Item(SecsFormat.U2, new ushort[0]);
-        static readonly Item Empty_U4      = new Item(SecsFormat.U4, new uint[0]);
-        static readonly Item Empty_U8      = new Item(SecsFormat.U8, new ulong[0]);
-        static readonly Item Empty_I1      = new Item(SecsFormat.I1, new sbyte[0]);
-        static readonly Item Empty_I2      = new Item(SecsFormat.I2, new short[0]);
-        static readonly Item Empty_I4      = new Item(SecsFormat.I4, new int[0]);
-        static readonly Item Empty_I8      = new Item(SecsFormat.I8, new long[0]);
-        static readonly Item Empty_F4      = new Item(SecsFormat.F4, new float[0]);
-        static readonly Item Empty_F8      = new Item(SecsFormat.F8, new double[0]);
+        static readonly Item EmptyL       = new Item(Array.AsReadOnly(new Item[0]));
+        static readonly Item EmptyA       = new Item(SecsFormat.ASCII, string.Empty);
+        static readonly Item EmptyJ       = new Item(SecsFormat.JIS8, string.Empty);
+        static readonly Item EmptyBoolean = new Item(SecsFormat.Boolean, new bool[0]);
+        static readonly Item EmptyBinary  = new Item(SecsFormat.Binary, new byte[0]);
+        static readonly Item EmptyU1      = new Item(SecsFormat.U1, new byte[0]);
+        static readonly Item EmptyU2      = new Item(SecsFormat.U2, new ushort[0]);
+        static readonly Item EmptyU4      = new Item(SecsFormat.U4, new uint[0]);
+        static readonly Item EmptyU8      = new Item(SecsFormat.U8, new ulong[0]);
+        static readonly Item EmptyI1      = new Item(SecsFormat.I1, new sbyte[0]);
+        static readonly Item EmptyI2      = new Item(SecsFormat.I2, new short[0]);
+        static readonly Item EmptyI4      = new Item(SecsFormat.I4, new int[0]);
+        static readonly Item EmptyI8      = new Item(SecsFormat.I8, new long[0]);
+        static readonly Item EmptyF4      = new Item(SecsFormat.F4, new float[0]);
+        static readonly Item EmptyF8      = new Item(SecsFormat.F8, new double[0]);
+
         #endregion
     }
 }

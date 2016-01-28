@@ -1,48 +1,49 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using static Secs4Net.Item;
 
 namespace Secs4Net {
     static class SecsExtension {
         #region Bytes To Item Value
         internal static Item BytesDecode(this SecsFormat format) {
             switch (format) {
-                case SecsFormat.ASCII: return Item.A();
-                case SecsFormat.JIS8: return Item.J();
-                case SecsFormat.Boolean: return Item.Boolean();
-                case SecsFormat.Binary: return Item.B();
-                case SecsFormat.U1: return Item.U1();
-                case SecsFormat.U2: return Item.U2();
-                case SecsFormat.U4: return Item.U4();
-                case SecsFormat.U8: return Item.U8();
-                case SecsFormat.I1: return Item.I1();
-                case SecsFormat.I2: return Item.I2();
-                case SecsFormat.I4: return Item.I4();
-                case SecsFormat.I8: return Item.I8();
-                case SecsFormat.F4: return Item.F4();
-                case SecsFormat.F8: return Item.F8();
+                case SecsFormat.ASCII: return A();
+                case SecsFormat.JIS8: return J();
+                case SecsFormat.Boolean: return Boolean();
+                case SecsFormat.Binary: return B();
+                case SecsFormat.U1: return U1();
+                case SecsFormat.U2: return U2();
+                case SecsFormat.U4: return U4();
+                case SecsFormat.U8: return U8();
+                case SecsFormat.I1: return I1();
+                case SecsFormat.I2: return I2();
+                case SecsFormat.I4: return I4();
+                case SecsFormat.I8: return I8();
+                case SecsFormat.F4: return F4();
+                case SecsFormat.F8: return F8();
             }
-            throw new ArgumentException("Invalid format:" + format, "format");
+            throw new ArgumentException(@"Invalid format:" + format, nameof(format));
         }
 
         internal static Item BytesDecode(this SecsFormat format, byte[] bytes, int index, int length) {
             switch (format) {
-                case SecsFormat.ASCII: return Item.A(Encoding.ASCII.GetString(bytes, index, length));
-                case SecsFormat.JIS8: return Item.J(Item.JIS8Encoding.GetString(bytes, index, length));
-                case SecsFormat.Boolean: return Item.Boolean(Decode<bool>(sizeof(bool), bytes, index, length));
-                case SecsFormat.Binary: return Item.B(Decode<byte>(sizeof(byte), bytes, index, length));
-                case SecsFormat.U1: return Item.U1(Decode<byte>(sizeof(byte), bytes, index, length));
-                case SecsFormat.U2: return Item.U2(Decode<ushort>(sizeof(ushort), bytes, index, length));
-                case SecsFormat.U4: return Item.U4(Decode<uint>(sizeof(uint), bytes, index, length));
-                case SecsFormat.U8: return Item.U8(Decode<ulong>(sizeof(ulong), bytes, index, length));
-                case SecsFormat.I1: return Item.I1(Decode<sbyte>(sizeof(sbyte), bytes, index, length));
-                case SecsFormat.I2: return Item.I2(Decode<short>(sizeof(short), bytes, index, length));
-                case SecsFormat.I4: return Item.I4(Decode<int>(sizeof(int), bytes, index, length));
-                case SecsFormat.I8: return Item.I8(Decode<long>(sizeof(long), bytes, index, length));
-                case SecsFormat.F4: return Item.F4(Decode<float>(sizeof(float), bytes, index, length));
-                case SecsFormat.F8: return Item.F8(Decode<double>(sizeof(double), bytes, index, length));
+                case SecsFormat.ASCII: return A(Encoding.ASCII.GetString(bytes, index, length));
+                case SecsFormat.JIS8: return J(JIS8Encoding.GetString(bytes, index, length));
+                case SecsFormat.Boolean: return Boolean(Decode<bool>(sizeof(bool), bytes, index, length));
+                case SecsFormat.Binary: return B(Decode<byte>(sizeof(byte), bytes, index, length));
+                case SecsFormat.U1: return U1(Decode<byte>(sizeof(byte), bytes, index, length));
+                case SecsFormat.U2: return U2(Decode<ushort>(sizeof(ushort), bytes, index, length));
+                case SecsFormat.U4: return U4(Decode<uint>(sizeof(uint), bytes, index, length));
+                case SecsFormat.U8: return U8(Decode<ulong>(sizeof(ulong), bytes, index, length));
+                case SecsFormat.I1: return I1(Decode<sbyte>(sizeof(sbyte), bytes, index, length));
+                case SecsFormat.I2: return I2(Decode<short>(sizeof(short), bytes, index, length));
+                case SecsFormat.I4: return I4(Decode<int>(sizeof(int), bytes, index, length));
+                case SecsFormat.I8: return I8(Decode<long>(sizeof(long), bytes, index, length));
+                case SecsFormat.F4: return F4(Decode<float>(sizeof(float), bytes, index, length));
+                case SecsFormat.F8: return F8(Decode<double>(sizeof(double), bytes, index, length));
             }
-            throw new ArgumentException("Invalid format:" + format, "format");
+            throw new ArgumentException(@"Invalid format", nameof(format));
         }
 
         static T[] Decode<T>(int elmSize, byte[] bytes, int index, int length) where T : struct {
@@ -67,13 +68,10 @@ namespace Secs4Net {
             return new string(chs, 0, length - 1);
         }
 
-        static char GetHexValue(int i) {
-            return (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
-        }
+        static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
 
-        internal static string ToSmlString<T>(this T[] value) where T : struct {
-            return value.Length == 1 ? value[0].ToString() : string.Join(" ", Array.ConvertAll(value, v => v.ToString()));
-        }
+        internal static string ToSmlString<T>(this T[] value) where T : struct => 
+            value.Length == 1 ? value[0].ToString() : string.Join(" ", value);
         #endregion
 
         internal static void Reverse(this byte[] bytes, int begin, int end, int offSet) {
@@ -85,8 +83,9 @@ namespace Secs4Net {
         /// <summary>
         /// Encode Item header + value (initial array only)
         /// </summary>
-        /// <param name="dataLength">Item value bytes length</param>
+        /// <param name="valueCount">Item value bytes length</param>
         /// <param name="headerlength">return header bytes length</param>
+        /// <param name="format"></param>
         /// <returns>header bytes + initial bytes of value </returns>
         internal static byte[] EncodeItem(this SecsFormat format, int valueCount, out int headerlength) {
             byte[] lengthBytes = BitConverter.GetBytes(valueCount);
@@ -116,7 +115,7 @@ namespace Secs4Net {
                 result[3] = lengthBytes[0];
                 return result;
             }
-            throw new ArgumentOutOfRangeException("byteLength", valueCount, String.Format("Item data length({0}) is overflow", valueCount));
+            throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $"Item data length({valueCount}) is overflow");
         }
 
         /// <summary>

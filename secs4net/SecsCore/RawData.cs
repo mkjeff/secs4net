@@ -5,6 +5,6 @@ namespace Secs4Net {
     [Serializable]
     public sealed class RawData : ReadOnlyCollection<byte> {
         internal RawData(byte[] bytes) : base(bytes) { }
-        internal byte[] Bytes { get { return (byte[])base.Items; } }
+        internal byte[] Bytes => (byte[])Items;
     }
 }

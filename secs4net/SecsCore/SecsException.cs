@@ -5,11 +5,11 @@ namespace Secs4Net {
 
     [Serializable]
     public class SecsException : Exception {
-        public SecsMessage SecsMsg { get; private set; }
+        public SecsMessage SecsMsg { get; }
 
         protected SecsException(SerializationInfo info, StreamingContext context)
             : base(info, context) {
-            this.SecsMsg = info.GetValue("msg", typeof(SecsMessage)) as SecsMessage;
+            SecsMsg = info.GetValue("msg", typeof(SecsMessage)) as SecsMessage;
         }
 
         public SecsException(SecsMessage msg, string description)

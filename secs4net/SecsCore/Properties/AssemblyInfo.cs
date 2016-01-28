@@ -7,12 +7,12 @@ using System;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Secs4Net")]
-[assembly: AssemblyDescription("SECSII Driver On HSMS Implement(.NET 2.0) ,LittleEndian")]
+[assembly: AssemblyDescription("SECSII connector on HSMS Implement for .NET ,LittleEndian")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("mkjeff@gmail.com")]
 [assembly: AssemblyProduct("Secs4Net")]
-[assembly: AssemblyCopyright("Copyright © dogmouse 2010")]
-[assembly: AssemblyTrademark("Dogmouse")]
+[assembly: AssemblyCopyright("Copyright © DogMouse 2016")]
+[assembly: AssemblyTrademark("DogMouse")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
