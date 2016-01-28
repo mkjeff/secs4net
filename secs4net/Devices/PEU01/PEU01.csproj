@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0B53B00A-67B7-4677-875B-5096F00DD9FB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Eap</RootNamespace>
+    <AssemblyName>EAPDriver</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>
+    </DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EQP.CarrierIdReadFail.cs" />
+    <Compile Include="Driver.cs" />
+    <Compile Include="EQP.CarrierIdRead.cs" />
+    <Compile Include="EQP.ControlJobEnd.cs" />
+    <Compile Include="EQP.ControlJobStart.cs" />
+    <Compile Include="EQP.DataCollection.cs" />
+    <Compile Include="EQP.DataCollectionComplete.cs" />
+    <Compile Include="EQP.LoadComplete.cs" />
+    <Compile Include="EQP.ProcessJobEnd.cs" />
+    <Compile Include="EQP.ProcessJobStart.cs" />
+    <Compile Include="EQP.ReadyToLoad.cs" />
+    <Compile Include="EQP.ReadyToUnload.cs" />
+    <Compile Include="EQP.SlotMapReport.cs" />
+    <Compile Include="EQP.UnloadComplete.cs" />
+    <Compile Include="EQP.WaferStatusChange.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TCS.AccessModeChange.cs" />
+    <Compile Include="TCS.CancelCarrier.cs" />
+    <Compile Include="TCS.ControlJobsInfoInqueryAck.cs" />
+    <Compile Include="TCS.CreateControlJob.cs" />
+    <Compile Include="TCS.CreateProcessJob.cs" />
+    <Compile Include="TCS.ProceedSlotMap.cs" />
+    <Compile Include="TCS.ProceedWithCarrier.cs" />
+    <Compile Include="TCS.AskLoadStatus.cs" />
+    <Compile Include="TCS.ToolModeChange.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\CIM.EAP\CIM.Eap.csproj">
+      <Project>{51cbed10-a51e-43a7-8370-81de490be207}</Project>
+      <Name>CIM.Eap</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\CIM.Management\CIM.Management.csproj">
+      <Project>{3eedddf5-284e-4c9e-87af-4fff72c480d4}</Project>
+      <Name>CIM.Management</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\SecsCore\SecsCore.csproj">
+      <Project>{3c8c67b8-3746-4d26-b3a8-dcb01b5aa66b}</Project>
+      <Name>SecsCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\EAPHost\EAP Host.csproj">
+      <Project>{391F9889-812D-4C32-975E-2CF9F5B456FF}</Project>
+      <Name>EAP Host</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>move /Y $(TargetFileName).config EAP.exe.config</PostBuildEvent>
+  </PropertyGroup>
+</Project>

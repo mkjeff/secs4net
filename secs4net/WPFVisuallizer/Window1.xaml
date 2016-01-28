@@ -1,0 +1,51 @@
+﻿<Window x:Class="SecsMessageVisuallizer.Window1"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:SecsMessageVisuallizer.ViewModel"
+    xmlns:helper="clr-namespace:SecsMessageVisuallizer"
+    Title="Window1" SizeToContent="Width">
+    <Window.Resources>
+        <helper:ReplyExpectedToStringConverter x:Key="ReplyExpectedConverter"/>
+        <helper:VeiwModelToTreeViewItemConverter x:Key="Vm2UiConverter"/>
+    </Window.Resources>
+    <DockPanel>
+        <TreeView Name="messages"  ItemsSource="{Binding SecsMessages}">
+            <TreeView.ItemContainerStyle>
+                <!-- 
+        This Style binds a TreeViewItem to a TreeViewItemViewModel. 
+        -->
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    <Setter Property="FontWeight" Value="Normal" />
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TreeView.ItemContainerStyle>
+
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type local:SecsMessageViewModel}"      ItemsSource="{Binding Children}"  >
+                    <TextBlock>
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}S{0}F{1} {2}{3}">
+                            <Binding Path="StreamNumber"/>
+                             <Binding Path="FunctionNumber"/>
+                             <Binding Path="Name"/>
+                             <Binding Path="ReplyExpected" Converter="{StaticResource ReplyExpectedConverter}" />
+                        </MultiBinding>
+                    </TextBlock.Text>
+                    </TextBlock>
+                </HierarchicalDataTemplate>
+
+                <HierarchicalDataTemplate DataType="{x:Type local:SecsItemViewModel}"  ItemsSource="{Binding Children}"    >
+                    <TextBlock Text="{Binding Name}" />
+                </HierarchicalDataTemplate>
+            </TreeView.Resources>
+        </TreeView>
+        <TextBox Text="{Binding ElementName=messages,Path=SelectedItem,Mode=OneWay}"/>
+    </DockPanel>
+    
+</Window>
