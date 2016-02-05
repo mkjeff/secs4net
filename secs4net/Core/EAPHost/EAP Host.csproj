@@ -162,6 +162,7 @@
     <Reference Include="System.Messaging">
       <Name>System.Messaging</Name>
     </Reference>
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Windows.Forms">
       <Name>System.Windows.Forms</Name>
@@ -175,14 +176,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DateRollingLogFileAppender.cs" />
-    <Compile Include="LimitedConcurrencyLevelTaskScheduler.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="OrderedTaskScheduler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

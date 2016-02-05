@@ -21,7 +21,6 @@ namespace Cim.Eap {
                 dc.AddWaferData("C2W1", slotNo, tempList.Items[9]);
                 dc.AddWaferData("C2W2", slotNo, tempList.Items[12]);
             } finally {
-                EAP.Report(dc);
             }
         }
 
@@ -39,7 +38,6 @@ namespace Cim.Eap {
 
                 
             } finally {
-                EAP.Report(dc);
             }
         }
     }

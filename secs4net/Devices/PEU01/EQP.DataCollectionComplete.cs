@@ -23,8 +23,6 @@ namespace Cim.Eap {
                 dc.AddLotData("RIL0", tmpList.Items[2]);
                 dc.AddLotData("LTL0", (uint)tmpList.Items[3] / 100);
             } finally {
-                EAP.Report(dc);
-                EAP.Report(dcc);
             }
         }
     }

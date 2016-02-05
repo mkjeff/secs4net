@@ -4,18 +4,15 @@ using System.Threading;
 using System;
 namespace Cim.Eap {
     partial class Driver {
-        void EQP_LoadComplete(SecsMessage msg) {
+        async void EQP_LoadComplete(SecsMessage msg) {
             byte portNo = (byte)msg.SecsItem.Items[2].Items[0].Items[1].Items[0];
             string portId = GetPortID(portNo);
-            EAP.Report(new LoadCompReport {
-                PortID = portId
-            });
 
             // Wait CarrierIDRead Event 10 sec.
             {
                 // Method 1:
                 //ThreadPool.QueueUserWorkItem(delegate {
-                //    EapLogger.Notice(portId + " Start CarrierIDRead Timer");
+                //    EapLogger.Notice(portId + " StartAsync CarrierIDRead Timer");
                 //    using (var ev = new ManualResetEvent(false)) {
                 //        var callback = new Action<SecsMessage>(secsMsg => {
                 //            if (portNo == (byte)secsMsg.SecsItem.Items[2].Items[0].Items[1].Items[0])
@@ -35,7 +32,7 @@ namespace Cim.Eap {
             }
             {
                 // Method 2:
-                //EapLogger.Notice(portId + " Start CarrierIDRead Timer");
+                //EapLogger.Notice(portId + " StartAsync CarrierIDRead Timer");
                 //var ev = new ManualResetEvent(false);
                 //var callback = new Action<SecsMessage>(secsMsg => {
                 //    if (portNo == (byte)secsMsg.SecsItem.Items[2].Items[0].Items[1].Items[0])

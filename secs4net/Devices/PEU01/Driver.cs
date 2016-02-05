@@ -1,19 +1,9 @@
 ﻿using Cim.Eap.Tx;
+using Secs4Net;
 
 namespace Cim.Eap {
     sealed partial class Driver:EapDriver {
         protected override void Init() {
-            // TX handler
-            EAP.SetTxHandler<ToolModeChangeRequest>(HandleTCS);
-            EAP.SetTxHandler<AccessModeChangeRequest>(HandleTCS);
-            EAP.SetTxHandler<AskLoadStatusRequest>(HandleTCS);
-            EAP.SetTxHandler<ProceedWithCarrierRequest>(HandleTCS);
-            EAP.SetTxHandler<ProceedSlotMapRequest>(HandleTCS);
-            EAP.SetTxHandler<CancelCarrierRequest>(HandleTCS);
-            EAP.SetTxHandler<CreateProcessJobRequest>(HandleTCS);
-            EAP.SetTxHandler<CreateControlJobRequest>(HandleTCS);
-            EAP.SetTxHandler<ControlJobsInfoInqueryAck>(HandleTCS);
-
             // SecsMessage handler
             EAP.SubscribeS6F11("LoadComplete", EQP_LoadComplete);
             EAP.SubscribeS6F11("ReadyToLoad", EQP_ReadyToLoad);
@@ -29,8 +19,10 @@ namespace Cim.Eap {
             EAP.SubscribeS6F11("WaferProcessData", EQP_DataCollection);
             EAP.SubscribeS6F11("WaferStatusChange", EQP_WaferStatusChange);
             EAP.SubscribeS6F11("DataCollectionComplete",EQP_DataCollectionComplete);          
+        }
 
-            EAP.Report(new ControlJobsInfoInquery());
+        protected override void HandleToolAlarm(SecsMessage msg)
+        {
         }
     }
 }

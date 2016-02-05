@@ -18,7 +18,6 @@ namespace Cim.Eap {
                 dc.AddWaferData("TIW0", slotNo, (uint)dataList.Items[4] / 100);
                 dc.AddWaferData("TAW0", slotNo, (uint)dataList.Items[5] / 100);
             } finally {
-                EAP.Report(dc);
             }
         }
     }

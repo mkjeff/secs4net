@@ -29,12 +29,12 @@ namespace LoadPortMonitor {
                                 Item.U2(18027),
                                 Item.U2(18028)));
 
-        void btnRefresh_Click(object sender, EventArgs e) {
+        async void btnRefresh_Click(object sender, EventArgs e) {
             try {
                 var serviceManager = (ICentralService<ISecsDevice>)RemotingServices.Connect(typeof(ICentralService<ISecsDevice>), Settings.Default.CentralServiceUrl);
                 var device = ServiceManager.GetService(Settings.Default.ToolId);
 
-                var s1f4 = device.Send(s1f3);
+                var s1f4 = await device.SendAsync(s1f3);
                 #region Update UI
                 for (int i = 0; i < ports.Count; i++) {
                     string state = null;

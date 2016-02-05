@@ -1,18 +1,10 @@
-﻿using Cim.Eap.Tx;
+﻿using System.Threading.Tasks;
+using Cim.Eap.Tx;
+using Secs4Net;
+
 namespace Cim.Eap {
     sealed partial class Driver : EapDriver {
         protected override void Init() {
-            // TX Handler
-            EAP.SetTxHandler<ToolModeChangeRequest>(TCS_ToolModeChange);
-            EAP.SetTxHandler<AccessModeChangeRequest>(TCS_AccessModeChange);
-            EAP.SetTxHandler<AskLoadStatusRequest>(TCS_AskLoadtStatus);
-            EAP.SetTxHandler<CreateProcessJobRequest>(TCS_CreateProcessJob);
-            EAP.SetTxHandler<CreateControlJobRequest>(TCS_CreateControlJob);
-            EAP.SetTxHandler<ProceedWithCarrierRequest>(TCS_ProceedWithCarrier);
-            EAP.SetTxHandler<ProceedSlotMapRequest>(TCS_ProceedSlotMap);
-            EAP.SetTxHandler<CancelCarrierRequest>(TCS_CancelCarrier);
-            EAP.SetTxHandler<ControlJobsInfoInqueryAck>(TCS_ControlJobsInfoInqueryAck);
-
             // SecsMessage Handler
             EAP.SubscribeS6F11("LoadComplete", EQP_LoadComplete);
             EAP.SubscribeS6F11("ReadyToLoad", EQP_ReadyToLoad);
@@ -28,8 +20,10 @@ namespace Cim.Eap {
             EAP.SubscribeS6F11("WaferProcessData_LLH", EQP_WaferProcessData_LLH_LHC);
             EAP.SubscribeS6F11("WaferProcessData_LHC", EQP_WaferProcessData_LLH_LHC);
             EAP.SubscribeS6F11("WaferProcessData_PVD", EQP_WaferProcessData_PVD);
+        }
 
-            EAP.Report(new ControlJobsInfoInquery());
+        protected override void HandleToolAlarm(SecsMessage msg)
+        {
         }
     }
 }

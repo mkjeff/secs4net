@@ -2,10 +2,12 @@
 using System.Linq;
 using Cim.Eap.Tx;
 using Secs4Net;
+using System.Threading.Tasks;
+
 namespace Cim.Eap {
     partial class Driver {
-        void TCS_CreateControlJob(CreateControlJobRequest tx) {
-            var s14f10 = EAP.Send(new SecsMessage(14, 9, "CreateControlJob",
+        async Task TCS_CreateControlJob(CreateControlJobRequest tx) {
+            var s14f10 = await EAP.SendAsync(new SecsMessage(14, 9, "CreateControlJob",
                 Item.L(
                     Item.A("Equipment"),
                     Item.A("ControlJob"),
@@ -33,16 +35,16 @@ namespace Cim.Eap {
 
             byte returnCode = (byte)s14f10.SecsItem.Items[2].Items[0];
             if (returnCode != 0 && returnCode != 4) {
-                DeleteProcessJob(tx.ProcessJobIDs);
+                await DeleteProcessJob(tx.ProcessJobIDs);
                 throw new ScenarioException("S14F10_CreateControlJob_Handler Return Code:" + returnCode);
             }
         }
 
-        void DeleteProcessJob(IEnumerable<string> processJobIds) {
+        async Task DeleteProcessJob(IEnumerable<string> processJobIds) {
             foreach (string pjID in processJobIds) {
                 this._ProcessingJobs.Remove(pjID);
                 try {
-                    EAP.Send(new SecsMessage(16, 5, "PJCancel",
+                    await EAP.SendAsync(new SecsMessage(16, 5, "PJCancel",
                         Item.L(
                             Item.U4(0),
                             Item.A(pjID),

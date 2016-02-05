@@ -1,5 +1,4 @@
-﻿using System;
-namespace Secs4Net {
+﻿namespace Secs4Net {
     public enum SecsFormat : byte {
         List = 0,		// 000000 00
         Binary = 0x20,	// 001000 00

@@ -9,18 +9,11 @@ using System.Net;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Lifetime;
 using System.Runtime.Remoting.Messaging;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Schedulers;
 using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Linq;
 using log4net;
 using log4net.Layout;
 using log4net.Repository.Hierarchy;
-using Cim.Eap.Data;
-using Cim.Eap.Properties;
-using Cim.Eap.Tx;
 using Cim.Management;
 using Secs4Net;
 namespace Cim.Eap {
@@ -57,17 +50,8 @@ namespace Cim.Eap {
         }
 
         SecsGem _secsGem;
-        readonly string TcsPostmanId = "TCS." + EAPConfig.Instance.TcsId + ".MAIN";
         readonly TextBoxAppender _screenLoger;
-        readonly SecsTracer secsLogger = new SecsLogger();
-        const string AREYOUTHERE_QUEUE_PATH = @".\private$\eas.areyouthere";
-        static readonly MessageQueue AreYouThereQueue = new MessageQueue(AREYOUTHERE_QUEUE_PATH, QueueAccessMode.Send);
-        static readonly MessageQueue EDAQueue = new MessageQueue(Settings.Default.EDA_Path, QueueAccessMode.Send);
-
-        static HostMainForm() {
-            if (!MessageQueue.Exists(AREYOUTHERE_QUEUE_PATH))
-                MessageQueue.Create(AREYOUTHERE_QUEUE_PATH);
-        }
+        readonly SecsTracer _secsLogger = new SecsLogger();
 
         public HostMainForm() {
             InitializeComponent();
@@ -92,18 +76,10 @@ namespace Cim.Eap {
         protected override void OnLoad(EventArgs e) {
             base.OnLoad(e);
 
-            //this.axPostMan.Init("TAP." + ToolId);
-
             EAPConfig.Instance.Driver.EAP = this;
             EAPConfig.Instance.Driver.Init();
 
-            this.Subscribe(5, 1, "ToolAlarm", msg => {
-                this.Report(new ToolAlarmReport {
-                    AlarmCode = msg.SecsItem.Items[0].ToString(),
-                    AlarmId = msg.SecsItem.Items[1].ToString(),
-                    AlarmText = msg.SecsItem.Items[2].ToString().Trim()
-                });
-            });
+            this.Subscribe(5, 1, "ToolAlarm", EAPConfig.Instance.Driver.HandleToolAlarm);
 
             reloadSpecialControlFileToolStripMenuItem_Click(this, EventArgs.Empty);
             menuItemGemEnable_Click(this, EventArgs.Empty);
@@ -121,37 +97,14 @@ namespace Cim.Eap {
         }
 
         #region UI Action
-        readonly TaskScheduler _secsEventScheudler = new OrderedTaskScheduler();
         void menuItemGemEnable_Click(object sender, EventArgs e) {
             EapLogger.Info("SECS/GEM Start");
             gemStatusLabel.Text = "Start";
-            if (_secsGem != null) {
-                _secsGem.Dispose();
-            }
+            _secsGem?.Dispose();
             _secsGem = new SecsGem(
                 IPAddress.Parse(EAPConfig.Instance.IP),
                 EAPConfig.Instance.TcpPort,
-                EAPConfig.Instance.Mode == ConnectionMode.Active,
-                 secsLogger,
-                (primaryMsg, reply) =>
-                {
-                    try
-                    {
-                        reply(SecsMessages[primaryMsg.S, (byte)(primaryMsg.F + 1)].FirstOrDefault());
-                        Action<SecsMessage> handler = null;
-                        if (_eventHandlers.TryGetValue(primaryMsg.GetKey(), out handler) && handler != null)
-                            new Task(msg =>
-                            {
-                                Parallel.ForEach(handler.GetInvocationList().Cast<Action<SecsMessage>>(), h =>
-                                    h((SecsMessage)msg));
-                            }, primaryMsg)
-                            .Start(_secsEventScheudler);
-                    }
-                    catch (Exception ex)
-                    {
-                        EapLogger.Error("Handle Primary SECS message Error", ex);
-                    }
-                }, EAPConfig.Instance.SocketRecvBufferSize)
+                EAPConfig.Instance.Mode == ConnectionMode.Active, EAPConfig.Instance.SocketRecvBufferSize, _secsLogger, PrimaryMsgHandler)
             {
                 DeviceId = EAPConfig.Instance.DeviceId,
                 LinkTestInterval = EAPConfig.Instance.LinkTestInterval,
@@ -165,13 +118,28 @@ namespace Cim.Eap {
                 this.Invoke((MethodInvoker)delegate {
                     EapLogger.Info("SECS/GEM " + _secsGem.State);
                     gemStatusLabel.Text = _secsGem.State.ToString();
-                    eqpAddressStatusLabel.Text = "EQP IP: " + _secsGem.DeviceAddress;
+                    eqpAddressStatusLabel.Text = "Device IP: " + _secsGem.DeviceAddress;
                     if (_secsGem.State == ConnectionState.Selected)
-                        _secsGem.BeginSend(new SecsMessage(1, 13, "TestCommunicationsRequest", Item.L()), null, null);
+                        _secsGem.SendAsync(new SecsMessage(1, 13, "TestCommunicationsRequest", Item.L()));
                 });
             };
             menuItemGemDisable.Enabled = true;
             menuItemGemEnable.Enabled = false;
+        }
+
+        private void PrimaryMsgHandler(SecsMessage primaryMsg, Func<SecsMessage, Task> replySecondaryAcync)
+        {
+            try
+            {
+                replySecondaryAcync(SecsMessages[primaryMsg.S, (byte) (primaryMsg.F + 1)].FirstOrDefault());
+                Action<SecsMessage> handler = null;
+                if (_eventHandlers.TryGetValue(primaryMsg.GetKey(), out handler))
+                    Parallel.ForEach(handler.GetInvocationList().Cast<Action<SecsMessage>>(), h => h(primaryMsg));
+            }
+            catch (Exception ex)
+            {
+                EapLogger.Error("Handle Primary SECS message Error", ex);
+            }
         }
 
         void menuItemGemDisable_Click(object sender, EventArgs e) {
@@ -209,14 +177,14 @@ namespace Cim.Eap {
             e.Cancel = MessageBox.Show("你確定要關閉EAP嗎?", "關閉應用程式", MessageBoxButtons.YesNo) == DialogResult.No;
         }
 
-        void btnSend_Click(object sender, EventArgs e) {
+        async void btnSend_Click(object sender, EventArgs e) {
             if (_secsGem == null) {
                 MessageBox.Show("SECS/GEM not enable!");
                 return;
             }
             try {
                 EapLogger.Notice("Send by operator");
-                _secsGem.BeginSend(txtMsg.Text.ToSecsMessage(), null, null);
+                await _secsGem.SendAsync(txtMsg.Text.ToSecsMessage());
             } catch (Exception ex) {
                 EapLogger.Error(ex);
             }
@@ -246,28 +214,24 @@ namespace Cim.Eap {
             this._screenLoger.DisplaySecsMesssage = ((ToolStripMenuItem)sender).Checked;
         }
 
-        void defineLinkToolStripMenuItem_Click(object sender, EventArgs e) {
-            Task.Factory.StartNew(() => {
-                try {
-                    EAPConfig.Instance.Driver.DefineLink();
-                } catch (Exception ex) {
-                    MessageBox.Show(ex.Message, "Define report link fail");
-                }
-            });
+        async void defineLinkToolStripMenuItem_Click(object sender, EventArgs e) {
+            try
+            {
+                await EAPConfig.Instance.Driver.DefineLink();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Define report link fail");
+            }
         }
 
         void reloadSpecialControlFileToolStripMenuItem_Click(object sender, EventArgs e) {
-            IConfigurable c = EAPConfig.Instance.Driver as IConfigurable;
-            if (c != null)
-                c.LoadConfig();
+            var c = (IConfigurable) EAPConfig.Instance.Driver;
+            c?.LoadConfig();
         }
 
         void menuItemClearScreen_Click(object sender, EventArgs e) {
             this.rtxtScreen.Clear();
-        }
-
-        void menuItemTracePolling_Click(object sender, EventArgs e) {
-            menuItemTracePolling.Checked = menuItemTracePolling.Checked ? false : MessageBox.Show("開啟FDC Polling紀錄會使Log大增,確定嗎?可以單獨開啟FDC的log", "Trace FDC polling", MessageBoxButtons.YesNo) == DialogResult.Yes;
         }
 
         void enableLoggingToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -279,7 +243,7 @@ namespace Cim.Eap {
         #endregion
 
         #region ISecsDevice Members
-        public string ToolId { get { return EAPConfig.Instance.ToolId; } }
+        public string ToolId => EAPConfig.Instance.ToolId;
 
         static readonly HashSet<int> InvalidRemoteMessage = new HashSet<int> {
             1<<8 | 15, //s1F15 request offline
@@ -289,12 +253,12 @@ namespace Cim.Eap {
             2<<8 | 37  //s2f37 define link
         };
 
-        public SecsMessage Send(SecsMessage msg) {
+        public Task<SecsMessage> SendAsync(SecsMessage msg) {
             if (_secsGem == null)
                 throw new Exception("SECS/GEM not enable!");
             if (RemotingServices.IsTransparentProxy(msg) && InvalidRemoteMessage.Contains(msg.GetKey()))
                 throw new ArgumentException("This message is not remotable!");
-            return _secsGem.Send(msg);
+            return _secsGem.SendAsync(msg);
         }
 
         readonly ConcurrentDictionary<int, Action<SecsMessage>> _eventHandlers = new ConcurrentDictionary<int, Action<SecsMessage>>();
@@ -475,178 +439,6 @@ namespace Cim.Eap {
         #endregion
 
         #region IEAP Members
-        readonly IDictionary<string, Action<XElement>> _txHandlers = new Dictionary<string, Action<XElement>>(StringComparer.Ordinal);
-
-        static readonly string AreYouThereAck = new XDocument(
-            new XElement("Transaction",
-                new XAttribute("TxName", "AreYouThere"),
-                new XAttribute("Type", "Ack"),
-                new XAttribute("MessageKey", "0000"),
-                new XElement("Tool", new XAttribute("ToolID", "EAP." + EAPConfig.Instance.ToolId)))).ToString();
-
-        //void axPostMan_onReceive(object sender, AxPOSTMANCTRLLib._DPostManCtrlEvents_onReceiveEvent e) {
-        //    try {
-        //        XDocument doc = XDocument.Parse(e.msgContent);
-        //        XElement txElm = doc.Root;
-        //        if (this.ToolId != txElm.Element("Tool").Attribute("ToolID").Value)
-        //            return;
-
-        //        string txName = txElm.Attribute("TxName").Value;
-        //        string txType = txElm.Attribute("Type").Value;
-        //        if (txName == "AreYouThere") {
-        //            AreYouThereQueue.Send(new System.Messaging.Message(AreYouThereAck, new ActiveXMessageFormatter()));
-        //            return;
-        //        }
-        //        string txkey = txName + txType;
-
-        //        Action<XElement> txHandler = null;
-        //        if (!_txHandlers.TryGetValue(txkey, out txHandler)) {
-        //            EapLogger.Warn("Unsupport TxName='{0}' Type='{1}'", txName, txType);
-        //            return;
-        //        }
-        //        EapLogger.Info("EAP << TCS :\r\n{0}", doc.ToFormatedXml());
-        //        txHandler.BeginInvoke(txElm, null, null);
-        //    } catch (Exception ex) {
-        //        EapLogger.Error("HandleTxMessage Exception: " + ex.Message, ex);
-        //    }
-        //}
-
-        void Report(XElement txElm) {
-            txElm.SetAttributeValue("MessageKey", NewMessageKey());
-            txElm.Element("Tool").SetAttributeValue("ToolID", this.ToolId);
-            Send2TCS(new XDocument(txElm), true);
-        }
-
-        public void Report<T>(T report) where T : struct, ITxReport {
-            Report(report.XML);
-        }
-
-        void IEAP.Report(DataCollectionCompleteReport report) {
-            this.Report<DataCollectionCompleteReport>(report);
-            //DummyProcessJob or OCS job
-            if (report.ProcessJob == ProcessJob.DummyProcessJob || report.ProcessJob.Id.Length > 10)
-                return;
-            DateTime time = DateTime.Now;
-            SendToEDA(new XDocument(
-                new XElement("Transaction",
-                    new XAttribute("TxName", "DataCollectionCompleteReport"),
-                    new XAttribute("Type", "Event"),
-                    new XAttribute("MessageKey", NewMessageKey()),
-                    new XElement("Tool",
-                        new XAttribute("ToolID", this.ToolId),
-                        new XAttribute("ProcessJobID", report.ProcessJob.Id)),
-                    new XElement("Lots",
-                        from lot in report.ProcessJob.EDALotInfos
-                        let recipeId = report.ProcessJob.RecipeId
-                        select new XElement("Lot",
-                            new XAttribute("LotID", lot.LotID),
-                            new XAttribute("Fab", lot.Fab),
-                            new XAttribute("FlowBatchID", lot.FlowBatchID),
-                            new XAttribute("ProductID", lot.ProductID),
-                            new XAttribute("OperationNo", lot.OperationNo),
-                            new XAttribute("PhysicalRecipe", recipeId),
-                            new XAttribute("PassCount", lot.PassCount),
-                            new XAttribute("Time", time.ToString("yyyy/MM/dd HH:mm:ss")),
-                            new XAttribute("RouteID", lot.RouteID))))));
-        }
-
-        void IEAP.Report(DataCollectionReport report) {
-            var txElm = report.XML;
-            Report(txElm);
-            //DummyProcessJob or OCS job
-            if (report.ProcessJob == ProcessJob.DummyProcessJob || report.ProcessJob.Id.Length > 10)
-                return;
-            // 送給EDA的版本只差在EDA沒有CarrierID
-            var dataItems = txElm.Element("DataItems");
-
-            DateTime time = DateTime.Now;
-            foreach (var lot in report.ProcessJob.EDALotInfos)
-                SendToEDA(new XDocument(
-                    new XElement("Transaction",
-                        new XAttribute("TxName", "DataCollectionReport"),
-                        new XAttribute("Type", "Event"),
-                        new XAttribute("MessageKey", NewMessageKey()),
-                        new XElement("Tool",
-                            new XAttribute("ToolID", this.ToolId),
-                            new XAttribute("LotID", lot.LotID),
-                            new XAttribute("Fab", lot.Fab),
-                            new XAttribute("FlowBatchID", lot.FlowBatchID),
-                            new XAttribute("ProductID", lot.ProductID),
-                            new XAttribute("OperationNo", lot.OperationNo),
-                            new XAttribute("PhysicalRecipe", report.ProcessJob.RecipeId),
-                            new XAttribute("PassCount", lot.PassCount),
-                            new XAttribute("Time", time.ToString("yyyy/MM/dd HH:mm:ss"))),
-                        dataItems)));
-        }
-
-        void SendToEDA(XDocument xml) {
-            EapLogger.Info("EAP >> EDA : \r\n" + xml.ToFormatedXml());
-            EDAQueue.Send(new System.Messaging.Message(xml.ToString()) {
-                Formatter = new ActiveXMessageFormatter()
-            });
-        }
-
-        static int _MessageKey = 0;
-        static string NewMessageKey() {
-            Interlocked.Increment(ref _MessageKey);
-            Interlocked.CompareExchange(ref _MessageKey, 0, 9999);
-            return _MessageKey.ToString("0000");
-        }
-
-        void Send2TCS(XDocument xmldoc, bool normal) {
-            try {
-                string msg = xmldoc.ToFormatedXml();
-                //axPostMan.Send(TcsPostmanId, "", msg);
-                if (normal)
-                    EapLogger.Info("EAP >> TCS : \r\n" + msg);
-                else
-                    EapLogger.Error("EAP >> TCS : \r\n" + msg);
-            } catch (Exception ex) {
-                EapLogger.Error("Send2TCS error:", ex);
-            }
-        }
-
-        void IEAP.SetTxHandler<T>(Action<T> handler) {
-            _txHandlers[typeof(T).Name] = txElm => {
-                T tx = default(T);
-                bool error = false;
-                try {
-                    tx.Parse(txElm);
-                    handler(tx);
-                    txElm.SetAttributeValue("SystemErrCode", 0);
-                    txElm.SetAttributeValue("AppErrCode", 0);
-                    txElm.SetAttributeValue("AppErrDescription", string.Empty);
-                } catch (XmlException ex) {
-                    error = true;
-                    txElm.SetAttributeValue("SystemErrCode", 9);
-                    txElm.SetAttributeValue("AppErrCode", 9);
-                    txElm.SetAttributeValue("AppErrDescription", "XML parsing error:" + ex.Message);
-                } catch (ScenarioException ex) {
-                    error = true;
-                    txElm.SetAttributeValue("SystemErrCode", 9);
-                    txElm.SetAttributeValue("AppErrCode", 0);
-                    txElm.SetAttributeValue("AppErrDescription", "Scenario exception:" + ex.Message);
-                } catch (SecsException ex) {
-                    error = true;
-                    txElm.SetAttributeValue("SystemErrCode", 9);
-                    txElm.SetAttributeValue("AppErrCode", 1);
-                    txElm.SetAttributeValue("AppErrDescription", "Secs/Gem eror:" + ex.Message);
-                } catch (Exception ex) {
-                    error = true;
-                    EapLogger.Error(ex);
-                    txElm.SetAttributeValue("SystemErrCode", 9);
-                    txElm.SetAttributeValue("AppErrCode", 1);
-                    txElm.SetAttributeValue("AppErrDescription", string.Format("Exception occurred in {0}: {1}", handler.GetType().Name, ex.Message));
-                } finally {
-                    var txtype = txElm.Attribute("Type");
-                    if (txtype.Value == "Request") {
-                        txtype.Value = "Ack";
-                        Send2TCS(txElm.Document, !error);
-                    }
-                }
-            };
-        }
-
         public SecsMessageList SecsMessages { get; private set; }
         public DefineLinkConfig EventReportLink { get; private set; }
         #endregion

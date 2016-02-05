@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    public sealed class SecsGem : IDisposable
+    public sealed class SecsGem
     {
         public event EventHandler ConnectionChanged;
         public ConnectionState State { get; private set; }
@@ -39,8 +39,8 @@ namespace Secs4Net
         Socket _socket;
 
         readonly SecsDecoder _secsDecoder;
-        readonly ConcurrentDictionary<int, SecsAsyncResult> _replyExpectedMsgs = new ConcurrentDictionary<int, SecsAsyncResult>();
-        readonly Action<SecsMessage, Action<SecsMessage>> _primaryMessageHandler;
+        readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
+        readonly Action<SecsMessage, Func<SecsMessage,Task>> _primaryMessageHandler;
         readonly SecsTracer _tracer;
         readonly System.Timers.Timer _timer7 = new System.Timers.Timer();	// between socket connected and received Select.req timer
         readonly System.Timers.Timer _timer8 = new System.Timers.Timer();
@@ -49,13 +49,12 @@ namespace Secs4Net
         readonly Func<Task> _startImpl;
         readonly Action _stopImpl;
 
-        readonly byte[] _recvBuffer;
         static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
         static readonly SecsTracer DefaultTracer = new SecsTracer();
         readonly Func<int> _newSystemByte;
 
-        public SecsGem(IPAddress ip, int port, bool isActive, SecsTracer tracer = null, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler = null, int receiveBufferSize = 0x4000)
+        public SecsGem(IPAddress ip, int port, bool isActive, int receiveBufferSize = 0x4000, SecsTracer tracer = null, Action<SecsMessage, Func<SecsMessage, Task>> primaryMsgHandler = null)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
@@ -63,7 +62,6 @@ namespace Secs4Net
             _ip = ip;
             _port = port;
             _isActive = isActive;
-            _recvBuffer = new byte[receiveBufferSize < 0x4000 ? 0x4000 : receiveBufferSize];
             _secsDecoder = new SecsDecoder(HandleControlMessage, HandleDataMessage);
             _tracer = tracer ?? DefaultTracer;
             _primaryMessageHandler = primaryMsgHandler ?? ((primary, reply) => reply(null));
@@ -87,47 +85,53 @@ namespace Secs4Net
             _timerLinkTest.Elapsed += delegate
             {
                 if (State == ConnectionState.Selected)
-                    SendControlMessage(MessageType.LinkTestRequest, _newSystemByte());
+                    SendControlMessageAsync(MessageType.LinkTestRequest, _newSystemByte());
             };
             #endregion
+            var receiveBuffer = new byte[receiveBufferSize < 0x4000 ? 0x4000 : receiveBufferSize];
+            var receiveCompleteEvent = new SocketAsyncEventArgs
+            {
+                SocketFlags = SocketFlags.None
+            };
+            receiveCompleteEvent.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
+            receiveCompleteEvent.Completed += ReceiveEventCompleted;
             if (_isActive)
             {
                 #region Active Impl
-                var timer5 = new System.Timers.Timer();
-                timer5.Elapsed += delegate
-                {
-                    timer5.Enabled = false;
-                    _tracer.TraceError("T5 Timeout");
-                    CommunicationStateChanging(ConnectionState.Retry);
-                };
 
                 _startImpl = async delegate
                 {
-                    CommunicationStateChanging(ConnectionState.Connecting);
-                    try
+                    bool connected = false;
+                    do
                     {
-                        var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        await Task.Factory.FromAsync(socket.BeginConnect, socket.EndConnect, _ip, _port, null).ConfigureAwait(false);
-                        CommunicationStateChanging(ConnectionState.Connected);
-                        _socket = socket;
-                        SendControlMessage(MessageType.SelectRequest, _newSystemByte());
-                        _socket.BeginReceive(_recvBuffer, 0, _recvBuffer.Length, SocketFlags.None, ReceiveComplete, null);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (_isDisposed) return;
-                        _tracer.TraceError(ex.Message);
-                        _tracer.TraceInfo("Start T5 Timer");
-                        timer5.Interval = T5;
-                        timer5.Enabled = true;
-                    }
+                        CommunicationStateChanging(ConnectionState.Connecting);
+                        try
+                        {
+                            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                            await _socket.ConnectAsync(_ip, _port).ConfigureAwait(false);
+                            connected = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (_isDisposed)
+                                return;
+                            _tracer.TraceError(ex.Message);
+                            _tracer.TraceInfo($"Start T5 Timer: waiting {T5/1000} second.");
+                            await Task.Delay(T5);
+                        }
+                    } while (!connected);
+
+                    CommunicationStateChanging(ConnectionState.Connected);
+
+                    // hook receive event first, because no message will received before 'SelectRequest' send to device
+                    if (!_socket.ReceiveAsync(receiveCompleteEvent))
+                        ReceiveEventCompleted(_socket, receiveCompleteEvent);
+
+                    await SendControlMessageAsync(MessageType.SelectRequest, _newSystemByte());
                 };
 
-                _stopImpl = delegate
-                {
-                    timer5.Stop();
-                    if (_isDisposed) timer5.Dispose();
-                };
+                _stopImpl = delegate { };
+
                 #endregion
             }
             else
@@ -139,62 +143,73 @@ namespace Secs4Net
 
                 _startImpl = async delegate
                 {
-                    CommunicationStateChanging(ConnectionState.Connecting);
-                    try
+                    bool connected = false;
+                    do
                     {
-                        _socket = await Task.Factory.FromAsync(server.BeginAccept, server.EndAccept, null).ConfigureAwait(false);
-                        CommunicationStateChanging(ConnectionState.Connected);
-                        _socket.BeginReceive(_recvBuffer, 0, _recvBuffer.Length, SocketFlags.None, ReceiveComplete, null);
-                    }
-                    catch (Exception ex)
-                    {
-                        _tracer.TraceError("System Exception", ex);
-                        CommunicationStateChanging(ConnectionState.Retry);
-                    }
+                        CommunicationStateChanging(ConnectionState.Connecting);
+                        try
+                        {
+                            _socket = await server.AcceptAsync().ConfigureAwait(false);
+                            connected = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (_isDisposed)
+                                return;
+                            _tracer.TraceError(ex.Message);
+                            await Task.Delay(2000);
+                        }
+                    } while (!connected);
+
+                    CommunicationStateChanging(ConnectionState.Connected);
+                    if (!_socket.ReceiveAsync(receiveCompleteEvent))
+                        ReceiveEventCompleted(_socket, receiveCompleteEvent);
                 };
 
                 _stopImpl = delegate
                 {
                     if (_isDisposed)
+                    {
+                        server.Disconnect(false);
                         server.Close();
+                    }
                 };
                 #endregion
             }
         }
 
         #region Socket Receive Process
-        void ReceiveComplete(IAsyncResult iar)
+        private void ReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
         {
+            if (e.SocketError != SocketError.Success)
+            {
+                var ex = new SocketException((int)e.SocketError);
+                _tracer.TraceError($"RecieveComplete socket error:{ex.Message + ex}, ErrorCode:{ex.SocketErrorCode}", ex);
+                CommunicationStateChanging(ConnectionState.Retry);
+                return;
+            }
+
             try
             {
-                int count = _socket.EndReceive(iar);
-
                 _timer8.Enabled = false;
 
-                if (count == 0)
+                if (e.Count == 0)
                 {
                     _tracer.TraceError("Received 0 byte data. Close the socket.");
-                    CommunicationStateChanging(ConnectionState.Retry);
-                    return;
                 }
-
-                if (_secsDecoder.Decode(_recvBuffer, 0, count))
+                else if (_secsDecoder.Decode(e.Buffer, 0, e.Count))
                 {
-                    _tracer.TraceInfo("Start T8 Timer");
+                    _tracer.TraceInfo("StartAsync T8 Timer");
                     _timer8.Interval = T8;
                     _timer8.Enabled = true;
                 }
 
-                _socket.BeginReceive(_recvBuffer, 0, _recvBuffer.Length, SocketFlags.None, ReceiveComplete, null);
+                if (!_socket.ReceiveAsync(e))
+                    ReceiveEventCompleted(sender, e);
             }
             catch (NullReferenceException ex)
             {
                 _tracer.TraceWarning("unexpected NullReferenceException:" + ex);
-            }
-            catch (SocketException ex)
-            {
-                _tracer.TraceError($"RecieveComplete socket error:{ex.Message + ex}, ErrorCode:{ex.SocketErrorCode}", ex);
-                CommunicationStateChanging(ConnectionState.Retry);
             }
             catch (Exception ex)
             {
@@ -208,10 +223,10 @@ namespace Secs4Net
             int systembyte = header.SystemBytes;
             if ((byte)header.MessageType % 2 == 0)
             {
-                SecsAsyncResult ar;
+                TaskCompletionSourceToken ar;
                 if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
                 {
-                    ar.EndProcess(ControlMessage, false);
+                    ar.HandleReplyMessage(ControlMessage);
                 }
                 else
                 {
@@ -223,8 +238,7 @@ namespace Secs4Net
             switch (header.MessageType)
             {
                 case MessageType.SelectRequest:
-                    SendControlMessage(MessageType.SelectResponse, systembyte);
-                    CommunicationStateChanging(ConnectionState.Selected);
+                    SendControlMessageAsync(MessageType.SelectResponse, systembyte).ContinueWith(_ => CommunicationStateChanging(ConnectionState.Selected));
                     break;
                 case MessageType.SelectResponse:
                     switch (header.F)
@@ -247,7 +261,7 @@ namespace Secs4Net
                     }
                     break;
                 case MessageType.LinkTestRequest:
-                    SendControlMessage(MessageType.LinkTestResponse, systembyte);
+                    SendControlMessageAsync(MessageType.LinkTestResponse, systembyte);
                     break;
                 case MessageType.SeperateRequest:
                     CommunicationStateChanging(ConnectionState.Retry);
@@ -263,14 +277,7 @@ namespace Secs4Net
             {
                 _tracer.TraceMessageIn(msg, systembyte);
                 _tracer.TraceWarning("Received Unrecognized Device Id Message");
-                try
-                {
-                    SendDataMessage(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.Bytes)), _newSystemByte());
-                }
-                catch (Exception ex)
-                {
-                    _tracer.TraceError("Send S9F1 Error", ex);
-                }
+                SendDataMessage(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.Bytes)), _newSystemByte());
                 return;
             }
 
@@ -280,7 +287,7 @@ namespace Secs4Net
                 {
                     //Primary message
                     _tracer.TraceMessageIn(msg, systembyte);
-                    _primaryMessageHandler(msg, secondary =>
+                    _primaryMessageHandler(msg, async secondary =>
                     {
                         if (!header.ReplyExpected || State != ConnectionState.Selected)
                             return;
@@ -289,7 +296,7 @@ namespace Secs4Net
                         secondary.ReplyExpected = false;
                         try
                         {
-                            SendDataMessage(secondary, secondary.S == 9 ? _newSystemByte() : header.SystemBytes);
+                            await SendDataMessage(secondary, secondary.S == 9 ? _newSystemByte() : header.SystemBytes);
                         }
                         catch (Exception ex)
                         {
@@ -304,93 +311,115 @@ namespace Secs4Net
             }
 
             // Secondary message
-            SecsAsyncResult ar;
+            TaskCompletionSourceToken ar;
             if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
-                ar.EndProcess(msg, false);
+                ar.HandleReplyMessage(msg);
             _tracer.TraceMessageIn(msg, systembyte);
         }
         #endregion
         #region Socket Send Process
-        void SendControlMessage(MessageType msgType, int systembyte)
+        Task SendControlMessageAsync(MessageType msgType, int systembyte)
         {
             if (_socket == null || !_socket.Connected)
-                return;
+                return Task.FromResult(false);
 
+            var token = new TaskCompletionSourceToken(ControlMessage, systembyte);
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
             {
-                var ar = new SecsAsyncResult(ControlMessage);
-                _replyExpectedMsgs[systembyte] = ar;
-
-                ThreadPool.RegisterWaitForSingleObject(ar.AsyncWaitHandle,
-                    (state, timeout) =>
-                    {
-                        SecsAsyncResult ars;
-                        if (_replyExpectedMsgs.TryRemove((int)state, out ars) && timeout)
-                        {
-                            _tracer.TraceError("T6 Timeout");
-                            CommunicationStateChanging(ConnectionState.Retry);
-                        }
-                    }, systembyte, T6, true);
+                _replyExpectedMsgs[systembyte] = token;
             }
 
-            var header = new Header(new byte[10])
+            var eapCompleted = new EventHandler<SocketAsyncEventArgs>((o, e) =>
             {
-                MessageType = msgType,
-                SystemBytes = systembyte
-            };
+                var completeToken = e.UserToken as TaskCompletionSourceToken;
+                if (completeToken == null)
+                    return;
+
+                if (e.SocketError != SocketError.Success)
+                {
+                    completeToken.SetException(new SocketException((int)e.SocketError));
+                    return;
+                }
+
+                _tracer.TraceInfo("Sent Control Message: " + msgType);
+                if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
+                {
+                    if (!completeToken.Task.Wait(T6))
+                    {
+                        _tracer.TraceError("T6 Timeout");
+                        CommunicationStateChanging(ConnectionState.Retry);
+                    }
+                    _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
+                }
+            });
+
+            var header = new Header(new byte[10]) { MessageType = msgType, SystemBytes = systembyte };
             header.Bytes[0] = 0xFF;
             header.Bytes[1] = 0xFF;
-            _socket.Send(new List<ArraySegment<byte>>(2){
-                ControlMessageLengthBytes,
-                new ArraySegment<byte>(header.Bytes)
-            });
-            _tracer.TraceInfo("Sent Control Message: " + header.MessageType);
+            var eap = new SocketAsyncEventArgs
+            {
+                BufferList = new List<ArraySegment<byte>>(2) { ControlMessageLengthBytes, new ArraySegment<byte>(header.Bytes) },
+                UserToken = token,
+            };
+            eap.Completed += eapCompleted;
+            if (!_socket.SendAsync(eap))
+                eapCompleted(_socket, eap);
+            return token.Task;
         }
 
-        SecsAsyncResult SendDataMessage(SecsMessage msg, int systembyte, AsyncCallback callback=null, object syncState=null)
+        Task<SecsMessage> SendDataMessage(SecsMessage msg, int systembyte)
         {
             if (State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
 
-            var header = new Header(new byte[10])
-            {
-                S = msg.S,
-                F = msg.F,
-                ReplyExpected = msg.ReplyExpected,
-                DeviceId = DeviceId,
-                SystemBytes = systembyte
-            };
-            var buffer = new EncodedBuffer(header.Bytes, msg.RawDatas);
-
-            SecsAsyncResult ar = null;
+            var token = new TaskCompletionSourceToken(msg, systembyte);
             if (msg.ReplyExpected)
             {
-                ar = new SecsAsyncResult(msg, callback, syncState);
-                _replyExpectedMsgs[systembyte] = ar;
-
-                ThreadPool.RegisterWaitForSingleObject(ar.AsyncWaitHandle,
-                   (state, timeout) =>
-                   {
-                       SecsAsyncResult ars;
-                       if (!_replyExpectedMsgs.TryRemove((int) state, out ars) || !timeout)
-                           return;
-                       _tracer.TraceError($"T3 Timeout[id=0x{state:X8}]");
-                       ars.EndProcess(null, true);
-                   }, systembyte, T3, true);
+                _replyExpectedMsgs[systembyte] = token;
             }
 
-            SocketError error;
-            _socket.Send(buffer, SocketFlags.None, out error);
-            if (error != SocketError.Success)
+            var eapComplete = new EventHandler<SocketAsyncEventArgs>((o, e) =>
             {
-                var errorMsg = "Socket send error :" + new SocketException((int)error).Message;
-                _tracer.TraceError(errorMsg);
-                CommunicationStateChanging(ConnectionState.Retry);
-                throw new SecsException(errorMsg);
-            }
+                var completeToken = e.UserToken as TaskCompletionSourceToken;
+                if (completeToken == null)
+                    return;
 
-            _tracer.TraceMessageOut(msg, systembyte);
-            return ar;
+                if (e.SocketError != SocketError.Success)
+                {
+                    completeToken.SetException(new SocketException((int)e.SocketError));
+                    CommunicationStateChanging(ConnectionState.Retry);
+                    return;
+                }
+                _tracer.TraceMessageOut(completeToken.PrimaryMessage, completeToken.Id);
+                if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
+                {
+                    if (!completeToken.Task.Wait(T3))
+                    {
+                        _tracer.TraceError($"T3 Timeout[id=0x{completeToken.Id:X8}]");
+                        completeToken.SetException(new SecsException(completeToken.PrimaryMessage, Resources.T3Timeout));
+                    }
+                    _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
+                }
+            });
+
+            var eap = new SocketAsyncEventArgs
+            {
+                BufferList = new EncodedBuffer(
+                    new Header(new byte[10])
+                    {
+                        S = msg.S,
+                        F = msg.F,
+                        ReplyExpected = msg.ReplyExpected,
+                        DeviceId = DeviceId,
+                        SystemBytes = systembyte 
+                    }.Bytes, msg.RawDatas),
+                UserToken = token,
+            };
+            eap.Completed += eapComplete;
+            if (!_socket.SendAsync(eap))
+                eapComplete(_socket, eap);
+
+            return token.Task;
         }
         #endregion
         #region Internal State Transition
@@ -406,7 +435,7 @@ namespace Secs4Net
                     _tracer.TraceInfo("Stop T7 Timer");
                     break;
                 case ConnectionState.Connected:
-                    _tracer.TraceInfo("Start T7 Timer");
+                    _tracer.TraceInfo("StartAsync T7 Timer");
                     _timer7.Interval = T7;
                     _timer7.Enabled = true;
                     break;
@@ -437,46 +466,14 @@ namespace Secs4Net
         }
         #endregion
         #region Public API
-        public async Task Start() => await _startImpl();
-
-        /// <summary>
-        /// Send SECS message to device.
-        /// </summary>
-        /// <param name="msg"></param>
-        /// <returns>Device's reply msg if msg.ReplyExpected is true;otherwise, null.</returns>
-        public SecsMessage Send(SecsMessage msg) => EndSend(BeginSend(msg));
+        public async Task StartAsync() => await _startImpl();
 
         /// <summary>
         /// Send SECS message asynchronously to device .
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public async Task<SecsMessage> SendAsync(SecsMessage msg) => await Task.Factory.FromAsync(BeginSend, EndSend, msg, null, TaskCreationOptions.PreferFairness).ConfigureAwait(false);
-
-        /// <summary>
-        /// Send SECS message asynchronously to device .
-        /// </summary>
-        /// <param name="msg"></param>
-        /// <param name="callback">Device's reply message handler callback.</param>
-        /// <param name="state">synchronize state object</param>
-        /// <returns>An IAsyncResult that references the asynchronous send if msg.ReplyExpected is true;otherwise, null.</returns>
-        public IAsyncResult BeginSend(SecsMessage msg, AsyncCallback callback = null, object state = null) => SendDataMessage(msg, _newSystemByte(), callback, state);
-
-        /// <summary>
-        /// Ends a asynchronous send.
-        /// </summary>
-        /// <param name="asyncResult">An IAsyncResult that references the asynchronous send</param>
-        /// <returns>Device's reply message if <paramref name="asyncResult"/> is an IAsyncResult that references the asynchronous send, otherwise null.</returns>
-        public SecsMessage EndSend(IAsyncResult asyncResult)
-        {
-            if (asyncResult == null)
-                throw new ArgumentNullException(nameof(asyncResult));
-            var ar = asyncResult as SecsAsyncResult;
-            if (ar == null)
-                throw new ArgumentException($"argument {nameof(asyncResult)} was not created by a call to {nameof(BeginSend)}", nameof(asyncResult));
-            ar.AsyncWaitHandle.WaitOne();
-            return ar.Secondary;
-        }
+        public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessage(msg, _newSystemByte());
 
         volatile bool _isDisposed;
         public void Dispose()
@@ -486,7 +483,7 @@ namespace Secs4Net
                 _isDisposed = true;
                 ConnectionChanged = null;
                 if (State == ConnectionState.Selected)
-                    SendControlMessage(MessageType.SeperateRequest, _newSystemByte());
+                    SendControlMessageAsync(MessageType.SeperateRequest, _newSystemByte());
                 Reset();
                 _timer7.Dispose();
                 _timer8.Dispose();
@@ -494,79 +491,68 @@ namespace Secs4Net
             }
         }
 
-        public string DeviceAddress => _isActive 
-            ? _ip.ToString() 
-           // :                    _socket == null 
-            //? "N/A" 
-            : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString()??"NA";
+        public string DeviceAddress => _isActive
+            ? _ip.ToString()
+            : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
         #endregion
-        #region Async Impl
-        sealed class SecsAsyncResult : IAsyncResult
+        #region Async Token
+
+        sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {
-            readonly ManualResetEvent _ev = new ManualResetEvent(false);
-            readonly SecsMessage _primary;
-            readonly AsyncCallback _callback;
+            internal readonly SecsMessage PrimaryMessage;
+            internal readonly int Id;
 
-            SecsMessage _secondary;
-            bool _timeout;
-
-            internal SecsAsyncResult(SecsMessage primaryMsg, AsyncCallback callback = null, object state = null)
+            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id)
             {
-                _primary = primaryMsg;
-                AsyncState = state;
-                _callback = callback;
+                PrimaryMessage = primaryMessageMsg;
+                Id = id;
             }
 
-            internal void EndProcess(SecsMessage replyMsg, bool timeout)
+            internal void HandleReplyMessage(SecsMessage replyMsg)
             {
-                if (replyMsg != null)
+                replyMsg.Name = PrimaryMessage.Name;
+                if (replyMsg.F == 0)
                 {
-                    _secondary = replyMsg;
-                    _secondary.Name = _primary.Name;
+                    SetException(new SecsException(PrimaryMessage, Resources.SxF0));
+                    return;
                 }
-                _timeout = timeout;
-                IsCompleted = !timeout;
-                _ev.Set();
-                _callback?.Invoke(this);
-            }
 
-            internal SecsMessage Secondary
-            {
-                get
+                if (replyMsg.S == 9)
                 {
-                    if (_timeout) throw new SecsException(_primary, Resources.T3Timeout);
-                    if (_secondary == null) return null;
-                    if (_secondary.F == 0) throw new SecsException(_primary, Resources.SxF0);
-                    if (_secondary.S == 9)
+                    switch (replyMsg.F)
                     {
-                        switch (_secondary.F)
-                        {
-                            case 1: throw new SecsException(_primary, Resources.S9F1);
-                            case 3: throw new SecsException(_primary, Resources.S9F3);
-                            case 5: throw new SecsException(_primary, Resources.S9F5);
-                            case 7: throw new SecsException(_primary, Resources.S9F7);
-                            case 9: throw new SecsException(_primary, Resources.S9F9);
-                            case 11: throw new SecsException(_primary, Resources.S9F11);
-                            case 13: throw new SecsException(_primary, Resources.S9F13);
-                            default: throw new SecsException(_primary, Resources.S9Fy);
-                        }
+                        case 1:
+                            SetException(new SecsException(PrimaryMessage, Resources.S9F1));
+                            break;
+                        case 3:
+                            SetException(new SecsException(PrimaryMessage, Resources.S9F3));
+                            break;
+                        case 5:
+                            SetException(new SecsException(PrimaryMessage, Resources.S9F5));
+                            break;
+                        case 7:
+                            SetException(new SecsException(PrimaryMessage, Resources.S9F7));
+                            break;
+                        case 9:
+                            SetException(new SecsException(PrimaryMessage, Resources.S9F9));
+                            break;
+                        case 11:
+                            SetException(new SecsException(PrimaryMessage, Resources.S9F11));
+                            break;
+                        case 13:
+                            SetException(new SecsException(PrimaryMessage, Resources.S9F13));
+                            break;
+                        default:
+                            SetException(new SecsException(PrimaryMessage, Resources.S9Fy));
+                            break;
                     }
-                    return _secondary;
+                    return;
                 }
+
+                SetResult(replyMsg);
             }
-
-            #region IAsyncResult Members
-
-            public object AsyncState { get; }
-
-            public WaitHandle AsyncWaitHandle => _ev;
-
-            public bool CompletedSynchronously => false;
-
-            public bool IsCompleted { get; private set; }
-
-            #endregion
         }
+
         #endregion
         #region SECS Decoder
         sealed class SecsDecoder
@@ -721,7 +707,7 @@ namespace Secs4Net
                         return 2;
                     },
                     #endregion
-                };   
+                };
             }
 
             void ProcessMessage(SecsMessage msg)
@@ -796,9 +782,9 @@ namespace Secs4Net
 
             int _currentStep;
             /// <summary>
-            /// 將位元組通過decode pipeline處理
+            /// Use decode pipeline to handles message's bytes 
             /// </summary>
-            /// <param name="bytes">位元組</param>
+            /// <param name="bytes">data bytes</param>
             /// <param name="length">有效位元的起始索引</param>
             /// <param name="index">位元組的起始索引</param>
             /// <returns>回傳_currentStep不足的byte數</returns>
@@ -809,7 +795,7 @@ namespace Secs4Net
                 do
                 {
                     _currentStep = nexStep;
-                    nexStep = _decoders[_currentStep](bytes, length, ref  index, out need);
+                    nexStep = _decoders[_currentStep](bytes, length, ref index, out need);
                 } while (nexStep != _currentStep);
                 return need;
             }

@@ -13,22 +13,6 @@ namespace Cim.Eap {
             byte slotNo = Convert.ToByte(carrier_slot_port.Substring(i + 1, 2));
 
             string state = dataList.Items[2].ToString();
-            switch (state) {
-                case "SubstLocChamber":
-                    EAP.Report(new WaferStartReport {
-                        ProcessJobId = GetProcessJob(carrierId,slotNo).Id,
-                        CarrierId = carrierId,
-                        SlotNo = slotNo
-                    });
-                    break;
-                case "SubstLocLowerArm":
-                    EAP.Report(new WaferEndReport {
-                        ProcessJobId = GetProcessJob(carrierId,slotNo).Id,
-                        CarrierId = carrierId,
-                        SlotNo = slotNo
-                    });
-                    break;
-            }
         }
     }
 }
