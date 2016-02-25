@@ -127,7 +127,7 @@ namespace Cim.Eap {
             menuItemGemEnable.Enabled = false;
         }
 
-        private void PrimaryMsgHandler(SecsMessage primaryMsg, Func<SecsMessage, Task> replySecondaryAcync)
+        private void PrimaryMsgHandler(SecsMessage primaryMsg, Action<SecsMessage> replySecondaryAcync)
         {
             try
             {

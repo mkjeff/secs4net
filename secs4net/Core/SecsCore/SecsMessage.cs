@@ -1,26 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Runtime.Remoting.Lifetime;
-using System.Runtime.Serialization;
-using System.Security.Permissions;
 
 namespace Secs4Net {
-    [Serializable]
-    public sealed class SecsMessage : MarshalByRefObject, ISerializable {
+    public sealed class SecsMessage {
         static SecsMessage() {
             if (!BitConverter.IsLittleEndian)
                 throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
-        }
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.Infrastructure)]
-        public override object InitializeLifetimeService() {
-            ILease lease = (ILease)base.InitializeLifetimeService();
-            if (lease.CurrentState == LeaseState.Initial) {
-                lease.InitialLeaseTime = TimeSpan.FromSeconds(30);
-                lease.RenewOnCallTime = TimeSpan.FromSeconds(10);
-            }
-            return lease;
         }
 
         public override string ToString() => $"{Name ?? string.Empty} : 'S{S}F{F}' {(ReplyExpected ? " W" : string.Empty)}";
@@ -35,7 +21,19 @@ namespace Secs4Net {
         readonly Lazy<ReadOnlyCollection<RawData>> _rawDatas;
 
         static readonly RawData dummyHeaderDatas = new RawData(new byte[10]);
-        static readonly Lazy<ReadOnlyCollection<RawData>> emptyMsgDatas = Lazy.Create(new List<RawData> { new RawData(new byte[] { 0, 0, 0, 10 }), null }.AsReadOnly());
+
+        private static readonly Lazy<ReadOnlyCollection<RawData>> emptyMsgDatas
+            = Lazy.Create(new ReadOnlyCollection<RawData>(new List<RawData>
+            {
+                new RawData(new byte[]
+                {
+                    0,
+                    0,
+                    0,
+                    10
+                }),
+                null
+            }));
         #region Constructor
 
         public SecsMessage(byte s, byte f, bool replyExpected = true, string name = null, Item item = null)
@@ -56,7 +54,7 @@ namespace Secs4Net {
                 byte[] msgLengthByte = BitConverter.GetBytes(length);
                 Array.Reverse(msgLengthByte);
                 result[0] = new RawData(msgLengthByte);
-                return result.AsReadOnly();
+                return new ReadOnlyCollection<RawData>(result);
             });
         }
 
@@ -70,26 +68,17 @@ namespace Secs4Net {
 
         #endregion
         #region ISerializable Members
-        SecsMessage(SerializationInfo info, StreamingContext context)
-        {
-            S = info.GetByte(nameof(S));
-            F = info.GetByte(nameof(F));
-            ReplyExpected = info.GetBoolean(nameof(ReplyExpected));
-            Name = info.GetString(nameof(Name));
-            _rawDatas = Lazy.Create(info.GetValue(nameof(_rawDatas), typeof(ReadOnlyCollection<RawData>)) as ReadOnlyCollection<RawData>);
-            int i = 0;
-            if (_rawDatas.Value.Count > 2)
-                SecsItem = Decode(_rawDatas.Value.Skip(2).SelectMany(arr => arr.Bytes).ToArray(), ref i);
-        }
-
-        [SecurityPermission(SecurityAction.LinkDemand, SerializationFormatter = true)]
-        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context) {
-            info.AddValue(nameof(S), S);
-            info.AddValue(nameof(F), F);
-            info.AddValue(nameof(ReplyExpected), ReplyExpected);
-            info.AddValue(nameof(Name), Name);
-            info.AddValue(nameof(_rawDatas), _rawDatas.Value);
-        }
+        //SecsMessage(SerializationInfo info, StreamingContext context)
+        //{
+        //    S = info.GetByte(nameof(S));
+        //    F = info.GetByte(nameof(F));
+        //    ReplyExpected = info.GetBoolean(nameof(ReplyExpected));
+        //    Name = info.GetString(nameof(Name));
+        //    _rawDatas = Lazy.Create(info.GetValue(nameof(_rawDatas), typeof(ReadOnlyCollection<RawData>)) as ReadOnlyCollection<RawData>);
+        //    int i = 0;
+        //    if (_rawDatas.Value.Count > 2)
+        //        SecsItem = Decode(_rawDatas.Value.Skip(2).SelectMany(arr => arr.Bytes).ToArray(), ref i);
+        //}
         #endregion
 
         static Item Decode(byte[] bytes, ref int index) {

@@ -4,24 +4,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Remoting.Lifetime;
-using System.Security.Permissions;
 using System.Text;
 
 namespace Secs4Net
 {
     [DebuggerDisplay("<{Format} [{Count}] { (Format==SecsFormat.List) ? string.Empty : ToString() ,nq}>")]
-    public sealed class Item : MarshalByRefObject {
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.Infrastructure)]
-        public override object InitializeLifetimeService() {
-            var lease = (ILease)base.InitializeLifetimeService();
-            if (lease != null && lease.CurrentState == LeaseState.Initial) {
-                lease.InitialLeaseTime = TimeSpan.FromSeconds(10);
-                lease.RenewOnCallTime = TimeSpan.FromSeconds(10);
-            }
-            return lease;
-        }
-
+    public sealed class Item {
         public SecsFormat Format { get; }
         public int Count { get; }
 
@@ -33,10 +21,28 @@ namespace Secs4Net
                 throw new InvalidOperationException("Item format is List");
 
             if (Value is T)
-                return (T)((ICloneable)Value).Clone();
+                return (T)Value;
 
             if (Value is T[])
                 return ((T[])Value)[0];
+
+            Type valueType = Nullable.GetUnderlyingType(typeof(T));
+            if (valueType != null && Value.GetType().GetElementType() == valueType)
+                return ((IEnumerable)Value).Cast<T>().First();
+
+            throw new InvalidOperationException("Item value type is incompatible");
+        }
+
+        public T GetValueOrDefault<T>()
+        {
+            if (Value == null)
+                return default(T);
+
+            if (Value is T)
+                return (T)Value;
+
+            if (Value is T[])
+                return ((T[])Value).FirstOrDefault();
 
             Type valueType = Nullable.GetUnderlyingType(typeof(T));
             if (valueType != null && Value.GetType().GetElementType() == valueType)
@@ -115,7 +121,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="format"></param>
         /// <param name="value"></param>
-        Item(SecsFormat format, ICloneable value) {
+        Item(SecsFormat format, object value) {
             Format = format;
             Value = value;
             _rawBytes = Lazy.Create(new RawData(new byte[] { (byte)((byte)Format | 1), 0 }));
@@ -123,8 +129,8 @@ namespace Secs4Net
         }
         #endregion
 
-        #region Value Access Operator
-        public static explicit operator string (Item item) => item.GetValue<string>();
+        #region Type Casting Operator
+        public static explicit operator string (Item item) => item.GetValueOrDefault<string>();
         public static explicit operator byte (Item item) => item.GetValue<byte>();
         public static explicit operator sbyte (Item item) => item.GetValue<sbyte>();
         public static explicit operator ushort (Item item) => item.GetValue<ushort>();
@@ -136,17 +142,17 @@ namespace Secs4Net
         public static explicit operator float (Item item) => item.GetValue<float>();
         public static explicit operator double (Item item) => item.GetValue<double>();
         public static explicit operator bool (Item item) => item.GetValue<bool>();
-        public static explicit operator byte? (Item item) => item.GetValue<byte?>();
-        public static explicit operator sbyte? (Item item) => item.GetValue<sbyte?>();
-        public static explicit operator ushort? (Item item) => item.GetValue<ushort?>();
-        public static explicit operator short? (Item item) => item.GetValue<short?>();
-        public static explicit operator uint? (Item item) => item.GetValue<uint?>();
-        public static explicit operator int? (Item item) => item.GetValue<int?>();
-        public static explicit operator ulong? (Item item) => item.GetValue<ulong?>();
-        public static explicit operator long? (Item item) => item.GetValue<long?>();
-        public static explicit operator float? (Item item) => item.GetValue<float?>();
-        public static explicit operator double? (Item item) => item.GetValue<double?>();
-        public static explicit operator bool? (Item item) => item.GetValue<bool?>();
+        public static explicit operator byte? (Item item) => item.GetValueOrDefault<byte?>();
+        public static explicit operator sbyte? (Item item) => item.GetValueOrDefault<sbyte?>();
+        public static explicit operator ushort? (Item item) => item.GetValueOrDefault<ushort?>();
+        public static explicit operator short? (Item item) => item.GetValueOrDefault<short?>();
+        public static explicit operator uint? (Item item) => item.GetValueOrDefault<uint?>();
+        public static explicit operator int? (Item item) => item.GetValueOrDefault<int?>();
+        public static explicit operator ulong? (Item item) => item.GetValueOrDefault<ulong?>();
+        public static explicit operator long? (Item item) => item.GetValueOrDefault<long?>();
+        public static explicit operator float? (Item item) => item.GetValueOrDefault<float?>();
+        public static explicit operator double? (Item item) => item.GetValueOrDefault<double?>();
+        public static explicit operator bool? (Item item) => item.GetValueOrDefault<bool?>();
         public static explicit operator byte[] (Item item) => item.GetValue<byte[]>();
         public static explicit operator sbyte[] (Item item) => item.GetValue<sbyte[]>();
         public static explicit operator ushort[] (Item item) => item.GetValue<ushort[]>();
@@ -168,7 +174,7 @@ namespace Secs4Net
             return enumerable.Any() ? L(enumerable) : L();
         }
 
-        public static Item L(params Item[] items) => L(items.ToList());
+        public static Item L(params Item[] items) => L((IList<Item>)items);
         public static Item B(params byte[] value) => new Item(SecsFormat.Binary, value, value.ToHexString);
         public static Item U1(params byte[] value) => new Item(SecsFormat.U1, value, value.ToSmlString);
         public static Item U2(params ushort[] value) => new Item(SecsFormat.U2, value, value.ToSmlString);
@@ -206,7 +212,7 @@ namespace Secs4Net
         #region Share Object
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
         internal static readonly Lazy<string> EmptySml = Lazy.Create(string.Empty);
-        static readonly Item EmptyL       = new Item(Array.AsReadOnly(new Item[0]));
+        static readonly Item EmptyL       = new Item(new ReadOnlyCollection<Item>(new Item[0]));
         static readonly Item EmptyA       = new Item(SecsFormat.ASCII, string.Empty);
         static readonly Item EmptyJ       = new Item(SecsFormat.JIS8, string.Empty);
         static readonly Item EmptyBoolean = new Item(SecsFormat.Boolean, new bool[0]);

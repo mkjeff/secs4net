@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Collections.Concurrent;
+using System.Linq;
 using static Secs4Net.Item;
 using System.Threading.Tasks;
 
@@ -224,13 +225,13 @@ namespace Secs4Net {
                              itemCreator(str);
                  });
 
-        static Func<string, Item> CreateSmlParser<T>(Func<T[], Item> creator, Func<Item> emptyCreator, Converter<string, T> converter) where T : struct => valueStr =>
+        static Func<string, Item> CreateSmlParser<T>(Func<T[], Item> creator, Func<Item> emptyCreator, Func<string, T> converter) where T : struct => valueStr =>
                  Cache.GetOrAdd(valueStr, str =>
                  {
                      var valueStrs = str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                      return (valueStrs.Length == 0) ?
                          emptyCreator() :
-                         creator(Array.ConvertAll(valueStrs, converter));
+                         creator(valueStrs.Select(converter).ToArray());
                  });
 
         public static Item Create(this string format, string smlValue) {
