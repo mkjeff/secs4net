@@ -10,12 +10,31 @@ namespace Secs4Net
 {
     [DebuggerDisplay("<{Format} [{Count}] { (Format==SecsFormat.List) ? string.Empty : ToString() ,nq}>")]
     public sealed class Item {
+        /// <summary>
+        /// item value's format
+        /// </summary>
         public SecsFormat Format { get; }
+
+        /// <summary>
+        /// item value/sub-item count
+        /// </summary>
         public int Count { get; }
 
+        /// <summary>
+        /// sub items
+        /// </summary>
         public IReadOnlyList<Item> Items { get; }
+
+        /// <summary>
+        /// item raw value. it will be null if item is a List
+        /// </summary>
         public object Value { get; }//  當Format不為List時 _value才有值,否則為null;不是string就是Array  
 
+        /// <summary>
+        /// get value by specific type
+        /// </summary>
+        /// <typeparam name="T">return value type</typeparam>
+        /// <returns></returns>
         public T GetValue<T>() {
             if (Value == null)
                 throw new InvalidOperationException("Item format is List");
@@ -33,6 +52,11 @@ namespace Secs4Net
             throw new InvalidOperationException("Item value type is incompatible");
         }
 
+        /// <summary>
+        /// get value by specific type
+        /// </summary>
+        /// <typeparam name="T">return value type</typeparam>
+        /// <returns></returns>
         public T GetValueOrDefault<T>()
         {
             if (Value == null)
@@ -168,26 +192,117 @@ namespace Secs4Net
 
         #region Factory Methods
         internal static Item L(IList<Item> items) => new Item(new ReadOnlyCollection<Item>(items));
-        public static Item L(IEnumerable<Item> items)
-        {
-            var enumerable = items as Item[] ?? items.ToArray();
-            return enumerable.Any() ? L(enumerable) : L();
-        }
+        /// <summary>
+        /// Create list
+        /// </summary>
+        /// <param name="items">sub item</param>
+        /// <returns></returns>
+        public static Item L(IEnumerable<Item> items) => items.Any() ? L(items.ToList()): L();
 
+        /// <summary>
+        /// Create list
+        /// </summary>
+        /// <param name="items">sub item</param>
+        /// <returns></returns>
         public static Item L(params Item[] items) => L((IList<Item>)items);
+
+        /// <summary>
+        /// Create binary item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item B(params byte[] value) => new Item(SecsFormat.Binary, value, value.ToHexString);
+
+        /// <summary>
+        /// Create unsigned integer item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item U1(params byte[] value) => new Item(SecsFormat.U1, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create unsigned integer item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item U2(params ushort[] value) => new Item(SecsFormat.U2, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create unsigned integer item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item U4(params uint[] value) => new Item(SecsFormat.U4, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create unsigned integer item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item U8(params ulong[] value) => new Item(SecsFormat.U8, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create signed integer item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item I1(params sbyte[] value) => new Item(SecsFormat.I1, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create signed integer item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item I2(params short[] value) => new Item(SecsFormat.I2, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create signed integer item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item I4(params int[] value) => new Item(SecsFormat.I4, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create signed integer item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item I8(params long[] value) => new Item(SecsFormat.I8, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create floating point number item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item F4(params float[] value) => new Item(SecsFormat.F4, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create floating point number item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item F8(params double[] value) => new Item(SecsFormat.F8, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create boolean item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item Boolean(params bool[] value) => new Item(SecsFormat.Boolean, value, value.ToSmlString);
+
+        /// <summary>
+        /// Create string item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Item A(string value) => new Item(SecsFormat.ASCII, value, Encoding.ASCII);
+
+        /// <summary>
+        /// Create string item
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        [Obsolete("this is special format, make sure you really need it.")]
         public static Item J(string value) => new Item(SecsFormat.JIS8, value, JIS8Encoding);
         #endregion
 

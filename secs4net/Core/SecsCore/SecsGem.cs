@@ -1,29 +1,62 @@
-﻿using System;
+﻿using Secs4Net.Properties;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using Secs4Net.Properties;
 using System.Threading.Tasks;
 
 namespace Secs4Net
 {
     public sealed class SecsGem
     {
+        /// <summary>
+        /// HSMS connection state change event
+        /// </summary>
         public event EventHandler ConnectionChanged;
+
+        /// <summary>
+        /// Connection state
+        /// </summary>
         public ConnectionState State { get; private set; }
+
+        /// <summary>
+        /// Device Id.
+        /// </summary>
         public short DeviceId { get; set; } = 0;
+
+        /// <summary>
+        /// T3 timer interval 
+        /// </summary>
         public int T3 { get; set; } = 45000;
+
+        /// <summary>
+        /// T5 timer interval
+        /// </summary>
         public int T5 { get; set; } = 10000;
+
+        /// <summary>
+        /// T6 timer interval
+        /// </summary>
         public int T6 { get; set; } = 5000;
+
+        /// <summary>
+        /// T7 timer interval
+        /// </summary>
         public int T7 { get; set; } = 10000;
+
+        /// <summary>
+        /// T8 timer interval
+        /// </summary>
         public int T8 { get; set; } = 5000;
 
         private int _linkTestInterval = 60000;
 
+        /// <summary>
+        /// Linking test timer interval
+        /// </summary>
         public int LinkTestInterval
         {
             get { return _linkTestInterval; }
@@ -38,6 +71,10 @@ namespace Secs4Net
         }
 
         private bool _linkTestEnable;
+
+        /// <summary>
+        /// get or set linking test timer enable or not 
+        /// </summary>
         public bool LinkTestEnable
         {
             get { return _linkTestEnable; }
@@ -62,7 +99,7 @@ namespace Secs4Net
         readonly SecsDecoder _secsDecoder;
         readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
         readonly Action<SecsMessage, Action<SecsMessage>> _primaryMessageHandler;
-        readonly SecsTracer _logger;
+        readonly SecsGemLogger _logger;
         readonly Timer _timer7;	// between socket connected and received Select.req timer
         readonly Timer _timer8;
         readonly Timer _timerLinkTest;
@@ -72,15 +109,24 @@ namespace Secs4Net
 
         static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
-        static readonly SecsTracer DefaultTracer = new SecsTracer();
-        readonly Func<int> _newSystemByte;
+        static readonly SecsGemLogger DefaultTracer = new SecsGemLogger();
+        readonly SystemByte _systemByte = new SystemByte();
 
         readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
         readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
 
         void DefaultPrimaryMessageHandler(SecsMessage primary, Action<SecsMessage> reply) => reply(null);
 
-        public SecsGem(IPAddress ip, int port, bool isActive, int receiveBufferSize = 0x4000, SecsTracer tracer = null, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler = null)
+        /// <summary>
+        /// constructor
+        /// </summary>
+        /// <param name="isActive">passive or active mode</param>
+        /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
+        /// <param name="port">if active mode it should be remote deivice listener's port</param>
+        /// <param name="primaryMsgHandler">callback action for received primary message</param>
+        /// <param name="tracer">log tracer</param>
+        /// <param name="receiveBufferSize">Socket receive buffer size</param>
+        public SecsGem(bool isActive, IPAddress ip, int port, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler = null, SecsGemLogger tracer = null, int receiveBufferSize = 0x4000)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
@@ -88,12 +134,9 @@ namespace Secs4Net
             _ip = ip;
             _port = port;
             _isActive = isActive;
-            _secsDecoder = new SecsDecoder(HandleControlMessage, HandleDataMessage);
+            _secsDecoder = new SecsDecoder(_logger, HandleControlMessage, HandleDataMessage);
             _logger = tracer ?? DefaultTracer;
             _primaryMessageHandler = primaryMsgHandler ?? DefaultPrimaryMessageHandler;
-
-            int systemByte = new Random(Guid.NewGuid().GetHashCode()).Next();
-            _newSystemByte = () => Interlocked.Increment(ref systemByte);
 
             #region Timer Action
             _timer7 = new Timer(delegate
@@ -111,7 +154,7 @@ namespace Secs4Net
             _timerLinkTest = new Timer(delegate
             {
                 if (State == ConnectionState.Selected)
-                    SendControlMessageAsync(MessageType.LinkTestRequest, _newSystemByte());
+                    SendControlMessage(MessageType.LinkTestRequest, _systemByte.Next);
             }, null, Timeout.Infinite, Timeout.Infinite);
             #endregion
             var receiveBuffer = new byte[receiveBufferSize < 0x4000 ? 0x4000 : receiveBufferSize];
@@ -122,7 +165,7 @@ namespace Secs4Net
             {
                 #region Active Impl
 
-                _startImpl = async delegate
+                _startImpl = async () =>
                 {
                     bool connected = false;
                     do
@@ -150,7 +193,7 @@ namespace Secs4Net
                     if (!_socket.ReceiveAsync(receiveCompleteEvent))
                         ReceiveEventCompleted(_socket, receiveCompleteEvent);
 
-                    await SendControlMessageAsync(MessageType.SelectRequest, _newSystemByte());
+                    SendControlMessage(MessageType.SelectRequest, _systemByte.Next);
                 };
 
                 #endregion
@@ -218,7 +261,7 @@ namespace Secs4Net
 
                 if (e.Count == 0)
                 {
-                    _logger.TraceError("Received 0 byte data. Close the socket.");
+                    _logger.TraceError("Received 0 byte.");
                 }
                 else if (_secsDecoder.Decode(e.Buffer, 0, e.Count))
                 {
@@ -260,7 +303,8 @@ namespace Secs4Net
             switch (header.MessageType)
             {
                 case MessageType.SelectRequest:
-                    SendControlMessageAsync(MessageType.SelectResponse, systembyte).ContinueWith(_ => CommunicationStateChanging(ConnectionState.Selected));
+                    SendControlMessage(MessageType.SelectResponse, systembyte);
+                    CommunicationStateChanging(ConnectionState.Selected);
                     break;
                 case MessageType.SelectResponse:
                     switch (header.F)
@@ -283,7 +327,7 @@ namespace Secs4Net
                     }
                     break;
                 case MessageType.LinkTestRequest:
-                    SendControlMessageAsync(MessageType.LinkTestResponse, systembyte);
+                    SendControlMessage(MessageType.LinkTestResponse, systembyte);
                     break;
                 case MessageType.SeperateRequest:
                     CommunicationStateChanging(ConnectionState.Retry);
@@ -299,7 +343,7 @@ namespace Secs4Net
             {
                 _logger.TraceMessageIn(msg, systembyte);
                 _logger.TraceWarning("Received Unrecognized Device Id Message");
-                SendDataMessage(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.Bytes)), _newSystemByte());
+                ReplyDataMessage(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.Bytes)), _systemByte.Next);
                 return;
             }
 
@@ -318,7 +362,7 @@ namespace Secs4Net
                         secondary.ReplyExpected = false;
                         try
                         {
-                            SendDataMessage(secondary, secondary.S == 9 ? _newSystemByte() : header.SystemBytes);
+                            ReplyDataMessage(secondary, secondary.S == 9 ? _systemByte.Next : header.SystemBytes);
                         }
                         catch (Exception ex)
                         {
@@ -340,37 +384,19 @@ namespace Secs4Net
         }
         #endregion
         #region Socket Send Process
-        Task SendControlMessageAsync(MessageType msgType, int systembyte)
+        void SendControlMessage(MessageType msgType, int systembyte)
         {
-            if (_socket == null || !_socket.Connected)
-                return Task.FromResult(false);
-
-            var token = new TaskCompletionSourceToken(ControlMessage, systembyte,msgType);
-            if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
-            {
-                _replyExpectedMsgs[systembyte] = token;
-            }
-
             var header = new Header(new byte[10]) { MessageType = msgType, SystemBytes = systembyte };
             header.Bytes[0] = 0xFF;
             header.Bytes[1] = 0xFF;
-            var eap = new SocketAsyncEventArgs
-            {
-                BufferList = new List<ArraySegment<byte>>(2) { ControlMessageLengthBytes, new ArraySegment<byte>(header.Bytes) },
-                UserToken = token,
-            };
-            eap.Completed += _sendControlMessageCompleteHandler;
-            if (!_socket.SendAsync(eap))
-                SendControlMessageCompleteHandler(_socket, eap);
-
-            return token.Task;
+            _socket.Send(new List<ArraySegment<byte>>(2) { ControlMessageLengthBytes, new ArraySegment<byte>(header.Bytes) });
         }
 
         void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
         {
             var completeToken = e.UserToken as TaskCompletionSourceToken;
             if (completeToken == null)
-                return;
+                throw new InvalidOperationException("SocketAsyncEventArgs.UserToken is not TaskCompletionSourceToken.");
 
             if (e.SocketError != SocketError.Success)
             {
@@ -390,7 +416,7 @@ namespace Secs4Net
             }
         }
 
-        Task<SecsMessage> SendDataMessage(SecsMessage msg, int systembyte)
+        Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
         {
             if (State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
@@ -419,10 +445,27 @@ namespace Secs4Net
             return token.Task;
         }
 
-        void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e) {
+        void ReplyDataMessage(SecsMessage msg, int systembyte)
+        {
+            if (State != ConnectionState.Selected)
+                throw new SecsException("Device is not selected");
+
+            _socket.SendAsync(new EncodedBuffer(
+                    new Header(new byte[10])
+                    {
+                        S = msg.S,
+                        F = msg.F,
+                        ReplyExpected = msg.ReplyExpected,
+                        DeviceId = DeviceId,
+                        SystemBytes = systembyte
+                    }.Bytes, msg.RawDatas), SocketFlags.None);
+        }
+
+        void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
+        {
             var completeToken = e.UserToken as TaskCompletionSourceToken;
             if (completeToken == null)
-                return;
+                throw new InvalidOperationException("SocketAsyncEventArgs.UserToken is not TaskCompletionSourceToken.");
 
             if (e.SocketError != SocketError.Success)
             {
@@ -489,11 +532,11 @@ namespace Secs4Net
         public Task StartAsync() => _startImpl();
 
         /// <summary>
-        /// Send SECS message asynchronously to device .
+        /// Asynchronously send message to device .
         /// </summary>
-        /// <param name="msg"></param>
-        /// <returns></returns>
-        public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessage(msg, _newSystemByte());
+        /// <param name="msg">primary message</param>
+        /// <returns>secondary message</returns>
+        public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessageAsync(msg, _systemByte.Next);
 
         volatile bool _isDisposed;
         public void Dispose()
@@ -503,7 +546,7 @@ namespace Secs4Net
                 _isDisposed = true;
                 ConnectionChanged = null;
                 if (State == ConnectionState.Selected)
-                    SendControlMessageAsync(MessageType.SeperateRequest, _newSystemByte()).Wait(1000);
+                    SendControlMessage(MessageType.SeperateRequest, _systemByte.Next);
                 Reset();
                 _timer7.Dispose();
                 _timer8.Dispose();
@@ -511,11 +554,14 @@ namespace Secs4Net
             }
         }
 
+        /// <summary>
+        /// remote device endpoint address
+        /// </summary>
         public string DeviceAddress => _isActive
             ? _ip.ToString()
             : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
         #endregion
-        #region Async Token
+        #region Async Token        
 
         sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {
@@ -573,8 +619,8 @@ namespace Secs4Net
 
                 SetResult(replyMsg);
             }
-        }
-
+        }        
+        
         #endregion
         #region SECS Decoder
         sealed class SecsDecoder
@@ -597,6 +643,7 @@ namespace Secs4Net
             int _itemLength;
             #endregion
 
+            readonly SecsGemLogger _logger;
             /// <summary>
             /// decode pipeline
             /// </summary>
@@ -604,9 +651,10 @@ namespace Secs4Net
             readonly Action<Header, SecsMessage> _dataMsgHandler;
             readonly Action<Header> _controlMsgHandler;
 
-            internal SecsDecoder(Action<Header> controlMsgHandler, Action<Header, SecsMessage> msgHandler)
+            internal SecsDecoder(SecsGemLogger logger, Action<Header> controlMsgHandler, Action<Header, SecsMessage> dataMsgHandler)
             {
-                _dataMsgHandler = msgHandler;
+                _logger = logger;
+                _dataMsgHandler = dataMsgHandler;
                 _controlMsgHandler = controlMsgHandler;
 
                 _decoders = new Decoder[]{
@@ -617,7 +665,7 @@ namespace Secs4Net
 
                        Array.Reverse(data, index, 4);
                        _messageLength = BitConverter.ToUInt32(data, index);
-                       Trace.WriteLine("Get Message Length =" + _messageLength);
+                       _logger.TraceDebug("Get Message Length =" + _messageLength);
                        index += 4;
 
                        return 1;
@@ -776,7 +824,7 @@ namespace Secs4Net
                         var temp = new byte[remainLength + need];
                         Array.Copy(bytes, index, temp, 0, remainLength);
                         _remainBytes = new ArraySegment<byte>(temp, remainLength, need);
-                        Trace.WriteLine($"Remain Length: {_remainBytes.Offset}, Need:{_remainBytes.Count}");
+                        _logger.TraceDebug($"Remain Length: {_remainBytes.Offset}, Need:{_remainBytes.Count}");
                     }
                     else
                     {
@@ -797,7 +845,7 @@ namespace Secs4Net
                     int remainLength = length - index;
                     Array.Copy(bytes, index, _remainBytes.Array, _remainBytes.Offset, remainLength);
                     _remainBytes = new ArraySegment<byte>(_remainBytes.Array, _remainBytes.Offset + remainLength, _remainBytes.Count - remainLength);
-                    Trace.WriteLine($"Remain Length: {_remainBytes.Offset}, Need:{_remainBytes.Count}");
+                    _logger.TraceDebug($"Remain Length: {_remainBytes.Offset}, Need:{_remainBytes.Count}");
                 }
                 return _messageLength > 0;
             }

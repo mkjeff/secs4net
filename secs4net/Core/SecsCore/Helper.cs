@@ -199,7 +199,9 @@ namespace Secs4Net {
         }
 
         static readonly Func<string, Item> SmlParser_A = CreateSmlParser(A, A);
+#pragma warning disable CS0618 // Type or member is obsolete
         static readonly Func<string, Item> SmlParser_J = CreateSmlParser(J, J);
+#pragma warning restore CS0618 // Type or member is obsolete
         static readonly Func<string, Item> SmlParser_Boolean = CreateSmlParser(Boolean, Boolean, bool.Parse);
         static readonly Func<string, Item> SmlParser_B = CreateSmlParser(B, B, HexStringToByte);
         static readonly Func<string, Item> SmlParser_I1 = CreateSmlParser(I1, I1, sbyte.Parse);

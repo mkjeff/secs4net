@@ -29,7 +29,9 @@ namespace Secs4Net {
         internal static Item BytesDecode(this SecsFormat format, byte[] bytes, int index, int length) {
             switch (format) {
                 case SecsFormat.ASCII: return A(Encoding.ASCII.GetString(bytes, index, length));
+#pragma warning disable CS0618 // Type or member is obsolete
                 case SecsFormat.JIS8: return J(JIS8Encoding.GetString(bytes, index, length));
+#pragma warning restore CS0618 // Type or member is obsolete
                 case SecsFormat.Boolean: return Boolean(Decode<bool>(sizeof(bool), bytes, index, length));
                 case SecsFormat.Binary: return B(Decode<byte>(sizeof(byte), bytes, index, length));
                 case SecsFormat.U1: return U1(Decode<byte>(sizeof(byte), bytes, index, length));
