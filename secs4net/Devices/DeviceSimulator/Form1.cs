@@ -33,17 +33,17 @@ namespace SecsDevice {
         {
             _secsGem?.Dispose();
             _secsGem = new SecsGem(
+                isActive: radioActiveMode.Checked,
                 ip: IPAddress.Parse(txtAddress.Text),
                 port: (int)numPort.Value,
-                isActive: radioActiveMode.Checked,
-                tracer: Logger,
                 primaryMsgHandler: (primaryMsg, replyAction) =>
                     this.Invoke(new MethodInvoker(() =>
                         recvBuffer.Add(new ReceivedMessage
                         {
                             Msg = primaryMsg,
                             ReplyAction = replyAction
-                        }))));
+                        }))),
+                tracer: Logger);
 
             _secsGem.ConnectionChanged += delegate
             {

@@ -72,7 +72,7 @@ namespace Secs4Net {
 
         static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
 
-        internal static string ToSmlString<T>(this T[] value) where T : struct => 
+        internal static string ToSmlString<T>(this T[] value) where T : struct =>
             value.Length == 1 ? value[0].ToString() : string.Join(" ", value);
         #endregion
 
@@ -130,8 +130,8 @@ namespace Secs4Net {
             uint length = (uint)item.RawData.Count;
             buffer.Add(item.RawData);
             if (item.Format == SecsFormat.List)
-                for (int i = 0,cnt = item.Items.Count; i < cnt; i++)
-                    length += item.Items[i].Encode(buffer);
+                foreach (var subItem in item.GetList())
+                    length += subItem.Encode(buffer);
             return length;
         }
     }

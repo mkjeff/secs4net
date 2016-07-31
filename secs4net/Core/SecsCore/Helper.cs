@@ -35,7 +35,7 @@ namespace Secs4Net {
             switch (item.Format) {
                 case SecsFormat.List:
                     writer.WriteLine();
-                    var items = item.Items;
+                    var items = item.GetList();
                     int count = items.Count;
                     for (int i = 0; i < count; i++)
                         Write(writer, items[i], indent + SmlIndent);
@@ -80,8 +80,7 @@ namespace Secs4Net {
                 return sr.ToSecsMessage();
         }
 
-        public static async Task<SecsMessage> ToSecsMessageAsync(this TextReader sr)
-        {
+        public static async Task<SecsMessage> ToSecsMessageAsync(this TextReader sr) {
             string line = await sr.ReadLineAsync();
             #region Parse First Line
             int i = line.IndexOf(':');
@@ -99,11 +98,9 @@ namespace Secs4Net {
             #endregion
             Item rootItem = null;
             var stack = new Stack<List<Item>>();
-            while ((line = await sr.ReadLineAsync()) != null)
-            {
+            while ((line = await sr.ReadLineAsync()) != null) {
                 line = line.TrimStart();
-                if (line[0] == '>')
-                {
+                if (line[0] == '>') {
                     var itemList = stack.Pop();
                     var item = itemList.Count > 0 ? Item.L(itemList) : Item.L();
                     if (stack.Count > 0)
@@ -120,13 +117,10 @@ namespace Secs4Net {
                 string format = line.Substring(index_Item_L, index_Size_L - index_Item_L).Trim();
 
 
-                if (format == "L")
-                {
+                if (format == "L") {
                     stack.Push(new List<Item>());
                     continue;
-                }
-                else
-                {
+                } else {
                     int index_Size_R = line.IndexOf(']', index_Size_L); //Debug.Assert(index_Size_R != -1);
                     int index_Item_R = line.LastIndexOf('>'); //Debug.Assert(index_Item_R != -1);
                     string valueStr = line.Substring(index_Size_R + 1, index_Item_R - index_Size_R - 1);
@@ -219,8 +213,7 @@ namespace Secs4Net {
         static byte HexStringToByte(string str) => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? Convert.ToByte(str, 16) : byte.Parse(str);
 
         static Func<string, Item> CreateSmlParser(Func<string, Item> itemCreator, Func<Item> emptyCreator) => valueStr =>
-                 Cache.GetOrAdd(valueStr, str =>
-                 {
+                 Cache.GetOrAdd(valueStr, str => {
                      str = str.TrimStart(' ', '\'', '"').TrimEnd(' ', '\'', '"');
                      return string.IsNullOrEmpty(str) ?
                              emptyCreator() :
@@ -228,8 +221,7 @@ namespace Secs4Net {
                  });
 
         static Func<string, Item> CreateSmlParser<T>(Func<T[], Item> creator, Func<Item> emptyCreator, Func<string, T> converter) where T : struct => valueStr =>
-                 Cache.GetOrAdd(valueStr, str =>
-                 {
+                 Cache.GetOrAdd(valueStr, str => {
                      var valueStrs = str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                      return (valueStrs.Length == 0) ?
                          emptyCreator() :

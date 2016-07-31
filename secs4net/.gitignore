@@ -4,6 +4,7 @@
 .vs/
 
 # User-specific files
+project.lock.json
 *.suo
 *.user
 *.userosscache

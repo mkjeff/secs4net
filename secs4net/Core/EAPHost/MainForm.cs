@@ -102,9 +102,9 @@ namespace Cim.Eap {
             gemStatusLabel.Text = "Start";
             _secsGem?.Dispose();
             _secsGem = new SecsGem(
+                EAPConfig.Instance.Mode == ConnectionMode.Active,
                 IPAddress.Parse(EAPConfig.Instance.IP),
-                EAPConfig.Instance.TcpPort,
-                EAPConfig.Instance.Mode == ConnectionMode.Active, EAPConfig.Instance.SocketRecvBufferSize, _secsLogger, PrimaryMsgHandler)
+                EAPConfig.Instance.TcpPort, PrimaryMsgHandler, _secsLogger, EAPConfig.Instance.SocketRecvBufferSize)
             {
                 DeviceId = EAPConfig.Instance.DeviceId,
                 LinkTestInterval = EAPConfig.Instance.LinkTestInterval,
