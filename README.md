@@ -66,3 +66,7 @@ provide a delegate to SecsGem constructor's last argument
 
 4\. SecsMessage/Item is immutable.  
 5\. SecsMessage/Item is .NET Remoting operatable. It mean you can build an scalable distributed device control system.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/mkjeff/secs4net/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
