@@ -451,7 +451,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public async Task<SecsMessage> SendAsync(SecsMessage msg) => await Task.Factory.FromAsync(BeginSend, EndSend, msg, null, TaskCreationOptions.PreferFairness).ConfigureAwait(false);
+        public async Task<SecsMessage> SendAsync(SecsMessage msg) => await Task.Factory.FromAsync(BeginSend, EndSend, msg, null).ConfigureAwait(false);
 
         /// <summary>
         /// Send SECS message asynchronously to device .
