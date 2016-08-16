@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Cim.Eap.Tx;
 using Secs4Net;
 namespace Cim.Eap {
     partial class Driver {
-        void TCS_CreateControlJob(CreateControlJobRequest tx) {
-            var s14f10 = EAP.Send(new SecsMessage(14, 9, "CreateControlJob",
+        async void TCS_CreateControlJob(CreateControlJobRequest tx) {
+            var s14f10 = await EAP.SendAsync(new SecsMessage(14, 9, "CreateControlJob",
                 Item.L(
                     Item.A("Equipment"),
                     Item.A("ControlJob"),
@@ -38,11 +39,11 @@ namespace Cim.Eap {
             }
         }
 
-        void DeleteProcessJob(IEnumerable<string> processJobIds) {
+        async Task DeleteProcessJob(IEnumerable<string> processJobIds) {
             foreach (string pjID in processJobIds) {
                 this._ProcessingJobs.Remove(pjID);
                 try {
-                    EAP.Send(new SecsMessage(16, 5, "PJCancel",
+                    await EAP.SendAsync(new SecsMessage(16, 5, "PJCancel",
                         Item.L(
                             Item.U4(0),
                             Item.A(pjID),

@@ -38,9 +38,9 @@ namespace LoadPortMonitor {
                                 Item.U2(18027),
                                 Item.U2(18028)));
 
-        void GetLoadPortStatus(ISecsDevice device) {
+        async void GetLoadPortStatus(ISecsDevice device) {
             try {
-                var s1f4 = device.Send(s1f3);
+                var s1f4 = await device.SendAsync(s1f3);
 
                 #region Update UI
                 for (int i = 0; i < 3; i++) {
@@ -154,7 +154,7 @@ namespace LoadPortMonitor {
             set {
                 if (value != _State) {
                     _State = value;
-                    OnPropertyChanged("State");
+                    OnPropertyChanged(nameof(State));
                 }
             }
         }
@@ -165,10 +165,7 @@ namespace LoadPortMonitor {
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged(string name) {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) {
-                handler(this, new PropertyChangedEventArgs(name));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
         #endregion
     }

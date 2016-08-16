@@ -1,4 +1,5 @@
-﻿using Secs4Net;
+﻿using System.Threading.Tasks;
+using Secs4Net;
 
 namespace Cim.Eap {
     public class EapDriver {
@@ -6,13 +7,13 @@ namespace Cim.Eap {
         internal protected virtual void Init() { }
         internal protected virtual void Unload() { }
 
-        public virtual void DefineLink() {
-            DefineLinkSuccess(EAP.Send(EAP.EventReportLink.S2F37_DisableEvent));
-            DefineLinkSuccess(EAP.Send(EAP.EventReportLink.S2F35_DisableEventReportLink));
-            DefineLinkSuccess(EAP.Send(EAP.EventReportLink.S2F33_DisableReport));
-            DefineLinkSuccess(EAP.Send(EAP.EventReportLink.S2F33_DefineReport));
-            DefineLinkSuccess(EAP.Send(EAP.EventReportLink.S2F35_DefineEventReportLink));
-            DefineLinkSuccess(EAP.Send(EAP.EventReportLink.S2F37_EnableEvent));
+        public virtual async Task DefineLink() {
+            DefineLinkSuccess(await EAP.SendAsync(EAP.EventReportLink.S2F37_DisableEvent));
+            DefineLinkSuccess(await EAP.SendAsync(EAP.EventReportLink.S2F35_DisableEventReportLink));
+            DefineLinkSuccess(await EAP.SendAsync(EAP.EventReportLink.S2F33_DisableReport));
+            DefineLinkSuccess(await EAP.SendAsync(EAP.EventReportLink.S2F33_DefineReport));
+            DefineLinkSuccess(await EAP.SendAsync(EAP.EventReportLink.S2F35_DefineEventReportLink));
+            DefineLinkSuccess(await EAP.SendAsync(EAP.EventReportLink.S2F37_EnableEvent));
         }
 
         static void DefineLinkSuccess(SecsMessage msg) {

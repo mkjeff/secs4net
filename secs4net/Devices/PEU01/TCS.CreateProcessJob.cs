@@ -4,8 +4,8 @@ using Cim.Eap.Tx;
 using Secs4Net;
 namespace Cim.Eap {
     partial class Driver {
-        void HandleTCS(CreateProcessJobRequest tx) {
-            var s16f16 = EAP.Send(new SecsMessage(16, 15, "CreateProcessJob",
+        async void HandleTCS(CreateProcessJobRequest tx) {
+            var s16f16 = await EAP.SendAsync(new SecsMessage(16, 15, "CreateProcessJob",
                 Item.L(
                     Item.U4(0),
                     Item.L(from pj in tx.ProcessJobs select

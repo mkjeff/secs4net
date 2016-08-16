@@ -3,8 +3,8 @@ using Cim.Eap.Tx;
 using Secs4Net;
 namespace Cim.Eap {
     partial class Driver {
-        void HandleTCS(CreateControlJobRequest tx) {
-            var s14f10 = EAP.Send(new SecsMessage(14, 9, "CreaeteControlJob",
+        async void HandleTCS(CreateControlJobRequest tx) {
+            var s14f10 = await EAP.SendAsync(new SecsMessage(14, 9, "CreaeteControlJob",
                 Item.L(
                     Item.A("Equipment"),
                     Item.A("ControlJob"),
