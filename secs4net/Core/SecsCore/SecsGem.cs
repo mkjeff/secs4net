@@ -472,17 +472,21 @@ namespace Secs4Net
 
         public struct AsyncResult : INotifyCompletion
         {
+            static Action DefaultOnComplete = () => { };
             internal ManualResetEvent AsyncWaitHandle { get; }
             readonly SecsMessage _primary;
             Action _onComplete;
             SecsMessage _secondary;
             bool _timeout;
 
-            internal AsyncResult(SecsMessage primaryMsg) : this()
+            internal AsyncResult(SecsMessage primaryMsg) 
             {
+                _onComplete = DefaultOnComplete;
                 IsCompleted = !primaryMsg.ReplyExpected;
                 AsyncWaitHandle = new ManualResetEvent(false);
                 _primary = primaryMsg;
+                _secondary = null;
+                _timeout = false;
             }
 
             internal void EndProcess(SecsMessage replyMsg, bool timeout)
@@ -842,7 +846,7 @@ namespace Secs4Net
         }
         #endregion
         #region EncodedByteList Wrapper just need IList<T>.Count and Indexer
-        sealed class EncodedBuffer : IList<ArraySegment<byte>>
+        struct EncodedBuffer : IList<ArraySegment<byte>>
         {
             readonly IReadOnlyList<RawData> _data;// raw data include first message length 4 byte
             readonly byte[] _header;
