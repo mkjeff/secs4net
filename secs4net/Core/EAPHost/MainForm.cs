@@ -246,14 +246,16 @@ namespace Cim.Eap {
             this._screenLoger.DisplaySecsMesssage = ((ToolStripMenuItem)sender).Checked;
         }
 
-        void defineLinkToolStripMenuItem_Click(object sender, EventArgs e) {
-            Task.Factory.StartNew(() => {
-                try {
-                    EAPConfig.Instance.Driver.DefineLink();
-                } catch (Exception ex) {
-                    MessageBox.Show(ex.Message, "Define report link fail");
-                }
-            });
+        async void defineLinkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                await EAPConfig.Instance.Driver.DefineLink();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Define report link fail");
+            }
         }
 
         void reloadSpecialControlFileToolStripMenuItem_Click(object sender, EventArgs e) {
