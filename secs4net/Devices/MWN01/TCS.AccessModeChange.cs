@@ -1,26 +1,27 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Cim.Eap.Data;
 using Cim.Eap.Tx;
 using Secs4Net;
 namespace Cim.Eap {
     partial class Driver {
-        void TCS_AccessModeChange(AccessModeChangeRequest tx) {
-            QueryAndChangeAccessMode(tx.LoadPorts);
+        async void TCS_AccessModeChange(AccessModeChangeRequest tx) {
+            await QueryAndChangeAccessMode(tx.LoadPorts);
         }
 
-        void QueryAndChangeAccessMode(IEnumerable<LoadPort> requestLoadPorts) {
-            var s1f4 = EAP.Send(EAP.SecsMessages[1, 3, "QueryLoadPortAccessMode"]);
+        async Task QueryAndChangeAccessMode(IEnumerable<LoadPort> requestLoadPorts) {
+            var s1f4 = await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryLoadPortAccessMode"]);
             foreach (LoadPort port in requestLoadPorts) {
                 byte portNo = GetPortNo(port.Id);
                 // 0: Manual
                 // 1: Auto
                 if ((byte)s1f4.SecsItem.Items[portNo - 1] != (byte)port.AccessMode)
-                    ChangeAccessMode(port.AccessMode, portNo);
+                    await ChangeAccessMode(port.AccessMode, portNo);
             }
         }
 
-        void ChangeAccessMode(AccessMode changeAccessMode, int portNo) {
-            var s3f24 = EAP.Send(new SecsMessage(3, 23, "ChangeAccessMode",
+        async Task ChangeAccessMode(AccessMode changeAccessMode, int portNo) {
+            var s3f24 = await EAP.SendAsync(new SecsMessage(3, 23, "ChangeAccessMode",
                 Item.L(
                     Item.A("ChangeAccess"),
                     Item.A(portNo.ToString()),

@@ -2,9 +2,9 @@
 using Secs4Net;
 namespace Cim.Eap {
     partial class Driver {
-        void HandleTCS(CancelCarrierRequest tx) {
+        async void HandleTCS(CancelCarrierRequest tx) {
             bool isUnknown = tx.Carrier.Id == "(Unknown)";
-            var s3f18 = EAP.Send(new SecsMessage(3, 17, "CancelCarrier",
+            var s3f18 = await EAP.SendAsync(new SecsMessage(3, 17, "CancelCarrier",
                 Item.L(
                     Item.U4(0),
                     Item.A(isUnknown?"CancelCarrierAtPort":"CancelCarrier"),

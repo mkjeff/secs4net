@@ -167,7 +167,7 @@ namespace Cim.Eap {
                     gemStatusLabel.Text = _secsGem.State.ToString();
                     eqpAddressStatusLabel.Text = "EQP IP: " + _secsGem.DeviceAddress;
                     if (_secsGem.State == ConnectionState.Selected)
-                        _secsGem.BeginSend(new SecsMessage(1, 13, "TestCommunicationsRequest", Item.L()), null, null);
+                        _secsGem.SendAsync(new SecsMessage(1, 13, "TestCommunicationsRequest", Item.L()));
                 });
             };
             menuItemGemDisable.Enabled = true;
@@ -209,14 +209,14 @@ namespace Cim.Eap {
             e.Cancel = MessageBox.Show("你確定要關閉EAP嗎?", "關閉應用程式", MessageBoxButtons.YesNo) == DialogResult.No;
         }
 
-        void btnSend_Click(object sender, EventArgs e) {
+        async void btnSend_Click(object sender, EventArgs e) {
             if (_secsGem == null) {
                 MessageBox.Show("SECS/GEM not enable!");
                 return;
             }
             try {
                 EapLogger.Notice("Send by operator");
-                _secsGem.BeginSend(txtMsg.Text.ToSecsMessage(), null, null);
+                await _secsGem.SendAsync(txtMsg.Text.ToSecsMessage());
             } catch (Exception ex) {
                 EapLogger.Error(ex);
             }
@@ -246,14 +246,16 @@ namespace Cim.Eap {
             this._screenLoger.DisplaySecsMesssage = ((ToolStripMenuItem)sender).Checked;
         }
 
-        void defineLinkToolStripMenuItem_Click(object sender, EventArgs e) {
-            Task.Factory.StartNew(() => {
-                try {
-                    EAPConfig.Instance.Driver.DefineLink();
-                } catch (Exception ex) {
-                    MessageBox.Show(ex.Message, "Define report link fail");
-                }
-            });
+        async void defineLinkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                await EAPConfig.Instance.Driver.DefineLink();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Define report link fail");
+            }
         }
 
         void reloadSpecialControlFileToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -289,12 +291,12 @@ namespace Cim.Eap {
             2<<8 | 37  //s2f37 define link
         };
 
-        public SecsMessage Send(SecsMessage msg) {
+        public async Task<SecsMessage> SendAsync(SecsMessage msg) {
             if (_secsGem == null)
                 throw new Exception("SECS/GEM not enable!");
             if (RemotingServices.IsTransparentProxy(msg) && InvalidRemoteMessage.Contains(msg.GetKey()))
                 throw new ArgumentException("This message is not remotable!");
-            return _secsGem.Send(msg);
+            return await _secsGem.SendAsync(msg);
         }
 
         readonly ConcurrentDictionary<int, Action<SecsMessage>> _eventHandlers = new ConcurrentDictionary<int, Action<SecsMessage>>();
