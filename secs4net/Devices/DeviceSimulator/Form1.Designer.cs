@@ -95,29 +95,29 @@
             groupBox1.Dock = System.Windows.Forms.DockStyle.Top;
             groupBox1.Location = new System.Drawing.Point(0, 0);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new System.Drawing.Size(1214, 76);
+            groupBox1.Size = new System.Drawing.Size(1214, 70);
             groupBox1.TabIndex = 1;
             groupBox1.TabStop = false;
             groupBox1.Text = "Config";
             // 
             // numDeviceId
             // 
-            this.numDeviceId.Location = new System.Drawing.Point(405, 29);
+            this.numDeviceId.Location = new System.Drawing.Point(405, 27);
             this.numDeviceId.Maximum = new decimal(new int[] {
             10,
             0,
             0,
             0});
             this.numDeviceId.Name = "numDeviceId";
-            this.numDeviceId.Size = new System.Drawing.Size(43, 20);
+            this.numDeviceId.Size = new System.Drawing.Size(43, 22);
             this.numDeviceId.TabIndex = 10;
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new System.Drawing.Point(349, 34);
+            label3.Location = new System.Drawing.Point(349, 31);
             label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(53, 13);
+            label3.Size = new System.Drawing.Size(50, 12);
             label3.TabIndex = 9;
             label3.Text = "Device Id";
             // 
@@ -125,7 +125,7 @@
             // 
             this.lbStatus.AutoSize = true;
             this.lbStatus.Font = new System.Drawing.Font("PMingLiU", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lbStatus.Location = new System.Drawing.Point(660, 27);
+            this.lbStatus.Location = new System.Drawing.Point(660, 25);
             this.lbStatus.Name = "lbStatus";
             this.lbStatus.Size = new System.Drawing.Size(94, 32);
             this.lbStatus.TabIndex = 8;
@@ -135,9 +135,9 @@
             // 
             this.btnDisable.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnDisable.Enabled = false;
-            this.btnDisable.Location = new System.Drawing.Point(545, 27);
+            this.btnDisable.Location = new System.Drawing.Point(545, 25);
             this.btnDisable.Name = "btnDisable";
-            this.btnDisable.Size = new System.Drawing.Size(75, 25);
+            this.btnDisable.Size = new System.Drawing.Size(75, 23);
             this.btnDisable.TabIndex = 7;
             this.btnDisable.Text = "Disable";
             this.btnDisable.UseVisualStyleBackColor = true;
@@ -145,9 +145,9 @@
             // 
             // btnEnable
             // 
-            this.btnEnable.Location = new System.Drawing.Point(464, 28);
+            this.btnEnable.Location = new System.Drawing.Point(464, 26);
             this.btnEnable.Name = "btnEnable";
-            this.btnEnable.Size = new System.Drawing.Size(75, 25);
+            this.btnEnable.Size = new System.Drawing.Size(75, 23);
             this.btnEnable.TabIndex = 6;
             this.btnEnable.Text = "Enable";
             this.btnEnable.UseVisualStyleBackColor = true;
@@ -155,7 +155,7 @@
             // 
             // numPort
             // 
-            this.numPort.Location = new System.Drawing.Point(280, 29);
+            this.numPort.Location = new System.Drawing.Point(280, 27);
             this.numPort.Maximum = new decimal(new int[] {
             9999,
             0,
@@ -167,7 +167,7 @@
             0,
             0});
             this.numPort.Name = "numPort";
-            this.numPort.Size = new System.Drawing.Size(52, 20);
+            this.numPort.Size = new System.Drawing.Size(52, 22);
             this.numPort.TabIndex = 5;
             this.numPort.Value = new decimal(new int[] {
             5000,
@@ -178,34 +178,35 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(250, 34);
+            label2.Location = new System.Drawing.Point(250, 31);
             label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(26, 13);
+            label2.Size = new System.Drawing.Size(24, 12);
             label2.TabIndex = 4;
             label2.Text = "Port";
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(80, 34);
+            label1.Location = new System.Drawing.Point(80, 31);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(17, 13);
+            label1.Size = new System.Drawing.Size(15, 12);
             label1.TabIndex = 3;
             label1.Text = "IP";
             // 
             // txtAddress
             // 
-            this.txtAddress.Location = new System.Drawing.Point(101, 29);
+            this.txtAddress.Location = new System.Drawing.Point(101, 27);
             this.txtAddress.Name = "txtAddress";
-            this.txtAddress.Size = new System.Drawing.Size(143, 20);
+            this.txtAddress.Size = new System.Drawing.Size(143, 22);
             this.txtAddress.TabIndex = 2;
+            this.txtAddress.Text = "127.0.0.1";
             // 
             // radioPassiveMode
             // 
             this.radioPassiveMode.AutoSize = true;
-            this.radioPassiveMode.Location = new System.Drawing.Point(12, 46);
+            this.radioPassiveMode.Location = new System.Drawing.Point(12, 42);
             this.radioPassiveMode.Name = "radioPassiveMode";
-            this.radioPassiveMode.Size = new System.Drawing.Size(62, 17);
+            this.radioPassiveMode.Size = new System.Drawing.Size(56, 16);
             this.radioPassiveMode.TabIndex = 1;
             this.radioPassiveMode.Text = "Passive";
             this.radioPassiveMode.UseVisualStyleBackColor = true;
@@ -214,9 +215,9 @@
             // 
             this.radioActiveMode.AutoSize = true;
             this.radioActiveMode.Checked = true;
-            this.radioActiveMode.Location = new System.Drawing.Point(12, 22);
+            this.radioActiveMode.Location = new System.Drawing.Point(12, 20);
             this.radioActiveMode.Name = "radioActiveMode";
-            this.radioActiveMode.Size = new System.Drawing.Size(55, 17);
+            this.radioActiveMode.Size = new System.Drawing.Size(53, 16);
             this.radioActiveMode.TabIndex = 0;
             this.radioActiveMode.TabStop = true;
             this.radioActiveMode.Text = "Active";
@@ -226,9 +227,9 @@
             // 
             groupBox4.Controls.Add(this.txtRecvSecondary);
             groupBox4.Dock = System.Windows.Forms.DockStyle.Fill;
-            groupBox4.Location = new System.Drawing.Point(0, 325);
+            groupBox4.Location = new System.Drawing.Point(0, 300);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new System.Drawing.Size(449, 300);
+            groupBox4.Size = new System.Drawing.Size(449, 277);
             groupBox4.TabIndex = 5;
             groupBox4.TabStop = false;
             groupBox4.Text = "Received Secondary Message";
@@ -236,11 +237,11 @@
             // txtRecvSecondary
             // 
             this.txtRecvSecondary.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtRecvSecondary.Location = new System.Drawing.Point(3, 16);
+            this.txtRecvSecondary.Location = new System.Drawing.Point(3, 18);
             this.txtRecvSecondary.Multiline = true;
             this.txtRecvSecondary.Name = "txtRecvSecondary";
             this.txtRecvSecondary.ReadOnly = true;
-            this.txtRecvSecondary.Size = new System.Drawing.Size(443, 281);
+            this.txtRecvSecondary.Size = new System.Drawing.Size(443, 256);
             this.txtRecvSecondary.TabIndex = 0;
             this.txtRecvSecondary.WordWrap = false;
             // 
@@ -250,7 +251,7 @@
             groupBox2.Dock = System.Windows.Forms.DockStyle.Top;
             groupBox2.Location = new System.Drawing.Point(0, 0);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new System.Drawing.Size(449, 300);
+            groupBox2.Size = new System.Drawing.Size(449, 277);
             groupBox2.TabIndex = 3;
             groupBox2.TabStop = false;
             groupBox2.Text = "Send Primary Message";
@@ -258,10 +259,10 @@
             // txtSendPrimary
             // 
             this.txtSendPrimary.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtSendPrimary.Location = new System.Drawing.Point(3, 16);
+            this.txtSendPrimary.Location = new System.Drawing.Point(3, 18);
             this.txtSendPrimary.Multiline = true;
             this.txtSendPrimary.Name = "txtSendPrimary";
-            this.txtSendPrimary.Size = new System.Drawing.Size(443, 281);
+            this.txtSendPrimary.Size = new System.Drawing.Size(443, 256);
             this.txtSendPrimary.TabIndex = 1;
             this.txtSendPrimary.WordWrap = false;
             // 
@@ -269,9 +270,9 @@
             // 
             groupBox5.Controls.Add(this.txtReplySeconary);
             groupBox5.Dock = System.Windows.Forms.DockStyle.Fill;
-            groupBox5.Location = new System.Drawing.Point(0, 325);
+            groupBox5.Location = new System.Drawing.Point(0, 300);
             groupBox5.Name = "groupBox5";
-            groupBox5.Size = new System.Drawing.Size(492, 275);
+            groupBox5.Size = new System.Drawing.Size(492, 254);
             groupBox5.TabIndex = 2;
             groupBox5.TabStop = false;
             groupBox5.Text = "Reply Secondary Message";
@@ -279,10 +280,10 @@
             // txtReplySeconary
             // 
             this.txtReplySeconary.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtReplySeconary.Location = new System.Drawing.Point(3, 16);
+            this.txtReplySeconary.Location = new System.Drawing.Point(3, 18);
             this.txtReplySeconary.Multiline = true;
             this.txtReplySeconary.Name = "txtReplySeconary";
-            this.txtReplySeconary.Size = new System.Drawing.Size(486, 256);
+            this.txtReplySeconary.Size = new System.Drawing.Size(486, 233);
             this.txtReplySeconary.TabIndex = 0;
             this.txtReplySeconary.WordWrap = false;
             // 
@@ -293,7 +294,7 @@
             groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
             groupBox3.Location = new System.Drawing.Point(0, 0);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new System.Drawing.Size(492, 325);
+            groupBox3.Size = new System.Drawing.Size(492, 300);
             groupBox3.TabIndex = 0;
             groupBox3.TabStop = false;
             groupBox3.Text = "Received Primary Message";
@@ -301,11 +302,11 @@
             // txtRecvPrimary
             // 
             this.txtRecvPrimary.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtRecvPrimary.Location = new System.Drawing.Point(208, 16);
+            this.txtRecvPrimary.Location = new System.Drawing.Point(208, 18);
             this.txtRecvPrimary.Multiline = true;
             this.txtRecvPrimary.Name = "txtRecvPrimary";
             this.txtRecvPrimary.ReadOnly = true;
-            this.txtRecvPrimary.Size = new System.Drawing.Size(281, 306);
+            this.txtRecvPrimary.Size = new System.Drawing.Size(281, 279);
             this.txtRecvPrimary.TabIndex = 1;
             this.txtRecvPrimary.WordWrap = false;
             // 
@@ -315,9 +316,10 @@
             this.lstUnreplyMsg.DisplayMember = "Msg";
             this.lstUnreplyMsg.Dock = System.Windows.Forms.DockStyle.Left;
             this.lstUnreplyMsg.FormattingEnabled = true;
-            this.lstUnreplyMsg.Location = new System.Drawing.Point(3, 16);
+            this.lstUnreplyMsg.ItemHeight = 12;
+            this.lstUnreplyMsg.Location = new System.Drawing.Point(3, 18);
             this.lstUnreplyMsg.Name = "lstUnreplyMsg";
-            this.lstUnreplyMsg.Size = new System.Drawing.Size(205, 306);
+            this.lstUnreplyMsg.Size = new System.Drawing.Size(205, 279);
             this.lstUnreplyMsg.TabIndex = 0;
             this.lstUnreplyMsg.SelectedIndexChanged += new System.EventHandler(this.lstUnreplyMsg_SelectedIndexChanged);
             // 
@@ -328,9 +330,9 @@
             // btnSendPrimary
             // 
             btnSendPrimary.Dock = System.Windows.Forms.DockStyle.Top;
-            btnSendPrimary.Location = new System.Drawing.Point(0, 300);
+            btnSendPrimary.Location = new System.Drawing.Point(0, 277);
             btnSendPrimary.Name = "btnSendPrimary";
-            btnSendPrimary.Size = new System.Drawing.Size(449, 25);
+            btnSendPrimary.Size = new System.Drawing.Size(449, 23);
             btnSendPrimary.TabIndex = 4;
             btnSendPrimary.Text = "Send";
             btnSendPrimary.UseVisualStyleBackColor = true;
@@ -339,9 +341,9 @@
             // btnReplySecondary
             // 
             btnReplySecondary.Dock = System.Windows.Forms.DockStyle.Bottom;
-            btnReplySecondary.Location = new System.Drawing.Point(0, 600);
+            btnReplySecondary.Location = new System.Drawing.Point(0, 554);
             btnReplySecondary.Name = "btnReplySecondary";
-            btnReplySecondary.Size = new System.Drawing.Size(492, 25);
+            btnReplySecondary.Size = new System.Drawing.Size(492, 23);
             btnReplySecondary.TabIndex = 1;
             btnReplySecondary.Text = "Reply";
             btnReplySecondary.UseVisualStyleBackColor = true;
@@ -364,14 +366,14 @@
             this.splitContainer1.Panel2.Controls.Add(groupBox5);
             this.splitContainer1.Panel2.Controls.Add(btnReplySecondary);
             this.splitContainer1.Panel2.Controls.Add(groupBox3);
-            this.splitContainer1.Size = new System.Drawing.Size(945, 625);
+            this.splitContainer1.Size = new System.Drawing.Size(945, 577);
             this.splitContainer1.SplitterDistance = 449;
             this.splitContainer1.TabIndex = 3;
             // 
             // splitContainer2
             // 
             this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer2.Location = new System.Drawing.Point(0, 76);
+            this.splitContainer2.Location = new System.Drawing.Point(0, 70);
             this.splitContainer2.Name = "splitContainer2";
             // 
             // splitContainer2.Panel1
@@ -381,7 +383,7 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.richTextBox1);
-            this.splitContainer2.Size = new System.Drawing.Size(1214, 625);
+            this.splitContainer2.Size = new System.Drawing.Size(1214, 577);
             this.splitContainer2.SplitterDistance = 945;
             this.splitContainer2.TabIndex = 11;
             // 
@@ -391,7 +393,7 @@
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(265, 625);
+            this.richTextBox1.Size = new System.Drawing.Size(265, 577);
             this.richTextBox1.TabIndex = 1;
             this.richTextBox1.Text = "";
             this.richTextBox1.WordWrap = false;
@@ -399,10 +401,10 @@
             // Form1
             // 
             this.AcceptButton = this.btnEnable;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnDisable;
-            this.ClientSize = new System.Drawing.Size(1214, 701);
+            this.ClientSize = new System.Drawing.Size(1214, 647);
             this.Controls.Add(this.splitContainer2);
             this.Controls.Add(groupBox1);
             this.Name = "Form1";

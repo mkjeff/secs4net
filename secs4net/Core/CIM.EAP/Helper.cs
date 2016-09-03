@@ -11,7 +11,7 @@ namespace Cim.Eap {
                     eventName,
                     callback);
             } catch (Exception ex) {
-                EapLogger.Warn("EAP.Subscribe_S6F11 error, event({0});{1}", eventName, ex.Message);
+                EapLogger.Warn($"EAP.Subscribe_S6F11 error, event({eventName});{ex.Message}");
                 return null;
             }
         }

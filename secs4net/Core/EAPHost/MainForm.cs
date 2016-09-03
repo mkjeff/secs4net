@@ -26,9 +26,9 @@ namespace Cim.Eap
 {
     sealed partial class HostMainForm : Form, IEAP
     {
-        class SecsLogger : SecsGemLogger
+        class SecsLogger : ISecsGemLogger
         {
-            public override void TraceMessageIn(SecsMessage msg, int systembyte)
+            public void TraceMessageIn(SecsMessage msg, int systembyte)
             {
                 EapLogger.Info(new SecsMessageLogInfo
                 {
@@ -38,7 +38,7 @@ namespace Cim.Eap
                 });
             }
 
-            public override void TraceMessageOut(SecsMessage msg, int systembyte)
+            public void TraceMessageOut(SecsMessage msg, int systembyte)
             {
                 EapLogger.Info(new SecsMessageLogInfo
                 {
@@ -48,25 +48,30 @@ namespace Cim.Eap
                 });
             }
 
-            public override void TraceInfo(string msg)
+            public void TraceInfo(string msg)
             {
                 EapLogger.Info("SECS/GEM Info: " + msg);
             }
 
-            public override void TraceWarning(string msg)
+            public void TraceWarning(string msg)
             {
                 EapLogger.Warn("SECS/GEM Warning: " + msg);
             }
 
-            public override void TraceError(string msg, Exception ex = null)
+            public void TraceError(string msg, Exception ex = null)
             {
                 EapLogger.Error("SECS/GEM Error: " + msg);
+            }
+
+            public void TraceDebug(string msg)
+            {
+                EapLogger.Debug("SECS/GEM Error: " + msg);
             }
         }
 
         SecsGem _secsGem;
         readonly TextBoxAppender _screenLoger;
-        readonly SecsGemLogger _secsLogger = new SecsLogger();
+        readonly ISecsGemLogger _secsLogger = new SecsLogger();
 
         public HostMainForm()
         {
@@ -79,7 +84,7 @@ namespace Cim.Eap
 
             listBoxSecsMessages.BeginUpdate();
             foreach (var msg in this.SecsMessages)
-                listBoxSecsMessages.Items.Add(string.Format("{0,-8}: {1}", string.Format("S{0}F{1}", msg.S, msg.F), msg.Name));
+                listBoxSecsMessages.Items.Add($"S{msg.S,-3}F{msg.F,3} : {msg.Name}");
             listBoxSecsMessages.EndUpdate();
 
             var l = (Logger)LogManager.GetLogger("EAP").Logger;
@@ -125,7 +130,7 @@ namespace Cim.Eap
             _secsGem = new SecsGem(
                 EAPConfig.Instance.Mode == ConnectionMode.Active,
                 IPAddress.Parse(EAPConfig.Instance.IP),
-                EAPConfig.Instance.TcpPort, PrimaryMsgHandler, _secsLogger, EAPConfig.Instance.SocketRecvBufferSize)
+                EAPConfig.Instance.TcpPort, _secsLogger, EAPConfig.Instance.SocketRecvBufferSize, PrimaryMsgHandler)
             {
                 DeviceId = EAPConfig.Instance.DeviceId,
                 LinkTestInterval = EAPConfig.Instance.LinkTestInterval,
@@ -366,7 +371,7 @@ namespace Cim.Eap
                 #endregion
             });
             int key = subscription.GetKey();
-            string recoverQueuePath = @"FormatName:DIRECT=TCP:" + subscription.ClientAddress + @"\private$\" + subscription.Id;
+            string recoverQueuePath = $"FormatName:DIRECT=TCP:{subscription.ClientAddress} \\private$\\{subscription.Id}";
             if (subscription.Recoverable)
             {
                 return new SerializableDisposable(subscription,

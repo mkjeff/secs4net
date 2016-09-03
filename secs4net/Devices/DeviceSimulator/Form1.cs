@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 namespace SecsDevice {
     public partial class Form1 : Form {
         SecsGem _secsGem;
-        readonly SecsGemLogger Logger;
+        readonly ISecsGemLogger Logger;
         readonly BindingList<ReceivedMessage> recvBuffer = new BindingList<ReceivedMessage>();
+
         public Form1() {
             InitializeComponent();
 
@@ -20,30 +21,26 @@ namespace SecsDevice {
             numPort.DataBindings.Add("Enabled", btnEnable, "Enabled");
             numDeviceId.DataBindings.Add("Enabled", btnEnable, "Enabled");
             recvMessageBindingSource.DataSource = recvBuffer;
-            Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
+            Application.ThreadException += (sender, e) => MessageBox.Show(e.Exception.ToString());
 
             Logger = new SecsLogger(this);
-        }
-
-        void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e) {
-            MessageBox.Show(e.Exception.ToString());
         }
 
         private async void btnEnable_Click(object sender, EventArgs e)
         {
             _secsGem?.Dispose();
             _secsGem = new SecsGem(
-                isActive: radioActiveMode.Checked,
-                ip: IPAddress.Parse(txtAddress.Text),
-                port: (int)numPort.Value,
+                radioActiveMode.Checked,
+                IPAddress.Parse(txtAddress.Text),
+                (int)numPort.Value,
+                Logger,
                 primaryMsgHandler: (primaryMsg, replyAction) =>
                     this.Invoke(new MethodInvoker(() =>
                         recvBuffer.Add(new ReceivedMessage
                         {
                             Msg = primaryMsg,
                             ReplyAction = replyAction
-                        }))),
-                tracer: Logger);
+                        }))));
 
             _secsGem.ConnectionChanged += delegate
             {
@@ -105,14 +102,14 @@ namespace SecsDevice {
             txtRecvPrimary.Clear();
         }
 
-        class SecsLogger : SecsGemLogger
+        class SecsLogger : ISecsGemLogger
         {
             readonly Form1 _form;
             internal SecsLogger(Form1 form)
             {
                 _form = form;
             }
-            public override void TraceMessageIn(SecsMessage msg, int systembyte)
+            public void TraceMessageIn(SecsMessage msg, int systembyte)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Black;
@@ -120,7 +117,7 @@ namespace SecsDevice {
                 });
             }
 
-            public override void TraceMessageOut(SecsMessage msg, int systembyte)
+            public void TraceMessageOut(SecsMessage msg, int systembyte)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Black;
@@ -128,7 +125,7 @@ namespace SecsDevice {
                 });
             }
 
-            public override void TraceInfo(string msg)
+            public void TraceInfo(string msg)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Blue;
@@ -136,7 +133,7 @@ namespace SecsDevice {
                 });
             }
 
-            public override void TraceWarning(string msg)
+            public void TraceWarning(string msg)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Green;
@@ -144,13 +141,21 @@ namespace SecsDevice {
                 });
             }
 
-            public override void TraceError(string msg, Exception ex = null)
+            public void TraceError(string msg, Exception ex = null)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Red;
                     _form.richTextBox1.AppendText($"{msg}\n");
                     _form.richTextBox1.SelectionColor = Color.Gray;
                     _form.richTextBox1.AppendText($"{ex?.ToString()}\n");
+                });
+            }
+
+            public void TraceDebug(string msg)
+            {
+                _form.Invoke((MethodInvoker)delegate {
+                    _form.richTextBox1.SelectionColor = Color.Yellow;
+                    _form.richTextBox1.AppendText($"{msg}\n");
                 });
             }
         }

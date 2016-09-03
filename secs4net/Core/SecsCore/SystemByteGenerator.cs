@@ -3,16 +3,13 @@ using System.Threading;
 
 namespace Secs4Net
 {
-    sealed class SystemByte
+    sealed class SystemByteGenerator
     {
         int _systemByte = new Random(Guid.NewGuid().GetHashCode()).Next();
-        public int Next
+        public int New()
         {
-            get
-            {
-                Interlocked.Increment(ref _systemByte);
-                return _systemByte;
-            }
+            Interlocked.Increment(ref _systemByte);
+            return _systemByte;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace SecsMessageVisuallizer.ViewModel
         public SecsMessageViewModel(SecsMessage secsMsg)
             : base(null, false) {
             _secsMsg = secsMsg;
-            if (secsMsg.SecsItem != null)
+            if (secsMsg.HasRoot)
                 base.Children.Add(new SecsItemViewModel(secsMsg.SecsItem, this));
         }
 

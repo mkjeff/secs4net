@@ -126,7 +126,7 @@ namespace Secs4Net {
         /// <param name="item"></param>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        internal static uint Encode(this Item item, List<RawData> buffer) {
+        internal static uint Encode(this Item item, List<ArraySegment<byte>> buffer) {
             uint length = (uint)item.RawData.Count;
             buffer.Add(item.RawData);
             if (item.Format == SecsFormat.List)

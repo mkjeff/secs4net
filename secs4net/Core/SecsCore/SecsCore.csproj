@@ -149,7 +149,7 @@
     <Compile Include="ExtensionHelper.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Item.cs" />
-    <Compile Include="ITracer.cs" />
+    <Compile Include="ISecsGemLogger.cs" />
     <Compile Include="Lazy.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -157,7 +157,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="RawData.cs" />
     <Compile Include="SecsException.cs" />
     <Compile Include="SecsFormat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

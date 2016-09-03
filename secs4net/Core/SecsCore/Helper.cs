@@ -24,25 +24,26 @@ namespace Secs4Net
         public static void WriteTo(this SecsMessage msg, TextWriter writer)
         {
             writer.WriteLine(msg.ToString());
-            Write(writer, msg.SecsItem, SmlIndent);
+            if(msg.HasRoot)
+                Write(writer, msg.SecsItem, SmlIndent);
             writer.Write('.');
         }
 
-        static void Write(TextWriter writer, Item item, int indent)
+        static void Write(TextWriter writer, Item? item, int indent)
         {
             if (item == null) return;
             var indentStr = new string(' ', indent);
             writer.Write(indentStr);
             writer.Write('<');
-            writer.Write(item.Format.ToSML());
+            writer.Write(item.Value.Format.ToSML());
             writer.Write(" [");
-            writer.Write(item.Count);
+            writer.Write(item.Value.Count);
             writer.Write("] ");
-            switch (item.Format)
+            switch (item.Value.Format)
             {
                 case SecsFormat.List:
                     writer.WriteLine();
-                    var items = item.Items;
+                    var items = item.Value.Items;
                     int count = items.Count;
                     for (int i = 0; i < count; i++)
                         Write(writer, items[i], indent + SmlIndent);
@@ -51,11 +52,11 @@ namespace Secs4Net
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
                     writer.Write('\'');
-                    writer.Write(item.ToString());
+                    writer.Write(item.Value.ToString());
                     writer.Write('\'');
                     break;
                 default:
-                    writer.Write(item.ToString());
+                    writer.Write(item.Value.ToString());
                     break;
             }
             writer.WriteLine('>');
@@ -107,7 +108,7 @@ namespace Secs4Net
 
             var replyExpected = line.IndexOf('W', i) != -1;
             #endregion
-            Item rootItem = null;
+            Item? rootItem = null;
             var stack = new Stack<List<Item>>();
             while ((line = await sr.ReadLineAsync()) != null)
             {
@@ -160,7 +161,7 @@ namespace Secs4Net
 
             var name = line.Substring(0, i);
 
-            i = line.IndexOf("'S", i + 1) + 2;
+            i = line.IndexOf("'S", i + 1, StringComparison.Ordinal) + 2;
             int j = line.IndexOf('F', i);
             var s = byte.Parse(line.Substring(i, j - i));
 
@@ -169,7 +170,7 @@ namespace Secs4Net
 
             var replyExpected = line.IndexOf('W', i) != -1;
             #endregion
-            Item rootItem = null;
+            Item? rootItem = null;
             var stack = new Stack<List<Item>>();
             while ((line = sr.ReadLine()) != null)
             {
@@ -177,7 +178,7 @@ namespace Secs4Net
                 if (line[0] == '>')
                 {
                     var itemList = stack.Pop();
-                    var item = itemList.Count > 0 ? Item.L(itemList) : Item.L();
+                    var item = itemList.Count > 0 ? L(itemList) : L();
                     if (stack.Count > 0)
                         stack.Peek().Add(item);
                     else

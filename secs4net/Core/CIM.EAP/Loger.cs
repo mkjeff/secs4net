@@ -11,16 +11,13 @@ namespace Cim.Eap {
             log.Info(msg);
         }
 
-        public static void Info(string formatStr, params object[] objs) {
-            log.Info(string.Format(formatStr, objs));
+        public static void Debug(object msg)
+        {
+            log.Debug(msg);
         }
 
         public static void Warn(object msg) {
             log.Warn(msg);
-        }
-
-        public static void Warn(string formatStr, params object[] objs) {
-            log.Warn(string.Format(formatStr, objs));
         }
 
         public static void Notice(string msg) {
@@ -29,16 +26,8 @@ namespace Cim.Eap {
                                  null));
         }
 
-        public static void Notice(string formatStr, params object[] objs) {
-            Notice(string.Format(formatStr, objs));
-        }
-
         public static void Error(string msg) {
             log.Error(msg);
-        }
-
-        public static void Error(string formatStr, params object[] objs) {
-            log.Error(string.Format(formatStr, objs));
         }
 
         public static void Error(Exception ex) {
