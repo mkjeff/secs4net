@@ -1,8 +1,12 @@
 ﻿using Cim.Eap.Tx;
+using Secs4Net;
 
-namespace Cim.Eap {
-    sealed partial class Driver:EapDriver {
-        protected override void Init() {
+namespace Cim.Eap
+{
+    sealed partial class Driver : EapDriver
+    {
+        protected override void Init()
+        {
             // TX handler
             EAP.SetTxHandler<ToolModeChangeRequest>(HandleTCS);
             EAP.SetTxHandler<AccessModeChangeRequest>(HandleTCS);
@@ -28,9 +32,11 @@ namespace Cim.Eap {
             EAP.SubscribeS6F11("ProcessJobEnd", EQP_ProcessJobEnd);
             EAP.SubscribeS6F11("WaferProcessData", EQP_DataCollection);
             EAP.SubscribeS6F11("WaferStatusChange", EQP_WaferStatusChange);
-            EAP.SubscribeS6F11("DataCollectionComplete",EQP_DataCollectionComplete);          
+            EAP.SubscribeS6F11("DataCollectionComplete", EQP_DataCollectionComplete);
+        }
 
-            EAP.Report(new ControlJobsInfoInquery());
+        protected override void HandleToolAlarm(SecsMessage msg)
+        {
         }
     }
 }

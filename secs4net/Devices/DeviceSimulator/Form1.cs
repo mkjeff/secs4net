@@ -4,12 +4,13 @@ using System.Windows.Forms;
 using Secs4Net;
 using System.Net;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace SecsDevice {
     public partial class Form1 : Form {
         SecsGem _secsGem;
-        readonly SecsTracer Logger;
-        readonly BindingList<RecvMessage> recvBuffer = new BindingList<RecvMessage>();
+        readonly SecsGemLogger Logger;
+        readonly BindingList<ReceivedMessage> recvBuffer = new BindingList<ReceivedMessage>();
         public Form1() {
             InitializeComponent();
 
@@ -32,17 +33,17 @@ namespace SecsDevice {
         {
             _secsGem?.Dispose();
             _secsGem = new SecsGem(
+                isActive: radioActiveMode.Checked,
                 ip: IPAddress.Parse(txtAddress.Text),
                 port: (int)numPort.Value,
-                isActive: radioActiveMode.Checked,
-                tracer: Logger,
                 primaryMsgHandler: (primaryMsg, replyAction) =>
                     this.Invoke(new MethodInvoker(() =>
-                        recvBuffer.Add(new RecvMessage
+                        recvBuffer.Add(new ReceivedMessage
                         {
                             Msg = primaryMsg,
                             ReplyAction = replyAction
-                        }))));
+                        }))),
+                tracer: Logger);
 
             _secsGem.ConnectionChanged += delegate
             {
@@ -53,7 +54,7 @@ namespace SecsDevice {
             };
 
             btnEnable.Enabled = false;
-            await _secsGem.Start();
+            await _secsGem.StartAsync();
             btnDisable.Enabled = true;
         }
 
@@ -86,12 +87,13 @@ namespace SecsDevice {
         }
 
         private void lstUnreplyMsg_SelectedIndexChanged(object sender, EventArgs e) {
-            var recv = lstUnreplyMsg.SelectedItem as RecvMessage;
-            txtRecvPrimary.Text = recv?.Msg.ToSML();
+            var receivedMessage = lstUnreplyMsg.SelectedItem as ReceivedMessage;
+            txtRecvPrimary.Text = receivedMessage?.Msg.ToSML();
         }
 
-        private void btnReplySecondary_Click(object sender, EventArgs e) {
-            var recv = lstUnreplyMsg.SelectedItem as RecvMessage;
+        private void btnReplySecondary_Click(object sender, EventArgs e)
+        {
+            var recv = lstUnreplyMsg.SelectedItem as ReceivedMessage;
             if (recv == null)
                 return;
 
@@ -103,7 +105,7 @@ namespace SecsDevice {
             txtRecvPrimary.Clear();
         }
 
-        class SecsLogger : SecsTracer
+        class SecsLogger : SecsGemLogger
         {
             readonly Form1 _form;
             internal SecsLogger(Form1 form)
@@ -154,7 +156,7 @@ namespace SecsDevice {
         }
     }
 
-    public sealed class RecvMessage {
+    public sealed class ReceivedMessage {
         public SecsMessage Msg { get; set; }
         public Action<SecsMessage> ReplyAction { get; set; }
     }

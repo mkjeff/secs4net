@@ -163,6 +163,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecsGem.cs" />
     <Compile Include="SecsMessage.cs" />
+    <Compile Include="SocketAsyncExtension.cs" />
+    <Compile Include="SystemByteGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

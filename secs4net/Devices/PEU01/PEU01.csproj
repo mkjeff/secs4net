@@ -95,7 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\CIM.EAP\CIM.Eap.csproj">
-      <Project>{51cbed10-a51e-43a7-8370-81de490be207}</Project>
+      <Project>{51CBED10-A51E-43A7-8370-81DE490BE207}</Project>
       <Name>CIM.Eap</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\CIM.Management\CIM.Management.csproj">

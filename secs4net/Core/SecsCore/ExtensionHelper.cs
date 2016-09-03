@@ -29,7 +29,9 @@ namespace Secs4Net {
         internal static Item BytesDecode(this SecsFormat format, byte[] bytes, int index, int length) {
             switch (format) {
                 case SecsFormat.ASCII: return A(Encoding.ASCII.GetString(bytes, index, length));
+#pragma warning disable CS0618 // Type or member is obsolete
                 case SecsFormat.JIS8: return J(JIS8Encoding.GetString(bytes, index, length));
+#pragma warning restore CS0618 // Type or member is obsolete
                 case SecsFormat.Boolean: return Boolean(Decode<bool>(sizeof(bool), bytes, index, length));
                 case SecsFormat.Binary: return B(Decode<byte>(sizeof(byte), bytes, index, length));
                 case SecsFormat.U1: return U1(Decode<byte>(sizeof(byte), bytes, index, length));
@@ -70,7 +72,7 @@ namespace Secs4Net {
 
         static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
 
-        internal static string ToSmlString<T>(this T[] value) where T : struct => 
+        internal static string ToSmlString<T>(this T[] value) where T : struct =>
             value.Length == 1 ? value[0].ToString() : string.Join(" ", value);
         #endregion
 
@@ -128,8 +130,8 @@ namespace Secs4Net {
             uint length = (uint)item.RawData.Count;
             buffer.Add(item.RawData);
             if (item.Format == SecsFormat.List)
-                for (int i = 0,cnt = item.Items.Count; i < cnt; i++)
-                    length += item.Items[i].Encode(buffer);
+                foreach (var subItem in item.Items)
+                    length += subItem.Encode(buffer);
             return length;
         }
     }

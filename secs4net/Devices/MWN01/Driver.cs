@@ -1,7 +1,12 @@
 ﻿using Cim.Eap.Tx;
-namespace Cim.Eap {
-    sealed partial class Driver : EapDriver {
-        protected override void Init() {
+using Secs4Net;
+
+namespace Cim.Eap
+{
+    sealed partial class Driver : EapDriver
+    {
+        protected override void Init()
+        {
             // TX Handler
             EAP.SetTxHandler<ToolModeChangeRequest>(TCS_ToolModeChange);
             EAP.SetTxHandler<AccessModeChangeRequest>(TCS_AccessModeChange);
@@ -28,8 +33,10 @@ namespace Cim.Eap {
             EAP.SubscribeS6F11("WaferProcessData_LLH", EQP_WaferProcessData_LLH_LHC);
             EAP.SubscribeS6F11("WaferProcessData_LHC", EQP_WaferProcessData_LLH_LHC);
             EAP.SubscribeS6F11("WaferProcessData_PVD", EQP_WaferProcessData_PVD);
+        }
 
-            EAP.Report(new ControlJobsInfoInquery());
+        protected override void HandleToolAlarm(SecsMessage msg)
+        {
         }
     }
 }

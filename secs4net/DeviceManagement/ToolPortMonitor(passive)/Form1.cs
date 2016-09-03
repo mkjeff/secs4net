@@ -38,14 +38,18 @@ namespace LoadPortMonitor {
                                 Item.U2(18027),
                                 Item.U2(18028)));
 
-        void GetLoadPortStatus(ISecsDevice device) {
-            try {
-                var s1f4 = device.Send(s1f3);
+        async void GetLoadPortStatus(ISecsDevice device)
+        {
+            try
+            {
+                var s1f4 = await device.SendAsync(s1f3);
 
                 #region Update UI
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < 3; i++)
+                {
                     string state = null;
-                    switch ((byte)s1f4.SecsItem.Items[i]) {
+                    switch ((byte)s1f4.SecsItem.Items[i])
+                    {
                         case 0:
                             state = "OutOfService";
                             break;
@@ -68,7 +72,9 @@ namespace LoadPortMonitor {
                     ports[i].State = state;
                 }
                 #endregion
-            } catch {
+            }
+            catch
+            {
 
             }
         }

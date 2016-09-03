@@ -1,6 +1,7 @@
 ﻿using System;
 using Cim.Management;
 using Cim.Eap.Tx;
+using System.Threading.Tasks;
 
 namespace Cim.Eap
 {
@@ -14,7 +15,7 @@ namespace Cim.Eap
         /// </summary>
         /// <typeparam name="T">Name rule: [TxName][TxType]</typeparam>
         /// <param name="handler">Tx handler method</param>
-        void SetTxHandler<T>(Action<T> handler) where T : struct, ITxMessage;
+        void SetTxHandler<T>(Func<T, Task> handler) where T : struct, ITxMessage;
 
         void Report<T>(T report) where T : struct, ITxReport;
         void Report(DataCollectionReport report);

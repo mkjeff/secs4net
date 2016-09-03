@@ -44,16 +44,12 @@
             System.Windows.Forms.ToolStripMenuItem configToolStripMenuItem;
             System.Windows.Forms.ToolStripMenuItem menuItemEapConfig;
             System.Windows.Forms.ToolStripMenuItem menuItemGemConfig;
-            System.Windows.Forms.ToolStripMenuItem fDCToolStripMenuItem;
-            System.Windows.Forms.ToolStripMenuItem enableLoggingToolStripMenuItem;
             System.Windows.Forms.StatusStrip statusbar;
             System.Windows.Forms.SplitContainer splitContainer2;
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(HostMainForm));
             this.txtMsg = new System.Windows.Forms.TextBox();
             this.menuItemGemEnable = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemGemDisable = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemSecsTrace = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuItemTracePolling = new System.Windows.Forms.ToolStripMenuItem();
             this.eqpAddressStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.eapDriverLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.gemStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -81,16 +77,16 @@
             configToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             menuItemEapConfig = new System.Windows.Forms.ToolStripMenuItem();
             menuItemGemConfig = new System.Windows.Forms.ToolStripMenuItem();
-            fDCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            enableLoggingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             statusbar = new System.Windows.Forms.StatusStrip();
             splitContainer2 = new System.Windows.Forms.SplitContainer();
             groupBox1.SuspendLayout();
             menu.SuspendLayout();
             statusbar.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(splitContainer2)).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -136,8 +132,7 @@
             menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             fileToolStripMenuItem,
             sECSToolStripMenuItem,
-            configToolStripMenuItem,
-            fDCToolStripMenuItem});
+            configToolStripMenuItem});
             menu.Location = new System.Drawing.Point(0, 0);
             menu.Name = "menu";
             menu.Size = new System.Drawing.Size(642, 24);
@@ -155,51 +150,51 @@
             publishZServiceToolStripMenuItem,
             menuItemExit});
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            fileToolStripMenuItem.Size = new System.Drawing.Size(34, 20);
+            fileToolStripMenuItem.Size = new System.Drawing.Size(38, 20);
             fileToolStripMenuItem.Text = "File";
             // 
             // menuItemClearScreen
             // 
             menuItemClearScreen.Name = "menuItemClearScreen";
-            menuItemClearScreen.Size = new System.Drawing.Size(198, 22);
+            menuItemClearScreen.Size = new System.Drawing.Size(226, 22);
             menuItemClearScreen.Text = "Clear Screen";
             menuItemClearScreen.Click += new System.EventHandler(this.menuItemClearScreen_Click);
             // 
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new System.Drawing.Size(195, 6);
+            toolStripSeparator5.Size = new System.Drawing.Size(223, 6);
             // 
             // reloadSpecialControlFileToolStripMenuItem
             // 
             reloadSpecialControlFileToolStripMenuItem.Name = "reloadSpecialControlFileToolStripMenuItem";
-            reloadSpecialControlFileToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            reloadSpecialControlFileToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             reloadSpecialControlFileToolStripMenuItem.Text = "Reload Special Control File";
             reloadSpecialControlFileToolStripMenuItem.Click += new System.EventHandler(this.reloadSpecialControlFileToolStripMenuItem_Click);
             // 
             // menuItemReloadGemXml
             // 
             menuItemReloadGemXml.Name = "menuItemReloadGemXml";
-            menuItemReloadGemXml.Size = new System.Drawing.Size(198, 22);
+            menuItemReloadGemXml.Size = new System.Drawing.Size(226, 22);
             menuItemReloadGemXml.Text = "Reload Gem.xml";
             menuItemReloadGemXml.Click += new System.EventHandler(this.menuItemReloadGemXml_Click);
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new System.Drawing.Size(195, 6);
+            toolStripSeparator1.Size = new System.Drawing.Size(223, 6);
             // 
             // publishZServiceToolStripMenuItem
             // 
             publishZServiceToolStripMenuItem.Name = "publishZServiceToolStripMenuItem";
-            publishZServiceToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            publishZServiceToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             publishZServiceToolStripMenuItem.Text = "Publish Z Service";
             publishZServiceToolStripMenuItem.Click += new System.EventHandler(this.publishZServiceToolStripMenuItem_Click);
             // 
             // menuItemExit
             // 
             menuItemExit.Name = "menuItemExit";
-            menuItemExit.Size = new System.Drawing.Size(198, 22);
+            menuItemExit.Size = new System.Drawing.Size(226, 22);
             menuItemExit.Text = "Exit";
             menuItemExit.Click += new System.EventHandler(this.menuItemExit_Click);
             // 
@@ -216,66 +211,66 @@
             toolStripSeparator4,
             this.menuItemSecsTrace});
             sECSToolStripMenuItem.Name = "sECSToolStripMenuItem";
-            sECSToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            sECSToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             sECSToolStripMenuItem.Text = "SECS";
             // 
             // menuItemSECSMessageList
             // 
             menuItemSECSMessageList.CheckOnClick = true;
             menuItemSECSMessageList.Name = "menuItemSECSMessageList";
-            menuItemSECSMessageList.Size = new System.Drawing.Size(159, 22);
+            menuItemSECSMessageList.Size = new System.Drawing.Size(178, 22);
             menuItemSECSMessageList.Text = "SECS Message List";
             menuItemSECSMessageList.Click += new System.EventHandler(this.menuItemSecsMessagestList_Click);
             // 
             // defineLinkToolStripMenuItem
             // 
             defineLinkToolStripMenuItem.Name = "defineLinkToolStripMenuItem";
-            defineLinkToolStripMenuItem.Size = new System.Drawing.Size(159, 22);
+            defineLinkToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
             defineLinkToolStripMenuItem.Text = "Define Link";
             defineLinkToolStripMenuItem.Click += new System.EventHandler(this.defineLinkToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(156, 6);
+            toolStripSeparator2.Size = new System.Drawing.Size(175, 6);
             // 
             // menuItemGemEnable
             // 
             this.menuItemGemEnable.Name = "menuItemGemEnable";
-            this.menuItemGemEnable.Size = new System.Drawing.Size(159, 22);
+            this.menuItemGemEnable.Size = new System.Drawing.Size(178, 22);
             this.menuItemGemEnable.Text = "Enable";
             this.menuItemGemEnable.Click += new System.EventHandler(this.menuItemGemEnable_Click);
             // 
             // menuItemGemDisable
             // 
             this.menuItemGemDisable.Name = "menuItemGemDisable";
-            this.menuItemGemDisable.Size = new System.Drawing.Size(159, 22);
+            this.menuItemGemDisable.Size = new System.Drawing.Size(178, 22);
             this.menuItemGemDisable.Text = "Disable";
             this.menuItemGemDisable.Click += new System.EventHandler(this.menuItemGemDisable_Click);
             // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(156, 6);
+            toolStripSeparator3.Size = new System.Drawing.Size(175, 6);
             // 
             // menuItemEnableLinkTest
             // 
             menuItemEnableLinkTest.CheckOnClick = true;
             menuItemEnableLinkTest.Name = "menuItemEnableLinkTest";
-            menuItemEnableLinkTest.Size = new System.Drawing.Size(159, 22);
+            menuItemEnableLinkTest.Size = new System.Drawing.Size(178, 22);
             menuItemEnableLinkTest.Text = "Link Test";
             menuItemEnableLinkTest.Click += new System.EventHandler(this.enableTraceLogToolStripMenuItem_Click);
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new System.Drawing.Size(156, 6);
+            toolStripSeparator4.Size = new System.Drawing.Size(175, 6);
             // 
             // menuItemSecsTrace
             // 
             this.menuItemSecsTrace.CheckOnClick = true;
             this.menuItemSecsTrace.Name = "menuItemSecsTrace";
-            this.menuItemSecsTrace.Size = new System.Drawing.Size(159, 22);
+            this.menuItemSecsTrace.Size = new System.Drawing.Size(178, 22);
             this.menuItemSecsTrace.Text = "Trace On Screen";
             this.menuItemSecsTrace.Click += new System.EventHandler(this.menuItemSecsTrace_Click);
             // 
@@ -285,46 +280,22 @@
             menuItemEapConfig,
             menuItemGemConfig});
             configToolStripMenuItem.Name = "configToolStripMenuItem";
-            configToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
+            configToolStripMenuItem.Size = new System.Drawing.Size(57, 20);
             configToolStripMenuItem.Text = "Config";
             // 
             // menuItemEapConfig
             // 
             menuItemEapConfig.Name = "menuItemEapConfig";
-            menuItemEapConfig.Size = new System.Drawing.Size(95, 22);
+            menuItemEapConfig.Size = new System.Drawing.Size(102, 22);
             menuItemEapConfig.Text = "EAP";
             menuItemEapConfig.Click += new System.EventHandler(this.menuItemEapConfig_Click);
             // 
             // menuItemGemConfig
             // 
             menuItemGemConfig.Name = "menuItemGemConfig";
-            menuItemGemConfig.Size = new System.Drawing.Size(95, 22);
+            menuItemGemConfig.Size = new System.Drawing.Size(102, 22);
             menuItemGemConfig.Text = "GEM";
             menuItemGemConfig.Click += new System.EventHandler(this.menuItemGemConfig_Click);
-            // 
-            // fDCToolStripMenuItem
-            // 
-            fDCToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuItemTracePolling,
-            enableLoggingToolStripMenuItem});
-            fDCToolStripMenuItem.Name = "fDCToolStripMenuItem";
-            fDCToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
-            fDCToolStripMenuItem.Text = "FDC";
-            // 
-            // menuItemTracePolling
-            // 
-            this.menuItemTracePolling.Name = "menuItemTracePolling";
-            this.menuItemTracePolling.Size = new System.Drawing.Size(132, 22);
-            this.menuItemTracePolling.Text = "Trace Polling";
-            this.menuItemTracePolling.Click += new System.EventHandler(this.menuItemTracePolling_Click);
-            // 
-            // enableLoggingToolStripMenuItem
-            // 
-            enableLoggingToolStripMenuItem.CheckOnClick = true;
-            enableLoggingToolStripMenuItem.Name = "enableLoggingToolStripMenuItem";
-            enableLoggingToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
-            enableLoggingToolStripMenuItem.Text = "Logging";
-            enableLoggingToolStripMenuItem.Click += new System.EventHandler(this.enableLoggingToolStripMenuItem_Click);
             // 
             // statusbar
             // 
@@ -341,17 +312,17 @@
             // 
             this.eqpAddressStatusLabel.BorderStyle = System.Windows.Forms.Border3DStyle.Bump;
             this.eqpAddressStatusLabel.Name = "eqpAddressStatusLabel";
-            this.eqpAddressStatusLabel.Size = new System.Drawing.Size(42, 17);
+            this.eqpAddressStatusLabel.Size = new System.Drawing.Size(47, 17);
             this.eqpAddressStatusLabel.Text = "EQP IP:";
             // 
             // eapDriverLabel
             // 
-            this.eapDriverLabel.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)(((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
-                        | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
+            this.eapDriverLabel.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)(((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)));
             this.eapDriverLabel.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenOuter;
             this.eapDriverLabel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.eapDriverLabel.Name = "eapDriverLabel";
-            this.eapDriverLabel.Size = new System.Drawing.Size(495, 17);
+            this.eapDriverLabel.Size = new System.Drawing.Size(476, 17);
             this.eapDriverLabel.Spring = true;
             this.eapDriverLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -359,7 +330,7 @@
             // 
             this.gemStatusLabel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.gemStatusLabel.Name = "gemStatusLabel";
-            this.gemStatusLabel.Size = new System.Drawing.Size(90, 17);
+            this.gemStatusLabel.Size = new System.Drawing.Size(104, 17);
             this.gemStatusLabel.Text = "SECS GEM Status";
             // 
             // splitContainer2
@@ -386,7 +357,7 @@
             this.listBoxSecsMessages.ItemHeight = 12;
             this.listBoxSecsMessages.Location = new System.Drawing.Point(0, 0);
             this.listBoxSecsMessages.Name = "listBoxSecsMessages";
-            this.listBoxSecsMessages.Size = new System.Drawing.Size(50, 206);
+            this.listBoxSecsMessages.Size = new System.Drawing.Size(50, 207);
             this.listBoxSecsMessages.TabIndex = 1;
             this.listBoxSecsMessages.SelectedIndexChanged += new System.EventHandler(this.listBoxSecsMessageList_SelectedIndexChanged);
             // 
@@ -447,9 +418,11 @@
             statusbar.PerformLayout();
             splitContainer2.Panel1.ResumeLayout(false);
             splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(splitContainer2)).EndInit();
             splitContainer2.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -467,7 +440,6 @@
         private System.Windows.Forms.ToolStripStatusLabel eapDriverLabel;
         private System.Windows.Forms.ToolStripMenuItem menuItemSecsTrace;
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.ToolStripMenuItem menuItemTracePolling;
         private System.Windows.Forms.ToolStripStatusLabel eqpAddressStatusLabel;
     }
 }
