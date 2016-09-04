@@ -6,9 +6,9 @@ using System.Linq;
 using static Secs4Net.Item;
 using System.Threading.Tasks;
 
-namespace Secs4Net
+namespace Secs4Net.Sml
 {
-    public static class SecsMessageExtenstion
+    public static class SmlExtenstion
     {
         const int SmlIndent = 2;
 
@@ -29,21 +29,20 @@ namespace Secs4Net
             writer.Write('.');
         }
 
-        static void Write(TextWriter writer, Item? item, int indent)
+        static void Write(TextWriter writer, Item item, int indent)
         {
-            if (item == null) return;
             var indentStr = new string(' ', indent);
             writer.Write(indentStr);
             writer.Write('<');
-            writer.Write(item.Value.Format.ToSML());
+            writer.Write(item.Format.ToSML());
             writer.Write(" [");
-            writer.Write(item.Value.Count);
+            writer.Write(item.Count);
             writer.Write("] ");
-            switch (item.Value.Format)
+            switch (item.Format)
             {
                 case SecsFormat.List:
                     writer.WriteLine();
-                    var items = item.Value.Items;
+                    var items = item.Items;
                     int count = items.Count;
                     for (int i = 0; i < count; i++)
                         Write(writer, items[i], indent + SmlIndent);
@@ -52,11 +51,11 @@ namespace Secs4Net
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
                     writer.Write('\'');
-                    writer.Write(item.Value.ToString());
+                    writer.Write(item.GetValue<string>());
                     writer.Write('\'');
                     break;
                 default:
-                    writer.Write(item.Value.ToString());
+                    writer.Write(item.ToString());
                     break;
             }
             writer.WriteLine('>');
@@ -94,126 +93,160 @@ namespace Secs4Net
         public static async Task<SecsMessage> ToSecsMessageAsync(this TextReader sr)
         {
             string line = await sr.ReadLineAsync();
-            #region Parse First Line
-            int i = line.IndexOf(':');
-
-            var name = line.Substring(0, i);
-
-            i = line.IndexOf("'S", i + 1) + 2;
-            int j = line.IndexOf('F', i);
-            var s = byte.Parse(line.Substring(i, j - i));
-
-            i = line.IndexOf('\'', j);
-            var f = byte.Parse(line.Substring(j + 1, i - (j + 1)));
-
-            var replyExpected = line.IndexOf('W', i) != -1;
-            #endregion
-            Item? rootItem = null;
-            var stack = new Stack<List<Item>>();
-            while ((line = await sr.ReadLineAsync()) != null)
+            try
             {
-                line = line.TrimStart();
-                if (line[0] == '>')
-                {
-                    var itemList = stack.Pop();
-                    var item = itemList.Count > 0 ? Item.L(itemList) : Item.L();
-                    if (stack.Count > 0)
-                        stack.Peek().Add(item);
-                    else
-                        rootItem = item;
-                    continue;
-                }
-                if (line[0] == '.') break;
+                #region Parse First Line
+                int i = line.IndexOf(':');
 
-                #region <format[count] smlValue
-                int index_Item_L = line.IndexOf('<') + 1; //Debug.Assert(index_Item_L != 0);
-                int index_Size_L = line.IndexOf('[', index_Item_L); //Debug.Assert(index_Size_L != -1);
-                string format = line.Substring(index_Item_L, index_Size_L - index_Item_L).Trim();
+                var name = line.Substring(0, i);
 
+                i = line.IndexOf("'S", i + 1) + 2;
+                int j = line.IndexOf('F', i);
+                var s = byte.Parse(line.Substring(i, j - i));
 
-                if (format == "L")
-                {
-                    stack.Push(new List<Item>());
-                    continue;
-                }
-                else
-                {
-                    int index_Size_R = line.IndexOf(']', index_Size_L); //Debug.Assert(index_Size_R != -1);
-                    int index_Item_R = line.LastIndexOf('>'); //Debug.Assert(index_Item_R != -1);
-                    string valueStr = line.Substring(index_Size_R + 1, index_Item_R - index_Size_R - 1);
-                    var item = Create(format, valueStr);
-                    if (stack.Count > 0)
-                        stack.Peek().Add(item);
-                    else
-                        rootItem = item;
-                }
+                i = line.IndexOf('\'', j);
+                var f = byte.Parse(line.Substring(j + 1, i - (j + 1)));
+
+                var replyExpected = line.IndexOf('W', i) != -1;
                 #endregion
-            }
+                Item? rootItem = null;
+                var stack = new Stack<List<Item>>();
+                while ((line = await sr.ReadLineAsync()) != null)
+                {
+                    line = line.TrimStart();
+                    if (line[0] == '>')
+                    {
+                        var itemList = stack.Pop();
+                        var item = itemList.Count > 0 ? Item.L(itemList) : Item.L();
+                        if (stack.Count > 0)
+                            stack.Peek().Add(item);
+                        else
+                            rootItem = item;
+                        continue;
+                    }
+                    if (line[0] == '.') break;
 
-            return new SecsMessage(s, f, replyExpected, name, rootItem);
+                    #region <format[count] smlValue
+                    int index_Item_L = line.IndexOf('<') + 1; //Debug.Assert(index_Item_L != 0);
+                    int index_Size_L = line.IndexOf('[', index_Item_L); //Debug.Assert(index_Size_L != -1);
+                    string format = line.Substring(index_Item_L, index_Size_L - index_Item_L).Trim();
+
+
+                    if (format == "L")
+                    {
+                        stack.Push(new List<Item>());
+                        continue;
+                    }
+                    else
+                    {
+                        int index_Size_R = line.IndexOf(']', index_Size_L); //Debug.Assert(index_Size_R != -1);
+                        int index_Item_R = line.LastIndexOf('>'); //Debug.Assert(index_Item_R != -1);
+                        string valueStr = line.Substring(index_Size_R + 1, index_Item_R - index_Size_R - 1);
+                        var item = Create(format, valueStr);
+                        if (stack.Count > 0)
+                            stack.Peek().Add(item);
+                        else
+                            rootItem = item;
+                    }
+                    #endregion
+                }
+
+                return new SecsMessage(s, f, replyExpected, name, rootItem);
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException("incorrect SML format", ex);
+            }
         }
 
         public static SecsMessage ToSecsMessage(this TextReader sr)
         {
             string line = sr.ReadLine();
-            #region Parse First Line
-            int i = line.IndexOf(':');
-
-            var name = line.Substring(0, i);
-
-            i = line.IndexOf("'S", i + 1, StringComparison.Ordinal) + 2;
-            int j = line.IndexOf('F', i);
-            var s = byte.Parse(line.Substring(i, j - i));
-
-            i = line.IndexOf('\'', j);
-            var f = byte.Parse(line.Substring(j + 1, i - (j + 1)));
-
-            var replyExpected = line.IndexOf('W', i) != -1;
-            #endregion
-            Item? rootItem = null;
-            var stack = new Stack<List<Item>>();
-            while ((line = sr.ReadLine()) != null)
+            try
             {
-                line = line.TrimStart();
-                if (line[0] == '>')
-                {
-                    var itemList = stack.Pop();
-                    var item = itemList.Count > 0 ? L(itemList) : L();
-                    if (stack.Count > 0)
-                        stack.Peek().Add(item);
-                    else
-                        rootItem = item;
-                    continue;
-                }
-                if (line[0] == '.') break;
+                #region Parse First Line
+                int i = line.IndexOf(':');
 
-                #region <format[count] smlValue
-                int index_Item_L = line.IndexOf('<') + 1; //Debug.Assert(index_Item_L != 0);
-                int index_Size_L = line.IndexOf('[', index_Item_L); //Debug.Assert(index_Size_L != -1);
-                string format = line.Substring(index_Item_L, index_Size_L - index_Item_L).Trim();
+                var name = line.Substring(0, i);
 
+                i = line.IndexOf("'S", i + 1, StringComparison.Ordinal) + 2;
+                int j = line.IndexOf('F', i);
+                var s = byte.Parse(line.Substring(i, j - i));
 
-                if (format == "L")
-                {
-                    stack.Push(new List<Item>());
-                    continue;
-                }
-                else
-                {
-                    int index_Size_R = line.IndexOf(']', index_Size_L); //Debug.Assert(index_Size_R != -1);
-                    int index_Item_R = line.LastIndexOf('>'); //Debug.Assert(index_Item_R != -1);
-                    string valueStr = line.Substring(index_Size_R + 1, index_Item_R - index_Size_R - 1);
-                    var item = Create(format, valueStr);
-                    if (stack.Count > 0)
-                        stack.Peek().Add(item);
-                    else
-                        rootItem = item;
-                }
+                i = line.IndexOf('\'', j);
+                var f = byte.Parse(line.Substring(j + 1, i - (j + 1)));
+
+                var replyExpected = line.IndexOf('W', i) != -1;
                 #endregion
-            }
+                Item? rootItem = null;
+                var stack = new Stack<List<Item>>();
+                while ((line = sr.ReadLine()) != null)
+                {
+                    line = line.TrimStart();
+                    if (line[0] == '>')
+                    {
+                        var itemList = stack.Pop();
+                        var item = itemList.Count > 0 ? L(itemList) : L();
+                        if (stack.Count > 0)
+                            stack.Peek().Add(item);
+                        else
+                            rootItem = item;
+                        continue;
+                    }
+                    if (line[0] == '.') break;
 
-            return new SecsMessage(s, f, replyExpected, name, rootItem);
+                    #region <format[count] smlValue
+                    int index_Item_L = line.IndexOf('<') + 1; //Debug.Assert(index_Item_L != 0);
+                    int index_Size_L = line.IndexOf('[', index_Item_L); //Debug.Assert(index_Size_L != -1);
+                    string format = line.Substring(index_Item_L, index_Size_L - index_Item_L).Trim();
+
+
+                    if (format == "L")
+                    {
+                        stack.Push(new List<Item>());
+                        continue;
+                    }
+                    else
+                    {
+                        int index_Size_R = line.IndexOf(']', index_Size_L); //Debug.Assert(index_Size_R != -1);
+                        int index_Item_R = line.LastIndexOf('>'); //Debug.Assert(index_Item_R != -1);
+                        string valueStr = line.Substring(index_Size_R + 1, index_Item_R - index_Size_R - 1);
+                        var item = Create(format, valueStr);
+                        if (stack.Count > 0)
+                            stack.Peek().Add(item);
+                        else
+                            rootItem = item;
+                    }
+                    #endregion
+                }
+
+                return new SecsMessage(s, f, replyExpected, name, rootItem);
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException("incorrect SML format", ex);
+            }
         }
+
+        public static string ToHexString(this byte[] value)
+        {
+            if (value.Length == 0) return string.Empty;
+            int length = value.Length * 3;
+            char[] chs = new char[length];
+            for (int ci = 0, i = 0; ci < length; ci += 3)
+            {
+                byte num = value[i++];
+                chs[ci] = GetHexValue(num / 0x10);
+                chs[ci + 1] = GetHexValue(num % 0x10);
+                chs[ci + 2] = ' ';
+            }
+            return new string(chs, 0, length - 1);
+        }
+
+        static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
+
+        static string ToSmlString<T>(this T[] value) where T : struct =>
+            value.Length == 1 ? value[0].ToString() : string.Join(" ", value);
 
         static readonly Func<string, Item> SmlParser_A = CreateSmlParser(A, A);
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -84,7 +84,7 @@ namespace Cim.Eap.Tx {
                 Type = MeasurementType.Site,
                 Name = name,
                 SlotNo = slot,
-                Site = site.ToString(),
+                Site = site,
                 Value = value,
                 Xml = GenDataItemElm(
                     MeasurementType.Site,
@@ -111,15 +111,16 @@ namespace Cim.Eap.Tx {
             return value;
         }
 
-        static XElement GenDataItemElm(MeasurementType type, string name, string slot, string position, string site, string carrierId, string value) => new XElement("DataItem",
-     new XAttribute("MeasurementType", type),
-     new XAttribute("ItemName", name),
-     new XAttribute("WaferSlotNo", slot ?? string.Empty),
-     new XAttribute("WaferPosition", position ?? string.Empty),
-     new XAttribute("SitePosition", site ?? string.Empty),
-     new XAttribute("CarrierID", carrierId ?? string.Empty),
-     new XAttribute("WaferID", string.Empty),
-     ValueToXmlStr(value));
+        static XElement GenDataItemElm(MeasurementType type, string name, string slot, string position, string site, string carrierId, string value) 
+            => new XElement("DataItem",
+                 new XAttribute("MeasurementType", type),
+                 new XAttribute("ItemName", name),
+                 new XAttribute("WaferSlotNo", slot ?? string.Empty),
+                 new XAttribute("WaferPosition", position ?? string.Empty),
+                 new XAttribute("SitePosition", site ?? string.Empty),
+                 new XAttribute("CarrierID", carrierId ?? string.Empty),
+                 new XAttribute("WaferID", string.Empty),
+                ValueToXmlStr(value));
 
         public IEnumerable<DataItem> LotItems => _lotDatas.IsValueCreated ? _lotDatas.Value.Values : Enumerable.Empty<DataItem>();
         public IEnumerable<DataItem> WaferItems => _waferDatas.IsValueCreated ? _waferDatas.Value.Values : Enumerable.Empty<DataItem>();
@@ -144,15 +145,15 @@ namespace Cim.Eap.Tx {
         #endregion
 
         public XElement XML => new XElement("Transaction",
-        new XAttribute("TxName", "DataCollectionReport"),
-        new XAttribute("Type", "Event"),
-        new XElement("Tool",
-            new XAttribute("ToolID", string.Empty),
-            new XAttribute("LoadPortID", string.Empty),
-            new XAttribute("ProcessJobID", ProcessJob.Id)),
-        new XElement("DataItems", new XAttribute("DataCollectionDefinitionID", ProcessJob.DataCollectionDefinitionID),
-            from item in this
-            select item.Xml));
+            new XAttribute("TxName", "DataCollectionReport"),
+            new XAttribute("Type", "Event"),
+            new XElement("Tool",
+                new XAttribute("ToolID", string.Empty),
+                new XAttribute("LoadPortID", string.Empty),
+                new XAttribute("ProcessJobID", ProcessJob.Id)),
+            new XElement("DataItems", new XAttribute("DataCollectionDefinitionID", ProcessJob.DataCollectionDefinitionID),
+                from item in this
+                select item.Xml));
     }
 
     [DebuggerDisplay("value={Value}", Name = "{Name}")]

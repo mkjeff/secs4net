@@ -126,7 +126,7 @@ namespace Secs4Net
         /// <param name="logger">log tracer</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
         /// <param name="primaryMsgHandler">callback action for received primary message</param>
-        public SecsGem(bool isActive, IPAddress ip, int port, ISecsGemLogger logger = null, int receiveBufferSize = 0x4000, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler = null)
+        public SecsGem(bool isActive, IPAddress ip, int port, ISecsGemLogger logger = null, int receiveBufferSize = 0x4000, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler = null, ISecsMessageFormatter formatter=null)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
@@ -747,7 +747,7 @@ namespace Secs4Net
                         {
                             if (!CheckAvailable(length, index, _itemLength, out need)) return 4;
 
-                            item = _itemLength == 0 ? _format.BytesDecode() : _format.BytesDecode(data, index, _itemLength);
+                            item = _itemLength == 0 ? _format.BytesDecode() : _format.BytesDecode(new ArraySegment<byte>(data, index, _itemLength));
                             index += _itemLength;
                             _messageLength -= (uint)_itemLength;
                         }

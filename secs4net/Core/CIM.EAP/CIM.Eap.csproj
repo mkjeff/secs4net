@@ -171,6 +171,10 @@
     <Compile Include="TxReport\WaferStartReport.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Extension\Serialization.Json\Serialization.Json.csproj">
+      <Project>{60938345-e9cf-41f0-a588-505b05e5e544}</Project>
+      <Name>Serialization.Json</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CIM.Management\CIM.Management.csproj">
       <Project>{3EEDDDF5-284E-4C9E-87AF-4FFF72C480D4}</Project>
       <Name>CIM.Management</Name>

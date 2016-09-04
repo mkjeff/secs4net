@@ -10,7 +10,7 @@ namespace Secs4Net
                 throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
         }
 
-        public override string ToString() => $"{Name ?? string.Empty} : 'S{S}F{F}' {(ReplyExpected ? " W" : string.Empty)}";
+        public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
 
         /// <summary>
         /// message stream number
@@ -26,7 +26,6 @@ namespace Secs4Net
         /// expect reply message
         /// </summary>
         public bool ReplyExpected { get; internal set; }
-
 
         readonly Item? _rootItem;
         /// <summary>
@@ -50,7 +49,7 @@ namespace Secs4Net
             new List<ArraySegment<byte>>
             {
                 new ArraySegment<byte>(new byte[]{ 0, 0, 0, 10 }), // total length = header
-                new ArraySegment<byte>()                        // header placeholder
+                new ArraySegment<byte>(Array.Empty<byte>())                        // header placeholder
             };
 
         /// <summary>
@@ -78,7 +77,7 @@ namespace Secs4Net
             }
             else
             {
-                var result = new List<ArraySegment<byte>> { default(ArraySegment<byte>), default(ArraySegment<byte>)  };
+                var result = new List<ArraySegment<byte>> { default(ArraySegment<byte>), new ArraySegment<byte>(Array.Empty<byte>())  };
                 uint length = 10 + _rootItem.Value.Encode(result); // total length = item + header
 
                 byte[] msgLengthByte = BitConverter.GetBytes(length);
@@ -127,7 +126,7 @@ namespace Secs4Net
                     list.Add(Decode(bytes, ref index));
                 return Item.L(list);
             }
-            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, index, length);
+            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(new ArraySegment<byte>(bytes, index, length));
             index += length;
             return item;
         }

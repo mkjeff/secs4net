@@ -148,6 +148,7 @@
   <ItemGroup>
     <Content Include="bin\config\gem.xml" />
     <Content Include="ReadMe.txt" />
+    <Compile Include="DefineLink.cs" />
     <Compile Include="EQP.CarrierIdRead.cs" />
     <Compile Include="EQP.CarrierIdReadFail.cs" />
     <Compile Include="EQP.ControlJobEnd.cs" />

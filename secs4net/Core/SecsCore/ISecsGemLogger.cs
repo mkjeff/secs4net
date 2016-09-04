@@ -20,14 +20,14 @@ namespace Secs4Net
     /// <summary>
     /// SECS Connector Logger
     /// </summary>
-    sealed class SecsGemLogger: ISecsGemLogger
+    sealed class SecsGemLogger : ISecsGemLogger
     {
         public void TraceMessageIn(SecsMessage msg, int systembyte) {
-            Trace.WriteLine($"<-- [0x{systembyte:X8}] {msg.ToSML()}");
+            Trace.WriteLine($"<-- [0x{systembyte:X8}] {msg}");
         }
 
         public void TraceMessageOut(SecsMessage msg, int systembyte) {
-            Trace.WriteLine($"--> [0x{systembyte:X8}] {msg.ToSML()}");
+            Trace.WriteLine($"--> [0x{systembyte:X8}] {msg}");
         }
 
         public void TraceDebug(string msg) {

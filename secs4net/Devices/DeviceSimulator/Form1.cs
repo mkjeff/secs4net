@@ -4,9 +4,10 @@ using System.Windows.Forms;
 using Secs4Net;
 using System.Net;
 using System.Drawing;
-using System.Threading.Tasks;
+using Secs4Net.Sml;
 
-namespace SecsDevice {
+namespace SecsDevice
+{
     public partial class Form1 : Form {
         SecsGem _secsGem;
         readonly ISecsGemLogger Logger;
@@ -22,7 +23,7 @@ namespace SecsDevice {
             numDeviceId.DataBindings.Add("Enabled", btnEnable, "Enabled");
             recvMessageBindingSource.DataSource = recvBuffer;
             Application.ThreadException += (sender, e) => MessageBox.Show(e.Exception.ToString());
-
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) => MessageBox.Show(e.ExceptionObject.ToString());
             Logger = new SecsLogger(this);
         }
 

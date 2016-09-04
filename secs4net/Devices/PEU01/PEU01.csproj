@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefineLink.cs" />
     <Compile Include="EQP.CarrierIdReadFail.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="EQP.CarrierIdRead.cs" />

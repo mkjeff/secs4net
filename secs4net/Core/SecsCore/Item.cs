@@ -7,96 +7,36 @@ using System.Linq;
 using System.Runtime.Remoting.Lifetime;
 using System.Security.Permissions;
 using System.Text;
+using System.Threading;
 
 namespace Secs4Net
 {
     [DebuggerDisplay("<{Format} [{Count}] { (Format==SecsFormat.List) ? string.Empty : ToString() ,nq}>")]
-    public struct Item {
-       
-        public SecsFormat Format { get; }
+    public struct Item
+    {
+        public readonly SecsFormat Format;
+
+        public readonly int Count;
 
         /// <summary>
-        /// item value/list count
+        /// if Format is List RawData is only header bytes.
+        /// otherwise include header and value bytes.
         /// </summary>
-        public int Count { get; }
+        internal readonly RawDataWrapper RawData;
 
-        /// <summary>
-        /// item values or list of Item
-        /// </summary>
-        public IEnumerable Values { get; }
-
-        public IReadOnlyList<Item> Items {
-            get
-            {
-                if (Format != SecsFormat.List)
-                    throw new InvalidOperationException("Item is not a list");
-
-                return (IReadOnlyList<Item>)this.Values;
-            }
-        }
-
-        /// <summary>
-        /// get value by specific type
-        /// </summary>
-        /// <typeparam name="T">return value type</typeparam>
-        /// <returns></returns>
-        public T GetValue<T>() {
-            if (Format == SecsFormat.List)
-                throw new InvalidOperationException("Item is not a value item");
-
-            if (Values is T)
-                return (T)Values;
-
-            if (Values is T[])
-                return ((T[])Values)[0];
-
-            Type valueType = Nullable.GetUnderlyingType(typeof(T));
-            if (valueType != null && Values.GetType().GetElementType() == valueType)
-                return ((IEnumerable)Values).Cast<T>().First();
-
-            throw new InvalidOperationException("Item value type is incompatible");
-        }
-
-        /// <summary>
-        /// get value by specific type
-        /// </summary>
-        /// <typeparam name="T">return value type</typeparam>
-        /// <returns></returns>
-        public T GetValueOrDefault<T>() {
-            if (Format == SecsFormat.List)
-                throw new InvalidOperationException("Item is not a value item");
-
-            if (Values is T)
-                return (T)Values;
-
-            if (Values is T[])
-                return ((T[])Values).FirstOrDefault();
-
-            Type valueType = Nullable.GetUnderlyingType(typeof(T));
-            if (valueType != null && Values.GetType().GetElementType() == valueType)
-                return ((IEnumerable)Values).Cast<T>().FirstOrDefault();
-
-            throw new InvalidOperationException("Item value type is incompatible");
-        }
-
-        public override string ToString() => $"<{Format} [{ Count}] {(Format == SecsFormat.List ? "..." : string.Join(" ", Values.Cast<object>())) } >";
-
-        /// <summary>
-        /// if Format is List RawBytes is only header bytes.
-        /// otherwise include header and data bytes.
-        /// </summary>
-        internal readonly ArraySegment<byte> RawData;
+        readonly IEnumerable _values;
 
         #region Constructor
         /// <summary>
         /// List
         /// </summary>
-        Item(IReadOnlyList<Item> items) {
+        Item(IReadOnlyList<Item> items)
+        {
             Format = SecsFormat.List;
-            Values = items;
+            _values = items;
             Count = items.Count;
             int _;
-            RawData = new ArraySegment<byte>(Format.EncodeItem(Count, out _));
+            RawData = new RawDataWrapper(new ArraySegment<byte>(Format.EncodeItem(Count, out _)));
         }
 
         /// <summary>
@@ -105,33 +45,47 @@ namespace Secs4Net
         /// F4,F8
         /// Boolean
         /// </summary>
-        Item(SecsFormat format, Array value) {
+        internal Item(SecsFormat format, Array value, ArraySegment<byte>? bytes = null)
+        {
             Format = format;
-            Values = value;
+            _values = value;
             Count = value.Length;
 
-            Array val = (Array)Values;
-            int bytelength = Buffer.ByteLength(val);
-            int headerLength;
-            byte[] result = Format.EncodeItem(bytelength, out headerLength);
-            Buffer.BlockCopy(val, 0, result, headerLength, bytelength);
-            result.Reverse(headerLength, headerLength + bytelength, bytelength / val.Length);
-            RawData = new ArraySegment<byte>(result);
+            if (bytes == null)
+            {
+                int bytelength = Buffer.ByteLength(value);
+                int headerLength;
+                byte[] result = format.EncodeItem(bytelength, out headerLength);
+                Buffer.BlockCopy(value, 0, result, headerLength, bytelength);
+                result.Reverse(headerLength, headerLength + bytelength, bytelength / value.Length);
+                RawData = new RawDataWrapper(new ArraySegment<byte>(result));
+            }
+            else
+            {
+                RawData = new RawDataWrapper(bytes.Value, true);
+            }
         }
 
         /// <summary>
         /// A,J
         /// </summary>
-        Item(SecsFormat format, string value, Encoding encoder) {
+        internal Item(SecsFormat format, string value, Encoding encoder, ArraySegment<byte>? bytes = null)
+        {
             Format = format;
-            Values = value;
+            _values = value;
             Count = value.Length;
-            string str = (string)Values;
-            int headerLength;
-            byte[] result = Format.EncodeItem(str.Length, out headerLength);
-            encoder.GetBytes(str, 0, str.Length, result, headerLength);
-            RawData = new ArraySegment<byte>(result);
-            
+
+            if (bytes == null)
+            {
+                int headerLength;
+                byte[] result = format.EncodeItem(value.Length, out headerLength);
+                encoder.GetBytes(value, 0, value.Length, result, headerLength);
+                RawData = new RawDataWrapper(new ArraySegment<byte>(result));
+            }
+            else
+            {
+                RawData = new RawDataWrapper(bytes.Value);
+            }
         }
 
         /// <summary>
@@ -139,13 +93,96 @@ namespace Secs4Net
         /// </summary>
         /// <param name="format"></param>
         /// <param name="value"></param>
-        Item(SecsFormat format, IEnumerable value) {
+        Item(SecsFormat format, IEnumerable value)
+        {
             Format = format;
-            Values = value;
+            _values = value;
             Count = 0;
-            RawData = new ArraySegment<byte>(new byte[] { (byte)((byte)Format | 1), 0 });
+            RawData = new RawDataWrapper(new ArraySegment<byte>(new byte[] { (byte)((byte)Format | 1), 0 }));
         }
         #endregion
+
+        public byte[] RawBytes
+        {
+            get
+            {
+                RawData.Encode(Format);
+                return RawData.Bytes.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Non-list item values
+        /// </summary>
+        public IEnumerable Values
+        {
+            get
+            {
+                if (Format == SecsFormat.List)
+                    throw new InvalidOperationException("Item is a list");
+                return _values;
+            }
+        }
+
+        /// <summary>
+        /// List items
+        /// </summary>
+        public IReadOnlyList<Item> Items
+        {
+            get
+            {
+                if (Format != SecsFormat.List)
+                    throw new InvalidOperationException("Item is not a list");
+
+                return (IReadOnlyList<Item>)_values;
+            }
+        }
+
+        /// <summary>
+        /// get value by specific type
+        /// </summary>
+        /// <typeparam name="T">return value type</typeparam>
+        /// <returns></returns>
+        public T GetValue<T>()
+        {
+            if (Format == SecsFormat.List)
+                throw new InvalidOperationException("Item is list");
+
+            if (_values is T)
+                return (T)_values;
+
+            if (_values is IEnumerable<T>)
+                return _values.Cast<T>().First();
+
+            if (_values.GetType().GetElementType() == Nullable.GetUnderlyingType(typeof(T)))
+                return _values.Cast<T>().First();
+
+            throw new InvalidOperationException("Item value type is incompatible");
+        }
+
+        /// <summary>
+        /// get value by specific type
+        /// </summary>
+        /// <typeparam name="T">return value type</typeparam>
+        /// <returns></returns>
+        public T GetValueOrDefault<T>()
+        {
+            if (Format == SecsFormat.List)
+                throw new InvalidOperationException("Item is not a value item");
+
+            if (_values is T)
+                return (T)_values;
+
+            if (_values is IEnumerable<T>)
+                return _values.Cast<T>().FirstOrDefault();
+
+            if (_values.GetType().GetElementType() == Nullable.GetUnderlyingType(typeof(T)))
+                return _values.Cast<T>().FirstOrDefault();
+
+            throw new InvalidOperationException("Item value type is incompatible");
+        }
+
+        public override string ToString() => $"<{Format} [{ Count}] {(Format == SecsFormat.List ? "..." : string.Join(" ", _values.Cast<object>())) } >";
 
         #region Type Casting Operator
         public static explicit operator string(Item item) => item.GetValueOrDefault<string>();
@@ -402,7 +439,7 @@ namespace Secs4Net
         public static Item A() => EmptyA;
         public static Item J() => EmptyJ;
 
-        static readonly Item EmptyL = new Item(new ReadOnlyCollection<Item>(new Item[0]));
+        static readonly Item EmptyL = new Item(new ReadOnlyCollection<Item>(Array.Empty<Item>()));
         static readonly Item EmptyA = new Item(SecsFormat.ASCII, string.Empty);
         static readonly Item EmptyJ = new Item(SecsFormat.JIS8, string.Empty);
         static readonly Item EmptyBoolean = new Item(SecsFormat.Boolean, Enumerable.Empty<bool>());
@@ -420,5 +457,44 @@ namespace Secs4Net
 
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
         #endregion
+
+        internal struct RawDataWrapper
+        {
+            public readonly ArraySegment<byte> Bytes;
+            bool NeedReverse;
+
+            internal RawDataWrapper(ArraySegment<byte> bytes, bool needReverse = false)
+            {
+                Bytes = bytes;
+                NeedReverse = needReverse;
+            }
+
+            internal void Encode(SecsFormat format)
+            {
+                if (!NeedReverse)
+                    return;
+                NeedReverse = false;
+
+                int elementSize = 0;
+                switch (format)
+                {
+                    case SecsFormat.Boolean: elementSize = sizeof(bool); break;
+                    case SecsFormat.Binary: elementSize = sizeof(byte); break;
+                    case SecsFormat.U1: elementSize = sizeof(byte); break;
+                    case SecsFormat.U2: elementSize = sizeof(ushort); break;
+                    case SecsFormat.U4: elementSize = sizeof(uint); break;
+                    case SecsFormat.U8: elementSize = sizeof(ulong); break;
+                    case SecsFormat.I1: elementSize = sizeof(sbyte); break;
+                    case SecsFormat.I2: elementSize = sizeof(short); break;
+                    case SecsFormat.I4: elementSize = sizeof(int); break;
+                    case SecsFormat.I8: elementSize = sizeof(long); break;
+                    case SecsFormat.F4: elementSize = sizeof(float); break;
+                    case SecsFormat.F8: elementSize = sizeof(double); break;
+                    default: throw new ArgumentException(@"Invalid format", nameof(format));
+                }
+                Bytes.Array.Reverse(Bytes.Offset, Bytes.Offset + Bytes.Count, elementSize);
+            }
+        }
+
     }
 }

@@ -19,13 +19,7 @@ namespace SecsMessageVisuallizer.ViewModel {
             }
         }
 
-        public string Name {
-            get {
-                if(_secsItem.Format== SecsFormat.List)
-                    return string.Format("{0} [{1}]",_secsItem.Format.ToSML(),_secsItem.Items.Count);
-                return string.Format("{0} [{1}] {2}", _secsItem.Format.ToSML(),_secsItem.Count,_secsItem.ToString());
-            }
-        }
+        public string Name => _secsItem.ToString();
 
         public override string ToString() => _secsItem.ToString();
     }

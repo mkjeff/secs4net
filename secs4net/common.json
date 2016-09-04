@@ -1,0 +1,4521 @@
+[
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "ABT_S1"
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "AreYouThere"
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "OLD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": [
+            1,
+            2
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "OLD_H",
+    "SecsItem": {
+      "Format": "List",
+      "Items": []
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "CheckCJSpace",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            18001
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "GetAllCJ",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            18000
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "QueryLoadPortAccessMode",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            18011
+          ]
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            18012
+          ]
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            18013
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "QueryOnlineSubStatus",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "QueryPortStatus",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            18026
+          ]
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            18027
+          ]
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            18028
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "SVNR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "SVNRR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U1",
+              "Values": []
+            },
+            {
+              "Format": "ASCII",
+              "Values": ""
+            },
+            {
+              "Format": "ASCII",
+              "Values": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "EstablishCommunicationsRequest_Host",
+    "SecsItem": {
+      "Format": "List",
+      "Items": []
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "S1F14EstablishCommunicationsRequestAck_Host_Ack",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "RequestOffline"
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "RequestOnline"
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "CR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "MDLN"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "Softrev"
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "CR_H",
+    "SecsItem": {
+      "Format": "List",
+      "Items": []
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "CRA",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": ""
+            },
+            {
+              "Format": "ASCII",
+              "Values": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "CRA_H",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ABT_S2"
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "ECR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ECD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "ECS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U2",
+              "Values": [
+                1
+              ]
+            },
+            {
+              "Format": "U1",
+              "Values": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ECA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ECA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DTR"
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DTD",
+    "SecsItem": {
+      "Format": "ASCII",
+      "Values": ""
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "TIS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U1",
+              "Values": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "TIA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "TIA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "LDR",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "LDD",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "ECNR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ECN",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U1",
+              "Values": []
+            },
+            {
+              "Format": "ASCII",
+              "Values": ""
+            },
+            {
+              "Format": "U1",
+              "Values": []
+            },
+            {
+              "Format": "U1",
+              "Values": []
+            },
+            {
+              "Format": "U1",
+              "Values": []
+            },
+            {
+              "Format": "ASCII",
+              "Values": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DTS",
+    "SecsItem": {
+      "Format": "ASCII",
+      "Values": ""
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DTA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DTA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DMBI",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DMBG",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DMBG_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "HCS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": ""
+                },
+                {
+                  "Format": "U1",
+                  "Values": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "S2F41ChangeOnlineSubState",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "CONTROLMODECHANGE"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "REMOTEMODE"
+                },
+                {
+                  "Format": "U2",
+                  "Values": [
+                    1
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "HCA",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "HCA_Nak",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": ""
+                },
+                {
+                  "Format": "Binary",
+                  "Values": [
+                    2
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DisableSpoolingForAllStreams",
+    "SecsItem": {
+      "Format": "List",
+      "Items": []
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DisableSpoolingForFunctions",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U1",
+              "Values": []
+            },
+            {
+              "Format": "List",
+              "Items": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "RSSF",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U1",
+              "Values": []
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "RSA",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "RSA_Nak",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "Binary",
+                  "Values": [
+                    0
+                  ]
+                },
+                {
+                  "Format": "U2",
+                  "Values": [
+                    1
+                  ]
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "Binary",
+                      "Values": [
+                        0
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DVLA",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "U1",
+                          "Values": []
+                        },
+                        {
+                          "Format": "List",
+                          "Items": [
+                            {
+                              "Format": "U1",
+                              "Values": []
+                            },
+                            {
+                              "Format": "U1",
+                              "Values": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DVLA_1",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DVLA_2",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "List",
+                  "Items": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DVLA_3",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "U1",
+                          "Values": []
+                        },
+                        {
+                          "Format": "List",
+                          "Items": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "VLAA",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "VLAA_Nak",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "U2",
+                  "Values": [
+                    1
+                  ]
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "U1",
+                      "Values": []
+                    },
+                    {
+                      "Format": "U2",
+                      "Values": [
+                        1
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "S2F47VariableLimitAttributeRequest_ALL",
+    "SecsItem": {
+      "Format": "List",
+      "Items": []
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "VLAR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "VLAS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "Binary",
+              "Values": [
+                0
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "sec"
+                },
+                {
+                  "Format": "Binary",
+                  "Values": [
+                    0
+                  ]
+                },
+                {
+                  "Format": "U1",
+                  "Values": [
+                    100
+                  ]
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "U2",
+                          "Values": [
+                            1
+                          ]
+                        },
+                        {
+                          "Format": "U2",
+                          "Values": [
+                            1
+                          ]
+                        },
+                        {
+                          "Format": "U1",
+                          "Values": [
+                            5
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "SC",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "DATAID"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "OBJSPEC"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "STARTCARRIER"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "PTN"
+                },
+                {
+                  "Format": "U1",
+                  "Values": [
+                    100
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "SC_1",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "DATAID"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "OBJSPEC"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "UNLOAD"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "PTN"
+                },
+                {
+                  "Format": "U1",
+                  "Values": [
+                    100
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "SC_2",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "DATAID"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "OBJSPEC"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "LOADREADY"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "PTN"
+                },
+                {
+                  "Format": "U1",
+                  "Values": [
+                    100
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "CA",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "PTN"
+                },
+                {
+                  "Format": "U1",
+                  "Values": [
+                    100
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "MSR"
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": false,
+    "Name": "MSD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "ASCII",
+                  "Values": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "CancelCarrier",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": "CancelCarrier"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "ASR12272"
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "CancelCarrierAtPort",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": "CancelCarrierAtPort"
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "ProceedWithCarrier",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": "ProceedWithCarrier"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "ASR10192"
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "ChangeAccessMode",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "ChangeAccess"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "1"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "AccessMode"
+                },
+                {
+                  "Format": "Binary",
+                  "Values": [
+                    0
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "CSR"
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": false,
+    "Name": "CSRR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "ASCII",
+                  "Values": ""
+                },
+                {
+                  "Format": "U1",
+                  "Values": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "RTL",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "SM",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "HC",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "MR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "SIR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "PCE",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "AL",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "RTUP",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ABT_S5"
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "ARS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "ASCII",
+          "Values": "Sample alarm text"
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ARA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ARA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "EAS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            128
+          ]
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "EAA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "EAA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "LAR",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "LAR_All",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "LAD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U2",
+              "Values": [
+                1
+              ]
+            },
+            {
+              "Format": "U1",
+              "Values": []
+            },
+            {
+              "Format": "ASCII",
+              "Values": "Sample alarm text"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "LEAR"
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "LEAD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U2",
+              "Values": [
+                1
+              ]
+            },
+            {
+              "Format": "U1",
+              "Values": []
+            },
+            {
+              "Format": "ASCII",
+              "Values": "Sample alarm text"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "ARBS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "ASCII",
+                  "Values": "YYYYMMDDhhmmsscc"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ABRA",
+    "SecsItem": {
+      "Format": "List",
+      "Items": []
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "AN",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "ASCII",
+          "Values": "YYYYMMDDhhmmsscc"
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ANA",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "ABT_S6"
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "S6F1TDS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U1",
+              "Values": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "TDA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "TDA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "DVS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": "0"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "0"
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "0"
+                        },
+                        {
+                          "Format": "Binary",
+                          "Values": [
+                            0
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "DVA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "DVA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "MBI",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "MBG",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "MBG_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "DDR",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "DDD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": "0"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "0"
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "0"
+                        },
+                        {
+                          "Format": "Binary",
+                          "Values": [
+                            0
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "FVS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": "1"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "1"
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "U2",
+                      "Values": [
+                        1
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "PD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            300
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": ""
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "ASCII",
+                      "Values": "970326113700"
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "970326123200"
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "99"
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "SLot001"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "PDSLot",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            1
+          ]
+        },
+        {
+          "Format": "U2",
+          "Values": [
+            6
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": ""
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "ASCII",
+                      "Values": "9"
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "9"
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "9"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": ""
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "C"
+                        },
+                        {
+                          "Format": "ASCII",
+                          "Values": "L"
+                        },
+                        {
+                          "Format": "ASCII",
+                          "Values": "25"
+                        },
+                        {
+                          "Format": "List",
+                          "Items": [
+                            {
+                              "Format": "ASCII",
+                              "Values": "C"
+                            },
+                            {
+                              "Format": "ASCII",
+                              "Values": "L"
+                            },
+                            {
+                              "Format": "List",
+                              "Items": [
+                                {
+                                  "Format": "ASCII",
+                                  "Values": "0113"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "FVA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "FVA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "ERA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "AERS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U2",
+                  "Values": [
+                    12
+                  ]
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "0"
+                        },
+                        {
+                          "Format": "Binary",
+                          "Values": [
+                            0
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "AERA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "AERA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "ERR",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "ERD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "U1",
+                      "Values": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "AERR",
+    "SecsItem": {
+      "Format": "ASCII",
+      "Values": "0"
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "AERD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U2",
+                  "Values": [
+                    12
+                  ]
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "0"
+                        },
+                        {
+                          "Format": "Binary",
+                          "Values": [
+                            0
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "IRR",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "IRD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "AIRR",
+    "SecsItem": {
+      "Format": "ASCII",
+      "Values": ""
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "AIRD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": "0"
+            },
+            {
+              "Format": "Binary",
+              "Values": [
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "RSD",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "RSDAC",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "RSDAC_1",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "ABT_S7"
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PPI",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PPG",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PPS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "12"
+        },
+        {
+          "Format": "Binary",
+          "Values": [
+            18,
+            18,
+            18,
+            18,
+            35,
+            52
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PPA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PPA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PPR",
+    "SecsItem": {
+      "Format": "ASCII",
+      "Values": "12"
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PPD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "DPS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "DPA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "DPA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "GetRecipeList"
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "RED",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "yyy"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "xxx"
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "FPS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "2"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "a"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "v"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U2",
+                  "Values": [
+                    12
+                  ]
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "ASCII",
+                      "Values": "12"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "FPA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "FPA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "FPR",
+    "SecsItem": {
+      "Format": "ASCII",
+      "Values": "12"
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "S7F25xFormattedProcessProgramRequest",
+    "SecsItem": {
+      "Format": "ASCII",
+      "Values": "9"
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "FPD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "ASCII",
+                      "Values": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PVS",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "Binary",
+                  "Values": [
+                    0
+                  ]
+                },
+                {
+                  "Format": "U1",
+                  "Values": []
+                },
+                {
+                  "Format": "ASCII",
+                  "Values": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PVA"
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PVI",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PVG",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "ABT_S9"
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "UDN",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "USN",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "UFN",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "IDN",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "TTN",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "DLN",
+    "SecsItem": {
+      "Format": "U1",
+      "Values": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "CTN",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "U1",
+          "Values": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "ABT_S10"
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": true,
+    "Name": "TRN",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        }
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "TRA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "TRA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": true,
+    "Name": "VTN",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": ""
+        }
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "VTA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "VTA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": true,
+    "Name": "VTN",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "VMA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "VMA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "MNN",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "BCN",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "BCA",
+    "SecsItem": {
+      "Format": "Binary",
+      "Values": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "BCA_Nak",
+    "SecsItem": {
+      "Format": "U2",
+      "Values": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GAR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": "LoadPort"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": "1"
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GAR_1",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": "Carrier"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": "CAS001"
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": []
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GAR_2",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "ASCII",
+          "Values": "LoadPort"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": "1"
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "abc"
+                },
+                {
+                  "Format": "ASCII",
+                  "Values": "abc"
+                },
+                {
+                  "Format": "Binary",
+                  "Values": [
+                    0
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": "abc"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "GAD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "abc"
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "abc"
+                        },
+                        {
+                          "Format": "ASCII",
+                          "Values": "abc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "Binary",
+              "Values": [
+                0
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "Binary",
+                      "Values": [
+                        0
+                      ]
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "GAD_Nak",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "abc"
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "abc"
+                        },
+                        {
+                          "Format": "ASCII",
+                          "Values": "abc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U2",
+              "Values": [
+                1
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "Binary",
+                      "Values": [
+                        0
+                      ]
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "SAR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "abc"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "abc"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": "abc"
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "abc"
+                },
+                {
+                  "Format": "ASCII",
+                  "Values": "abc"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "SAD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "abc"
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "abc"
+                        },
+                        {
+                          "Format": "ASCII",
+                          "Values": "abc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "Binary",
+              "Values": [
+                0
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "Binary",
+                      "Values": [
+                        0
+                      ]
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "SAD_Nak",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "abc"
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "abc"
+                        },
+                        {
+                          "Format": "ASCII",
+                          "Values": "abc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "U2",
+              "Values": [
+                1
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "Binary",
+                      "Values": [
+                        0
+                      ]
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GTR",
+    "SecsItem": {
+      "Format": "ASCII",
+      "Values": ""
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "GTD",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": "abc"
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "Binary",
+              "Values": [
+                0
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "Binary",
+                      "Values": [
+                        0
+                      ]
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GANR",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": ""
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "ASCII",
+              "Values": "LoadPort"
+            },
+            {
+              "Format": "ASCII",
+              "Values": "Carrier"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "GAND",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "abc"
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "ASCII",
+                      "Values": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "Binary",
+              "Values": [
+                0
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "Binary",
+                      "Values": [
+                        0
+                      ]
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "CreateControlJob",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "ASCII",
+          "Values": "Equipment"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "ControlJob"
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "ObjID"
+                },
+                {
+                  "Format": "ASCII",
+                  "Values": "CJ02"
+                }
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "ProcessingCtrlSpec"
+                },
+                {
+                  "Format": "List",
+                  "Items": []
+                }
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "CarrierInputSpec"
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "ASCII",
+                      "Values": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "MtrlOutSpec"
+                },
+                {
+                  "Format": "ASCII",
+                  "Values": ""
+                }
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "ProcessOrderMgmt"
+                },
+                {
+                  "Format": "ASCII",
+                  "Values": "LIST"
+                }
+              ]
+            },
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "StartMethod"
+                },
+                {
+                  "Format": "Boolean",
+                  "Values": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "PJCancel",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U4",
+          "Values": [
+            1234
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": "PJ3"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "Cancel"
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "S16F5PJAbort",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "U4",
+          "Values": [
+            1234
+          ]
+        },
+        {
+          "Format": "ASCII",
+          "Values": "PJ1"
+        },
+        {
+          "Format": "ASCII",
+          "Values": "Abort"
+        },
+        {
+          "Format": "List",
+          "Items": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "CreateProcessJob",
+    "SecsItem": {
+      "Format": "List",
+      "Items": [
+        {
+          "Format": "Binary",
+          "Values": [
+            0
+          ]
+        },
+        {
+          "Format": "List",
+          "Items": [
+            {
+              "Format": "List",
+              "Items": [
+                {
+                  "Format": "ASCII",
+                  "Values": "PJ2"
+                },
+                {
+                  "Format": "Binary",
+                  "Values": [
+                    13
+                  ]
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "List",
+                      "Items": [
+                        {
+                          "Format": "ASCII",
+                          "Values": "ASR10192"
+                        },
+                        {
+                          "Format": "List",
+                          "Items": [
+                            {
+                              "Format": "U1",
+                              "Values": [
+                                3
+                              ]
+                            },
+                            {
+                              "Format": "U1",
+                              "Values": [
+                                5
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Format": "List",
+                  "Items": [
+                    {
+                      "Format": "U2",
+                      "Values": [
+                        1
+                      ]
+                    },
+                    {
+                      "Format": "ASCII",
+                      "Values": "9"
+                    },
+                    {
+                      "Format": "List",
+                      "Items": []
+                    }
+                  ]
+                },
+                {
+                  "Format": "Boolean",
+                  "Values": [
+                    true
+                  ]
+                },
+                {
+                  "Format": "List",
+                  "Items": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "CheckPJDuplicated"
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "CheckPJSpace"
+  }
+]

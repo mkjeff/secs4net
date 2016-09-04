@@ -9,18 +9,19 @@ using System.Net;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Lifetime;
 using System.Runtime.Remoting.Messaging;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Linq;
+using Cim.Eap.Data;
+using Cim.Eap.Tx;
+using Cim.Management;
 using log4net;
 using log4net.Layout;
 using log4net.Repository.Hierarchy;
-using Cim.Management;
 using Secs4Net;
-using System.Xml.Linq;
-using Cim.Eap.Tx;
-using Cim.Eap.Data;
-using System.Threading;
-using System.Xml;
+using Secs4Net.Json;
 
 namespace Cim.Eap
 {
@@ -233,12 +234,8 @@ namespace Cim.Eap
         void listBoxSecsMessageList_SelectedIndexChanged(object sender, EventArgs e)
         {
             SecsMessage secsMsg = SecsMessages[listBoxSecsMessages.SelectedIndex];
-            using (var sw = new StringWriter())
-            {
-                secsMsg.WriteTo(sw);
-                txtMsg.Text = sw.ToString();
-            }
-        }
+            txtMsg.Text = secsMsg.ToJson();
+       }
 
         void enableTraceLogToolStripMenuItem_Click(object sender, EventArgs e)
         {

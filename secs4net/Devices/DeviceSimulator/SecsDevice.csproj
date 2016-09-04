@@ -113,6 +113,10 @@
       <Project>{3c8c67b8-3746-4d26-b3a8-dcb01b5aa66b}</Project>
       <Name>SecsCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Extension\Serialization.Sml\Serialization.Sml.csproj">
+      <Project>{f7c036db-d4c9-4326-a17b-713cb00f313c}</Project>
+      <Name>Serialization.Sml</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

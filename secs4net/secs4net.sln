@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Devices", "Devices", "{A2129504-BE77-47D7-BFB0-D8C333EA3CA4}"
 EndProject
@@ -32,6 +32,18 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CIM.Eap", "Core\CIM.EAP\CIM.Eap.csproj", "{51CBED10-A51E-43A7-8370-81DE490BE207}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CIM.Services", "Core\CIM.Services\CIM.Services.csproj", "{A39E7563-C6CE-4B46-BDCB-FF61F3F7A4BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serialization.Sml", "Extension\Serialization.Sml\Serialization.Sml.csproj", "{F7C036DB-D4C9-4326-A17B-713CB00F313C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{35657E73-7929-41AB-9415-BD463CD4DB76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serialization.Json", "Extension\Serialization.Json\Serialization.Json.csproj", "{60938345-E9CF-41F0-A588-505B05E5E544}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{7CB55EBC-3CD9-4ECD-831F-2FEA9B4D822A}"
+	ProjectSection(SolutionItems) = preProject
+		common.json = common.json
+		common.sml = common.sml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,6 +149,22 @@ Global
 		{A39E7563-C6CE-4B46-BDCB-FF61F3F7A4BC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A39E7563-C6CE-4B46-BDCB-FF61F3F7A4BC}.Release|x86.ActiveCfg = Release|x86
 		{A39E7563-C6CE-4B46-BDCB-FF61F3F7A4BC}.Release|x86.Build.0 = Release|x86
+		{F7C036DB-D4C9-4326-A17B-713CB00F313C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7C036DB-D4C9-4326-A17B-713CB00F313C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7C036DB-D4C9-4326-A17B-713CB00F313C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F7C036DB-D4C9-4326-A17B-713CB00F313C}.Debug|x86.Build.0 = Debug|Any CPU
+		{F7C036DB-D4C9-4326-A17B-713CB00F313C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7C036DB-D4C9-4326-A17B-713CB00F313C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7C036DB-D4C9-4326-A17B-713CB00F313C}.Release|x86.ActiveCfg = Release|Any CPU
+		{F7C036DB-D4C9-4326-A17B-713CB00F313C}.Release|x86.Build.0 = Release|Any CPU
+		{60938345-E9CF-41F0-A588-505B05E5E544}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60938345-E9CF-41F0-A588-505B05E5E544}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60938345-E9CF-41F0-A588-505B05E5E544}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{60938345-E9CF-41F0-A588-505B05E5E544}.Debug|x86.Build.0 = Debug|Any CPU
+		{60938345-E9CF-41F0-A588-505B05E5E544}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60938345-E9CF-41F0-A588-505B05E5E544}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60938345-E9CF-41F0-A588-505B05E5E544}.Release|x86.ActiveCfg = Release|Any CPU
+		{60938345-E9CF-41F0-A588-505B05E5E544}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -153,5 +181,7 @@ Global
 		{ED6E8792-75CC-4131-8FEA-10128984B3DC} = {2D4B25D2-13CC-44F7-AB55-77AB6222B755}
 		{51CBED10-A51E-43A7-8370-81DE490BE207} = {47372419-BB0F-4D47-A9A9-F93EE7551CB9}
 		{A39E7563-C6CE-4B46-BDCB-FF61F3F7A4BC} = {47372419-BB0F-4D47-A9A9-F93EE7551CB9}
+		{F7C036DB-D4C9-4326-A17B-713CB00F313C} = {35657E73-7929-41AB-9415-BD463CD4DB76}
+		{60938345-E9CF-41F0-A588-505B05E5E544} = {35657E73-7929-41AB-9415-BD463CD4DB76}
 	EndGlobalSection
 EndGlobal

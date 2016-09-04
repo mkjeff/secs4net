@@ -147,10 +147,9 @@
   <ItemGroup>
     <Compile Include="ConnectionState.cs" />
     <Compile Include="ExtensionHelper.cs" />
-    <Compile Include="Helper.cs" />
+    <Compile Include="ISecsMessageFormatter.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="ISecsGemLogger.cs" />
-    <Compile Include="Lazy.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
