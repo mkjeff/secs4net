@@ -11,9 +11,12 @@ using Secs4Net;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Configuration;
+using System.Runtime.CompilerServices;
 
-namespace LoadPortMonitor {
-    public partial class Form1 : Form {
+namespace LoadPortMonitor
+{
+    public partial class Form1 : Form
+    {
         readonly ICentralService<ISecsDevice> _serviceManager;
 
         readonly BindingList<Loadport> ports = new BindingList<Loadport>{
@@ -22,7 +25,8 @@ namespace LoadPortMonitor {
              new Loadport{ PortId = "L03"}
         };
 
-        public Form1() {
+        public Form1()
+        {
             InitializeComponent();
             loadportBindingSource.DataSource = ports;
             this.Text = Settings.Default.ToolId + " service not available(Passive)";
@@ -48,7 +52,7 @@ namespace LoadPortMonitor {
                 for (int i = 0; i < 3; i++)
                 {
                     string state = null;
-                    switch ((byte)s1f4.SecsItem.Items[i])
+                    switch (s1f4.SecsItem.Items[i].GetValue<byte>())
                     {
                         case 0:
                             state = "OutOfService";
@@ -79,44 +83,54 @@ namespace LoadPortMonitor {
             }
         }
 
-        void btnGCCollect_Click(object sender, EventArgs e) {
+        void btnGCCollect_Click(object sender, EventArgs e)
+        {
             GC.Collect();
         }
 
-        void Form1_Load(object sender, EventArgs e) {
+        void Form1_Load(object sender, EventArgs e)
+        {
             ThreadPool.QueueUserWorkItem(SubscribeService);
         }
 
         IDisposable[] _events;
-        void SubscribeService(object _) {
-            while (true) {
-                try {
+        void SubscribeService(object _)
+        {
+            while (true)
+            {
+                try
+                {
                     var device = _serviceManager.GetService(Settings.Default.ToolId);
-                    this.Invoke((MethodInvoker)delegate {
+                    this.Invoke((MethodInvoker)delegate
+                    {
                         GetLoadPortStatus(device);
                         this.Text = Settings.Default.ToolId + " Connected(Passive)";
                     });
                     var readytoload = device.SubscribeS6F11("114", "ReadyToLoad",
-                        msg => {
+                        msg =>
+                        {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
                             ports[portId - 1].State = msg.Name;
                         });
 
                     var readytounload = device.SubscribeS6F11("115", "ReadyToUnload",
-                        msg => {
+                        msg =>
+                        {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
                             ports[portId - 1].State = msg.Name;
                         });
 
                     var loadcomplete = device.SubscribeS6F11("101", "LoadComplete",
-                        msg => {
+                        msg =>
+                        {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
                             ports[portId - 1].State = msg.Name;
                         });
 
                     var unloadcomplete = device.Subscribe(
                         new S6F11Filter { CEID = "102", Name = "UnLoadComplete" }, true,
-                        msg => {
+                        msg =>
+                        {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
                             ports[portId - 1].State = msg.Name;
                         });
@@ -127,40 +141,50 @@ namespace LoadPortMonitor {
                         unloadcomplete
                     };
                     break;
-                } catch (Exception) {
+                }
+                catch (Exception)
+                {
                     //Console.WriteLine(ex.Message);
                 }
                 Thread.Sleep(5000);
             }
         }
 
-        private void btnDisable_Click(object sender, EventArgs e) {
+        private void btnDisable_Click(object sender, EventArgs e)
+        {
             this.btnDisable.Enabled = false;
             this.btnEnable.Enabled = true;
-            if (_events != null) {
+            if (_events != null)
+            {
                 foreach (var disposable in _events)
                     disposable.Dispose();
                 _events = null;
             }
         }
 
-        private void btnEnable_Click(object sender, EventArgs e) {
+        private void btnEnable_Click(object sender, EventArgs e)
+        {
             this.btnEnable.Enabled = false;
             this.btnDisable.Enabled = true;
             ThreadPool.QueueUserWorkItem(SubscribeService);
         }
     }
 
-    class Loadport : INotifyPropertyChanged {
+    class Loadport : INotifyPropertyChanged
+    {
         public string PortId { get; set; }
-        public string State {
-            get {
+        public string State
+        {
+            get
+            {
                 return _State;
             }
-            set {
-                if (value != _State) {
+            set
+            {
+                if (value != _State)
+                {
                     _State = value;
-                    OnPropertyChanged("State");
+                    OnPropertyChanged();
                 }
             }
         }
@@ -170,11 +194,9 @@ namespace LoadPortMonitor {
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void OnPropertyChanged(string name) {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) {
-                handler(this, new PropertyChangedEventArgs(name));
-            }
+        protected void OnPropertyChanged([CallerMemberName]string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
         #endregion
     }

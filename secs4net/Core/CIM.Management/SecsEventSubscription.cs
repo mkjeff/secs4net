@@ -47,9 +47,9 @@ namespace Cim.Management {
         public bool IsDisposed => _disposable?.IsDisposed ?? false;
         internal SerializableDisposable _disposable;
 
-        public void Dispose() {
-            if (_disposable != null)
-                _disposable.Dispose();
+        public void Dispose()
+        {
+            _disposable?.Dispose();
         }
         #endregion
     }

@@ -19,7 +19,7 @@ namespace Cim.Management {
 
         public bool Eval(Item root) => true;
 
-        public string Description => "S" + S + "F" + F + ":" + Name;
+        public string Description => $"S{S}F{F}:{Name}";
     }
 
     [Serializable]

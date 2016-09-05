@@ -96,13 +96,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\CIM.Management\CIM.Management.csproj">
+      <Project>{3eedddf5-284e-4c9e-87af-4fff72c480d4}</Project>
+      <Name>CIM.Management</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Core\CIM.Services\CIM.Services.csproj">
       <Project>{a39e7563-c6ce-4b46-bdcb-ff61f3f7a4bc}</Project>
       <Name>CIM.Services</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Core\CIM.Management\CIM.Management.csproj">
-      <Project>{3EEDDDF5-284E-4C9E-87AF-4FFF72C480D4}</Project>
-      <Name>CIM.Management</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\SecsCore\SecsCore.csproj">
       <Project>{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}</Project>

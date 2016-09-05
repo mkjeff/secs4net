@@ -10,20 +10,18 @@ using Cim.Management;
 
 namespace CentralMonitor {
     sealed class ZCentralService : MarshalByRefObject, IServiceManager<ISecsDevice>, ICentralService<ISecsDevice> {
-        public ObservableCollection<Tool> Tools { get; private set; }
+        public ObservableCollection<Tool> Tools { get; }
         readonly Dispatcher _UIDispatcher;
         public ZCentralService(Dispatcher dispatcher,IEnumerable<Tool> tools){
             Tools = new ObservableCollection<Tool>(tools);
             _UIDispatcher = dispatcher;
         }
-        public override object InitializeLifetimeService() {
-            return null;
-        }
+        public override object InitializeLifetimeService() => null;
 
         [OneWay]
         void IServiceManager<ISecsDevice>.Publish(string serviceId,string serviceUrl) {
             _UIDispatcher.Invoke((Action)delegate {
-                Tool tool = Tools.FirstOrDefault(t => t.Id == serviceId);
+                var tool = Tools.FirstOrDefault(t => t.Id == serviceId);
                 if (tool == null)
                     Tools.Add(new Tool(serviceId) {
                         Url = serviceUrl,

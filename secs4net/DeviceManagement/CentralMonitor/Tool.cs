@@ -2,33 +2,43 @@
 using System.ComponentModel;
 using Cim.Services;
 using System;
+using System.Runtime.CompilerServices;
 
-namespace CentralMonitor {
-    sealed class Tool : INotifyPropertyChanged {
+namespace CentralMonitor
+{
+    sealed class Tool : INotifyPropertyChanged
+    {
         public string Id { get; }
         string _Url;
-        public string Url {
+        public string Url
+        {
             get { return _Url; }
-            set {
-                if (value != _Url) {
+            set
+            {
+                if (value != _Url)
+                {
                     _Url = value;
-                    NotifyPropertyChanged("Url");
+                    NotifyPropertyChanged();
                 }
             }
         }
 
         DateTime _regTime;
-        public DateTime RegisiterTime {
+        public DateTime RegisiterTime
+        {
             get { return _regTime; }
-            set {
-                if (value != _regTime) {
+            set
+            {
+                if (value != _regTime)
+                {
                     _regTime = value;
-                    NotifyPropertyChanged("RegisiterTime");
+                    NotifyPropertyChanged();
                 }
             }
         }
 
-        public Tool(string id) {
+        public Tool(string id)
+        {
             this.Id = id;
         }
 
@@ -36,9 +46,9 @@ namespace CentralMonitor {
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        void NotifyPropertyChanged(string name) {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
+        void NotifyPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
         #endregion
     }

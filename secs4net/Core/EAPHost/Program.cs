@@ -29,7 +29,7 @@ namespace Cim.Eap
             public void RenderObject(RendererMap rendererMap, object obj, TextWriter writer) {
                 var msgInfo = obj as SecsMessageLogInfo;
                 if (msgInfo != null) {
-                    writer.WriteLine("EAP {0} EQP : [id=0x{1:X8}]", (msgInfo.In ? "<<" : ">>"), msgInfo.SystemByte);
+                    writer.WriteLine($"EAP {(msgInfo.In ? "<<" : ">>")} EQP : [id=0x{msgInfo.SystemByte:X8}]");
                     msgInfo.Message.WriteTo(writer);
                 }
             }
@@ -66,7 +66,7 @@ namespace Cim.Eap
             RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
             ChannelServices.RegisterChannel(
                 new TcpChannel(
-                    new Hashtable { { "port", 0 }, { "bindTo", Settings.Default.TcpBindTo } },
+                    new Hashtable { ["port"] = 0, ["bindTo"] = Settings.Default.TcpBindTo },
                     null,
                     new BinaryServerFormatterSinkProvider { TypeFilterLevel = TypeFilterLevel.Full }),
                 false);
@@ -76,7 +76,7 @@ namespace Cim.Eap
             {
                 if (!newMutexCreated)
                 {
-                    MessageBox.Show("系統中已經執行了EAP:" + EAPConfig.Instance.ToolId, "啟動錯誤");
+                    MessageBox.Show($"系統中已經執行了EAP:{EAPConfig.Instance.ToolId}啟動錯誤");
                     return;
                 }
                 EapLogger.Info("__________________ EAP Started __________________");
@@ -97,7 +97,7 @@ namespace Cim.Eap
             serviceManager.Publish(EAPConfig.Instance.ToolId, url);
         }
 
-        private static XmlWriterSettings xmlWriterSettings = new XmlWriterSettings { Indent = true };
+        private static readonly XmlWriterSettings xmlWriterSettings = new XmlWriterSettings { Indent = true };
 
         public static string ToFormatedXml(this XDocument xmlDoc) {
             using (var swr = new StringWriter()) {
@@ -107,22 +107,17 @@ namespace Cim.Eap
             }
         }
 
-        public static Action<T> AddHandler<T, TKey>(this ConcurrentDictionary<TKey, Action<T>> handlers, TKey key, Action<T> handler) {
-            return handlers.AddOrUpdate(key, handler, (_, old) => old += handler);
-        }
+        public static Action<T> AddHandler<T, TKey>(this ConcurrentDictionary<TKey, Action<T>> handlers, TKey key, Action<T> handler) 
+            => handlers.AddOrUpdate(key, handler, (_, old) => old += handler);
 
-        public static Action<T> RemoveHandler<T, TKey>(this ConcurrentDictionary<TKey, Action<T>> handlers, TKey key, Action<T> handler) {
-            return handlers.AddOrUpdate(key, (Action<T>)null, (_, old) => old -= handler);
-        }
+        public static Action<T> RemoveHandler<T, TKey>(this ConcurrentDictionary<TKey, Action<T>> handlers, TKey key, Action<T> handler) 
+            => handlers.AddOrUpdate(key, (Action<T>)null, (_, old) => old -= handler);
 
-        public static int GetKey(this SecsEventSubscription subscription) {
-            return subscription.Filter.S << 8 | subscription.Filter.F;
-        }
+        public static int GetKey(this SecsEventSubscription subscription) 
+            => subscription.Filter.S << 8 | subscription.Filter.F;
 
-        public static int GetKey(this SecsMessage msg) {
-            return msg.S << 8 | msg.F;
-        }
-	}
+        public static int GetKey(this SecsMessage msg) => msg.S << 8 | msg.F;
+    }
 
     sealed class SecsMessageLogInfo {
         public bool In;

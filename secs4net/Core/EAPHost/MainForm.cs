@@ -351,21 +351,19 @@ namespace Cim.Eap
             var description = filter.Description;
             var handler = new Action<SecsMessage>(msg =>
             {
-                #region event action
                 try
                 {
                     if (filter.Eval(msg.SecsItem))
                     {
-                        EapLogger.Info("event[" + description + "] >> Z");
+                        EapLogger.Info($"event[{description}] >> Z");
                         msg.Name = filter.Name;
                         subscription.Handle(msg);
                     }
                 }
                 catch (Exception ex)
                 {
-                    EapLogger.Error("event[" + description + "] Z process Error!", ex);
+                    EapLogger.Error($"event[{description}] Z process Error!", ex);
                 }
-                #endregion
             });
             int key = subscription.GetKey();
             string recoverQueuePath = $"FormatName:DIRECT=TCP:{subscription.ClientAddress} \\private$\\{subscription.Id}";
@@ -373,7 +371,7 @@ namespace Cim.Eap
             {
                 return new SerializableDisposable(subscription,
                     new RemoteDisposable(subscription,
-                        () =>
+                        subscribeAction: () =>
                         {
                             #region recover complete
                             _eventHandlers.AddHandler(key, handler);
@@ -383,11 +381,11 @@ namespace Cim.Eap
                             if (_recoverEventHandlers.TryRemove(recoverQueuePath, out recover))
                             {
                                 _eventHandlers.RemoveHandler(key, recover);
-                                EapLogger.Notice("Z recover completely event[" + description + "]");
+                                EapLogger.Notice($"Z recover completely event[{description}]");
                             }
                             #endregion
                         },
-                        () =>
+                        disposeAction: () =>
                         {
                             #region Dispose
                             _eventHandlers.RemoveHandler(key, handler);

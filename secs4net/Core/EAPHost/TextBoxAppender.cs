@@ -10,7 +10,7 @@ using log4net.Repository.Hierarchy;
 
 namespace Cim.Eap {
     sealed class TextBoxAppender : AppenderSkeleton {
-        static readonly Color[] _logColors = new[] { Color.Black, Color.Green, Color.Blue, Color.Red };
+        static readonly Color[] _logColors = { Color.Black, Color.Green, Color.Blue, Color.Red };
         int _screentextLength = 0;
         readonly RichTextBox _textBox;
         readonly StringBuilder _buffer = new StringBuilder();
