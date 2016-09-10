@@ -109,7 +109,7 @@ namespace Secs4Net
 
         static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
-        static readonly SecsGemLogger DefaultLogger = new SecsGemLogger();
+        static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
         readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
 
         readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;

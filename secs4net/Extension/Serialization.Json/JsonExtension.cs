@@ -43,7 +43,7 @@ namespace Secs4Net.Json
             if (msg.HasRoot)
             {
                 jwtr.WritePropertyName(nameof(msg.SecsItem));
-                Write(msg.SecsItem, jwtr);
+                msg.SecsItem.WriteTo(jwtr);
             }
 
             jwtr.WriteEndObject();
@@ -51,7 +51,7 @@ namespace Secs4Net.Json
             jwtr.Flush();
         }
 
-        static void Write(Item item, JsonTextWriter writer)
+        public static void WriteTo(this Item item, JsonTextWriter writer)
         {
             writer.WriteStartObject();
 
@@ -62,7 +62,7 @@ namespace Secs4Net.Json
                 writer.WritePropertyName(nameof(item.Items));
                 writer.WriteStartArray();
                 foreach (var subitem in item.Items)
-                    Write(subitem, writer);
+                    subitem.WriteTo(writer);
                 writer.WriteEndArray();
             }
             else
@@ -85,11 +85,9 @@ namespace Secs4Net.Json
         }
 
         public static SecsMessage ToSecsMessage(this string jsonString)
-        {
-            return JObject.Parse(jsonString).ToSecsMessage();
-        }
+            => JObject.Parse(jsonString).ToSecsMessage();
 
-        static SecsMessage ToSecsMessage(this JObject json)
+        public static SecsMessage ToSecsMessage(this JObject json)
         {
             var msg = default(SecsMessage);           
             var s = json.Value<byte>(nameof(msg.S));
@@ -112,7 +110,7 @@ namespace Secs4Net.Json
         }
 
         // Define other methods and classes here
-        static Item ToItem(this JObject json)
+        public static Item ToItem(this JObject json)
         {
             var item = default(Item);
             var format = json.Value<JValue>(nameof(item.Format)).ToObject<SecsFormat>();
