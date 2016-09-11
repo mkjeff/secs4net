@@ -325,7 +325,7 @@
             // 
             // recvMessageBindingSource
             // 
-            this.recvMessageBindingSource.DataSource = typeof(SecsDevice.ReceivedMessage);
+            this.recvMessageBindingSource.DataSource = typeof(Secs4Net.PrimaryMessageWrapper);
             // 
             // btnSendPrimary
             // 

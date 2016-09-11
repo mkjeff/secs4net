@@ -11,7 +11,7 @@ namespace SecsDevice
     public partial class Form1 : Form {
         SecsGem _secsGem;
         readonly ISecsGemLogger Logger;
-        readonly BindingList<ReceivedMessage> recvBuffer = new BindingList<ReceivedMessage>();
+        readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
 
         public Form1() {
             InitializeComponent();
@@ -34,14 +34,7 @@ namespace SecsDevice
                 radioActiveMode.Checked,
                 IPAddress.Parse(txtAddress.Text),
                 (int)numPort.Value,
-                Logger,
-                primaryMsgHandler: (primaryMsg, replyAction) =>
-                    this.Invoke(new MethodInvoker(() =>
-                        recvBuffer.Add(new ReceivedMessage
-                        {
-                            Msg = primaryMsg,
-                            ReplyAction = replyAction
-                        }))));
+                Logger);
 
             _secsGem.ConnectionChanged += delegate
             {
@@ -51,9 +44,16 @@ namespace SecsDevice
                 });
             };
 
+            _secsGem.PrimaryMessageReceived += PrimaryMessageReceived;
+
             btnEnable.Enabled = false;
             await _secsGem.StartAsync();
             btnDisable.Enabled = true;
+        }
+
+        private void PrimaryMessageReceived(object sender, PrimaryMessageWrapper e)
+        {
+            this.Invoke(new MethodInvoker(() => recvBuffer.Add(e)));
         }
 
         private void btnDisable_Click(object sender, EventArgs e)
@@ -85,20 +85,20 @@ namespace SecsDevice
         }
 
         private void lstUnreplyMsg_SelectedIndexChanged(object sender, EventArgs e) {
-            var receivedMessage = lstUnreplyMsg.SelectedItem as ReceivedMessage;
-            txtRecvPrimary.Text = receivedMessage?.Msg.ToSML();
+            var receivedMessage = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
+            txtRecvPrimary.Text = receivedMessage?.Message.ToSML();
         }
 
         private void btnReplySecondary_Click(object sender, EventArgs e)
         {
-            var recv = lstUnreplyMsg.SelectedItem as ReceivedMessage;
+            var recv = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
             if (recv == null)
                 return;
 
             if (string.IsNullOrWhiteSpace(txtReplySeconary.Text))
                 return;
 
-            recv.ReplyAction(txtReplySeconary.Text.ToSecsMessage());
+            recv.Reply(txtReplySeconary.Text.ToSecsMessage());
             recvBuffer.Remove(recv);
             txtRecvPrimary.Clear();
         }
@@ -160,10 +160,5 @@ namespace SecsDevice
                 });
             }
         }
-    }
-
-    public sealed class ReceivedMessage {
-        public SecsMessage Msg { get; set; }
-        public Action<SecsMessage> ReplyAction { get; set; }
     }
 }

@@ -131,7 +131,7 @@ namespace Cim.Eap
             _secsGem = new SecsGem(
                 EAPConfig.Instance.Mode == ConnectionMode.Active,
                 IPAddress.Parse(EAPConfig.Instance.IP),
-                EAPConfig.Instance.TcpPort, _secsLogger, EAPConfig.Instance.SocketRecvBufferSize, PrimaryMsgHandler)
+                EAPConfig.Instance.TcpPort, _secsLogger, EAPConfig.Instance.SocketRecvBufferSize)
             {
                 DeviceId = EAPConfig.Instance.DeviceId,
                 LinkTestInterval = EAPConfig.Instance.LinkTestInterval,
@@ -152,18 +152,20 @@ namespace Cim.Eap
                         _secsGem.SendAsync(new SecsMessage(1, 13, "TestCommunicationsRequest", Item.L()));
                 });
             };
+
+            _secsGem.PrimaryMessageReceived += PrimaryMsgHandler;
             menuItemGemDisable.Enabled = true;
             menuItemGemEnable.Enabled = false;
         }
 
-        private void PrimaryMsgHandler(SecsMessage primaryMsg, Action<SecsMessage> replySecondaryAcync)
+        private void PrimaryMsgHandler(object sender, PrimaryMessageWrapper e)
         {
             try
             {
-                replySecondaryAcync(SecsMessages[primaryMsg.S, (byte)(primaryMsg.F + 1)].FirstOrDefault());
+                e.Reply(SecsMessages[e.Message.S, (byte)(e.Message.F + 1)].FirstOrDefault());
                 Action<SecsMessage> handler = null;
-                if (_eventHandlers.TryGetValue(primaryMsg.GetKey(), out handler))
-                    Parallel.ForEach(handler.GetInvocationList().Cast<Action<SecsMessage>>(), h => h(primaryMsg));
+                if (_eventHandlers.TryGetValue(e.Message.GetKey(), out handler))
+                    Parallel.ForEach(handler.GetInvocationList().Cast<Action<SecsMessage>>(), h => h(e.Message));
             }
             catch (Exception ex)
             {

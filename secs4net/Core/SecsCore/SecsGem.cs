@@ -13,9 +13,15 @@ namespace Secs4Net
     public sealed class SecsGem
     {
         /// <summary>
-        /// HSMS connection state change event
+        /// HSMS connection state changed event
         /// </summary>
         public event EventHandler ConnectionChanged;
+
+        /// <summary>
+        /// Primary message received event
+        /// </summary>
+        public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived;
+
 
         /// <summary>
         /// Connection state
@@ -98,7 +104,6 @@ namespace Secs4Net
 
         readonly SecsDecoder _secsDecoder;
         readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
-        readonly Action<SecsMessage, Action<SecsMessage>> _primaryMessageHandler;
         readonly ISecsGemLogger _logger;
         readonly Timer _timer7;	// between socket connected and received Select.req timer
         readonly Timer _timer8;
@@ -125,8 +130,7 @@ namespace Secs4Net
         /// <param name="port">if active mode it should be remote deivice listener's port</param>
         /// <param name="logger">log tracer</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        /// <param name="primaryMsgHandler">callback action for received primary message</param>
-        public SecsGem(bool isActive, IPAddress ip, int port, ISecsGemLogger logger = null, int receiveBufferSize = 0x4000, Action<SecsMessage, Action<SecsMessage>> primaryMsgHandler = null, ISecsMessageFormatter formatter=null)
+        public SecsGem(bool isActive, IPAddress ip, int port, ISecsGemLogger logger = null, int receiveBufferSize = 0x4000, ISecsMessageFormatter formatter=null)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
@@ -139,7 +143,6 @@ namespace Secs4Net
             _isActive = isActive;
             _logger = logger ?? DefaultLogger;
             _secsDecoder = new SecsDecoder(_logger, HandleControlMessage, HandleDataMessage);
-            _primaryMessageHandler = primaryMsgHandler ?? DefaultPrimaryMessageHandler;
 
             #region Timer Action
             _timer7 = new Timer(delegate
@@ -457,22 +460,16 @@ namespace Secs4Net
                 {
                     //Primary message
                     _logger.TraceMessageIn(msg, systembyte);
-                    _primaryMessageHandler(msg, secondary =>
+                    PrimaryMessageReceived?.Invoke(this, new PrimaryMessageWrapper(systembyte, msg, secondary =>
                     {
                         if (!header.ReplyExpected || State != ConnectionState.Selected)
-                            return;
+                            return ;
 
                         secondary = secondary ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(header.Bytes));
                         secondary.ReplyExpected = false;
-                        try
-                        {
-                            SendDataMessageAsync(secondary, secondary.S == 9 ? _systemByte.New() : header.SystemBytes);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.TraceError("Reply Secondary Message Error", ex);
-                        }
-                    });
+
+                        SendDataMessageAsync(secondary, secondary.S == 9 ? _systemByte.New() : header.SystemBytes);
+                    }));
                     return;
                 }
                 // Error message
