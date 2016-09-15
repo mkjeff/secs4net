@@ -27,7 +27,7 @@ namespace SecsDevice
             Logger = new SecsLogger(this);
         }
 
-        private async void btnEnable_Click(object sender, EventArgs e)
+        private void btnEnable_Click(object sender, EventArgs e)
         {
             _secsGem?.Dispose();
             _secsGem = new SecsGem(
@@ -47,7 +47,7 @@ namespace SecsDevice
             _secsGem.PrimaryMessageReceived += PrimaryMessageReceived;
 
             btnEnable.Enabled = false;
-            await _secsGem.StartAsync();
+            _secsGem.Start();
             btnDisable.Enabled = true;
         }
 

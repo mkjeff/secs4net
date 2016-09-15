@@ -154,6 +154,7 @@ namespace Cim.Eap
             };
 
             _secsGem.PrimaryMessageReceived += PrimaryMsgHandler;
+            _secsGem.Start();
             menuItemGemDisable.Enabled = true;
             menuItemGemEnable.Enabled = false;
         }

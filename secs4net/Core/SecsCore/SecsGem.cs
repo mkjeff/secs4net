@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    public sealed class SecsGem
+    public sealed class SecsGem : IDisposable
     {
         /// <summary>
         /// HSMS connection state changed event
@@ -130,7 +130,7 @@ namespace Secs4Net
         /// <param name="port">if active mode it should be remote deivice listener's port</param>
         /// <param name="logger">log tracer</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        public SecsGem(bool isActive, IPAddress ip, int port, ISecsGemLogger logger = null, int receiveBufferSize = 0x4000, ISecsMessageFormatter formatter=null)
+        public SecsGem(bool isActive, IPAddress ip, int port, ISecsGemLogger logger = null, int receiveBufferSize = 0x4000, ISecsMessageFormatter formatter = null)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
@@ -176,9 +176,13 @@ namespace Secs4Net
                     bool connected = false;
                     do
                     {
+                        if (_isDisposed)
+                            return;
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
+                            if (_isDisposed)
+                                return;
                             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                             await _socket.ConnectAsync(_ip, _port).ConfigureAwait(false);
                             connected = true;
@@ -212,14 +216,18 @@ namespace Secs4Net
                 server.Bind(new IPEndPoint(_ip, _port));
                 server.Listen(0);
 
-                _startImpl = async delegate
+                _startImpl = async () =>
                 {
                     bool connected = false;
                     do
                     {
+                        if (_isDisposed)
+                            return;
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
+                            if (_isDisposed)
+                                return;
                             _socket = await server.AcceptAsync().ConfigureAwait(false);
                             connected = true;
                         }
@@ -463,7 +471,7 @@ namespace Secs4Net
                     PrimaryMessageReceived?.Invoke(this, new PrimaryMessageWrapper(systembyte, msg, secondary =>
                     {
                         if (!header.ReplyExpected || State != ConnectionState.Selected)
-                            return ;
+                            return;
 
                         secondary = secondary ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(header.Bytes));
                         secondary.ReplyExpected = false;
@@ -523,7 +531,7 @@ namespace Secs4Net
             _replyExpectedMsgs.Clear();
             _stopImpl.Invoke();
         }
-        public Task StartAsync() => _startImpl();
+        public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
 
         /// <summary>
         /// Asynchronously send message to device .
@@ -613,8 +621,8 @@ namespace Secs4Net
 
                 SetResult(replyMsg);
             }
-        }        
-        
+        }
+
         #endregion
         #region SECS Decoder
         sealed class SecsDecoder
