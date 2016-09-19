@@ -41,29 +41,29 @@ namespace Secs4Net
                     return J(JIS8Encoding.GetString(bytes.Array, bytes.Offset, bytes.Count));
 #pragma warning restore CS0618 // Type or member is obsolete
                 case SecsFormat.Boolean:
-                    return new Item(format, Decode<bool>(sizeof(bool), bytes), bytes);
+                    return new Item(format, Decode<bool>(sizeof(bool), bytes));
                 case SecsFormat.Binary:
-                    return new Item(format, Decode<byte>(sizeof(byte), bytes), bytes);
+                    return new Item(format, Decode<byte>(sizeof(byte), bytes));
                 case SecsFormat.U1:
-                    return new Item(format, Decode<byte>(sizeof(byte), bytes), bytes);
+                    return new Item(format, Decode<byte>(sizeof(byte), bytes));
                 case SecsFormat.U2:
-                    return new Item(format, Decode<ushort>(sizeof(ushort), bytes), bytes);
+                    return new Item(format, Decode<ushort>(sizeof(ushort), bytes));
                 case SecsFormat.U4:
-                    return new Item(format, Decode<uint>(sizeof(uint), bytes), bytes);
+                    return new Item(format, Decode<uint>(sizeof(uint), bytes));
                 case SecsFormat.U8:
-                    return new Item(format, Decode<ulong>(sizeof(ulong), bytes), bytes);
+                    return new Item(format, Decode<ulong>(sizeof(ulong), bytes));
                 case SecsFormat.I1:
-                    return new Item(format, Decode<sbyte>(sizeof(sbyte), bytes), bytes);
+                    return new Item(format, Decode<sbyte>(sizeof(sbyte), bytes));
                 case SecsFormat.I2:
-                    return new Item(format, Decode<short>(sizeof(short), bytes), bytes);
+                    return new Item(format, Decode<short>(sizeof(short), bytes));
                 case SecsFormat.I4:
-                    return new Item(format, Decode<int>(sizeof(int), bytes), bytes);
+                    return new Item(format, Decode<int>(sizeof(int), bytes));
                 case SecsFormat.I8:
-                    return new Item(format, Decode<long>(sizeof(long), bytes), bytes);
+                    return new Item(format, Decode<long>(sizeof(long), bytes));
                 case SecsFormat.F4:
-                    return new Item(format, Decode<float>(sizeof(float), bytes), bytes);
+                    return new Item(format, Decode<float>(sizeof(float), bytes));
                 case SecsFormat.F8:
-                    return new Item(format, Decode<double>(sizeof(double), bytes), bytes);
+                    return new Item(format, Decode<double>(sizeof(double), bytes));
             }
             throw new ArgumentException(@"Invalid format", nameof(format));
         }
@@ -134,9 +134,9 @@ namespace Secs4Net
         /// <returns></returns>
         internal static uint Encode(this Item item, List<ArraySegment<byte>> buffer)
         {
-            uint length = (uint)item.RawData.Bytes.Count;
-            item.RawData.Encode(item.Format);
-            buffer.Add(item.RawData.Bytes);
+            var bytes = item.RawData.Value;
+            uint length = unchecked((uint)bytes.Length);
+            buffer.Add(new ArraySegment<byte>(bytes));
             if (item.Format == SecsFormat.List)
                 foreach (var subItem in item.Items)
                     length += subItem.Encode(buffer);

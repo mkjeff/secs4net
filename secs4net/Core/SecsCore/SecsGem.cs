@@ -15,7 +15,7 @@ namespace Secs4Net
         /// <summary>
         /// HSMS connection state changed event
         /// </summary>
-        public event EventHandler ConnectionChanged;
+        public event EventHandler<ConnectionState> ConnectionChanged;
 
         /// <summary>
         /// Primary message received event
@@ -412,10 +412,12 @@ namespace Secs4Net
                 DeviceId = DeviceId,
                 SystemBytes = systembyte
             };
-            msg.RawDatas[1] = new ArraySegment<byte>(header.Bytes);
+
+            var bufferList = msg.RawDatas.Value;
+            bufferList[1] = new ArraySegment<byte>(header.Bytes);
             var eap = new SocketAsyncEventArgs
             {
-                BufferList = msg.RawDatas,
+                BufferList = bufferList,
                 UserToken = token,
             };
             eap.Completed += _sendDataMessageCompleteHandler;
@@ -495,7 +497,7 @@ namespace Secs4Net
         void CommunicationStateChanging(ConnectionState newState)
         {
             State = newState;
-            ConnectionChanged?.Invoke(this, EventArgs.Empty);
+            ConnectionChanged?.Invoke(this, State);
 
             switch (State)
             {
@@ -895,26 +897,31 @@ namespace Secs4Net
                     Bytes[1] = values[0];
                 }
             }
+
             public bool ReplyExpected
             {
                 get { return (Bytes[2] & 0x80) == 0x80; }
                 set { Bytes[2] = (byte)(S | (value ? 0x80 : 0)); }
             }
+
             public byte S
             {
                 get { return (byte)(Bytes[2] & 0x7F); }
                 set { Bytes[2] = (byte)(value | (ReplyExpected ? 0x80 : 0)); }
             }
+
             public byte F
             {
                 get { return Bytes[3]; }
                 set { Bytes[3] = value; }
             }
+
             public MessageType MessageType
             {
                 get { return (MessageType)Bytes[5]; }
                 set { Bytes[5] = (byte)value; }
             }
+
             public int SystemBytes
             {
                 get

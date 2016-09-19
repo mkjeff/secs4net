@@ -40,7 +40,7 @@ namespace Secs4Net.Json
             jwtr.WritePropertyName(nameof(msg.Name));
             jwtr.WriteValue(msg.Name);
 
-            if (msg.HasRoot)
+            if (msg.SecsItem != null)
             {
                 jwtr.WritePropertyName(nameof(msg.SecsItem));
                 msg.SecsItem.WriteTo(jwtr);
@@ -89,7 +89,7 @@ namespace Secs4Net.Json
 
         public static SecsMessage ToSecsMessage(this JObject json)
         {
-            var msg = default(SecsMessage);           
+            var msg = default(SecsMessage);
             var s = json.Value<byte>(nameof(msg.S));
             var f = json.Value<byte>(nameof(msg.F));
             var r = json.Value<bool>(nameof(msg.ReplyExpected));

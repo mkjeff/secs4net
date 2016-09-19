@@ -33,5 +33,7 @@ namespace Secs4Net
             return true;
         }
 
+        public override string ToString() => Message.ToString();
+
     }
 }
