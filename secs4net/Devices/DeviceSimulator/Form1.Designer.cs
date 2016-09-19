@@ -241,6 +241,7 @@
             this.txtRecvSecondary.Multiline = true;
             this.txtRecvSecondary.Name = "txtRecvSecondary";
             this.txtRecvSecondary.ReadOnly = true;
+            this.txtRecvSecondary.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.txtRecvSecondary.Size = new System.Drawing.Size(443, 256);
             this.txtRecvSecondary.TabIndex = 0;
             this.txtRecvSecondary.WordWrap = false;
@@ -262,6 +263,7 @@
             this.txtSendPrimary.Location = new System.Drawing.Point(3, 18);
             this.txtSendPrimary.Multiline = true;
             this.txtSendPrimary.Name = "txtSendPrimary";
+            this.txtSendPrimary.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.txtSendPrimary.Size = new System.Drawing.Size(443, 256);
             this.txtSendPrimary.TabIndex = 1;
             this.txtSendPrimary.WordWrap = false;
@@ -283,6 +285,7 @@
             this.txtReplySeconary.Location = new System.Drawing.Point(3, 18);
             this.txtReplySeconary.Multiline = true;
             this.txtReplySeconary.Name = "txtReplySeconary";
+            this.txtReplySeconary.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.txtReplySeconary.Size = new System.Drawing.Size(486, 233);
             this.txtReplySeconary.TabIndex = 0;
             this.txtReplySeconary.WordWrap = false;
@@ -306,6 +309,7 @@
             this.txtRecvPrimary.Multiline = true;
             this.txtRecvPrimary.Name = "txtRecvPrimary";
             this.txtRecvPrimary.ReadOnly = true;
+            this.txtRecvPrimary.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.txtRecvPrimary.Size = new System.Drawing.Size(281, 279);
             this.txtRecvPrimary.TabIndex = 1;
             this.txtRecvPrimary.WordWrap = false;
