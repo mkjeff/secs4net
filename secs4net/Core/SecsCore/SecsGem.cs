@@ -116,9 +116,11 @@ namespace Secs4Net
         static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
         static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
         readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
-
+        
         readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
         readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
+
+        internal int NewSystemId => _systemByte.New();
 
         void DefaultPrimaryMessageHandler(SecsMessage primary, Action<SecsMessage> reply) => reply(null);
 
@@ -160,7 +162,7 @@ namespace Secs4Net
             _timerLinkTest = new Timer(delegate
             {
                 if (State == ConnectionState.Selected)
-                    SendControlMessage(MessageType.LinkTestRequest, _systemByte.New());
+                    SendControlMessage(MessageType.LinkTestRequest, NewSystemId);
             }, null, Timeout.Infinite, Timeout.Infinite);
             #endregion
             var receiveBuffer = new byte[receiveBufferSize < 0x4000 ? 0x4000 : receiveBufferSize];
@@ -203,10 +205,10 @@ namespace Secs4Net
                     if (!_socket.ReceiveAsync(receiveCompleteEvent))
                         ReceiveEventCompleted(_socket, receiveCompleteEvent);
 
-                    SendControlMessage(MessageType.SelectRequest, _systemByte.New());
+                    SendControlMessage(MessageType.SelectRequest, NewSystemId);
                 };
 
-                _stopImpl = delegate { };
+                //_stopImpl = delegate { };
                 #endregion
             }
             else
@@ -395,7 +397,7 @@ namespace Secs4Net
             }
         }
 
-        Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
+        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
         {
             if (State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
@@ -460,7 +462,7 @@ namespace Secs4Net
             {
                 _logger.TraceMessageIn(msg, systembyte);
                 _logger.TraceWarning("Received Unrecognized Device Id Message");
-                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.Bytes)), _systemByte.New());
+                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.Bytes)), NewSystemId);
                 return;
             }
 
@@ -470,16 +472,7 @@ namespace Secs4Net
                 {
                     //Primary message
                     _logger.TraceMessageIn(msg, systembyte);
-                    PrimaryMessageReceived?.Invoke(this, new PrimaryMessageWrapper(systembyte, msg, secondary =>
-                    {
-                        if (!header.ReplyExpected || State != ConnectionState.Selected)
-                            return;
-
-                        secondary = secondary ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(header.Bytes));
-                        secondary.ReplyExpected = false;
-
-                        SendDataMessageAsync(secondary, secondary.S == 9 ? _systemByte.New() : header.SystemBytes);
-                    }));
+                    PrimaryMessageReceived?.Invoke(this, new PrimaryMessageWrapper(this, header, msg));
                     return;
                 }
                 // Error message
@@ -531,7 +524,7 @@ namespace Secs4Net
                 _socket = null;
             }
             _replyExpectedMsgs.Clear();
-            _stopImpl.Invoke();
+            _stopImpl?.Invoke();
         }
         public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
 
@@ -540,7 +533,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="msg">primary message</param>
         /// <returns>secondary message</returns>
-        public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessageAsync(msg, _systemByte.New());
+        public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessageAsync(msg, NewSystemId);
 
         volatile bool _isDisposed;
         public void Dispose()
@@ -550,7 +543,7 @@ namespace Secs4Net
                 _isDisposed = true;
                 ConnectionChanged = null;
                 if (State == ConnectionState.Selected)
-                    SendControlMessage(MessageType.SeperateRequest, _systemByte.New());
+                    SendControlMessage(MessageType.SeperateRequest, NewSystemId);
                 Reset();
                 _timer7.Dispose();
                 _timer8.Dispose();
@@ -876,7 +869,7 @@ namespace Secs4Net
         }
         #endregion
         #region Message Header Struct
-        struct Header
+        internal struct Header
         {
             internal readonly byte[] Bytes;
             internal Header(byte[] headerbytes)

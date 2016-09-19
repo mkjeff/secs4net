@@ -53,7 +53,7 @@ namespace Secs4Net
         /// <param name="replyExpected">expect reply message</param>
         /// <param name="name"></param>
         /// <param name="item">root item</param>
-        public SecsMessage(byte stream, byte function, bool replyExpected = true, string name = null, Item item = null )
+        public SecsMessage(byte stream, byte function, bool replyExpected = true, string name = null, Item item = null)
         {
             if (stream > 0x7F)
                 throw new ArgumentOutOfRangeException(nameof(stream), stream, "Stream number must be less than 127");
@@ -63,29 +63,25 @@ namespace Secs4Net
             Name = name;
             ReplyExpected = replyExpected;
             SecsItem = item;
-
-            if (item == null)
+            RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
             {
-                RawDatas = new Lazy<List<ArraySegment<byte>>>(()=> emptyMsgDatas);
-            }
-            else
-            {
-                RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
-                {
-                    var result = new List<ArraySegment<byte>> {
-                        default(ArraySegment<byte>),    // total length
-                        new ArraySegment<byte>(Array.Empty<byte>())     // header
-                        // item
-                    };
-                    uint length = 10 + item.Encode(result); // total length = item + header
+                if (SecsItem == null)
+                    return emptyMsgDatas;
 
-                    byte[] msgLengthByte = BitConverter.GetBytes(length);
-                    Array.Reverse(msgLengthByte);
-                    result[0] = new ArraySegment<byte>(msgLengthByte);
+                var result = new List<ArraySegment<byte>> {
+                    default(ArraySegment<byte>),    // total length
+                    new ArraySegment<byte>(Array.Empty<byte>())     // header
+                    // item
+                };
 
-                    return result;
-                });
-            }
+                uint length = 10 + SecsItem.Encode(result); // total length = item + header
+         
+                byte[] msgLengthByte = BitConverter.GetBytes(length);
+                Array.Reverse(msgLengthByte);
+                result[0] = new ArraySegment<byte>(msgLengthByte);
+
+                return result;
+            });
         }
 
         /// <summary>

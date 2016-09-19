@@ -38,8 +38,11 @@ namespace Secs4Net
         {
             Format = SecsFormat.List;
             _values = items;
-            int _;
-            RawData = new Lazy<byte[]>(() => Format.EncodeItem(((IReadOnlyList<Item>)_values).Count, out _));
+            RawData = new Lazy<byte[]>(() =>
+            {
+                int _;
+                return Format.EncodeItem(((IReadOnlyList<Item>)_values).Count, out _);
+            });
         }
 
         /// <summary>
@@ -67,7 +70,7 @@ namespace Secs4Net
         /// <summary>
         /// A,J
         /// </summary>
-        internal Item(SecsFormat format, string value, Encoding encoder)
+        internal Item(SecsFormat format, string value)
         {
             Format = format;
             _values = value;
@@ -76,6 +79,7 @@ namespace Secs4Net
                 var str = (string)_values;
                 int headerLength;
                 byte[] result = Format.EncodeItem(str.Length, out headerLength);
+                var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : JIS8Encoding;
                 encoder.GetBytes(str, 0, str.Length, result, headerLength);
                 return result;
             });
@@ -398,7 +402,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static Item A(string value) => value != string.Empty ? new Item(SecsFormat.ASCII, value, Encoding.ASCII) : A();
+        public static Item A(string value) => value != string.Empty ? new Item(SecsFormat.ASCII, value) : A();
 
         /// <summary>
         /// Create string item
@@ -406,7 +410,7 @@ namespace Secs4Net
         /// <param name="value"></param>
         /// <returns></returns>
         [Obsolete("this is special format, make sure you really need it.")]
-        public static Item J(string value) => value != string.Empty ? new Item(SecsFormat.JIS8, value, JIS8Encoding) : J();
+        public static Item J(string value) => value != string.Empty ? new Item(SecsFormat.JIS8, value) : J();
         #endregion
 
         #region Share Object

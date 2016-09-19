@@ -4,18 +4,18 @@ namespace Secs4Net
 {
     public class PrimaryMessageWrapper
     {
-        public int MessageId { get; }
+        readonly SecsGem.Header _header;
+        readonly SecsGem _secsGem;
+        public int MessageId => _header.SystemBytes;
         public SecsMessage Message { get; }
 
         bool _isReplied;
 
-        readonly Action<SecsMessage> _replyCallback;
-
-        internal PrimaryMessageWrapper(int systemId, SecsMessage msg,Action<SecsMessage> replyCallback)
+        internal PrimaryMessageWrapper(SecsGem secsGem, SecsGem.Header header, SecsMessage msg)
         {
-            MessageId = systemId;
+            _secsGem = secsGem;
+            _header = header;
             Message = msg;
-            _replyCallback = replyCallback;
         }
 
         /// <summary>
@@ -28,8 +28,17 @@ namespace Secs4Net
         {
             if (_isReplied)
                 return false;
-            _replyCallback(replyMessage);
+
             _isReplied = true;
+
+            if (!_header.ReplyExpected || _secsGem.State != ConnectionState.Selected)
+                return true;
+
+            replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(_header.Bytes));
+            replyMessage.ReplyExpected = false;
+
+            _secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes);
+
             return true;
         }
 
