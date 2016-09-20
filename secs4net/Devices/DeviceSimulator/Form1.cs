@@ -10,7 +10,7 @@ namespace SecsDevice
 {
     public partial class Form1 : Form {
         SecsGem _secsGem;
-        readonly ISecsGemLogger Logger;
+        readonly ISecsGemLogger _logger;
         readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
 
         public Form1() {
@@ -24,7 +24,7 @@ namespace SecsDevice
             recvMessageBindingSource.DataSource = recvBuffer;
             Application.ThreadException += (sender, e) => MessageBox.Show(e.Exception.ToString());
             AppDomain.CurrentDomain.UnhandledException += (sender, e) => MessageBox.Show(e.ExceptionObject.ToString());
-            Logger = new SecsLogger(this);
+            _logger = new SecsLogger(this);
         }
 
         private void btnEnable_Click(object sender, EventArgs e)
@@ -33,8 +33,8 @@ namespace SecsDevice
             _secsGem = new SecsGem(
                 radioActiveMode.Checked,
                 IPAddress.Parse(txtAddress.Text),
-                (int)numPort.Value,
-                Logger);
+                (int)numPort.Value)
+            { Logger = _logger };
 
             _secsGem.ConnectionChanged += delegate
             {

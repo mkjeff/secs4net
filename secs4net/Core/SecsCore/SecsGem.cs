@@ -23,6 +23,12 @@ namespace Secs4Net
         public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived;
 
 
+        public ISecsGemLogger Logger
+        {
+            get { return _logger; }
+            set { _logger = value ?? DefaultLogger; }
+        }
+
         /// <summary>
         /// Connection state
         /// </summary>
@@ -58,7 +64,6 @@ namespace Secs4Net
         /// </summary>
         public int T8 { get; set; } = 5000;
 
-        private int _linkTestInterval = 60000;
 
         /// <summary>
         /// Linking test timer interval
@@ -76,6 +81,7 @@ namespace Secs4Net
             }
         }
 
+        private int _linkTestInterval = 60000;
         private bool _linkTestEnable;
 
         /// <summary>
@@ -104,7 +110,7 @@ namespace Secs4Net
 
         readonly SecsDecoder _secsDecoder;
         readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
-        readonly ISecsGemLogger _logger;
+        ISecsGemLogger _logger = DefaultLogger;
         readonly Timer _timer7;	// between socket connected and received Select.req timer
         readonly Timer _timer8;
         readonly Timer _timerLinkTest;
@@ -122,17 +128,14 @@ namespace Secs4Net
 
         internal int NewSystemId => _systemByte.New();
 
-        void DefaultPrimaryMessageHandler(SecsMessage primary, Action<SecsMessage> reply) => reply(null);
-
         /// <summary>
         /// constructor
         /// </summary>
         /// <param name="isActive">passive or active mode</param>
         /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
         /// <param name="port">if active mode it should be remote deivice listener's port</param>
-        /// <param name="logger">log tracer</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        public SecsGem(bool isActive, IPAddress ip, int port, ISecsGemLogger logger = null, int receiveBufferSize = 0x4000, ISecsMessageFormatter formatter = null)
+        public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
@@ -143,7 +146,6 @@ namespace Secs4Net
             _ip = ip;
             _port = port;
             _isActive = isActive;
-            _logger = logger ?? DefaultLogger;
             _secsDecoder = new SecsDecoder(_logger, HandleControlMessage, HandleDataMessage);
 
             #region Timer Action

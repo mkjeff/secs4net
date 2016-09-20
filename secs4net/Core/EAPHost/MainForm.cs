@@ -72,7 +72,6 @@ namespace Cim.Eap
 
         SecsGem _secsGem;
         readonly TextBoxAppender _screenLoger;
-        readonly ISecsGemLogger _secsLogger = new SecsLogger();
 
         public HostMainForm()
         {
@@ -131,7 +130,7 @@ namespace Cim.Eap
             _secsGem = new SecsGem(
                 EAPConfig.Instance.Mode == ConnectionMode.Active,
                 IPAddress.Parse(EAPConfig.Instance.IP),
-                EAPConfig.Instance.TcpPort, _secsLogger, EAPConfig.Instance.SocketRecvBufferSize)
+                EAPConfig.Instance.TcpPort, EAPConfig.Instance.SocketRecvBufferSize)
             {
                 DeviceId = EAPConfig.Instance.DeviceId,
                 LinkTestInterval = EAPConfig.Instance.LinkTestInterval,
@@ -140,6 +139,7 @@ namespace Cim.Eap
                 T6 = EAPConfig.Instance.T6,
                 T7 = EAPConfig.Instance.T7,
                 T8 = EAPConfig.Instance.T8,
+                Logger = new SecsLogger()
             };
             _secsGem.ConnectionChanged += delegate
             {

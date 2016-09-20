@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Secs4Net
 {
-    [Serializable]
     public sealed class SecsMessage {
         static SecsMessage() {
             if (!BitConverter.IsLittleEndian)
