@@ -265,23 +265,6 @@ namespace Secs4Net.Sml
             }
         }
 
-        public static string ToHexString(this byte[] value)
-        {
-            if (value.Length == 0) return string.Empty;
-            int length = value.Length * 3;
-            char[] chs = new char[length];
-            for (int ci = 0, i = 0; ci < length; ci += 3)
-            {
-                byte num = value[i++];
-                chs[ci] = GetHexValue(num / 0x10);
-                chs[ci + 1] = GetHexValue(num % 0x10);
-                chs[ci + 2] = ' ';
-            }
-            return new string(chs, 0, length - 1);
-        }
-
-        static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
-
         static string ToSmlString<T>(this T[] value) where T : struct =>
             value.Length == 1 ? value[0].ToString() : string.Join(" ", value);
 
