@@ -34,7 +34,7 @@ namespace SecsDevice
                 radioActiveMode.Checked,
                 IPAddress.Parse(txtAddress.Text),
                 (int)numPort.Value)
-            { Logger = _logger };
+            { Logger = _logger, DeviceId = (short)numDeviceId.Value };
 
             _secsGem.ConnectionChanged += delegate
             {

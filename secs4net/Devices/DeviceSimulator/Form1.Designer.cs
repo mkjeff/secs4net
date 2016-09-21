@@ -104,7 +104,7 @@
             // 
             this.numDeviceId.Location = new System.Drawing.Point(405, 27);
             this.numDeviceId.Maximum = new decimal(new int[] {
-            10,
+            65535,
             0,
             0,
             0});
