@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
@@ -879,17 +880,35 @@ namespace Secs4Net
                 Bytes = headerbytes;
             }
 
-            public short DeviceId
+            public unsafe short DeviceId
             {
                 get
                 {
-                    return BitConverter.ToInt16(new[] { Bytes[1], Bytes[0] }, 0);
+                    short result = 0;
+                    fixed (byte* src = Bytes)
+                    {
+                        var ptr = (byte*)Unsafe.AsPointer(ref result);
+                        // tmp variable is redundant if use C# 7.0 ref return + Unsafe.AsRef
+                        var
+                        tmp = Unsafe.Read<byte>(src + 1);
+                        Unsafe.Copy(ptr + 0, ref tmp);
+                        tmp = Unsafe.Read<byte>(src + 0);
+                        Unsafe.Copy(ptr + 1, ref tmp);
+                    }
+                    return result;
                 }
                 set
                 {
-                    byte[] values = BitConverter.GetBytes(value);
-                    Bytes[0] = values[1];
-                    Bytes[1] = values[0];
+                    var values = (byte*)Unsafe.AsPointer(ref value);
+
+                    fixed (byte* target = Bytes)
+                    {
+                        var
+                        tmp = Unsafe.Read<byte>(values + 0);
+                        Unsafe.Copy(target + 1, ref tmp);
+                        tmp = Unsafe.Read<byte>(values + 1);
+                        Unsafe.Copy(target + 0, ref tmp);
+                    }
                 }
             }
 
@@ -917,24 +936,44 @@ namespace Secs4Net
                 set { Bytes[5] = (byte)value; }
             }
 
-            public int SystemBytes
+            public unsafe int SystemBytes
             {
                 get
                 {
-                    return BitConverter.ToInt32(new[] {
-                        Bytes[9],
-                        Bytes[8],
-                        Bytes[7],
-                        Bytes[6]
-                    }, 0);
+                    int result = 0;
+                    fixed (byte* src = Bytes)
+                    {
+                        var ptr = (byte*)Unsafe.AsPointer(ref result);
+                        // tmp variable is redundant if use C# 7.0 ref return + Unsafe.AsRef
+                        // https://github.com/mkjeff/CS7Sample/blob/25f7d8719eb082e92055574e27d7dbf1e6731f27/Test/Program.cs#L77-L104
+                        var
+                        tmp = Unsafe.Read<byte>(src + 9);
+                        Unsafe.Copy(ptr + 0, ref tmp);
+                        tmp = Unsafe.Read<byte>(src + 8);
+                        Unsafe.Copy(ptr + 1, ref tmp);
+                        tmp = Unsafe.Read<byte>(src + 7);
+                        Unsafe.Copy(ptr + 2, ref tmp);
+                        tmp = Unsafe.Read<byte>(src + 6);
+                        Unsafe.Copy(ptr + 3, ref tmp);
+                    }
+                    return result;
                 }
                 set
                 {
-                    byte[] values = BitConverter.GetBytes(value);
-                    Bytes[6] = values[3];
-                    Bytes[7] = values[2];
-                    Bytes[8] = values[1];
-                    Bytes[9] = values[0];
+                    var values = (byte*)Unsafe.AsPointer(ref value);
+
+                    fixed (byte* target = Bytes)
+                    {
+                        var
+                        tmp = Unsafe.Read<byte>(values + 0);
+                        Unsafe.Copy(target + 9, ref tmp);
+                        tmp = Unsafe.Read<byte>(values + 1);
+                        Unsafe.Copy(target + 8, ref tmp);
+                        tmp = Unsafe.Read<byte>(values + 2);
+                        Unsafe.Copy(target + 7, ref tmp);
+                        tmp = Unsafe.Read<byte>(values + 3);
+                        Unsafe.Copy(target + 6, ref tmp);
+                    }
                 }
             }
         }

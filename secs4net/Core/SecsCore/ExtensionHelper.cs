@@ -2,11 +2,29 @@
 using System.Text;
 using System.Collections.Generic;
 using static Secs4Net.Item;
+using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
-    static class SecsExtension
+    public static class SecsExtension
     {
+        public static string ToHexString(this byte[] value)
+        {
+            if (value.Length == 0) return string.Empty;
+            int length = value.Length * 3;
+            char[] chs = new char[length];
+            for (int ci = 0, i = 0; ci < length; ci += 3)
+            {
+                byte num = value[i++];
+                chs[ci] = GetHexValue(num / 0x10);
+                chs[ci + 1] = GetHexValue(num % 0x10);
+                chs[ci + 2] = ' ';
+            }
+            return new string(chs, 0, length - 1);
+        }
+
+        static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
+
         #region Bytes To Item Value
         internal static Item BytesDecode(this SecsFormat format)
         {
@@ -41,36 +59,37 @@ namespace Secs4Net
                     return J(JIS8Encoding.GetString(bytes.Array, bytes.Offset, bytes.Count));
 #pragma warning restore CS0618 // Type or member is obsolete
                 case SecsFormat.Boolean:
-                    return new Item(format, Decode<bool>(sizeof(bool), bytes));
+                    return Boolean(Decode<bool>(bytes));
                 case SecsFormat.Binary:
-                    return new Item(format, Decode<byte>(sizeof(byte), bytes));
+                    return B(Decode<byte>(bytes));
                 case SecsFormat.U1:
-                    return new Item(format, Decode<byte>(sizeof(byte), bytes));
+                    return U1(Decode<byte>(bytes));
                 case SecsFormat.U2:
-                    return new Item(format, Decode<ushort>(sizeof(ushort), bytes));
+                    return U2(Decode<ushort>(bytes));
                 case SecsFormat.U4:
-                    return new Item(format, Decode<uint>(sizeof(uint), bytes));
+                    return U4(Decode<uint>(bytes));
                 case SecsFormat.U8:
-                    return new Item(format, Decode<ulong>(sizeof(ulong), bytes));
+                    return U8(Decode<ulong>(bytes));
                 case SecsFormat.I1:
-                    return new Item(format, Decode<sbyte>(sizeof(sbyte), bytes));
+                    return I1(Decode<sbyte>(bytes));
                 case SecsFormat.I2:
-                    return new Item(format, Decode<short>(sizeof(short), bytes));
+                    return I2(Decode<short>(bytes));
                 case SecsFormat.I4:
-                    return new Item(format, Decode<int>(sizeof(int), bytes));
+                    return I4(Decode<int>(bytes));
                 case SecsFormat.I8:
-                    return new Item(format, Decode<long>(sizeof(long), bytes));
+                    return I8(Decode<long>(bytes));
                 case SecsFormat.F4:
-                    return new Item(format, Decode<float>(sizeof(float), bytes));
+                    return F4(Decode<float>(bytes));
                 case SecsFormat.F8:
-                    return new Item(format, Decode<double>(sizeof(double), bytes));
+                    return F8(Decode<double>(bytes));
             }
             throw new ArgumentException(@"Invalid format", nameof(format));
         }
 
-        static T[] Decode<T>(int elmSize, ArraySegment<byte> bytes) where T : struct
+        static T[] Decode<T>(ArraySegment<byte> bytes) where T : struct
         {
-            bytes.Array.Reverse(bytes.Offset, bytes.Offset+ bytes.Count, elmSize);
+            int elmSize = Unsafe.SizeOf<T>();
+            bytes.Array.Reverse(bytes.Offset, bytes.Offset + bytes.Count, elmSize);
             var values = new T[bytes.Count / elmSize];
             Buffer.BlockCopy(bytes.Array, bytes.Offset, values, 0, bytes.Count);
             return values;

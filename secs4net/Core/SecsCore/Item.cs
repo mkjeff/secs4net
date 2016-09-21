@@ -51,7 +51,7 @@ namespace Secs4Net
         /// F4,F8
         /// Boolean
         /// </summary>
-        internal Item(SecsFormat format, Array value)
+        Item(SecsFormat format, Array value)
         {
             Format = format;
             _values = value;
@@ -70,7 +70,7 @@ namespace Secs4Net
         /// <summary>
         /// A,J
         /// </summary>
-        internal Item(SecsFormat format, string value)
+        Item(SecsFormat format, string value)
         {
             Format = format;
             _values = value;
@@ -140,11 +140,11 @@ namespace Secs4Net
             if (_values is T)
                 return (T)_values;
 
-            if (_values is IEnumerable<T>)
-                return _values.Cast<T>().First();
+            if (_values is IEnumerable)
+                return ((IEnumerable<T>)_values).First();
 
             if (_values.GetType().GetElementType() == Nullable.GetUnderlyingType(typeof(T)))
-                return _values.Cast<T>().First();
+                return ((IEnumerable<T>)_values).First();
 
             throw new InvalidOperationException("Item value type is incompatible");
         }
@@ -163,10 +163,10 @@ namespace Secs4Net
                 return (T)_values;
 
             if (_values is IEnumerable<T>)
-                return _values.Cast<T>().FirstOrDefault();
+                return ((IEnumerable<T>)_values).FirstOrDefault();
 
             if (_values.GetType().GetElementType() == Nullable.GetUnderlyingType(typeof(T)))
-                return _values.Cast<T>().FirstOrDefault();
+                return ((IEnumerable<T>)_values).FirstOrDefault();
 
             throw new InvalidOperationException("Item value type is incompatible");
         }
