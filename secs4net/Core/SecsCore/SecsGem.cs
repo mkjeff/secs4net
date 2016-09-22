@@ -1,13 +1,11 @@
-﻿using Secs4Net.Properties;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
+using Secs4Net.Properties;
 
 namespace Secs4Net
 {
@@ -38,7 +36,7 @@ namespace Secs4Net
         /// <summary>
         /// Device Id.
         /// </summary>
-        public short DeviceId { get; set; } = 0;
+        public ushort DeviceId { get; set; } = 0;
 
         /// <summary>
         /// T3 timer interval 
@@ -109,7 +107,7 @@ namespace Secs4Net
         readonly int _port;
         Socket _socket;
 
-        readonly SecsDecoder _secsDecoder;
+        readonly StreamDecoder _secsDecoder;
         readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
         ISecsGemLogger _logger = DefaultLogger;
         readonly Timer _timer7;	// between socket connected and received Select.req timer
@@ -147,7 +145,7 @@ namespace Secs4Net
             _ip = ip;
             _port = port;
             _isActive = isActive;
-            _secsDecoder = new SecsDecoder(_logger, HandleControlMessage, HandleDataMessage);
+            _secsDecoder = new StreamDecoder(_logger, HandleControlMessage, HandleDataMessage);
 
             #region Timer Action
             _timer7 = new Timer(delegate
@@ -305,9 +303,6 @@ namespace Secs4Net
 
         void SendControlMessage(MessageType msgType, int systembyte)
         {
-            var header = new Header(new byte[10]) { MessageType = msgType, SystemBytes = systembyte };
-            header.Bytes[0] = 0xFF;
-            header.Bytes[1] = 0xFF;
             var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
             {
@@ -316,7 +311,14 @@ namespace Secs4Net
 
             var eap = new SocketAsyncEventArgs
             {
-                BufferList = new List<ArraySegment<byte>>(2) { ControlMessageLengthBytes, new ArraySegment<byte>(header.Bytes) },
+                BufferList = new List<ArraySegment<byte>>(2) {
+                    ControlMessageLengthBytes,
+                    new ArraySegment<byte>(new MessageHeader{
+                        DeviceId = 0xFFFF,
+                        MessageType = msgType,
+                        SystemBytes = systembyte
+                    }.Bytes)
+                },
                 UserToken = token,
             };
             eap.Completed += _sendControlMessageCompleteHandler;
@@ -348,7 +350,7 @@ namespace Secs4Net
             }
         }
 
-        void HandleControlMessage(Header header)
+        void HandleControlMessage(MessageHeader header)
         {
             int systembyte = header.SystemBytes;
             if ((byte)header.MessageType % 2 == 0)
@@ -409,7 +411,7 @@ namespace Secs4Net
             if (msg.ReplyExpected)
                 _replyExpectedMsgs[systembyte] = token;
 
-            var header = new Header(new byte[10])
+            var header = new MessageHeader
             {
                 S = msg.S,
                 F = msg.F,
@@ -457,7 +459,7 @@ namespace Secs4Net
             }
         }
 
-        void HandleDataMessage(Header header, SecsMessage msg)
+        void HandleDataMessage(MessageHeader header, SecsMessage msg)
         {
             int systembyte = header.SystemBytes;
 
@@ -621,362 +623,6 @@ namespace Secs4Net
             }
         }
 
-        #endregion
-        #region SECS Decoder
-        sealed class SecsDecoder
-        {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="data"></param>
-            /// <param name="length"></param>
-            /// <param name="index"></param>
-            /// <param name="need"></param>
-            /// <returns>pipeline decoder index</returns>
-            delegate int Decoder(byte[] data, int length, ref int index, out int need);
-            #region share
-            uint _messageLength;// total byte length
-            Header _msgHeader; // message header
-            readonly Stack<List<Item>> _stack = new Stack<List<Item>>(); // List Item stack
-            SecsFormat _format;
-            byte _lengthBits;
-            int _itemLength;
-            #endregion
-
-            readonly ISecsGemLogger _logger;
-            /// <summary>
-            /// decode pipeline
-            /// </summary>
-            readonly Decoder[] _decoders;
-            readonly Action<Header, SecsMessage> _dataMsgHandler;
-            readonly Action<Header> _controlMsgHandler;
-
-            internal SecsDecoder(ISecsGemLogger logger, Action<Header> controlMsgHandler, Action<Header, SecsMessage> dataMsgHandler)
-            {
-                _logger = logger;
-                _dataMsgHandler = dataMsgHandler;
-                _controlMsgHandler = controlMsgHandler;
-
-                _decoders = new Decoder[]{
-                    #region _decoders[0]: get total message length 4 bytes
-                    (byte[] data, int length, ref int index, out int need) =>
-                    {
-                       if (!CheckAvailable(length, index, 4, out need)) return 0;
-
-                       Array.Reverse(data, index, 4);
-                       _messageLength = BitConverter.ToUInt32(data, index);
-                       _logger.TraceDebug("Get Message Length =" + _messageLength);
-                       index += 4;
-
-                       return 1;
-                    },
-                    #endregion
-                    #region _decoders[1]: get message header 10 bytes
-                    (byte[] data, int length, ref int index, out int need) =>
-                    {
-                        if (!CheckAvailable(length, index, 10, out need)) return 1;
-
-                        _msgHeader = new Header(new byte[10]);
-                        Array.Copy(data, index, _msgHeader.Bytes, 0, 10);
-                        index += 10;
-                        _messageLength -= 10;
-                        if (_messageLength == 0)
-                        {
-                            if (_msgHeader.MessageType == MessageType.DataMessage)
-                            {
-                                ProcessMessage(new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected, string.Empty));
-                            }
-                            else
-                            {
-                                _controlMsgHandler(_msgHeader);
-                                _messageLength = 0;
-                            }
-                            return 0;
-                        }
-                        else if (length - index >= _messageLength)
-                        {
-                            ProcessMessage(new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected, data, ref index));
-                            return 0; //completeWith message received
-                        }
-                        return 2;
-                    },
-                    #endregion
-                    #region _decoders[2]: get _format + lengthBits(2bit) 1 byte
-                    (byte[] data, int length, ref int index, out int need) =>
-                    {
-                        if (!CheckAvailable(length, index, 1, out need)) return 2;
-
-                        _format = (SecsFormat)(data[index] & 0xFC);
-                        _lengthBits = (byte)(data[index] & 3);
-                        index++;
-                        _messageLength--;
-                        return 3;
-                    },
-                    #endregion
-                    #region _decoders[3]: get _itemLength _lengthBits bytes
-                    (byte[] data, int length, ref int index, out int need) =>
-                    {
-                        if (!CheckAvailable(length, index, _lengthBits, out need)) return 3;
-
-                        byte[] itemLengthBytes = new byte[4];
-                        Array.Copy(data, index, itemLengthBytes, 0, _lengthBits);
-                        Array.Reverse(itemLengthBytes, 0, _lengthBits);
-
-                        _itemLength = BitConverter.ToInt32(itemLengthBytes, 0);
-                        Array.Clear(itemLengthBytes, 0, 4);
-
-                        index += _lengthBits;
-                        _messageLength -= _lengthBits;
-                        return 4;
-                    },
-                    #endregion
-                    #region _decoders[4]: get item value
-                    (byte[] data, int length, ref int index, out int need) =>
-                    {
-                        need = 0;
-                        Item item;
-                        if (_format == SecsFormat.List)
-                        {
-                            if (_itemLength == 0) {
-                                item = Item.L();
-                            }
-                            else
-                            {
-                                _stack.Push(new List<Item>(_itemLength));
-                                return 2;
-                            }
-                        }
-                        else
-                        {
-                            if (!CheckAvailable(length, index, _itemLength, out need)) return 4;
-
-                            item = _itemLength == 0 ? _format.BytesDecode() : _format.BytesDecode(new ArraySegment<byte>(data, index, _itemLength));
-                            index += _itemLength;
-                            _messageLength -= (uint)_itemLength;
-                        }
-
-                        if (_stack.Count > 0)
-                        {
-                            var list = _stack.Peek();
-                            list.Add(item);
-                            while (list.Count == list.Capacity)
-                            {
-                                item = Item.L(_stack.Pop());
-                                if (_stack.Count > 0)
-                                {
-                                    list = _stack.Peek();
-                                    list.Add(item);
-                                }
-                                else
-                                {
-                                    ProcessMessage(new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected, string.Empty, item));
-                                    return 0;
-                                }
-                            }
-                        }
-                        return 2;
-                    },
-                    #endregion
-                };
-            }
-
-            void ProcessMessage(SecsMessage msg)
-            {
-                _dataMsgHandler(_msgHeader, msg);
-                _messageLength = 0;
-            }
-
-            static bool CheckAvailable(int length, int index, int requireCount, out int need)
-            {
-                need = requireCount - (length - index);
-                return need <= 0;
-            }
-
-            public void Reset()
-            {
-                _stack.Clear();
-                _currentStep = 0;
-                _remainBytes = new ArraySegment<byte>();
-                _messageLength = 0;
-            }
-
-            /// <summary>
-            /// Offset: next fill index
-            /// Cout : next fill count
-            /// </summary>
-            ArraySegment<byte> _remainBytes;
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="bytes">位元組</param>
-            /// <param name="index">有效位元的起始索引</param>
-            /// <param name="length">有效位元長度</param>
-            /// <returns>如果輸入的位元組經解碼後尚有不足則回傳true,否則回傳false</returns>
-            public bool Decode(byte[] bytes, int index, int length)
-            {
-                if (_remainBytes.Count == 0)
-                {
-                    int need = Decode(bytes, length, ref index);
-                    int remainLength = length - index;
-                    if (remainLength > 0)
-                    {
-                        var temp = new byte[remainLength + need];
-                        Array.Copy(bytes, index, temp, 0, remainLength);
-                        _remainBytes = new ArraySegment<byte>(temp, remainLength, need);
-                        _logger.TraceDebug($"Remain Length: {_remainBytes.Offset}, Need:{_remainBytes.Count}");
-                    }
-                    else
-                    {
-                        _remainBytes = new ArraySegment<byte>();
-                    }
-                }
-                else if (length - index >= _remainBytes.Count)
-                {
-                    Array.Copy(bytes, index, _remainBytes.Array, _remainBytes.Offset, _remainBytes.Count);
-                    index = _remainBytes.Count;
-                    byte[] temp = _remainBytes.Array;
-                    _remainBytes = new ArraySegment<byte>();
-                    if (Decode(temp, 0, temp.Length))
-                        Decode(bytes, index, length);
-                }
-                else
-                {
-                    int remainLength = length - index;
-                    Array.Copy(bytes, index, _remainBytes.Array, _remainBytes.Offset, remainLength);
-                    _remainBytes = new ArraySegment<byte>(_remainBytes.Array, _remainBytes.Offset + remainLength, _remainBytes.Count - remainLength);
-                    _logger.TraceDebug($"Remain Length: {_remainBytes.Offset}, Need:{_remainBytes.Count}");
-                }
-                return _messageLength > 0;
-            }
-
-            int _currentStep;
-            /// <summary>
-            /// Use decode pipeline to handles message's bytes 
-            /// </summary>
-            /// <param name="bytes">data bytes</param>
-            /// <param name="length">有效位元的起始索引</param>
-            /// <param name="index">位元組的起始索引</param>
-            /// <returns>回傳_currentStep不足的byte數</returns>
-            int Decode(byte[] bytes, int length, ref int index)
-            {
-                int need;
-                int nexStep = _currentStep;
-                do
-                {
-                    _currentStep = nexStep;
-                    nexStep = _decoders[_currentStep](bytes, length, ref index, out need);
-                } while (nexStep != _currentStep);
-                return need;
-            }
-        }
-        #endregion
-        #region Message Header Struct
-        internal struct Header
-        {
-            internal readonly byte[] Bytes;
-            internal Header(byte[] headerbytes)
-            {
-                Bytes = headerbytes;
-            }
-
-            public unsafe short DeviceId
-            {
-                get
-                {
-                    short result = 0;
-                    fixed (byte* src = Bytes)
-                    {
-                        var ptr = (byte*)Unsafe.AsPointer(ref result);
-                        // tmp variable is redundant if use C# 7.0 ref return + Unsafe.AsRef
-                        var
-                        tmp = Unsafe.Read<byte>(src + 1);
-                        Unsafe.Copy(ptr + 0, ref tmp);
-                        tmp = Unsafe.Read<byte>(src + 0);
-                        Unsafe.Copy(ptr + 1, ref tmp);
-                    }
-                    return result;
-                }
-                set
-                {
-                    var values = (byte*)Unsafe.AsPointer(ref value);
-
-                    fixed (byte* target = Bytes)
-                    {
-                        var
-                        tmp = Unsafe.Read<byte>(values + 0);
-                        Unsafe.Copy(target + 1, ref tmp);
-                        tmp = Unsafe.Read<byte>(values + 1);
-                        Unsafe.Copy(target + 0, ref tmp);
-                    }
-                }
-            }
-
-            public bool ReplyExpected
-            {
-                get { return (Bytes[2] & 0x80) == 0x80; }
-                set { Bytes[2] = (byte)(S | (value ? 0x80 : 0)); }
-            }
-
-            public byte S
-            {
-                get { return (byte)(Bytes[2] & 0x7F); }
-                set { Bytes[2] = (byte)(value | (ReplyExpected ? 0x80 : 0)); }
-            }
-
-            public byte F
-            {
-                get { return Bytes[3]; }
-                set { Bytes[3] = value; }
-            }
-
-            public MessageType MessageType
-            {
-                get { return (MessageType)Bytes[5]; }
-                set { Bytes[5] = (byte)value; }
-            }
-
-            public unsafe int SystemBytes
-            {
-                get
-                {
-                    int result = 0;
-                    fixed (byte* src = Bytes)
-                    {
-                        var ptr = (byte*)Unsafe.AsPointer(ref result);
-                        // tmp variable is redundant if use C# 7.0 ref return + Unsafe.AsRef
-                        // https://github.com/mkjeff/CS7Sample/blob/25f7d8719eb082e92055574e27d7dbf1e6731f27/Test/Program.cs#L77-L104
-                        var
-                        tmp = Unsafe.Read<byte>(src + 9);
-                        Unsafe.Copy(ptr + 0, ref tmp);
-                        tmp = Unsafe.Read<byte>(src + 8);
-                        Unsafe.Copy(ptr + 1, ref tmp);
-                        tmp = Unsafe.Read<byte>(src + 7);
-                        Unsafe.Copy(ptr + 2, ref tmp);
-                        tmp = Unsafe.Read<byte>(src + 6);
-                        Unsafe.Copy(ptr + 3, ref tmp);
-                    }
-                    return result;
-                }
-                set
-                {
-                    var values = (byte*)Unsafe.AsPointer(ref value);
-
-                    fixed (byte* target = Bytes)
-                    {
-                        var
-                        tmp = Unsafe.Read<byte>(values + 0);
-                        Unsafe.Copy(target + 9, ref tmp);
-                        tmp = Unsafe.Read<byte>(values + 1);
-                        Unsafe.Copy(target + 8, ref tmp);
-                        tmp = Unsafe.Read<byte>(values + 2);
-                        Unsafe.Copy(target + 7, ref tmp);
-                        tmp = Unsafe.Read<byte>(values + 3);
-                        Unsafe.Copy(target + 6, ref tmp);
-                    }
-                }
-            }
-        }
         #endregion
     }
 }

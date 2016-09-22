@@ -41,8 +41,8 @@ namespace Cim.Eap {
         [IntegerValidator(MinValue = 4000, MaxValue = 5000)]
         public int TcpPort => (int)this["port"];
 
-        [ConfigurationProperty("deviceId", DefaultValue = (short)0)]
-        public short DeviceId => (short)this["deviceId"];
+        [ConfigurationProperty("deviceId", DefaultValue = (ushort)0)]
+        public ushort DeviceId => (ushort)this["deviceId"];
 
         [Description("Active / Passive")]
         [ConfigurationProperty("mode", IsRequired = true)]

@@ -2,16 +2,17 @@
 
 namespace Secs4Net
 {
-    public class PrimaryMessageWrapper
+    public sealed class PrimaryMessageWrapper
     {
-        readonly SecsGem.Header _header;
+        readonly MessageHeader _header;
+        public SecsMessage Message { get; }
+
         readonly SecsGem _secsGem;
         public int MessageId => _header.SystemBytes;
-        public SecsMessage Message { get; }
 
         bool _isReplied;
 
-        internal PrimaryMessageWrapper(SecsGem secsGem, SecsGem.Header header, SecsMessage msg)
+        internal PrimaryMessageWrapper(SecsGem secsGem, MessageHeader header, SecsMessage msg)
         {
             _secsGem = secsGem;
             _header = header;
