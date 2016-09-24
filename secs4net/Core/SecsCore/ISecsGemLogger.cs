@@ -6,15 +6,13 @@ namespace Secs4Net
 {
     public interface ISecsGemLogger
     {
-        void TraceMessageIn(SecsMessage msg, int systembyte);
-        void TraceMessageOut(SecsMessage msg, int systembyte);
+        void MessageIn(SecsMessage msg, int systembyte);
+        void MessageOut(SecsMessage msg, int systembyte);
 
-        void TraceDebug(string msg);
-        void TraceInfo(string msg);
-
-        void TraceWarning(string msg);
-
-        void TraceError(string msg, Exception ex = null);
+        void Debug(string msg);
+        void Info(string msg);
+        void Warning(string msg);
+        void Error(string msg, Exception ex = null);
     }
 
     /// <summary>
@@ -22,27 +20,27 @@ namespace Secs4Net
     /// </summary>
     public sealed class DefaultSecsGemLogger : ISecsGemLogger
     {
-        public void TraceMessageIn(SecsMessage msg, int systembyte) {
+        public void MessageIn(SecsMessage msg, int systembyte) {
             Trace.WriteLine($"<-- [0x{systembyte:X8}] {msg}");
         }
 
-        public void TraceMessageOut(SecsMessage msg, int systembyte) {
+        public void MessageOut(SecsMessage msg, int systembyte) {
             Trace.WriteLine($"--> [0x{systembyte:X8}] {msg}");
         }
 
-        public void TraceDebug(string msg) {
+        public void Debug(string msg) {
             Trace.WriteLine(msg);
         }
 
-        public void TraceInfo(string msg) {
+        public void Info(string msg) {
             Trace.TraceInformation(msg);
         }
 
-        public void TraceWarning(string msg) {
+        public void Warning(string msg) {
             Trace.TraceWarning(msg);
         }
 
-        public void TraceError(string msg, Exception ex = null) {
+        public void Error(string msg, Exception ex = null) {
             Trace.TraceError($"{msg}\n {ex}");
         }
     }

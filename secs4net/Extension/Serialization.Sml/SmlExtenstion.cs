@@ -121,6 +121,24 @@ namespace Secs4Net.Sml
             }
         }
 
+        public static IEnumerable<SecsMessage> ToSecsMessages(this TextReader reader)
+        {
+            while (reader.Peek() != -1)
+            {
+                SecsMessage secsMsg = null;
+                try
+                {
+                    secsMsg = reader.ToSecsMessage();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("SML parsing error before:\n" + reader.ReadToEnd(), ex);
+                }
+                if (secsMsg != null)
+                    yield return secsMsg;
+            }
+        }
+
         public static SecsMessage ToSecsMessage(this string str)
         {
             using (var sr = new StringReader(str))

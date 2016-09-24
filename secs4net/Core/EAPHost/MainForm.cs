@@ -29,7 +29,7 @@ namespace Cim.Eap
     {
         class SecsLogger : ISecsGemLogger
         {
-            public void TraceMessageIn(SecsMessage msg, int systembyte)
+            public void MessageIn(SecsMessage msg, int systembyte)
             {
                 EapLogger.Info(new SecsMessageLogInfo
                 {
@@ -39,7 +39,7 @@ namespace Cim.Eap
                 });
             }
 
-            public void TraceMessageOut(SecsMessage msg, int systembyte)
+            public void MessageOut(SecsMessage msg, int systembyte)
             {
                 EapLogger.Info(new SecsMessageLogInfo
                 {
@@ -49,22 +49,22 @@ namespace Cim.Eap
                 });
             }
 
-            public void TraceInfo(string msg)
+            public void Info(string msg)
             {
                 EapLogger.Info("SECS/GEM Info: " + msg);
             }
 
-            public void TraceWarning(string msg)
+            public void Warning(string msg)
             {
                 EapLogger.Warn("SECS/GEM Warning: " + msg);
             }
 
-            public void TraceError(string msg, Exception ex = null)
+            public void Error(string msg, Exception ex = null)
             {
                 EapLogger.Error("SECS/GEM Error: " + msg);
             }
 
-            public void TraceDebug(string msg)
+            public void Debug(string msg)
             {
                 EapLogger.Debug("SECS/GEM Error: " + msg);
             }

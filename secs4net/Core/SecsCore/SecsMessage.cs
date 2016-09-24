@@ -3,8 +3,10 @@ using System.Collections.Generic;
 
 namespace Secs4Net
 {
-    public sealed class SecsMessage {
-        static SecsMessage() {
+    public sealed class SecsMessage
+    {
+        static SecsMessage()
+        {
             if (!BitConverter.IsLittleEndian)
                 throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
         }
@@ -74,7 +76,7 @@ namespace Secs4Net
                 };
 
                 uint length = 10 + SecsItem.Encode(result); // total length = item + header
-         
+
                 byte[] msgLengthByte = BitConverter.GetBytes(length);
                 Array.Reverse(msgLengthByte);
                 result[0] = new ArraySegment<byte>(msgLengthByte);
@@ -121,7 +123,7 @@ namespace Secs4Net
                     list.Add(Decode(bytes, ref index));
                 return Item.L(list);
             }
-            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(new ArraySegment<byte>(bytes, index, length));
+            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, ref index, ref length);
             index += length;
             return item;
         }

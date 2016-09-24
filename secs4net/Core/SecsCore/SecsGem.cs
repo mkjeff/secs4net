@@ -108,6 +108,7 @@ namespace Secs4Net
         Socket _socket;
 
         readonly StreamDecoder _secsDecoder;
+        int _decoderBufferSize;
         readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
         ISecsGemLogger _logger = DefaultLogger;
         readonly Timer _timer7;	// between socket connected and received Select.req timer
@@ -121,7 +122,7 @@ namespace Secs4Net
         static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
         static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
         readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
-        
+
         readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
         readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
 
@@ -145,18 +146,18 @@ namespace Secs4Net
             _ip = ip;
             _port = port;
             _isActive = isActive;
-            _secsDecoder = new StreamDecoder(_logger, HandleControlMessage, HandleDataMessage);
-
+            _secsDecoder = new StreamDecoder(receiveBufferSize, HandleControlMessage, HandleDataMessage);
+            _decoderBufferSize = receiveBufferSize;
             #region Timer Action
             _timer7 = new Timer(delegate
             {
-                _logger.TraceError("T7 Timeout");
+                _logger.Error($"T7 Timeout: {T7 / 1000} sec.");
                 CommunicationStateChanging(ConnectionState.Retry);
             }, null, Timeout.Infinite, Timeout.Infinite);
 
             _timer8 = new Timer(delegate
             {
-                _logger.TraceError("T8 Timeout");
+                _logger.Error($"T8 Timeout: {T8 / 1000} sec.");
                 CommunicationStateChanging(ConnectionState.Retry);
             }, null, Timeout.Infinite, Timeout.Infinite);
 
@@ -166,14 +167,11 @@ namespace Secs4Net
                     SendControlMessage(MessageType.LinkTestRequest, NewSystemId);
             }, null, Timeout.Infinite, Timeout.Infinite);
             #endregion
-            var receiveBuffer = new byte[receiveBufferSize < 0x4000 ? 0x4000 : receiveBufferSize];
             var receiveCompleteEvent = new SocketAsyncEventArgs();
-            receiveCompleteEvent.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
+            receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
             receiveCompleteEvent.Completed += ReceiveEventCompleted;
             if (_isActive)
             {
-                #region Active Impl
-
                 _startImpl = async () =>
                 {
                     bool connected = false;
@@ -194,8 +192,8 @@ namespace Secs4Net
                         {
                             if (_isDisposed)
                                 return;
-                            _logger.TraceError(ex.Message);
-                            _logger.TraceInfo($"Start T5 Timer: waiting {T5 / 1000} second.");
+                            _logger.Error(ex.Message);
+                            _logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
                             await Task.Delay(T5);
                         }
                     } while (!connected);
@@ -210,11 +208,9 @@ namespace Secs4Net
                 };
 
                 //_stopImpl = delegate { };
-                #endregion
             }
             else
             {
-                #region Passive Impl
                 var server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 server.Bind(new IPEndPoint(_ip, _port));
                 server.Listen(0);
@@ -238,7 +234,7 @@ namespace Secs4Net
                         {
                             if (_isDisposed)
                                 return;
-                            _logger.TraceError(ex.Message);
+                            _logger.Error(ex.Message);
                             await Task.Delay(2000);
                         }
                     } while (!connected);
@@ -255,19 +251,18 @@ namespace Secs4Net
                         server.Dispose();
                     }
                 };
-                #endregion
             }
 
             _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
             _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
         }
 
-        private void ReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
+        void ReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
         {
             if (e.SocketError != SocketError.Success)
             {
                 var ex = new SocketException((int)e.SocketError);
-                _logger.TraceError($"RecieveComplete socket error:{ex.Message + ex}, ErrorCode:{ex.SocketErrorCode}", ex);
+                _logger.Error($"RecieveComplete socket error:{ex.Message + ex}, ErrorCode:{ex.SocketErrorCode}", ex);
                 CommunicationStateChanging(ConnectionState.Retry);
                 return;
             }
@@ -275,16 +270,31 @@ namespace Secs4Net
             try
             {
                 _timer8.Change(Timeout.Infinite, Timeout.Infinite);
-                if (e.BytesTransferred == 0)
+                var receivedCount = e.BytesTransferred;
+                if (receivedCount == 0)
                 {
-                    _logger.TraceError("Received 0 byte.");
+                    _logger.Error("Received 0 byte.");
                     CommunicationStateChanging(ConnectionState.Retry);
                     return;
                 }
-                else if (_secsDecoder.Decode(e.Buffer, 0, e.BytesTransferred))
+
+                if (_secsDecoder.Decode(receivedCount))
                 {
-                    _logger.TraceInfo("StartAsync T8 Timer");
+#if !DISABLE_TIMER
+                    _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
                     _timer8.Change(T8, Timeout.Infinite);
+#endif
+                }
+
+                if (_secsDecoder.Buffer.Length != _decoderBufferSize)
+                {
+                    // buffer size changed
+                    e.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+                    _decoderBufferSize = _secsDecoder.Buffer.Length;
+                }
+                else
+                {
+                    e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
                 }
 
                 if (!_socket.ReceiveAsync(e))
@@ -292,11 +302,11 @@ namespace Secs4Net
             }
             catch (NullReferenceException ex)
             {
-                _logger.TraceWarning("unexpected NullReferenceException:" + ex);
+                _logger.Warning("unexpected NullReferenceException:" + ex);
             }
             catch (Exception ex)
             {
-                _logger.TraceError("unexpected exception", ex);
+                _logger.Error("unexpected exception", ex);
                 CommunicationStateChanging(ConnectionState.Retry);
             }
         }
@@ -338,12 +348,12 @@ namespace Secs4Net
                 return;
             }
 
-            _logger.TraceInfo("Sent Control Message: " + completeToken.MsgType);
+            _logger.Info("Sent Control Message: " + completeToken.MsgType);
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
                 if (!completeToken.Task.Wait(T6))
                 {
-                    _logger.TraceError("T6 Timeout");
+                    _logger.Error($"T6 Timeout: {T6 / 1000} sec.");
                     CommunicationStateChanging(ConnectionState.Retry);
                 }
                 _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
@@ -362,11 +372,11 @@ namespace Secs4Net
                 }
                 else
                 {
-                    _logger.TraceWarning("Received Unexpected Control Message: " + header.MessageType);
+                    _logger.Warning("Received Unexpected Control Message: " + header.MessageType);
                     return;
                 }
             }
-            _logger.TraceInfo("Receive Control message: " + header.MessageType);
+            _logger.Info("Receive Control message: " + header.MessageType);
             switch (header.MessageType)
             {
                 case MessageType.SelectRequest:
@@ -380,16 +390,16 @@ namespace Secs4Net
                             CommunicationStateChanging(ConnectionState.Selected);
                             break;
                         case 1:
-                            _logger.TraceError("Communication Already Active.");
+                            _logger.Error("Communication Already Active.");
                             break;
                         case 2:
-                            _logger.TraceError("Connection Not Ready.");
+                            _logger.Error("Connection Not Ready.");
                             break;
                         case 3:
-                            _logger.TraceError("Connection Exhaust.");
+                            _logger.Error("Connection Exhaust.");
                             break;
                         default:
-                            _logger.TraceError("Connection Status Is Unknown.");
+                            _logger.Error("Connection Status Is Unknown.");
                             break;
                     }
                     break;
@@ -447,12 +457,12 @@ namespace Secs4Net
                 return;
             }
 
-            _logger.TraceMessageOut(completeToken.MessageSent, completeToken.Id);
+            _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
                 if (!completeToken.Task.Wait(T3))
                 {
-                    _logger.TraceError($"T3 Timeout[id=0x{completeToken.Id:X8}]");
+                    _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
                     completeToken.SetException(new SecsException(completeToken.MessageSent, Resources.T3Timeout));
                 }
                 _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
@@ -465,8 +475,8 @@ namespace Secs4Net
 
             if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
             {
-                _logger.TraceMessageIn(msg, systembyte);
-                _logger.TraceWarning("Received Unrecognized Device Id Message");
+                _logger.MessageIn(msg, systembyte);
+                _logger.Warning("Received Unrecognized Device Id Message");
                 SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.Bytes)), NewSystemId);
                 return;
             }
@@ -476,7 +486,7 @@ namespace Secs4Net
                 if (msg.S != 9)
                 {
                     //Primary message
-                    _logger.TraceMessageIn(msg, systembyte);
+                    _logger.MessageIn(msg, systembyte);
                     PrimaryMessageReceived?.Invoke(this, new PrimaryMessageWrapper(this, header, msg));
                     return;
                 }
@@ -486,7 +496,7 @@ namespace Secs4Net
             }
 
             // Secondary message
-            _logger.TraceMessageIn(msg, systembyte);
+            _logger.MessageIn(msg, systembyte);
             TaskCompletionSourceToken ar;
             if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
                 ar.HandleReplyMessage(msg);
@@ -501,11 +511,13 @@ namespace Secs4Net
             {
                 case ConnectionState.Selected:
                     _timer7.Change(Timeout.Infinite, Timeout.Infinite);
-                    _logger.TraceInfo("Stop T7 Timer");
+                    _logger.Info("Stop T7 Timer");
                     break;
                 case ConnectionState.Connected:
-                    _logger.TraceInfo("Start T7 Timer");
+#if !DISABLE_TIMER
+                    _logger.Info($"Start T7 Timer: {T7 / 1000} sec.");
                     _timer7.Change(T7, Timeout.Infinite);
+#endif
                     break;
                 case ConnectionState.Retry:
                     if (_isDisposed)
@@ -522,14 +534,22 @@ namespace Secs4Net
             _timer8.Change(Timeout.Infinite, Timeout.Infinite);
             _timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
             _secsDecoder.Reset();
-            if (_socket != null)
-            {
-                _socket.Shutdown(SocketShutdown.Both);
-                _socket.Dispose();
-                _socket = null;
-            }
             _replyExpectedMsgs.Clear();
             _stopImpl?.Invoke();
+
+            if (_socket != null)
+            {
+                try
+                {
+                    _socket.Shutdown(SocketShutdown.Both);
+                }
+                finally
+                {
+                    _socket.Dispose();
+                    _socket = null;
+                }
+            }
+           
         }
         public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
 
@@ -563,7 +583,7 @@ namespace Secs4Net
             ? _ip.ToString()
             : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
 
-        #region Async Token        
+#region Async Token        
 
         sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {
@@ -623,6 +643,6 @@ namespace Secs4Net
             }
         }
 
-        #endregion
+#endregion
     }
 }

@@ -48,50 +48,50 @@ namespace Secs4Net
             throw new ArgumentException(@"Invalid format:" + format, nameof(format));
         }
 
-        internal static Item BytesDecode(this SecsFormat format, ArraySegment<byte> bytes)
+        internal static Item BytesDecode(this SecsFormat format, byte[] data, ref int index, ref int length)
         {
             switch (format)
             {
                 case SecsFormat.ASCII:
-                    return A(Encoding.ASCII.GetString(bytes.Array, bytes.Offset, bytes.Count));
+                    return A(Encoding.ASCII.GetString(data, index, length));
 #pragma warning disable CS0618 // Type or member is obsolete
                 case SecsFormat.JIS8:
-                    return J(JIS8Encoding.GetString(bytes.Array, bytes.Offset, bytes.Count));
+                    return J(JIS8Encoding.GetString(data, index, length));
 #pragma warning restore CS0618 // Type or member is obsolete
                 case SecsFormat.Boolean:
-                    return Boolean(Decode<bool>(bytes));
+                    return Boolean(Decode<bool>(data, ref index, ref length));
                 case SecsFormat.Binary:
-                    return B(Decode<byte>(bytes));
+                    return B(Decode<byte>(data, ref index, ref length));
                 case SecsFormat.U1:
-                    return U1(Decode<byte>(bytes));
+                    return U1(Decode<byte>(data, ref index, ref length));
                 case SecsFormat.U2:
-                    return U2(Decode<ushort>(bytes));
+                    return U2(Decode<ushort>(data, ref index, ref length));
                 case SecsFormat.U4:
-                    return U4(Decode<uint>(bytes));
+                    return U4(Decode<uint>(data, ref index, ref length));
                 case SecsFormat.U8:
-                    return U8(Decode<ulong>(bytes));
+                    return U8(Decode<ulong>(data, ref index, ref length));
                 case SecsFormat.I1:
-                    return I1(Decode<sbyte>(bytes));
+                    return I1(Decode<sbyte>(data, ref index, ref length));
                 case SecsFormat.I2:
-                    return I2(Decode<short>(bytes));
+                    return I2(Decode<short>(data, ref index, ref length));
                 case SecsFormat.I4:
-                    return I4(Decode<int>(bytes));
+                    return I4(Decode<int>(data, ref index, ref length));
                 case SecsFormat.I8:
-                    return I8(Decode<long>(bytes));
+                    return I8(Decode<long>(data, ref index, ref length));
                 case SecsFormat.F4:
-                    return F4(Decode<float>(bytes));
+                    return F4(Decode<float>(data, ref index, ref length));
                 case SecsFormat.F8:
-                    return F8(Decode<double>(bytes));
+                    return F8(Decode<double>(data, ref index, ref length));
             }
             throw new ArgumentException(@"Invalid format", nameof(format));
         }
 
-        static T[] Decode<T>(ArraySegment<byte> bytes) where T : struct
+        static T[] Decode<T>(byte[] data, ref int index, ref int length) where T : struct
         {
             int elmSize = Unsafe.SizeOf<T>();
-            bytes.Array.Reverse(bytes.Offset, bytes.Offset + bytes.Count, elmSize);
-            var values = new T[bytes.Count / elmSize];
-            Buffer.BlockCopy(bytes.Array, bytes.Offset, values, 0, bytes.Count);
+            data.Reverse(index, index + length, elmSize);
+            var values = new T[length / elmSize];
+            Buffer.BlockCopy(data, index, values, 0, length);
             return values;
         }
         #endregion

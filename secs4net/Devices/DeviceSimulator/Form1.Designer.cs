@@ -51,6 +51,8 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.numBufferSize = new System.Windows.Forms.NumericUpDown();
+            this.label4 = new System.Windows.Forms.Label();
             groupBox1 = new System.Windows.Forms.GroupBox();
             label3 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
@@ -77,10 +79,13 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numBufferSize)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(this.label4);
+            groupBox1.Controls.Add(this.numBufferSize);
             groupBox1.Controls.Add(this.numDeviceId);
             groupBox1.Controls.Add(label3);
             groupBox1.Controls.Add(this.lbStatus);
@@ -102,7 +107,7 @@
             // 
             // numDeviceId
             // 
-            this.numDeviceId.Location = new System.Drawing.Point(405, 27);
+            this.numDeviceId.Location = new System.Drawing.Point(405, 30);
             this.numDeviceId.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -115,7 +120,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new System.Drawing.Point(349, 31);
+            label3.Location = new System.Drawing.Point(349, 35);
             label3.Name = "label3";
             label3.Size = new System.Drawing.Size(50, 12);
             label3.TabIndex = 9;
@@ -125,7 +130,7 @@
             // 
             this.lbStatus.AutoSize = true;
             this.lbStatus.Font = new System.Drawing.Font("PMingLiU", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.lbStatus.Location = new System.Drawing.Point(660, 25);
+            this.lbStatus.Location = new System.Drawing.Point(857, 25);
             this.lbStatus.Name = "lbStatus";
             this.lbStatus.Size = new System.Drawing.Size(94, 32);
             this.lbStatus.TabIndex = 8;
@@ -135,7 +140,7 @@
             // 
             this.btnDisable.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnDisable.Enabled = false;
-            this.btnDisable.Location = new System.Drawing.Point(545, 25);
+            this.btnDisable.Location = new System.Drawing.Point(742, 30);
             this.btnDisable.Name = "btnDisable";
             this.btnDisable.Size = new System.Drawing.Size(75, 23);
             this.btnDisable.TabIndex = 7;
@@ -145,7 +150,7 @@
             // 
             // btnEnable
             // 
-            this.btnEnable.Location = new System.Drawing.Point(464, 26);
+            this.btnEnable.Location = new System.Drawing.Point(661, 30);
             this.btnEnable.Name = "btnEnable";
             this.btnEnable.Size = new System.Drawing.Size(75, 23);
             this.btnEnable.TabIndex = 6;
@@ -155,7 +160,7 @@
             // 
             // numPort
             // 
-            this.numPort.Location = new System.Drawing.Point(280, 27);
+            this.numPort.Location = new System.Drawing.Point(280, 30);
             this.numPort.Maximum = new decimal(new int[] {
             9999,
             0,
@@ -178,7 +183,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(250, 31);
+            label2.Location = new System.Drawing.Point(250, 35);
             label2.Name = "label2";
             label2.Size = new System.Drawing.Size(24, 12);
             label2.TabIndex = 4;
@@ -187,7 +192,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(80, 31);
+            label1.Location = new System.Drawing.Point(80, 35);
             label1.Name = "label1";
             label1.Size = new System.Drawing.Size(15, 12);
             label1.TabIndex = 3;
@@ -195,7 +200,7 @@
             // 
             // txtAddress
             // 
-            this.txtAddress.Location = new System.Drawing.Point(101, 27);
+            this.txtAddress.Location = new System.Drawing.Point(101, 30);
             this.txtAddress.Name = "txtAddress";
             this.txtAddress.Size = new System.Drawing.Size(143, 22);
             this.txtAddress.TabIndex = 2;
@@ -402,6 +407,32 @@
             this.richTextBox1.Text = "";
             this.richTextBox1.WordWrap = false;
             // 
+            // numBufferSize
+            // 
+            this.numBufferSize.Location = new System.Drawing.Point(535, 30);
+            this.numBufferSize.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.numBufferSize.Name = "numBufferSize";
+            this.numBufferSize.Size = new System.Drawing.Size(77, 22);
+            this.numBufferSize.TabIndex = 11;
+            this.numBufferSize.Value = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(471, 35);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(58, 12);
+            this.label4.TabIndex = 12;
+            this.label4.Text = "Buffer Size";
+            // 
             // Form1
             // 
             this.AcceptButton = this.btnEnable;
@@ -435,6 +466,7 @@
             this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numBufferSize)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -458,6 +490,8 @@
         private System.Windows.Forms.BindingSource recvMessageBindingSource;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown numBufferSize;
     }
 }
 
