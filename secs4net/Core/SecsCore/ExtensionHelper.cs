@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using static Secs4Net.Item;
 using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace Secs4Net
 {
@@ -24,6 +25,29 @@ namespace Secs4Net
         }
 
         static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
+
+        public static bool IsMatch(this SecsMessage src, SecsMessage target)
+        {
+            if (src.S != target.S) return false;
+            if (src.F != target.F) return false;
+            if (target.SecsItem == null) return true;
+            return src.SecsItem.IsMatch(target.SecsItem);
+        }
+
+        public static bool IsMatch(this Item src, Item target)
+        {
+            if (src.Format != target.Format) return false;
+            if (target.Count == 0) return true;
+            if (src.Count != target.Count) return false;
+
+            switch (target.Format)
+            {
+                case SecsFormat.List:
+                    return src.Items.Zip(target.Items, (a, b) => a.IsMatch(b)).All(match => match);
+                default:
+                    return Unsafe.As<byte[]>(src.Values).SequenceEqual(Unsafe.As<byte[]>(target));
+            }
+        }
 
         #region Bytes To Item Value
         internal static Item BytesDecode(this SecsFormat format)
