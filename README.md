@@ -5,30 +5,52 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
 
 1\. Send message to device
 ```cs
-try{
-    var s3f18 = await device.SendAsync(s3f17); //await device's reply secondary message
-    //access item value with strong type
-    byte returnCode = (byte)s3f18.SecsItem.Items[0]; // access item value. Equal to s3f18.SecsItem.Items[0].Value()
-}catch(SecsException){
+try
+{
+    //await secondary message
+    var s3f18 = await device.SendAsync(s3f17); 
+    
+    //access item value
+    byte b1 = (byte)s3f18.SecsItem.Items[0]; 
+    byte b2 = s3f18.SecsItem.Items[0].GetValue<byte>();
+    string str = s3f18.SecsItem.Items[0].GetValue<string>();
+
+    // LINQ query
+    var query =
+        from a in s3f18.SecsItem.Items[3].Items
+        select new {
+            num = a.GetValue<int>(),
+        };
+}
+catch(SecsException)
+{
     // exception  when
     // T3 timeout
     // device reply SxF0
     // device reply S9Fx
 }
 ```
-2\. Handle primary message from device, provide a delegate to SecsGem constructor
+2\. Handle primary message from device
 ```cs
-(primaryMsg, reply) => {
-    try {
-       //do something for primaryMsg
-       reply( secondaryMsg );  // reply secondary msg to device
-    } catch (Exception ex) {
+secsGem.PrimaryMessageReceived += (sender, messageWrapper) => 
+{
+    try 
+    {
+        //do something for primaryMsg
+        var primaryMsg = messageWrapper.Message;
+	   
+
+        // reply secondary msg to device
+        messageWrapper.Reply( secondaryMsg ); 
+    }
+    catch (Exception ex) 
+    {
 
     }
 };
 ```
 
-3\. SecsMessage construction is LINQ friendly
+3\. SecsMessage/Item construction is also LINQ friendly
 
 ```cs
 using static Secs4Net.Item;
