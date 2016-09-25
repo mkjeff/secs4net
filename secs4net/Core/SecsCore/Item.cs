@@ -153,7 +153,7 @@ namespace Secs4Net
             switch (target.Format)
             {
                 case SecsFormat.List:
-                    return Items.Zip(target.Items, (a, b) => a.IsMatch(b)).All(match => match);
+                    return Items.Zip(target.Items, IsMatch).All(IsTrue);
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
                     return (string)_values == (string)target._values;
@@ -162,6 +162,10 @@ namespace Secs4Net
                     return UnsafeCompare((Array)_values, (Array)target._values);
             }
         }
+
+        bool IsMatch(Item a, Item b) => a.IsMatch(b);
+
+        bool IsTrue(bool b) => b;
 
         public override string ToString() =>
             Format == SecsFormat.List
