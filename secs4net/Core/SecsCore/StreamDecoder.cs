@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace Secs4Net
 {
     /// <summary>
-    ///  Stream based SECS-II message decoder
+    ///  Stream based HSMS/SECS-II message decoder
     /// </summary>
     sealed class StreamDecoder
     {
@@ -244,11 +244,11 @@ namespace Secs4Net
             {
                 if (need > Buffer.Length)
                 {
-                    Trace.WriteLine($@"need increase buffer size.
-            <<buffer arrangement>>: current size = {_buffer.Length}, new size = {need}");
+                    var newSize = need * 2;
+                    Trace.WriteLine($@"<<buffer resizing>>: current size = {_buffer.Length}, new size = {newSize}");
 
                     // increase buffer size
-                    _buffer = new byte[need];
+                    _buffer = new byte[newSize];
                 }
                 _BufferOffset = 0;
                 _decodeIndex = 0;
@@ -262,22 +262,19 @@ namespace Secs4Net
                 {
                     if (nextStepReqiredCount > Buffer.Length)
                     {
-                        Trace.WriteLine($@"need increase buffer size.
-            <<buffer arrangement>>: current size = {_buffer.Length}, new size = {nextStepReqiredCount}");
+                        var newSize = Math.Max(_messageDataLength / 2, nextStepReqiredCount) * 2;
+                        Trace.WriteLine($@"<<buffer resizing>>: current size = {_buffer.Length}, remained = {remainCount}, new size = {newSize}");
 
                         // out of total buffer size
                         // increase buffer size
-                        var newBuffer = new byte[nextStepReqiredCount];
+                        var newBuffer = new byte[newSize];
                         // keep remained data to new buffer's head
                         Array.Copy(_buffer, _BufferOffset - remainCount, newBuffer, 0, remainCount);
                         _buffer = newBuffer;
                     }
                     else
                     {
-                        Trace.WriteLine($@"Buffer available length is not enough. 
-            <<buffer recyling>>:
-            count = {BufferCount}
-            need = {nextStepReqiredCount}");
+                        Trace.WriteLine($@"<<buffer recyling>>: avalible = {BufferCount}, need = {nextStepReqiredCount}, remained = {remainCount}");
 
                         // move remained data to buffer's head
                         Array.Copy(_buffer, _BufferOffset - remainCount, _buffer, 0, remainCount);
