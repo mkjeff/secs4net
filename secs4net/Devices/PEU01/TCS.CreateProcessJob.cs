@@ -26,7 +26,7 @@ namespace Cim.Eap {
                             Item.Boolean(true),
                             Item.L())))));
 
-            if (!(bool)s16f16.SecsItem.Items[1].Items[0])
+            if (!s16f16.SecsItem.Items[1].Items[0])
                 throw new ScenarioException("CreateProcessJob fail. ");
 
             foreach (ProcessJob processJob in tx.ProcessJobs)

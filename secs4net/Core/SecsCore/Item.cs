@@ -2,17 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Lifetime;
-using System.Security.Permissions;
 using System.Text;
-using System.Threading;
 
 namespace Secs4Net
 {
-    [DebuggerDisplay("<{Format} [{Count}] { (Format==SecsFormat.List) ? string.Empty : ToString() ,nq}>")]
     public sealed class Item
     {
         public SecsFormat Format { get; }
@@ -149,28 +144,6 @@ namespace Secs4Net
             throw new InvalidOperationException("Item value type is incompatible");
         }
 
-        /// <summary>
-        /// get value by specific type
-        /// </summary>
-        /// <typeparam name="T">return value type</typeparam>
-        /// <returns></returns>
-        public T GetValueOrDefault<T>()
-        {
-            if (Format == SecsFormat.List)
-                throw new InvalidOperationException("Item is not a value item");
-
-            if (_values is T)
-                return (T)_values;
-
-            if (_values is IEnumerable<T>)
-                return ((IEnumerable<T>)_values).FirstOrDefault();
-
-            if (_values.GetType().GetElementType() == Nullable.GetUnderlyingType(typeof(T)))
-                return ((IEnumerable<T>)_values).FirstOrDefault();
-
-            throw new InvalidOperationException("Item value type is incompatible");
-        }
-
         public bool IsMatch(Item target)
         {
             if (Format != target.Format) return false;
@@ -193,43 +166,26 @@ namespace Secs4Net
         public override string ToString() =>
             Format == SecsFormat.List
             ? $"<{Format} [{ ((IReadOnlyList<Item>)_values).Count}] ... >"
-            : $"<{Format} { string.Join(" ", _values.Cast<object>()) } >";
+            : _values is string
+            ? $"<{Format} [{ ((string)_values).Length }] { _values } >"
+            : Format== SecsFormat.Binary
+            ? $"<{Format} [{((Array)_values).Length}] { ((byte[]) _values).ToHexString() } >"
+            : $"<{Format} [{((Array)_values).Length}] { string.Join(" ", _values.Cast<object>()) } >";
 
         #region Type Casting Operator
-        public static explicit operator string(Item item) => item.GetValueOrDefault<string>();
-        public static explicit operator byte(Item item) => item.GetValue<byte>();
-        public static explicit operator sbyte(Item item) => item.GetValue<sbyte>();
-        public static explicit operator ushort(Item item) => item.GetValue<ushort>();
-        public static explicit operator short(Item item) => item.GetValue<short>();
-        public static explicit operator uint(Item item) => item.GetValue<uint>();
-        public static explicit operator int(Item item) => item.GetValue<int>();
-        public static explicit operator ulong(Item item) => item.GetValue<ulong>();
-        public static explicit operator long(Item item) => item.GetValue<long>();
-        public static explicit operator float(Item item) => item.GetValue<float>();
-        public static explicit operator double(Item item) => item.GetValue<double>();
-        public static explicit operator bool(Item item) => item.GetValue<bool>();
-        public static explicit operator byte? (Item item) => item.GetValueOrDefault<byte?>();
-        public static explicit operator sbyte? (Item item) => item.GetValueOrDefault<sbyte?>();
-        public static explicit operator ushort? (Item item) => item.GetValueOrDefault<ushort?>();
-        public static explicit operator short? (Item item) => item.GetValueOrDefault<short?>();
-        public static explicit operator uint? (Item item) => item.GetValueOrDefault<uint?>();
-        public static explicit operator int? (Item item) => item.GetValueOrDefault<int?>();
-        public static explicit operator ulong? (Item item) => item.GetValueOrDefault<ulong?>();
-        public static explicit operator long? (Item item) => item.GetValueOrDefault<long?>();
-        public static explicit operator float? (Item item) => item.GetValueOrDefault<float?>();
-        public static explicit operator double? (Item item) => item.GetValueOrDefault<double?>();
-        public static explicit operator bool? (Item item) => item.GetValueOrDefault<bool?>();
-        public static explicit operator byte[] (Item item) => item.GetValue<byte[]>();
-        public static explicit operator sbyte[] (Item item) => item.GetValue<sbyte[]>();
-        public static explicit operator ushort[] (Item item) => item.GetValue<ushort[]>();
-        public static explicit operator short[] (Item item) => item.GetValue<short[]>();
-        public static explicit operator uint[] (Item item) => item.GetValue<uint[]>();
-        public static explicit operator int[] (Item item) => item.GetValue<int[]>();
-        public static explicit operator ulong[] (Item item) => item.GetValue<ulong[]>();
-        public static explicit operator long[] (Item item) => item.GetValue<long[]>();
-        public static explicit operator float[] (Item item) => item.GetValue<float[]>();
-        public static explicit operator double[] (Item item) => item.GetValue<double[]>();
-        public static explicit operator bool[] (Item item) => item.GetValue<bool[]>();
+        public static implicit operator string(Item item) => item.GetValue<string>();
+        public static implicit operator byte(Item item) => item.GetValue<byte>();
+        public static implicit operator sbyte(Item item) => item.GetValue<sbyte>();
+        public static implicit operator ushort(Item item) => item.GetValue<ushort>();
+        public static implicit operator short(Item item) => item.GetValue<short>();
+        public static implicit operator uint(Item item) => item.GetValue<uint>();
+        public static implicit operator int(Item item) => item.GetValue<int>();
+        public static implicit operator ulong(Item item) => item.GetValue<ulong>();
+        public static implicit operator long(Item item) => item.GetValue<long>();
+        public static implicit operator float(Item item) => item.GetValue<float>();
+        public static implicit operator double(Item item) => item.GetValue<double>();
+        public static implicit operator bool(Item item) => item.GetValue<bool>();
+
         #endregion
 
         #region Factory Methods
@@ -424,11 +380,10 @@ namespace Secs4Net
         public static Item A(string value) => value != string.Empty ? new Item(SecsFormat.ASCII, value) : A();
 
         /// <summary>
-        /// Create string item
+        /// Create JIS encoded string item
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        [Obsolete("this is special format, make sure you really need it.")]
         public static Item J(string value) => value != string.Empty ? new Item(SecsFormat.JIS8, value) : J();
         #endregion
 
@@ -499,14 +454,14 @@ namespace Secs4Net
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        internal uint Encode(List<ArraySegment<byte>> buffer)
+        internal uint EncodeTo(List<ArraySegment<byte>> buffer)
         {
             var bytes = RawData.Value;
             uint length = unchecked((uint)bytes.Length);
             buffer.Add(new ArraySegment<byte>(bytes));
             if (Format == SecsFormat.List)
                 foreach (var subItem in Items)
-                    length += subItem.Encode(buffer);
+                    length += subItem.EncodeTo(buffer);
             return length;
         }
 

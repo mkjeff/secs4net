@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
@@ -75,7 +76,7 @@ namespace Secs4Net
                     // item
                 };
 
-                uint length = 10 + SecsItem.Encode(result); // total length = item + header
+                uint length = 10 + SecsItem.EncodeTo(result); // total length = item + header
 
                 byte[] msgLengthByte = BitConverter.GetBytes(length);
                 Array.Reverse(msgLengthByte);

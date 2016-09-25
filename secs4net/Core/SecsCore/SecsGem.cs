@@ -491,7 +491,7 @@ namespace Secs4Net
                     return;
                 }
                 // Error message
-                var headerBytes = (byte[])msg.SecsItem;
+                var headerBytes = (byte[])msg.SecsItem.Values;
                 systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
             }
 

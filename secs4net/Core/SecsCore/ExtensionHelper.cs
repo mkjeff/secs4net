@@ -63,10 +63,8 @@ namespace Secs4Net
             {
                 case SecsFormat.ASCII:
                     return A(Encoding.ASCII.GetString(data, index, length));
-#pragma warning disable CS0618 // Type or member is obsolete
                 case SecsFormat.JIS8:
                     return J(JIS8Encoding.GetString(data, index, length));
-#pragma warning restore CS0618 // Type or member is obsolete
                 case SecsFormat.Boolean:
                     return Boolean(Decode<bool>(data, ref index, ref length));
                 case SecsFormat.Binary:

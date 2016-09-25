@@ -17,7 +17,7 @@ namespace Secs4Net
             get
             {
                 var result = new byte[10];
-                fixed(byte* ptr = _bytes)
+                fixed (byte* ptr = _bytes)
                     Unsafe.CopyBlock(Unsafe.AsPointer(ref result[0]), ptr, 10);
                 return result;
             }
@@ -57,49 +57,49 @@ namespace Secs4Net
 
         public bool ReplyExpected
         {
-            get {
-                fixed (byte* ptr = _bytes)
-                    return (Unsafe.Read<byte>(ptr+2) & 0x80) == 0x80;
+            get
+            {
+                fixed (byte* ptr = _bytes) return (Unsafe.Read<byte>(ptr + 2) & 0x80) == 0x80;
             }
-            set {
-                fixed (byte* ptr = _bytes)
-                    Unsafe.Write(ptr + 2, (byte)(S | (value ? 0x80 : 0)));
+            set
+            {
+                fixed (byte* ptr = _bytes) Unsafe.Write(ptr + 2, (byte)(S | (value ? 0x80 : 0)));
             }
         }
 
         public byte S
         {
-            get {
-                fixed (byte* ptr = _bytes)
-                    return (byte)(Unsafe.Read<byte>(ptr+2) & 0x7F);
+            get
+            {
+                fixed (byte* ptr = _bytes) return (byte)(Unsafe.Read<byte>(ptr + 2) & 0x7F);
             }
-            set {
-                fixed (byte* ptr = _bytes)
-                    Unsafe.Write(ptr+2, (byte)(value | (ReplyExpected ? 0x80 : 0)));
+            set
+            {
+                fixed (byte* ptr = _bytes) Unsafe.Write(ptr + 2, (byte)(value | (ReplyExpected ? 0x80 : 0)));
             }
         }
 
         public byte F
         {
-            get {
-                fixed (byte* ptr = _bytes)
-                    return Unsafe.Read<byte>(ptr+3);
+            get
+            {
+                fixed (byte* ptr = _bytes) return Unsafe.Read<byte>(ptr + 3);
             }
-            set {
-                fixed (byte* ptr = _bytes)
-                    Unsafe.Write(ptr + 3, value);
+            set
+            {
+                fixed (byte* ptr = _bytes) Unsafe.Write(ptr + 3, value);
             }
         }
 
         public MessageType MessageType
         {
-            get {
-                fixed (byte* ptr = _bytes)
-                    return (MessageType)Unsafe.Read<MessageType>(ptr + 5);
+            get
+            {
+                fixed (byte* ptr = _bytes) return (MessageType)Unsafe.Read<MessageType>(ptr + 5);
             }
-            set {
-                fixed (byte* ptr = _bytes)
-                    Unsafe.Write(ptr + 5, value);
+            set
+            {
+                fixed (byte* ptr = _bytes) Unsafe.Write(ptr + 5, value);
             }
         }
 

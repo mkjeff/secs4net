@@ -92,8 +92,7 @@ namespace Secs4Net.Sml
                     writer.Write(string.Join(" ", item.Values.Cast<bool>()));
                     break;
                 default:
-                    writer.Write(item);
-                    break;
+                    throw new ArgumentOutOfRangeException(nameof(item.Format), item.Format, "invalid SecsFormat value");
             }
             writer.WriteLine('>');
         }
