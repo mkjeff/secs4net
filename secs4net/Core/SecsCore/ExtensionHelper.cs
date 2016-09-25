@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using static Secs4Net.Item;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Secs4Net
 {
@@ -34,6 +35,7 @@ namespace Secs4Net
             return src.SecsItem.IsMatch(target.SecsItem);
         }
 
+
         public static bool IsMatch(this Item src, Item target)
         {
             if (src.Format != target.Format) return false;
@@ -44,8 +46,37 @@ namespace Secs4Net
             {
                 case SecsFormat.List:
                     return src.Items.Zip(target.Items, (a, b) => a.IsMatch(b)).All(match => match);
+                case SecsFormat.ASCII:
+                case SecsFormat.JIS8:
+                    return (string)src.Values == (string)target.Values;
                 default:
-                    return Unsafe.As<byte[]>(src.Values).SequenceEqual(Unsafe.As<byte[]>(target));
+                    //return memcmp(Unsafe.As<byte[]>(_values), Unsafe.As<byte[]>(target._values), Buffer.ByteLength((Array)_values)) == 0;
+                    return UnsafeCompare((Array)src.Values, (Array)target.Values);
+            }
+        }
+
+        //[DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+        //static extern int memcmp(byte[] b1, byte[] b2, long count);
+
+        /// <summary>
+        /// http://stackoverflow.com/questions/43289/comparing-two-byte-arrays-in-net/8808245#8808245
+        /// </summary>
+        /// <param name="a1"></param>
+        /// <param name="a2"></param>
+        /// <returns></returns>
+        static unsafe bool UnsafeCompare(Array a1, Array a2)
+        {
+            int length = Buffer.ByteLength(a2);
+            fixed (byte* p1 = Unsafe.As<byte[]>(a1), p2 = Unsafe.As<byte[]>(a2))
+            {
+                byte* x1 = p1, x2 = p2;
+                int l = length;
+                for (int i = 0; i < l / 8; i++, x1 += 8, x2 += 8)
+                    if (*((long*)x1) != *((long*)x2)) return false;
+                if ((l & 4) != 0) { if (*((int*)x1) != *((int*)x2)) return false; x1 += 4; x2 += 4; }
+                if ((l & 2) != 0) { if (*((short*)x1) != *((short*)x2)) return false; x1 += 2; x2 += 2; }
+                if ((l & 1) != 0) if (*((byte*)x1) != *((byte*)x2)) return false;
+                return true;
             }
         }
 
