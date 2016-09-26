@@ -8,5 +8,16 @@ rem
 rem  The final part of the directory is the name of the assembly plus its public key token in brackets.
 
 xcopy /i/y Secs4Net.dll "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
+xcopy /i/y Secs4Net.pdb "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
+
+xcopy /i/y Secs4Net.Rx.dll "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
+xcopy /i/y Secs4Net.Rx.pdb "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
+
 xcopy /i/y Secs4Net.LinqPadDriver.dll "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
+xcopy /i/y Secs4Net.LinqPadDriver.pdb "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
+
 xcopy /i/y Secs4Net.Json.dll "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
+xcopy /i/y Secs4Net.Json.pdb "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
+
+xcopy /i/y Newtonsoft.Json.dll "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
+xcopy /i/y System.Runtime.CompilerServices.Unsafe.dll "C:\Users\mkjef\AppData\Local\LINQPad\Drivers\DataContext\4.6\Secs4Net.LinqPadDriver (no-strong-name)\"
