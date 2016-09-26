@@ -11,7 +11,6 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
-using Cim.Eap.Properties;
 using Cim.Management;
 using Cim.Services;
 using log4net;
@@ -19,6 +18,7 @@ using log4net.Core;
 using log4net.Layout;
 using log4net.ObjectRenderer;
 using log4net.Repository.Hierarchy;
+using Online.Eap.Properties;
 using Secs4Net;
 using Secs4Net.Json;
 

@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Cim.Management</RootNamespace>
     <AssemblyName>Cim.Management</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>
@@ -111,7 +111,6 @@
     <Compile Include="ISecsDevice.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecsEventSubscription.cs" />
-    <Compile Include="SecsFilter.cs" />
     <Compile Include="SubscriptionTrackingHandler.cs" />
   </ItemGroup>
   <ItemGroup>

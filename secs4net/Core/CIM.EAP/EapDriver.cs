@@ -8,10 +8,10 @@ namespace Cim.Eap {
         internal protected virtual void Init() { }
         internal protected virtual void Unload() { }
 
-        protected abstract Item CeidLinkCreator(string ceid);
-        protected abstract Item ReportIdLinkCreator(string reportId);
-        protected abstract Item SvidLinkCreator(string svid);
-        protected abstract Item LinkDataIdCreator(string dataId);
+        internal protected abstract Item CeidLinkCreator(string ceid);
+        internal protected abstract Item ReportIdLinkCreator(string reportId);
+        internal protected abstract Item SvidLinkCreator(string svid);
+        internal protected abstract Item LinkDataIdCreator(string dataId);
 
         #region Default Define Link Message
         SecsMessage _disableEvent;

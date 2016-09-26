@@ -11,16 +11,17 @@ namespace Secs4Net
         public static Task<bool> ConnectAsync(this Socket socket, IPAddress target, int port)
         {
             var tcs = new TaskCompletionSource<bool>();
-            var ce = new SocketAsyncEventArgs { RemoteEndPoint = new IPEndPoint(target, port), };
+            var ce = new SocketAsyncEventArgs { RemoteEndPoint = new IPEndPoint(target, port), UserToken = tcs };
             ce.Completed += (sender, e) =>
             {
+                var tcs2 = e.UserToken as TaskCompletionSource<bool>;
                 if (e.SocketError == SocketError.Success)
                 {
-                    tcs.SetResult(e.ConnectSocket != null);
+                    tcs2.SetResult(e.ConnectSocket != null);
                 }
                 else
                 {
-                    tcs.SetException(new SocketException((int)e.SocketError));
+                    tcs2.SetException(new SocketException((int)e.SocketError));
                 }
             };
             if (socket.ConnectAsync(ce))
@@ -31,16 +32,17 @@ namespace Secs4Net
         public static Task<Socket> AcceptAsync(this Socket socket)
         {
             var tcs = new TaskCompletionSource<Socket>();
-            var ce = new SocketAsyncEventArgs();
+            var ce = new SocketAsyncEventArgs { UserToken = tcs };
             ce.Completed += (sender, e) =>
             {
+                var tcs2 = e.UserToken as TaskCompletionSource<Socket>;
                 if (e.AcceptSocket != null && e.SocketError == SocketError.Success)
                 {
-                    tcs.SetResult(e.AcceptSocket);
+                    tcs2.SetResult(e.AcceptSocket);
                 }
                 else
                 {
-                    tcs.SetException(new SocketException((int)e.SocketError));
+                    tcs2.SetException(new SocketException((int)e.SocketError));
                 }
             };
             if (socket.AcceptAsync(ce))

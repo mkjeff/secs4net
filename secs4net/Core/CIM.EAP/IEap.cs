@@ -7,6 +7,7 @@ namespace Cim.Eap
 {
     public interface IEAP : ISecsDevice
     {
+        EapDriver Driver { get; }
         SecsMessageList SecsMessages { get; }
         DefineLinkConfig EventReportLink { get; }
 

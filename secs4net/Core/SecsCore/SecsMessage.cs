@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
-    [Serializable]
-    public sealed class SecsMessage {
-        static SecsMessage() {
+    public sealed class SecsMessage
+    {
+        static SecsMessage()
+        {
             if (!BitConverter.IsLittleEndian)
                 throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
         }
@@ -27,29 +29,22 @@ namespace Secs4Net
         /// </summary>
         public bool ReplyExpected { get; internal set; }
 
-        readonly Item? _rootItem;
         /// <summary>
-        /// the root item of message, thrown InvalidOperationException if no root.
-        /// To access root item safely, you need to check <see cref="HasRoot"/> property.
+        /// the root item of message
         /// </summary>
-        public Item SecsItem => _rootItem.Value;
-
-        /// <summary>
-        /// Has root item
-        /// </summary>
-        public bool HasRoot => _rootItem.HasValue;
+        public Item SecsItem { get; }
 
         public string Name { get; set; }
 
-        internal readonly List<ArraySegment<byte>> RawDatas;
+        internal readonly Lazy<List<ArraySegment<byte>>> RawDatas;
 
-        public IReadOnlyList<ArraySegment<byte>> RawBytes => RawDatas.AsReadOnly();
+        public IReadOnlyList<ArraySegment<byte>> RawBytes => RawDatas.Value.AsReadOnly();
 
         static readonly List<ArraySegment<byte>> emptyMsgDatas =
             new List<ArraySegment<byte>>
             {
                 new ArraySegment<byte>(new byte[]{ 0, 0, 0, 10 }), // total length = header
-                new ArraySegment<byte>(Array.Empty<byte>())                        // header placeholder
+                new ArraySegment<byte>(Array.Empty<byte>())        // header placeholder
             };
 
         /// <summary>
@@ -60,7 +55,7 @@ namespace Secs4Net
         /// <param name="replyExpected">expect reply message</param>
         /// <param name="name"></param>
         /// <param name="item">root item</param>
-        public SecsMessage(byte stream, byte function, bool replyExpected = true, string name = null, Item? item = null )
+        public SecsMessage(byte stream, byte function, bool replyExpected = true, string name = null, Item item = null)
         {
             if (stream > 0x7F)
                 throw new ArgumentOutOfRangeException(nameof(stream), stream, "Stream number must be less than 127");
@@ -69,23 +64,26 @@ namespace Secs4Net
             F = function;
             Name = name;
             ReplyExpected = replyExpected;
-            _rootItem = item;
+            SecsItem = item;
+            RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
+            {
+                if (SecsItem == null)
+                    return emptyMsgDatas;
 
-            if (_rootItem == null)
-            {
-                RawDatas = emptyMsgDatas;
-            }
-            else
-            {
-                var result = new List<ArraySegment<byte>> { default(ArraySegment<byte>), new ArraySegment<byte>(Array.Empty<byte>())  };
-                uint length = 10 + _rootItem.Value.Encode(result); // total length = item + header
+                var result = new List<ArraySegment<byte>> {
+                    default(ArraySegment<byte>),    // total length
+                    new ArraySegment<byte>(Array.Empty<byte>())     // header
+                    // item
+                };
+
+                uint length = 10 + SecsItem.EncodeTo(result); // total length = item + header
 
                 byte[] msgLengthByte = BitConverter.GetBytes(length);
                 Array.Reverse(msgLengthByte);
                 result[0] = new ArraySegment<byte>(msgLengthByte);
 
-                RawDatas = result;
-            }
+                return result;
+            });
         }
 
         /// <summary>
@@ -95,7 +93,7 @@ namespace Secs4Net
         /// <param name="function">message function number</param>
         /// <param name="name"></param>
         /// <param name="item">root item</param>
-        public SecsMessage(byte stream, byte function, string name, Item? item = null)
+        public SecsMessage(byte stream, byte function, string name, Item item = null)
             : this(stream, function, true, name, item)
         { }
 
@@ -126,7 +124,7 @@ namespace Secs4Net
                     list.Add(Decode(bytes, ref index));
                 return Item.L(list);
             }
-            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(new ArraySegment<byte>(bytes, index, length));
+            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, ref index, ref length);
             index += length;
             return item;
         }

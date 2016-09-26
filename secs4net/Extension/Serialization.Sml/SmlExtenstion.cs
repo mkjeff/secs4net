@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using static Secs4Net.Item;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Secs4Net.Sml
 {
@@ -24,7 +25,7 @@ namespace Secs4Net.Sml
         public static void WriteTo(this SecsMessage msg, TextWriter writer)
         {
             writer.WriteLine(msg.ToString());
-            if(msg.HasRoot)
+            if (msg.SecsItem != null)
                 Write(writer, msg.SecsItem, SmlIndent);
             writer.Write('.');
         }
@@ -54,9 +55,44 @@ namespace Secs4Net.Sml
                     writer.Write(item.GetValue<string>());
                     writer.Write('\'');
                     break;
-                default:
-                    writer.Write(item.ToString());
+                case SecsFormat.Binary:
+                    writer.Write(item.GetValue<byte[]>().ToHexString());
                     break;
+                case SecsFormat.F4:
+                    writer.Write(string.Join(" ", item.Values.Cast<float>()));
+                    break;
+                case SecsFormat.F8:
+                    writer.Write(string.Join(" ", item.Values.Cast<double>()));
+                    break;
+                case SecsFormat.I1:
+                    writer.Write(string.Join(" ", item.Values.Cast<sbyte>()));
+                    break;
+                case SecsFormat.I2:
+                    writer.Write(string.Join(" ", item.Values.Cast<short>()));
+                    break;
+                case SecsFormat.I4:
+                    writer.Write(string.Join(" ", item.Values.Cast<int>()));
+                    break;
+                case SecsFormat.I8:
+                    writer.Write(string.Join(" ", item.Values.Cast<long>()));
+                    break;
+                case SecsFormat.U1:
+                    writer.Write(string.Join(" ", item.Values.Cast<byte>()));
+                    break;
+                case SecsFormat.U2:
+                    writer.Write(string.Join(" ", item.Values.Cast<ushort>()));
+                    break;
+                case SecsFormat.U4:
+                    writer.Write(string.Join(" ", item.Values.Cast<uint>()));
+                    break;
+                case SecsFormat.U8:
+                    writer.Write(string.Join(" ", item.Values.Cast<ulong>()));
+                    break;
+                case SecsFormat.Boolean:
+                    writer.Write(string.Join(" ", item.Values.Cast<bool>()));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(item.Format), item.Format, "invalid SecsFormat value");
             }
             writer.WriteLine('>');
         }
@@ -81,6 +117,24 @@ namespace Secs4Net.Sml
                 case SecsFormat.U2: return "U2";
                 case SecsFormat.U4: return "U4";
                 default: throw new ArgumentException("invalid format", nameof(format));
+            }
+        }
+
+        public static IEnumerable<SecsMessage> ToSecsMessages(this TextReader reader)
+        {
+            while (reader.Peek() != -1)
+            {
+                SecsMessage secsMsg = null;
+                try
+                {
+                    secsMsg = reader.ToSecsMessage();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("SML parsing error before:\n" + reader.ReadToEnd(), ex);
+                }
+                if (secsMsg != null)
+                    yield return secsMsg;
             }
         }
 
@@ -109,7 +163,7 @@ namespace Secs4Net.Sml
 
                 var replyExpected = line.IndexOf('W', i) != -1;
                 #endregion
-                Item? rootItem = null;
+                Item rootItem = null;
                 var stack = new Stack<List<Item>>();
                 while ((line = await sr.ReadLineAsync()) != null)
                 {
@@ -178,7 +232,7 @@ namespace Secs4Net.Sml
 
                 var replyExpected = line.IndexOf('W', i) != -1;
                 #endregion
-                Item? rootItem = null;
+                Item rootItem = null;
                 var stack = new Stack<List<Item>>();
                 while ((line = sr.ReadLine()) != null)
                 {
@@ -196,8 +250,8 @@ namespace Secs4Net.Sml
                     if (line[0] == '.') break;
 
                     #region <format[count] smlValue
-                    int index_Item_L = line.IndexOf('<') + 1; //Debug.Assert(index_Item_L != 0);
-                    int index_Size_L = line.IndexOf('[', index_Item_L); //Debug.Assert(index_Size_L != -1);
+                    int index_Item_L = line.IndexOf('<') + 1; Debug.Assert(index_Item_L != 0);
+                    int index_Size_L = line.IndexOf('[', index_Item_L); Debug.Assert(index_Size_L != -1);
                     string format = line.Substring(index_Item_L, index_Size_L - index_Item_L).Trim();
 
 
@@ -208,8 +262,8 @@ namespace Secs4Net.Sml
                     }
                     else
                     {
-                        int index_Size_R = line.IndexOf(']', index_Size_L); //Debug.Assert(index_Size_R != -1);
-                        int index_Item_R = line.LastIndexOf('>'); //Debug.Assert(index_Item_R != -1);
+                        int index_Size_R = line.IndexOf(']', index_Size_L); Debug.Assert(index_Size_R != -1);
+                        int index_Item_R = line.LastIndexOf('>'); Debug.Assert(index_Item_R != -1);
                         string valueStr = line.Substring(index_Size_R + 1, index_Item_R - index_Size_R - 1);
                         var item = Create(format, valueStr);
                         if (stack.Count > 0)
@@ -227,23 +281,6 @@ namespace Secs4Net.Sml
                 throw new FormatException("incorrect SML format", ex);
             }
         }
-
-        public static string ToHexString(this byte[] value)
-        {
-            if (value.Length == 0) return string.Empty;
-            int length = value.Length * 3;
-            char[] chs = new char[length];
-            for (int ci = 0, i = 0; ci < length; ci += 3)
-            {
-                byte num = value[i++];
-                chs[ci] = GetHexValue(num / 0x10);
-                chs[ci + 1] = GetHexValue(num % 0x10);
-                chs[ci + 2] = ' ';
-            }
-            return new string(chs, 0, length - 1);
-        }
-
-        static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
 
         static string ToSmlString<T>(this T[] value) where T : struct =>
             value.Length == 1 ? value[0].ToString() : string.Join(" ", value);

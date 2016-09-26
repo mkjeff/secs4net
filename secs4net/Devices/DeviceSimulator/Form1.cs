@@ -10,7 +10,7 @@ namespace SecsDevice
 {
     public partial class Form1 : Form {
         SecsGem _secsGem;
-        readonly ISecsGemLogger Logger;
+        readonly ISecsGemLogger _logger;
         readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
 
         public Form1() {
@@ -21,20 +21,22 @@ namespace SecsDevice
             txtAddress.DataBindings.Add("Enabled", btnEnable, "Enabled");
             numPort.DataBindings.Add("Enabled", btnEnable, "Enabled");
             numDeviceId.DataBindings.Add("Enabled", btnEnable, "Enabled");
+            numBufferSize.DataBindings.Add("Enabled", btnEnable, "Enabled");
             recvMessageBindingSource.DataSource = recvBuffer;
             Application.ThreadException += (sender, e) => MessageBox.Show(e.Exception.ToString());
             AppDomain.CurrentDomain.UnhandledException += (sender, e) => MessageBox.Show(e.ExceptionObject.ToString());
-            Logger = new SecsLogger(this);
+            _logger = new SecsLogger(this);
         }
 
-        private async void btnEnable_Click(object sender, EventArgs e)
+        private void btnEnable_Click(object sender, EventArgs e)
         {
             _secsGem?.Dispose();
             _secsGem = new SecsGem(
                 radioActiveMode.Checked,
                 IPAddress.Parse(txtAddress.Text),
                 (int)numPort.Value,
-                Logger);
+                (int)numBufferSize.Value)
+            { Logger = _logger, DeviceId = (ushort)numDeviceId.Value };
 
             _secsGem.ConnectionChanged += delegate
             {
@@ -47,7 +49,7 @@ namespace SecsDevice
             _secsGem.PrimaryMessageReceived += PrimaryMessageReceived;
 
             btnEnable.Enabled = false;
-            await _secsGem.StartAsync();
+            _secsGem.Start();
             btnDisable.Enabled = true;
         }
 
@@ -64,6 +66,7 @@ namespace SecsDevice
             btnDisable.Enabled = false;
             lbStatus.Text = "Disable";
             recvBuffer.Clear();
+            richTextBox1.Clear();
         }
 
         private async void btnSendPrimary_Click(object sender, EventArgs e)
@@ -110,7 +113,7 @@ namespace SecsDevice
             {
                 _form = form;
             }
-            public void TraceMessageIn(SecsMessage msg, int systembyte)
+            public void MessageIn(SecsMessage msg, int systembyte)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Black;
@@ -118,7 +121,7 @@ namespace SecsDevice
                 });
             }
 
-            public void TraceMessageOut(SecsMessage msg, int systembyte)
+            public void MessageOut(SecsMessage msg, int systembyte)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Black;
@@ -126,7 +129,7 @@ namespace SecsDevice
                 });
             }
 
-            public void TraceInfo(string msg)
+            public void Info(string msg)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Blue;
@@ -134,7 +137,7 @@ namespace SecsDevice
                 });
             }
 
-            public void TraceWarning(string msg)
+            public void Warning(string msg)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Green;
@@ -142,7 +145,7 @@ namespace SecsDevice
                 });
             }
 
-            public void TraceError(string msg, Exception ex = null)
+            public void Error(string msg, Exception ex = null)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Red;
@@ -152,7 +155,7 @@ namespace SecsDevice
                 });
             }
 
-            public void TraceDebug(string msg)
+            public void Debug(string msg)
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Yellow;

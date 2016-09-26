@@ -16,7 +16,7 @@ namespace Cim.Eap {
 
             byte returnCode = (byte)s3f18.SecsItem.Items[0];
             if (returnCode != 0 && returnCode != 4)
-                throw new ScenarioException("CancelCarrier failed : " + s3f18.SecsItem.Items[1].Items[0].Items[1].ToString());
+                throw new ScenarioException("CancelCarrier failed : " + s3f18.SecsItem.Items[1].Items[0].Items[1].GetValue<string>());
         }
     }
 }

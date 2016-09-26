@@ -10,7 +10,7 @@ namespace Cim.Management {
         public readonly string Id;
         public readonly string ClientAddress = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString();
         public readonly string ToolId;
-        public readonly ISecsFilter Filter;
+        public readonly SecsMessage Filter;
         public readonly bool Recoverable;
         readonly Action<SecsMessage> _handler;
 
@@ -35,8 +35,8 @@ namespace Cim.Management {
             _handler(msg);
         }
 
-        internal SecsEventSubscription(string toolId, ISecsFilter filter, bool recoverable, Action<SecsMessage> callback) {
-            this.Id = (toolId + filter.Description + callback.Method.DeclaringType + callback.Method.Name).Replace('\\', '-').Replace('+', '-').Replace(';', '-').Replace(',', '_').Replace('"', '|');
+        internal SecsEventSubscription(string toolId, SecsMessage filter, bool recoverable, Action<SecsMessage> callback) {
+            this.Id = (toolId + filter.Name + callback.Method.DeclaringType + callback.Method.Name).Replace('\\', '-').Replace('+', '-').Replace(';', '-').Replace(',', '_').Replace('"', '|');
             this.ToolId = toolId;
             this.Recoverable = recoverable;
             this._handler = callback;

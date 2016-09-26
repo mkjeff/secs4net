@@ -1310,6 +1310,209 @@ CreateControlJob:'S14F9' W
                 <Boolean[1] True>
             >
         >
+		<L[6]
+            <L[2]
+                <A[1] 'ObjID'>
+                <A[1] 'CJ02'>
+            >
+            <L[2]
+                <A[1] 'ProcessingCtrlSpec'>
+                <L[0]
+                >
+            >
+            <L[2]
+                <A[1] 'CarrierInputSpec'>
+                <L[1]
+                    <A[1] 'ASR10192'>
+                >
+            >
+            <L[2]
+                <A[1] 'MtrlOutSpec'>
+                <A[0] ''>
+            >
+            <L[2]
+                <A[1] 'ProcessOrderMgmt'>
+                <A[1] 'LIST'>
+            >
+            <L[2]
+                <A[1] 'StartMethod'>
+                <Boolean[1] True>
+            >
+        >
+		<L[6]
+            <L[2]
+                <A[1] 'ObjID'>
+                <A[1] 'CJ02'>
+            >
+            <L[2]
+                <A[1] 'ProcessingCtrlSpec'>
+                <L[0]
+                >
+            >
+            <L[2]
+                <A[1] 'CarrierInputSpec'>
+                <L[1]
+                    <A[1] 'ASR10192'>
+                >
+            >
+            <L[2]
+                <A[1] 'MtrlOutSpec'>
+                <A[0] ''>
+            >
+            <L[2]
+                <A[1] 'ProcessOrderMgmt'>
+                <A[1] 'LIST'>
+            >
+            <L[2]
+                <A[1] 'StartMethod'>
+                <Boolean[1] True>
+            >
+        >
+		<L[6]
+            <L[2]
+                <A[1] 'ObjID'>
+                <A[1] 'CJ02'>
+            >
+            <L[2]
+                <A[1] 'ProcessingCtrlSpec'>
+                <L[0]
+                >
+            >
+            <L[2]
+                <A[1] 'CarrierInputSpec'>
+                <L[1]
+                    <A[1] 'ASR10192'>
+                >
+            >
+            <L[2]
+                <A[1] 'MtrlOutSpec'>
+                <A[0] ''>
+            >
+            <L[2]
+                <A[1] 'ProcessOrderMgmt'>
+                <A[1] 'LIST'>
+            >
+            <L[2]
+                <A[1] 'StartMethod'>
+                <Boolean[1] True>
+            >
+        >
+		<L[6]
+            <L[2]
+                <A[1] 'ObjID'>
+                <A[1] 'CJ02'>
+            >
+            <L[2]
+                <A[1] 'ProcessingCtrlSpec'>
+                <L[0]
+                >
+            >
+            <L[2]
+                <A[1] 'CarrierInputSpec'>
+                <L[1]
+                    <A[1] 'ASR10192'>
+                >
+            >
+            <L[2]
+                <A[1] 'MtrlOutSpec'>
+                <A[0] ''>
+            >
+            <L[2]
+                <A[1] 'ProcessOrderMgmt'>
+                <A[1] 'LIST'>
+            >
+            <L[2]
+                <A[1] 'StartMethod'>
+                <Boolean[1] True>
+            >
+        >
+		<L[6]
+            <L[2]
+                <A[1] 'ObjID'>
+                <A[1] 'CJ02'>
+            >
+            <L[2]
+                <A[1] 'ProcessingCtrlSpec'>
+                <L[0]
+                >
+            >
+            <L[2]
+                <A[1] 'CarrierInputSpec'>
+                <L[1]
+                    <A[1] 'ASR10192'>
+                >
+            >
+            <L[2]
+                <A[1] 'MtrlOutSpec'>
+                <A[0] ''>
+            >
+            <L[2]
+                <A[1] 'ProcessOrderMgmt'>
+                <A[1] 'LIST'>
+            >
+            <L[2]
+                <A[1] 'StartMethod'>
+                <Boolean[1] True>
+            >
+        >
+		<L[6]
+            <L[2]
+                <A[1] 'ObjID'>
+                <A[1] 'CJ02'>
+            >
+            <L[2]
+                <A[1] 'ProcessingCtrlSpec'>
+                <L[0]
+                >
+            >
+            <L[2]
+                <A[1] 'CarrierInputSpec'>
+                <L[1]
+                    <A[1] 'ASR10192'>
+                >
+            >
+            <L[2]
+                <A[1] 'MtrlOutSpec'>
+                <A[0] ''>
+            >
+            <L[2]
+                <A[1] 'ProcessOrderMgmt'>
+                <A[1] 'LIST'>
+            >
+            <L[2]
+                <A[1] 'StartMethod'>
+                <Boolean[1] True>
+            >
+        >
+		<L[6]
+            <L[2]
+                <A[1] 'ObjID'>
+                <A[1] 'CJ02'>
+            >
+            <L[2]
+                <A[1] 'ProcessingCtrlSpec'>
+                <L[0]
+                >
+            >
+            <L[2]
+                <A[1] 'CarrierInputSpec'>
+                <L[1]
+                    <A[1] 'ASR10192'>
+                >
+            >
+            <L[2]
+                <A[1] 'MtrlOutSpec'>
+                <A[0] ''>
+            >
+            <L[2]
+                <A[1] 'ProcessOrderMgmt'>
+                <A[1] 'LIST'>
+            >
+            <L[2]
+                <A[1] 'StartMethod'>
+                <Boolean[1] True>
+            >
+        >
     >
 .
 PJCancel:'S16F5' W

@@ -2,27 +2,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Remoting.Lifetime;
-using System.Security.Permissions;
+using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 
 namespace Secs4Net
 {
-    [DebuggerDisplay("<{Format} [{Count}] { (Format==SecsFormat.List) ? string.Empty : ToString() ,nq}>")]
-    public struct Item
+    public sealed class Item
     {
-        public readonly SecsFormat Format;
+        public SecsFormat Format { get; }
 
-        public readonly int Count;
+        public int Count =>
+            Format == SecsFormat.List
+            ? ((IReadOnlyList<Item>)_values).Count
+            : Unsafe.As<Array>(_values).Length;
 
         /// <summary>
         /// if Format is List RawData is only header bytes.
         /// otherwise include header and value bytes.
         /// </summary>
-        internal readonly RawDataWrapper RawData;
+        readonly Lazy<byte[]> RawData;
 
         readonly IEnumerable _values;
 
@@ -34,9 +33,11 @@ namespace Secs4Net
         {
             Format = SecsFormat.List;
             _values = items;
-            Count = items.Count;
-            int _;
-            RawData = new RawDataWrapper(new ArraySegment<byte>(Format.EncodeItem(Count, out _)));
+            RawData = new Lazy<byte[]>(() =>
+            {
+                int _;
+                return EncodeItem(((IReadOnlyList<Item>)_values).Count, out _);
+            });
         }
 
         /// <summary>
@@ -45,47 +46,38 @@ namespace Secs4Net
         /// F4,F8
         /// Boolean
         /// </summary>
-        internal Item(SecsFormat format, Array value, ArraySegment<byte>? bytes = null)
+        Item(SecsFormat format, Array value)
         {
             Format = format;
             _values = value;
-            Count = value.Length;
-
-            if (bytes == null)
+            RawData = new Lazy<byte[]>(() =>
             {
-                int bytelength = Buffer.ByteLength(value);
+                var arr = (Array)_values;
+                int bytelength = Buffer.ByteLength(arr);
                 int headerLength;
-                byte[] result = format.EncodeItem(bytelength, out headerLength);
-                Buffer.BlockCopy(value, 0, result, headerLength, bytelength);
-                result.Reverse(headerLength, headerLength + bytelength, bytelength / value.Length);
-                RawData = new RawDataWrapper(new ArraySegment<byte>(result));
-            }
-            else
-            {
-                RawData = new RawDataWrapper(bytes.Value, true);
-            }
+                byte[] result = EncodeItem(bytelength, out headerLength);
+                Buffer.BlockCopy(arr, 0, result, headerLength, bytelength);
+                result.Reverse(headerLength, headerLength + bytelength, bytelength / arr.Length);
+                return result;
+            });
         }
 
         /// <summary>
         /// A,J
         /// </summary>
-        internal Item(SecsFormat format, string value, Encoding encoder, ArraySegment<byte>? bytes = null)
+        Item(SecsFormat format, string value)
         {
             Format = format;
             _values = value;
-            Count = value.Length;
-
-            if (bytes == null)
+            RawData = new Lazy<byte[]>(() =>
             {
+                var str = (string)_values;
                 int headerLength;
-                byte[] result = format.EncodeItem(value.Length, out headerLength);
-                encoder.GetBytes(value, 0, value.Length, result, headerLength);
-                RawData = new RawDataWrapper(new ArraySegment<byte>(result));
-            }
-            else
-            {
-                RawData = new RawDataWrapper(bytes.Value);
-            }
+                byte[] result = EncodeItem(str.Length, out headerLength);
+                var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : JIS8Encoding;
+                encoder.GetBytes(str, 0, str.Length, result, headerLength);
+                return result;
+            });
         }
 
         /// <summary>
@@ -97,19 +89,11 @@ namespace Secs4Net
         {
             Format = format;
             _values = value;
-            Count = 0;
-            RawData = new RawDataWrapper(new ArraySegment<byte>(new byte[] { (byte)((byte)Format | 1), 0 }));
+            RawData = new Lazy<byte[]>(() => new byte[] { (byte)((byte)Format | 1), 0 });
         }
         #endregion
 
-        public byte[] RawBytes
-        {
-            get
-            {
-                RawData.Encode(Format);
-                return RawData.Bytes.ToArray();
-            }
-        }
+        public IReadOnlyList<byte> RawBytes => RawData.Value;
 
         /// <summary>
         /// Non-list item values
@@ -151,74 +135,61 @@ namespace Secs4Net
             if (_values is T)
                 return (T)_values;
 
-            if (_values is IEnumerable<T>)
-                return _values.Cast<T>().First();
+            if (_values is IEnumerable)
+                return ((IEnumerable<T>)_values).First();
 
             if (_values.GetType().GetElementType() == Nullable.GetUnderlyingType(typeof(T)))
-                return _values.Cast<T>().First();
+                return ((IEnumerable<T>)_values).First();
 
             throw new InvalidOperationException("Item value type is incompatible");
         }
 
-        /// <summary>
-        /// get value by specific type
-        /// </summary>
-        /// <typeparam name="T">return value type</typeparam>
-        /// <returns></returns>
-        public T GetValueOrDefault<T>()
+        public bool IsMatch(Item target)
         {
-            if (Format == SecsFormat.List)
-                throw new InvalidOperationException("Item is not a value item");
+            if (Format != target.Format) return false;
+            if (target.Count == 0) return true;
+            if (Count != target.Count) return false;
 
-            if (_values is T)
-                return (T)_values;
-
-            if (_values is IEnumerable<T>)
-                return _values.Cast<T>().FirstOrDefault();
-
-            if (_values.GetType().GetElementType() == Nullable.GetUnderlyingType(typeof(T)))
-                return _values.Cast<T>().FirstOrDefault();
-
-            throw new InvalidOperationException("Item value type is incompatible");
+            switch (target.Format)
+            {
+                case SecsFormat.List:
+                    return Items.Zip(target.Items, IsMatch).All(IsTrue);
+                case SecsFormat.ASCII:
+                case SecsFormat.JIS8:
+                    return (string)_values == (string)target._values;
+                default:
+                    //return memcmp(Unsafe.As<byte[]>(_values), Unsafe.As<byte[]>(target._values), Buffer.ByteLength((Array)_values)) == 0;
+                    return UnsafeCompare((Array)_values, (Array)target._values);
+            }
         }
 
-        public override string ToString() => $"<{Format} [{ Count}] {(Format == SecsFormat.List ? "..." : string.Join(" ", _values.Cast<object>())) } >";
+        bool IsMatch(Item a, Item b) => a.IsMatch(b);
+
+        bool IsTrue(bool b) => b;
+
+        public override string ToString() =>
+            Format == SecsFormat.List
+            ? $"<{Format} [{ ((IReadOnlyList<Item>)_values).Count}] ... >"
+            : _values is string
+            ? $"<{Format} [{ ((string)_values).Length }] { _values } >"
+            : Format== SecsFormat.Binary
+            ? $"<{Format} [{((Array)_values).Length}] { ((byte[]) _values).ToHexString() } >"
+            : $"<{Format} [{((Array)_values).Length}] { string.Join(" ", _values.Cast<object>()) } >";
 
         #region Type Casting Operator
-        public static explicit operator string(Item item) => item.GetValueOrDefault<string>();
-        public static explicit operator byte(Item item) => item.GetValue<byte>();
-        public static explicit operator sbyte(Item item) => item.GetValue<sbyte>();
-        public static explicit operator ushort(Item item) => item.GetValue<ushort>();
-        public static explicit operator short(Item item) => item.GetValue<short>();
-        public static explicit operator uint(Item item) => item.GetValue<uint>();
-        public static explicit operator int(Item item) => item.GetValue<int>();
-        public static explicit operator ulong(Item item) => item.GetValue<ulong>();
-        public static explicit operator long(Item item) => item.GetValue<long>();
-        public static explicit operator float(Item item) => item.GetValue<float>();
-        public static explicit operator double(Item item) => item.GetValue<double>();
-        public static explicit operator bool(Item item) => item.GetValue<bool>();
-        public static explicit operator byte? (Item item) => item.GetValueOrDefault<byte?>();
-        public static explicit operator sbyte? (Item item) => item.GetValueOrDefault<sbyte?>();
-        public static explicit operator ushort? (Item item) => item.GetValueOrDefault<ushort?>();
-        public static explicit operator short? (Item item) => item.GetValueOrDefault<short?>();
-        public static explicit operator uint? (Item item) => item.GetValueOrDefault<uint?>();
-        public static explicit operator int? (Item item) => item.GetValueOrDefault<int?>();
-        public static explicit operator ulong? (Item item) => item.GetValueOrDefault<ulong?>();
-        public static explicit operator long? (Item item) => item.GetValueOrDefault<long?>();
-        public static explicit operator float? (Item item) => item.GetValueOrDefault<float?>();
-        public static explicit operator double? (Item item) => item.GetValueOrDefault<double?>();
-        public static explicit operator bool? (Item item) => item.GetValueOrDefault<bool?>();
-        public static explicit operator byte[] (Item item) => item.GetValue<byte[]>();
-        public static explicit operator sbyte[] (Item item) => item.GetValue<sbyte[]>();
-        public static explicit operator ushort[] (Item item) => item.GetValue<ushort[]>();
-        public static explicit operator short[] (Item item) => item.GetValue<short[]>();
-        public static explicit operator uint[] (Item item) => item.GetValue<uint[]>();
-        public static explicit operator int[] (Item item) => item.GetValue<int[]>();
-        public static explicit operator ulong[] (Item item) => item.GetValue<ulong[]>();
-        public static explicit operator long[] (Item item) => item.GetValue<long[]>();
-        public static explicit operator float[] (Item item) => item.GetValue<float[]>();
-        public static explicit operator double[] (Item item) => item.GetValue<double[]>();
-        public static explicit operator bool[] (Item item) => item.GetValue<bool[]>();
+        public static implicit operator string(Item item) => item.GetValue<string>();
+        public static implicit operator byte(Item item) => item.GetValue<byte>();
+        public static implicit operator sbyte(Item item) => item.GetValue<sbyte>();
+        public static implicit operator ushort(Item item) => item.GetValue<ushort>();
+        public static implicit operator short(Item item) => item.GetValue<short>();
+        public static implicit operator uint(Item item) => item.GetValue<uint>();
+        public static implicit operator int(Item item) => item.GetValue<int>();
+        public static implicit operator ulong(Item item) => item.GetValue<ulong>();
+        public static implicit operator long(Item item) => item.GetValue<long>();
+        public static implicit operator float(Item item) => item.GetValue<float>();
+        public static implicit operator double(Item item) => item.GetValue<double>();
+        public static implicit operator bool(Item item) => item.GetValue<bool>();
+
         #endregion
 
         #region Factory Methods
@@ -410,15 +381,14 @@ namespace Secs4Net
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static Item A(string value) => value != string.Empty ? new Item(SecsFormat.ASCII, value, Encoding.ASCII) : A();
+        public static Item A(string value) => value != string.Empty ? new Item(SecsFormat.ASCII, value) : A();
 
         /// <summary>
-        /// Create string item
+        /// Create JIS encoded string item
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        [Obsolete("this is special format, make sure you really need it.")]
-        public static Item J(string value) => value != string.Empty ? new Item(SecsFormat.JIS8, value, JIS8Encoding) : J();
+        public static Item J(string value) => value != string.Empty ? new Item(SecsFormat.JIS8, value) : J();
         #endregion
 
         #region Share Object
@@ -439,7 +409,7 @@ namespace Secs4Net
         public static Item A() => EmptyA;
         public static Item J() => EmptyJ;
 
-        static readonly Item EmptyL = new Item(new ReadOnlyCollection<Item>(Array.Empty<Item>()));
+        static readonly Item EmptyL = new Item(SecsFormat.List, Enumerable.Empty<Item>());
         static readonly Item EmptyA = new Item(SecsFormat.ASCII, string.Empty);
         static readonly Item EmptyJ = new Item(SecsFormat.JIS8, string.Empty);
         static readonly Item EmptyBoolean = new Item(SecsFormat.Boolean, Enumerable.Empty<bool>());
@@ -458,43 +428,86 @@ namespace Secs4Net
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
         #endregion
 
-        internal struct RawDataWrapper
+        //[DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+        //static extern int memcmp(byte[] b1, byte[] b2, long count);
+
+        /// <summary>
+        /// http://stackoverflow.com/questions/43289/comparing-two-byte-arrays-in-net/8808245#8808245
+        /// </summary>
+        /// <param name="a1"></param>
+        /// <param name="a2"></param>
+        /// <returns></returns>
+        static unsafe bool UnsafeCompare(Array a1, Array a2)
         {
-            public readonly ArraySegment<byte> Bytes;
-            bool NeedReverse;
-
-            internal RawDataWrapper(ArraySegment<byte> bytes, bool needReverse = false)
+            int length = Buffer.ByteLength(a2);
+            fixed (byte* p1 = Unsafe.As<byte[]>(a1), p2 = Unsafe.As<byte[]>(a2))
             {
-                Bytes = bytes;
-                NeedReverse = needReverse;
-            }
-
-            internal void Encode(SecsFormat format)
-            {
-                if (!NeedReverse)
-                    return;
-                NeedReverse = false;
-
-                int elementSize = 0;
-                switch (format)
-                {
-                    case SecsFormat.Boolean: elementSize = sizeof(bool); break;
-                    case SecsFormat.Binary: elementSize = sizeof(byte); break;
-                    case SecsFormat.U1: elementSize = sizeof(byte); break;
-                    case SecsFormat.U2: elementSize = sizeof(ushort); break;
-                    case SecsFormat.U4: elementSize = sizeof(uint); break;
-                    case SecsFormat.U8: elementSize = sizeof(ulong); break;
-                    case SecsFormat.I1: elementSize = sizeof(sbyte); break;
-                    case SecsFormat.I2: elementSize = sizeof(short); break;
-                    case SecsFormat.I4: elementSize = sizeof(int); break;
-                    case SecsFormat.I8: elementSize = sizeof(long); break;
-                    case SecsFormat.F4: elementSize = sizeof(float); break;
-                    case SecsFormat.F8: elementSize = sizeof(double); break;
-                    default: throw new ArgumentException(@"Invalid format", nameof(format));
-                }
-                Bytes.Array.Reverse(Bytes.Offset, Bytes.Offset + Bytes.Count, elementSize);
+                byte* x1 = p1, x2 = p2;
+                int l = length;
+                for (int i = 0; i < l / 8; i++, x1 += 8, x2 += 8)
+                    if (*((long*)x1) != *((long*)x2)) return false;
+                if ((l & 4) != 0) { if (*((int*)x1) != *((int*)x2)) return false; x1 += 4; x2 += 4; }
+                if ((l & 2) != 0) { if (*((short*)x1) != *((short*)x2)) return false; x1 += 2; x2 += 2; }
+                if ((l & 1) != 0) if (*((byte*)x1) != *((byte*)x2)) return false;
+                return true;
             }
         }
 
+        /// <summary>
+        /// Encode item to raw data buffer
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        internal uint EncodeTo(List<ArraySegment<byte>> buffer)
+        {
+            var bytes = RawData.Value;
+            uint length = unchecked((uint)bytes.Length);
+            buffer.Add(new ArraySegment<byte>(bytes));
+            if (Format == SecsFormat.List)
+                foreach (var subItem in Items)
+                    length += subItem.EncodeTo(buffer);
+            return length;
+        }
+
+        /// <summary>
+        /// Encode Item header + value (initial array only)
+        /// </summary>
+        /// <param name="valueCount">Item value bytes length</param>
+        /// <param name="headerlength">return header bytes length</param>
+        /// <returns>header bytes + initial bytes of value </returns>
+        byte[] EncodeItem(int valueCount, out int headerlength)
+        {
+            byte[] lengthBytes = BitConverter.GetBytes(valueCount);
+            int dataLength = Format == SecsFormat.List ? 0 : valueCount;
+
+            if (valueCount <= 0xff)
+            {//	1 byte
+                headerlength = 2;
+                var result = new byte[dataLength + 2];
+                result[0] = (byte)((byte)Format | 1);
+                result[1] = lengthBytes[0];
+                return result;
+            }
+            if (valueCount <= 0xffff)
+            {//	2 byte
+                headerlength = 3;
+                var result = new byte[dataLength + 3];
+                result[0] = (byte)((byte)Format | 2);
+                result[1] = lengthBytes[1];
+                result[2] = lengthBytes[0];
+                return result;
+            }
+            if (valueCount <= 0xffffff)
+            {//	3 byte
+                headerlength = 4;
+                var result = new byte[dataLength + 4];
+                result[0] = (byte)((byte)Format | 3);
+                result[1] = lengthBytes[2];
+                result[2] = lengthBytes[1];
+                result[3] = lengthBytes[0];
+                return result;
+            }
+            throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $"Item data length({valueCount}) is overflow");
+        }
     }
 }
