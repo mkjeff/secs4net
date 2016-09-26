@@ -102,7 +102,7 @@ namespace Cim.Eap
             EAPConfig.Instance.Driver.EAP = this;
             EAPConfig.Instance.Driver.Init();
 
-            this.Subscribe(5, 1, "ToolAlarm", EAPConfig.Instance.Driver.HandleToolAlarm);
+            this.Subscribe(new SecsMessage(5, 1, "ToolAlarm"), EAPConfig.Instance.Driver.HandleToolAlarm);
 
             reloadSpecialControlFileToolStripMenuItem_Click(this, EventArgs.Empty);
             menuItemGemEnable_Click(this, EventArgs.Empty);
@@ -326,37 +326,37 @@ namespace Cim.Eap
                 var filter = subscription.Filter;
                 try
                 {
-                    if (filter.Eval(msg.SecsItem))
+                    if (msg.IsMatch(filter))
                     {
-                        EapLogger.Info("event[" + filter.Description + "] >> EAP");
+                        EapLogger.Info("event[" + filter.Name + "] >> EAP");
                         msg.Name = filter.Name;
                         subscription.Handle(msg);
                     }
                 }
                 catch (Exception ex)
                 {
-                    EapLogger.Error("event[" + filter.Description + "] EAP process Error!", ex);
+                    EapLogger.Error("event[" + filter.Name + "] EAP process Error!", ex);
                 }
                 #endregion
             });
             _eventHandlers.AddHandler(subscription.GetKey(), handler);
-            EapLogger.Notice("EAP subscribe event " + subscription.Filter.Description);
+            EapLogger.Notice("EAP subscribe event " + subscription.Filter.Name);
             return new LocalDisposable(() =>
             {
                 _eventHandlers.RemoveHandler(subscription.GetKey(), handler);
-                EapLogger.Notice("EAP unsubscribe event " + subscription.Filter.Description);
+                EapLogger.Notice("EAP unsubscribe event " + subscription.Filter.Name);
             });
         }
 
         IDisposable SubscribeRemote(SecsEventSubscription subscription)
         {
             var filter = subscription.Filter;
-            var description = filter.Description;
+            var description = filter.Name;
             var handler = new Action<SecsMessage>(msg =>
             {
                 try
                 {
-                    if (filter.Eval(msg.SecsItem))
+                    if (msg.IsMatch(filter))
                     {
                         EapLogger.Info($"event[{description}] >> Z");
                         msg.Name = filter.Name;
@@ -405,7 +405,7 @@ namespace Cim.Eap
                                 #region recover action
                                 try
                                 {
-                                    if (filter.Eval(msg.SecsItem))
+                                    if (msg.IsMatch(filter))
                                     {
                                         EapLogger.Info("recoverable event[" + description + "]");
                                         msg.Name = filter.Name;
@@ -591,6 +591,8 @@ namespace Cim.Eap
         {
             Report(report.XML);
         }
+
+        EapDriver IEAP.Driver => EAPConfig.Instance.Driver;
 
         static int _MessageKey = 0;
         static string NewMessageKey()

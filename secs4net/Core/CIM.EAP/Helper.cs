@@ -6,9 +6,13 @@ namespace Cim.Eap {
     public static class Helper {
         public static IDisposable SubscribeS6F11(this IEAP eap, string eventName, Action<SecsMessage> callback) {
             try {
-                return eap.SubscribeS6F11(
-                    eap.EventReportLink.Events.First(ceid => ceid.Name == eventName).Id,
-                    eventName,
+                var ceid = eap.EventReportLink.Events.FirstOrDefault(id => id.Name == eventName);
+                return eap.Subscribe(
+                    new SecsMessage(16, 11, true, eventName,
+                        Item.L(
+                            eap.Driver.LinkDataIdCreator(string.Empty),
+                            eap.Driver.CeidLinkCreator(ceid.Id),
+                            Item.L())),
                     callback);
             } catch (Exception ex) {
                 EapLogger.Warn($"EAP.Subscribe_S6F11 error, event({eventName});{ex.Message}");

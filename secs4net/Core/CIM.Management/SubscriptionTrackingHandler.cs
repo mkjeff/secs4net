@@ -18,7 +18,7 @@ namespace Cim.Management {
                 ThreadPool.QueueUserWorkItem(_ => {
                     while (!subscription.IsDisposed) {
                         try {
-                            Trace.WriteLine(subscription.ToolId + "[" + subscription.Filter.Description + "] try to re-subscribe.....");
+                            Trace.WriteLine(subscription.ToolId + "[" + subscription.Filter.Name + "] try to re-subscribe.....");
                             var manager = (ICentralService<ISecsDevice>)Activator.GetObject(typeof(IServiceManager<ISecsDevice>), ConfigurationManager.AppSettings["zmanagerUrl"]);
                             var device = manager.GetService(subscription.ToolId);
                             device.Subscribe(subscription);

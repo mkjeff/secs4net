@@ -23,7 +23,7 @@ namespace Secs4Net
             }
         }
 
-        public unsafe ushort DeviceId
+        public ushort DeviceId
         {
             get
             {
@@ -95,7 +95,7 @@ namespace Secs4Net
         {
             get
             {
-                fixed (byte* ptr = _bytes) return (MessageType)Unsafe.Read<MessageType>(ptr + 5);
+                fixed (byte* ptr = _bytes) return Unsafe.Read<MessageType>(ptr + 5);
             }
             set
             {
@@ -103,7 +103,7 @@ namespace Secs4Net
             }
         }
 
-        public unsafe int SystemBytes
+        public int SystemBytes
         {
             get
             {

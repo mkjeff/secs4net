@@ -106,21 +106,36 @@ namespace LoadPortMonitor
                         GetLoadPortStatus(device);
                         this.Text = Settings.Default.ToolId + " Connected(Passive)";
                     });
-                    var readytoload = device.SubscribeS6F11("114", "ReadyToLoad",
+                    var readytoload = device.Subscribe(
+                        new SecsMessage(6, 11, "ReadyToLoad",
+                            Item.L(
+                                Item.U4(),
+                                Item.U4(114),
+                                Item.L())),
                         msg =>
                         {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
                             ports[portId - 1].State = msg.Name;
                         });
 
-                    var readytounload = device.SubscribeS6F11("115", "ReadyToUnload",
+                    var readytounload = device.Subscribe(
+                        new SecsMessage(6, 11, "ReadyToUnload",
+                            Item.L(
+                                Item.U4(),
+                                Item.U4(115),
+                                Item.L())),
                         msg =>
                         {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
                             ports[portId - 1].State = msg.Name;
                         });
 
-                    var loadcomplete = device.SubscribeS6F11("101", "LoadComplete",
+                    var loadcomplete = device.Subscribe(
+                        new SecsMessage(6, 11, "LoadComplete",
+                            Item.L(
+                                Item.U4(),
+                                Item.U4(101),
+                                Item.L())),
                         msg =>
                         {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
@@ -128,7 +143,12 @@ namespace LoadPortMonitor
                         });
 
                     var unloadcomplete = device.Subscribe(
-                        new S6F11Filter { CEID = "102", Name = "UnLoadComplete" }, true,
+                        new SecsMessage(6, 11, "",
+                             Item.L(
+                                Item.U4(),
+                                Item.U4(102),
+                                Item.L())),
+                        true,
                         msg =>
                         {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
