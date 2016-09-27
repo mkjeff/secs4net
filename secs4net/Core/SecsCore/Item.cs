@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -10,13 +11,6 @@ namespace Secs4Net
 {
     public sealed class Item
     {
-        public SecsFormat Format { get; }
-
-        public int Count =>
-            Format == SecsFormat.List
-            ? ((IReadOnlyList<Item>)_values).Count
-            : Unsafe.As<Array>(_values).Length;
-
         /// <summary>
         /// if Format is List RawData is only header bytes.
         /// otherwise include header and value bytes.
@@ -25,19 +19,20 @@ namespace Secs4Net
 
         readonly IEnumerable _values;
 
-        #region Constructor
         /// <summary>
         /// List
         /// </summary>
         Item(IReadOnlyList<Item> items)
         {
+            Debug.Assert(items.Count <= byte.MaxValue, $"List length out of range, max length: 255");
+
             Format = SecsFormat.List;
             _values = items;
-            RawData = new Lazy<byte[]>(() =>
-            {
-                int _;
-                return EncodeItem(((IReadOnlyList<Item>)_values).Count, out _);
-            });
+            RawData = new Lazy<byte[]>(()
+                => new byte[]{
+                    (byte)SecsFormat.List | 1,
+                    unchecked((byte)(Unsafe.As<IReadOnlyList<Item>>(_values).Count))
+                });
         }
 
         /// <summary>
@@ -72,8 +67,9 @@ namespace Secs4Net
             RawData = new Lazy<byte[]>(() =>
             {
                 var str = (string)_values;
+                int bytelength = str.Length;
                 int headerLength;
-                byte[] result = EncodeItem(str.Length, out headerLength);
+                byte[] result = EncodeItem(bytelength, out headerLength);
                 var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : JIS8Encoding;
                 encoder.GetBytes(str, 0, str.Length, result, headerLength);
                 return result;
@@ -91,7 +87,13 @@ namespace Secs4Net
             _values = value;
             RawData = new Lazy<byte[]>(() => new byte[] { (byte)((byte)Format | 1), 0 });
         }
-        #endregion
+
+        public SecsFormat Format { get; }
+
+        public int Count =>
+            Format == SecsFormat.List
+            ? Unsafe.As<IReadOnlyList<Item>>(_values).Count
+            : Unsafe.As<Array>(_values).Length;
 
         public IReadOnlyList<byte> RawBytes => RawData.Value;
 
@@ -102,8 +104,7 @@ namespace Secs4Net
         {
             get
             {
-                if (Format == SecsFormat.List)
-                    throw new InvalidOperationException("Item is a list");
+                if (Format == SecsFormat.List) throw new InvalidOperationException("Item is a list");
                 return _values;
             }
         }
@@ -115,10 +116,8 @@ namespace Secs4Net
         {
             get
             {
-                if (Format != SecsFormat.List)
-                    throw new InvalidOperationException("Item is not a list");
-
-                return (IReadOnlyList<Item>)_values;
+                if (Format != SecsFormat.List) throw new InvalidOperationException("Item is not a list");
+                return Unsafe.As<IReadOnlyList<Item>>(_values);
             }
         }
 
@@ -135,10 +134,7 @@ namespace Secs4Net
             if (_values is T)
                 return (T)_values;
 
-            if (_values is IEnumerable)
-                return ((IEnumerable<T>)_values).First();
-
-            if (_values.GetType().GetElementType() == Nullable.GetUnderlyingType(typeof(T)))
+            if (_values is IEnumerable<T>)
                 return ((IEnumerable<T>)_values).First();
 
             throw new InvalidOperationException("Item value type is incompatible");
@@ -153,7 +149,7 @@ namespace Secs4Net
             switch (target.Format)
             {
                 case SecsFormat.List:
-                    return Items.Zip(target.Items, IsMatch).All(IsTrue);
+                    return IsMatch(Items, target.Items);
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
                     return (string)_values == (string)target._values;
@@ -163,18 +159,54 @@ namespace Secs4Net
             }
         }
 
-        bool IsMatch(Item a, Item b) => a.IsMatch(b);
+        static bool IsMatch(IReadOnlyList<Item> a, IReadOnlyList<Item> b)
+        {
+            for (int i = 0; i < a.Count; i++)
+                if (!a[i].IsMatch(b[i]))
+                    return false;
+            return true;
+        }
 
-        bool IsTrue(bool b) => b;
+        public override string ToString()
+        {
+            var sb = new StringBuilder("<").Append(Format).Append(" [");
+            switch (Format)
+            {
+                case SecsFormat.List:
+                    sb.Append(Unsafe.As<IReadOnlyList<Item>>(_values).Count).Append("] ");
+                    break;
+                case SecsFormat.ASCII:
+                case SecsFormat.JIS8:
+                    sb.Append(Unsafe.As<string>(_values).Length).Append("] ").Append(Unsafe.As<string>(_values));
+                    break;
+                case SecsFormat.Binary:
+                    sb.Append(Unsafe.As<byte[]>(_values).Length).Append("] ").Append(Unsafe.As<byte[]>(_values).ToHexString());
+                    break;
+                default:
+                    sb.Append(Unsafe.As<Array>(_values).Length).Append("] ");
+                    string str = null;
+                    switch (Format)
+                    {
+                        case SecsFormat.Boolean: str = JoinAsString<bool>(_values); break;
+                        case SecsFormat.I1: str = JoinAsString<sbyte>(_values); break;
+                        case SecsFormat.I2: str = JoinAsString<short>(_values); break;
+                        case SecsFormat.I4: str = JoinAsString<int>(_values); break;
+                        case SecsFormat.I8: str = JoinAsString<long>(_values); break;
+                        case SecsFormat.U1: str = JoinAsString<byte>(_values); break;
+                        case SecsFormat.U2: str = JoinAsString<ushort>(_values); break;
+                        case SecsFormat.U4: str = JoinAsString<uint>(_values); break;
+                        case SecsFormat.U8: str = JoinAsString<ulong>(_values); break;
+                        case SecsFormat.F4: str = JoinAsString<float>(_values); break;
+                        case SecsFormat.F8: str = JoinAsString<double>(_values); break;
+                    }
+                    sb.Append(str);
+                    break;
+            }
+            sb.Append('>');
+            return sb.ToString();
+        }
 
-        public override string ToString() =>
-            Format == SecsFormat.List
-            ? $"<{Format} [{ ((IReadOnlyList<Item>)_values).Count}] ... >"
-            : _values is string
-            ? $"<{Format} [{ ((string)_values).Length }] { _values } >"
-            : Format== SecsFormat.Binary
-            ? $"<{Format} [{((Array)_values).Length}] { ((byte[]) _values).ToHexString() } >"
-            : $"<{Format} [{((Array)_values).Length}] { string.Join(" ", _values.Cast<object>()) } >";
+        static string JoinAsString<T>(IEnumerable src) where T : struct => string.Join(" ", Unsafe.As<T[]>(src));
 
         #region Type Casting Operator
         public static implicit operator string(Item item) => item.GetValue<string>();
@@ -475,36 +507,34 @@ namespace Secs4Net
         /// <param name="valueCount">Item value bytes length</param>
         /// <param name="headerlength">return header bytes length</param>
         /// <returns>header bytes + initial bytes of value </returns>
-        byte[] EncodeItem(int valueCount, out int headerlength)
+        unsafe byte[] EncodeItem(int valueCount, out int headerlength)
         {
-            byte[] lengthBytes = BitConverter.GetBytes(valueCount);
-            int dataLength = Format == SecsFormat.List ? 0 : valueCount;
-
+            var ptr = (byte*)Unsafe.AsPointer(ref valueCount);
             if (valueCount <= 0xff)
             {//	1 byte
                 headerlength = 2;
-                var result = new byte[dataLength + 2];
+                var result = new byte[valueCount + 2];
                 result[0] = (byte)((byte)Format | 1);
-                result[1] = lengthBytes[0];
+                result[1] = ptr[0];
                 return result;
             }
             if (valueCount <= 0xffff)
             {//	2 byte
                 headerlength = 3;
-                var result = new byte[dataLength + 3];
+                var result = new byte[valueCount + 3];
                 result[0] = (byte)((byte)Format | 2);
-                result[1] = lengthBytes[1];
-                result[2] = lengthBytes[0];
+                result[1] = ptr[1];
+                result[2] = ptr[0];
                 return result;
             }
             if (valueCount <= 0xffffff)
             {//	3 byte
                 headerlength = 4;
-                var result = new byte[dataLength + 4];
+                var result = new byte[valueCount + 4];
                 result[0] = (byte)((byte)Format | 3);
-                result[1] = lengthBytes[2];
-                result[2] = lengthBytes[1];
-                result[3] = lengthBytes[0];
+                result[1] = ptr[2];
+                result[2] = ptr[1];
+                result[3] = ptr[0];
                 return result;
             }
             throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $"Item data length({valueCount}) is overflow");
