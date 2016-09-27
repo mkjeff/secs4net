@@ -177,12 +177,12 @@ namespace Secs4Net
                     bool connected = false;
                     do
                     {
-                        if (_isDisposed)
+                        if (IsDisposed)
                             return;
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
-                            if (_isDisposed)
+                            if (IsDisposed)
                                 return;
                             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                             await _socket.ConnectAsync(_ip, _port).ConfigureAwait(false);
@@ -190,7 +190,7 @@ namespace Secs4Net
                         }
                         catch (Exception ex)
                         {
-                            if (_isDisposed)
+                            if (IsDisposed)
                                 return;
                             _logger.Error(ex.Message);
                             _logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
@@ -220,19 +220,19 @@ namespace Secs4Net
                     bool connected = false;
                     do
                     {
-                        if (_isDisposed)
+                        if (IsDisposed)
                             return;
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
-                            if (_isDisposed)
+                            if (IsDisposed)
                                 return;
                             _socket = await server.AcceptAsync().ConfigureAwait(false);
                             connected = true;
                         }
                         catch (Exception ex)
                         {
-                            if (_isDisposed)
+                            if (IsDisposed)
                                 return;
                             _logger.Error(ex.Message);
                             await Task.Delay(2000);
@@ -246,7 +246,7 @@ namespace Secs4Net
 
                 _stopImpl = delegate
                 {
-                    if (_isDisposed)
+                    if (IsDisposed)
                     {
                         server.Dispose();
                     }
@@ -296,6 +296,9 @@ namespace Secs4Net
                 {
                     e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
                 }
+
+                if (_socket == null || IsDisposed)
+                    return;
 
                 if (!_socket.ReceiveAsync(e))
                     ReceiveEventCompleted(sender, e);
@@ -520,7 +523,7 @@ namespace Secs4Net
 #endif
                     break;
                 case ConnectionState.Retry:
-                    if (_isDisposed)
+                    if (IsDisposed)
                         return;
                     Reset();
                     Task.Factory.StartNew(_startImpl);
@@ -539,17 +542,12 @@ namespace Secs4Net
 
             if (_socket != null)
             {
-                try
-                {
+                if (_socket.Connected)
                     _socket.Shutdown(SocketShutdown.Both);
-                }
-                finally
-                {
-                    _socket.Dispose();
-                    _socket = null;
-                }
-            }
-           
+
+                _socket.Dispose();
+                _socket = null;
+            }          
         }
         public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
 
@@ -560,20 +558,24 @@ namespace Secs4Net
         /// <returns>secondary message</returns>
         public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessageAsync(msg, NewSystemId);
 
-        volatile bool _isDisposed;
+        const int DisposalNotStarted = 0;
+        const int DisposalComplete = 1;
+        int _disposeStage;
+
+        public bool IsDisposed => Interlocked.CompareExchange(ref _disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
+
         public void Dispose()
         {
-            if (!_isDisposed)
-            {
-                _isDisposed = true;
-                ConnectionChanged = null;
-                if (State == ConnectionState.Selected)
-                    SendControlMessage(MessageType.SeperateRequest, NewSystemId);
-                Reset();
-                _timer7.Dispose();
-                _timer8.Dispose();
-                _timerLinkTest.Dispose();
-            }
+            if (Interlocked.Exchange(ref _disposeStage, DisposalComplete) != DisposalNotStarted)
+                return;
+
+            ConnectionChanged = null;
+            if (State == ConnectionState.Selected)
+                SendControlMessage(MessageType.SeperateRequest, NewSystemId);
+            Reset();
+            _timer7.Dispose();
+            _timer8.Dispose();
+            _timerLinkTest.Dispose();
         }
 
         /// <summary>
@@ -582,8 +584,6 @@ namespace Secs4Net
         public string DeviceAddress => _isActive
             ? _ip.ToString()
             : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
-
-#region Async Token        
 
         sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {
@@ -642,7 +642,5 @@ namespace Secs4Net
                 SetResult(replyMsg);
             }
         }
-
-#endregion
     }
 }

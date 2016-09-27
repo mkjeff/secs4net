@@ -1,16 +1,15 @@
 ﻿using System;
+using System.Threading;
 
 namespace Secs4Net
 {
     public sealed class PrimaryMessageWrapper
     {
+        int _isReplied = 0;
+        readonly SecsGem _secsGem;
         readonly MessageHeader _header;
         public SecsMessage Message { get; }
-
-        readonly SecsGem _secsGem;
         public int MessageId => _header.SystemBytes;
-
-        bool _isReplied;
 
         internal PrimaryMessageWrapper(SecsGem secsGem, MessageHeader header, SecsMessage msg)
         {
@@ -27,12 +26,10 @@ namespace Secs4Net
         /// <returns>ture, if reply message sent.</returns>
         public bool Reply(SecsMessage replyMessage)
         {
-            if (_isReplied)
+            if (Interlocked.Exchange(ref _isReplied, 1) == 1)
                 return false;
 
-            _isReplied = true;
-
-            if (!_header.ReplyExpected || _secsGem.State != ConnectionState.Selected)
+            if (!Message.ReplyExpected)
                 return true;
 
             replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(_header.Bytes));
@@ -44,6 +41,5 @@ namespace Secs4Net
         }
 
         public override string ToString() => Message.ToString();
-
     }
 }
