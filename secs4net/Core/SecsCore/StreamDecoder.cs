@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -54,7 +55,6 @@ namespace Secs4Net
         readonly Stack<List<Item>> _stack = new Stack<List<Item>>();
         uint _messageDataLength;
         MessageHeader _msgHeader;
-        readonly byte[] _itemLengthBytes = new byte[4];
         SecsFormat _format;
         byte _lengthBits;
         int _itemLength;
@@ -135,11 +135,13 @@ namespace Secs4Net
                     {
                         if (!CheckAvailable(ref length, _lengthBits, out need)) return 3;
 
-                        Array.Copy(_buffer, _decodeIndex, _itemLengthBytes, 0, _lengthBits);
-                        Array.Reverse(_itemLengthBytes, 0, _lengthBits);
+                        var itemLengthBytes = ArrayPool<byte>.Shared.Rent(4);
+                        Array.Clear(itemLengthBytes, 0, 4);
+                        Array.Copy(_buffer, _decodeIndex, itemLengthBytes, 0, _lengthBits);
+                        Array.Reverse(itemLengthBytes, 0, _lengthBits);
 
-                        _itemLength = BitConverter.ToInt32(_itemLengthBytes, 0);
-                        Array.Clear(_itemLengthBytes, 0, 4);
+                        _itemLength = BitConverter.ToInt32(itemLengthBytes, 0);
+                        ArrayPool<byte>.Shared.Return(itemLengthBytes);
                         Trace.WriteLineIf(_format!= SecsFormat.List, $"Get format: {_format}, length: {_itemLength}");
 
                         _decodeIndex += _lengthBits;
@@ -222,7 +224,7 @@ namespace Secs4Net
         /// <returns>true, if need more data to decode completed message. otherwise, return false</returns>
         public bool Decode(int length)
         {
-            Debug.Assert(length > 0,"decode data length is 0.");
+            Debug.Assert(length > 0, "decode data length is 0.");
             int currentLength = length;
             length += _previousRemainedCount; // total available length = current length + previous remained
             int need = 0;
@@ -236,7 +238,7 @@ namespace Secs4Net
             Debug.Assert(_decodeIndex >= _BufferOffset, "decode index should ahead of buffer index");
 
             int remainCount = length;
-            Debug.Assert(remainCount >= 0,"remain count is only possible grater and equal zero");
+            Debug.Assert(remainCount >= 0, "remain count is only possible grater and equal zero");
             Trace.WriteLine($"remain data length: {remainCount}");
             Trace.WriteLineIf(_messageDataLength > 0, $"need data count: {need}");
 
@@ -254,10 +256,10 @@ namespace Secs4Net
                 _decodeIndex = 0;
                 _previousRemainedCount = 0;
             }
-            else 
+            else
             {
                 _BufferOffset += currentLength; // move next receive index
-                int nextStepReqiredCount = remainCount + need;              
+                int nextStepReqiredCount = remainCount + need;
                 if (nextStepReqiredCount > BufferCount)
                 {
                     if (nextStepReqiredCount > Buffer.Length)

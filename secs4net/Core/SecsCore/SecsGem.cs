@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Secs4Net.Properties;
@@ -21,7 +23,7 @@ namespace Secs4Net
         /// </summary>
         public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived;
 
-
+        ISecsGemLogger _logger = DefaultLogger;
         public ISecsGemLogger Logger
         {
             get { return _logger; }
@@ -63,7 +65,7 @@ namespace Secs4Net
         /// </summary>
         public int T8 { get; set; } = 5000;
 
-
+        int _linkTestInterval = 60000;
         /// <summary>
         /// Linking test timer interval
         /// </summary>
@@ -80,9 +82,7 @@ namespace Secs4Net
             }
         }
 
-        private int _linkTestInterval = 60000;
-        private bool _linkTestEnable;
-
+        bool _linkTestEnable;
         /// <summary>
         /// get or set linking test timer enable or not 
         /// </summary>
@@ -102,15 +102,15 @@ namespace Secs4Net
             }
         }
 
-        readonly bool _isActive;
-        readonly IPAddress _ip;
-        readonly int _port;
+        public bool IsActive { get; }
+        public IPAddress IPAddress { get; }
+        public int Port { get; }
+        public int DecoderBufferSize { get; private set; }
+
         Socket _socket;
 
         readonly StreamDecoder _secsDecoder;
-        int _decoderBufferSize;
         readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
-        ISecsGemLogger _logger = DefaultLogger;
         readonly Timer _timer7;	// between socket connected and received Select.req timer
         readonly Timer _timer8;
         readonly Timer _timerLinkTest;
@@ -143,12 +143,13 @@ namespace Secs4Net
             if (port <= 0)
                 throw new ArgumentOutOfRangeException(nameof(port), port, $"port number must greater than 0");
 
-            _ip = ip;
-            _port = port;
-            _isActive = isActive;
+            IPAddress = ip;
+            Port = port;
+            IsActive = isActive;
+            DecoderBufferSize = receiveBufferSize;
+
             _secsDecoder = new StreamDecoder(receiveBufferSize, HandleControlMessage, HandleDataMessage);
-            _decoderBufferSize = receiveBufferSize;
-            #region Timer Action
+
             _timer7 = new Timer(delegate
             {
                 _logger.Error($"T7 Timeout: {T7 / 1000} sec.");
@@ -166,11 +167,14 @@ namespace Secs4Net
                 if (State == ConnectionState.Selected)
                     SendControlMessage(MessageType.LinkTestRequest, NewSystemId);
             }, null, Timeout.Infinite, Timeout.Infinite);
-            #endregion
+
+            _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
+            _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
+
             var receiveCompleteEvent = new SocketAsyncEventArgs();
             receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
             receiveCompleteEvent.Completed += ReceiveEventCompleted;
-            if (_isActive)
+            if (IsActive)
             {
                 _startImpl = async () =>
                 {
@@ -185,7 +189,7 @@ namespace Secs4Net
                             if (IsDisposed)
                                 return;
                             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                            await _socket.ConnectAsync(_ip, _port).ConfigureAwait(false);
+                            await _socket.ConnectAsync(IPAddress, Port).ConfigureAwait(false);
                             connected = true;
                         }
                         catch (Exception ex)
@@ -212,7 +216,7 @@ namespace Secs4Net
             else
             {
                 var server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                server.Bind(new IPEndPoint(_ip, _port));
+                server.Bind(new IPEndPoint(IPAddress, Port));
                 server.Listen(0);
 
                 _startImpl = async () =>
@@ -252,9 +256,6 @@ namespace Secs4Net
                     }
                 };
             }
-
-            _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
-            _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
         }
 
         void ReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
@@ -262,7 +263,7 @@ namespace Secs4Net
             if (e.SocketError != SocketError.Success)
             {
                 var ex = new SocketException((int)e.SocketError);
-                _logger.Error($"RecieveComplete socket error:{ex.Message + ex}, ErrorCode:{ex.SocketErrorCode}", ex);
+                _logger.Error($"RecieveComplete socket error:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
                 CommunicationStateChanging(ConnectionState.Retry);
                 return;
             }
@@ -286,11 +287,11 @@ namespace Secs4Net
 #endif
                 }
 
-                if (_secsDecoder.Buffer.Length != _decoderBufferSize)
+                if (_secsDecoder.Buffer.Length != DecoderBufferSize)
                 {
                     // buffer size changed
                     e.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-                    _decoderBufferSize = _secsDecoder.Buffer.Length;
+                    DecoderBufferSize = _secsDecoder.Buffer.Length;
                 }
                 else
                 {
@@ -305,7 +306,7 @@ namespace Secs4Net
             }
             catch (NullReferenceException ex)
             {
-                _logger.Warning("unexpected NullReferenceException:" + ex);
+                _logger.Warning("unexpected NullReferenceException:" + ex.ToString());
             }
             catch (Exception ex)
             {
@@ -341,9 +342,7 @@ namespace Secs4Net
 
         void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
         {
-            var completeToken = e.UserToken as TaskCompletionSourceToken;
-            if (completeToken == null)
-                throw new InvalidOperationException("SocketAsyncEventArgs.UserToken is not TaskCompletionSourceToken.");
+            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
             if (e.SocketError != SocketError.Success)
             {
@@ -351,7 +350,7 @@ namespace Secs4Net
                 return;
             }
 
-            _logger.Info("Sent Control Message: " + completeToken.MsgType);
+            _logger.Info($"Sent Control Message: {completeToken.MsgType.GetName()}");
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
                 if (!completeToken.Task.Wait(T6))
@@ -375,11 +374,11 @@ namespace Secs4Net
                 }
                 else
                 {
-                    _logger.Warning("Received Unexpected Control Message: " + header.MessageType);
+                    _logger.Warning($"Received Unexpected Control Message: {header.MessageType.GetName()}");
                     return;
                 }
             }
-            _logger.Info("Receive Control message: " + header.MessageType);
+            _logger.Info($"Receive Control message: {header.MessageType.GetName()}");
             switch (header.MessageType)
             {
                 case MessageType.SelectRequest:
@@ -449,9 +448,7 @@ namespace Secs4Net
 
         void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
         {
-            var completeToken = e.UserToken as TaskCompletionSourceToken;
-            if (completeToken == null)
-                return;
+            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
             if (e.SocketError != SocketError.Success)
             {
@@ -494,7 +491,7 @@ namespace Secs4Net
                     return;
                 }
                 // Error message
-                var headerBytes = (byte[])msg.SecsItem.Values;
+                var headerBytes = Unsafe.As<byte[]>(msg.SecsItem.Values);
                 systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
             }
 
@@ -581,8 +578,8 @@ namespace Secs4Net
         /// <summary>
         /// remote device endpoint address
         /// </summary>
-        public string DeviceAddress => _isActive
-            ? _ip.ToString()
+        public string DeviceAddress => IsActive
+            ? IPAddress.ToString()
             : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
 
         sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>

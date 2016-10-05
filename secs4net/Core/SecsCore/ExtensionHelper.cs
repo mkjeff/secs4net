@@ -2,16 +2,54 @@
 using System.Text;
 using System.Runtime.CompilerServices;
 using static Secs4Net.Item;
+using System.Buffers;
 
 namespace Secs4Net
 {
     public static class SecsExtension
     {
+        internal static string GetName(this MessageType msgType)
+        {
+            switch (msgType)
+            {
+                case MessageType.DataMessage: return nameof(MessageType.DataMessage);
+                case MessageType.LinkTestRequest:return nameof(MessageType.LinkTestRequest);
+                case MessageType.LinkTestResponse:return nameof(MessageType.LinkTestResponse);
+                case MessageType.SelectRequest: return nameof(MessageType.SelectRequest);
+                case MessageType.SelectResponse: return nameof(MessageType.SelectResponse);
+                case MessageType.SeperateRequest:return nameof(MessageType.SeperateRequest);
+                default:return string.Empty;
+            }
+        }
+
+        public static string GetName(this SecsFormat format)
+        {
+            switch (format)
+            {
+                case SecsFormat.List: return nameof(SecsFormat.List);
+                case SecsFormat.ASCII: return nameof(SecsFormat.ASCII);
+                case SecsFormat.JIS8: return nameof(SecsFormat.JIS8);
+                case SecsFormat.Boolean: return nameof(SecsFormat.Boolean);
+                case SecsFormat.Binary: return nameof(SecsFormat.Binary);
+                case SecsFormat.U1: return nameof(SecsFormat.U1);
+                case SecsFormat.U2: return nameof(SecsFormat.U2);
+                case SecsFormat.U4: return nameof(SecsFormat.U4);
+                case SecsFormat.U8: return nameof(SecsFormat.U8);
+                case SecsFormat.I1: return nameof(SecsFormat.I1);
+                case SecsFormat.I2: return nameof(SecsFormat.I2);
+                case SecsFormat.I4: return nameof(SecsFormat.I4);
+                case SecsFormat.I8: return nameof(SecsFormat.I8);
+                case SecsFormat.F4: return nameof(SecsFormat.F4);
+                case SecsFormat.F8: return nameof(SecsFormat.F8);
+                default: return string.Empty;
+            }
+        }
+
         public static string ToHexString(this byte[] value)
         {
             if (value.Length == 0) return string.Empty;
             int length = value.Length * 3;
-            char[] chs = new char[length];
+            char[] chs = ArrayPool<char>.Shared.Rent(length);
             for (int ci = 0, i = 0; ci < length; ci += 3)
             {
                 byte num = value[i++];
@@ -19,7 +57,9 @@ namespace Secs4Net
                 chs[ci + 1] = GetHexValue(num % 0x10);
                 chs[ci + 2] = ' ';
             }
-            return new string(chs, 0, length - 1);
+            var result= new string(chs, 0, length - 1);
+            ArrayPool<char>.Shared.Return(chs);
+            return result;
         }
 
         static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
@@ -51,7 +91,7 @@ namespace Secs4Net
                 case SecsFormat.F4: return F4();
                 case SecsFormat.F8: return F8();
             }
-            throw new ArgumentException(@"Invalid format:" + format, nameof(format));
+            throw new ArgumentException($"Invalid format: {format.GetName()}", nameof(format));
         }
 
         internal static Item BytesDecode(this SecsFormat format, byte[] data, ref int index, ref int length)
@@ -73,7 +113,7 @@ namespace Secs4Net
                 case SecsFormat.F4: return F4(Decode<float>(data, ref index, ref length));
                 case SecsFormat.F8: return F8(Decode<double>(data, ref index, ref length));
             }
-            throw new ArgumentException(@"Invalid format", nameof(format));
+            throw new ArgumentException("Invalid format", nameof(format));
         }
 
         static T[] Decode<T>(byte[] data, ref int index, ref int length) where T : struct

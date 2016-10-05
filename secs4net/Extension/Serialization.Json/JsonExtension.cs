@@ -56,7 +56,7 @@ namespace Secs4Net.Json
             writer.WriteStartObject();
 
             writer.WritePropertyName(nameof(item.Format));
-            writer.WriteValue(Enum.GetName(typeof(SecsFormat), item.Format));
+            writer.WriteValue(item.Format.GetName());
             if (item.Format == SecsFormat.List)
             {
                 writer.WritePropertyName(nameof(item.Items));

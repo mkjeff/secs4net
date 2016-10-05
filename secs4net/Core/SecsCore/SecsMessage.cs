@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -108,10 +109,11 @@ namespace Secs4Net
             var lengthBits = (byte)(bytes[index] & 3);
             index++;
 
-            var itemLengthBytes = new byte[4];
+            var itemLengthBytes = ArrayPool<byte>.Shared.Rent(4);
             Array.Copy(bytes, index, itemLengthBytes, 0, lengthBits);
             Array.Reverse(itemLengthBytes, 0, lengthBits);
             int length = BitConverter.ToInt32(itemLengthBytes, 0);  // max to 3 byte length
+            ArrayPool<byte>.Shared.Return(itemLengthBytes);
             index += lengthBits;
 
             if (format == SecsFormat.List)

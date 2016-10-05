@@ -55,7 +55,7 @@ namespace SecsDevice
 
         private void PrimaryMessageReceived(object sender, PrimaryMessageWrapper e)
         {
-            this.Invoke(new MethodInvoker(() => recvBuffer.Add(e)));
+            this.Invoke(new Action<PrimaryMessageWrapper>(evt => recvBuffer.Add(evt)), e);
         }
 
         private void btnDisable_Click(object sender, EventArgs e)

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Secs4Net
@@ -20,7 +21,7 @@ namespace Secs4Net
 
         static void ConnectCompleted(object sender, SocketAsyncEventArgs e)
         {
-            var tcs2 = e.UserToken as TaskCompletionSource<bool>;
+            var tcs2 = Unsafe.As<TaskCompletionSource<bool>>(e.UserToken);
             if (e.SocketError == SocketError.Success)
             {
                 tcs2.SetResult(e.ConnectSocket != null);
@@ -43,7 +44,7 @@ namespace Secs4Net
 
         static void AcceptCompleted(object sender, SocketAsyncEventArgs e)
         {
-            var tcs2 = e.UserToken as TaskCompletionSource<Socket>;
+            var tcs2 = Unsafe.As<TaskCompletionSource<Socket>>(e.UserToken);
             if (e.AcceptSocket != null && e.SocketError == SocketError.Success)
             {
                 tcs2.SetResult(e.AcceptSocket);
