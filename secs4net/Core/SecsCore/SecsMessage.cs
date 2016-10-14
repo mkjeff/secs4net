@@ -37,9 +37,7 @@ namespace Secs4Net
 
         public string Name { get; set; }
 
-        internal readonly Lazy<List<ArraySegment<byte>>> RawDatas;
-
-        public IReadOnlyList<ArraySegment<byte>> RawBytes => RawDatas.Value.AsReadOnly();
+        public IReadOnlyList<ArraySegment<byte>> RawBytes => GetRawDatas(false).AsReadOnly();
 
         static readonly List<ArraySegment<byte>> emptyMsgDatas =
             new List<ArraySegment<byte>>
@@ -66,25 +64,6 @@ namespace Secs4Net
             Name = name;
             ReplyExpected = replyExpected;
             SecsItem = item;
-            RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
-            {
-                if (SecsItem == null)
-                    return emptyMsgDatas;
-
-                var result = new List<ArraySegment<byte>> {
-                    default(ArraySegment<byte>),    // total length
-                    new ArraySegment<byte>(Array.Empty<byte>())     // header
-                    // item
-                };
-
-                uint length = 10 + SecsItem.EncodeTo(result); // total length = item + header
-
-                byte[] msgLengthByte = BitConverter.GetBytes(length);
-                Array.Reverse(msgLengthByte);
-                result[0] = new ArraySegment<byte>(msgLengthByte);
-
-                return result;
-            });
         }
 
         /// <summary>
@@ -129,6 +108,36 @@ namespace Secs4Net
             var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, ref index, ref length);
             index += length;
             return item;
+        }
+
+        internal List<ArraySegment<byte>> GetRawDatas(bool usePooled)
+        {
+            if (SecsItem == null)
+                return emptyMsgDatas;
+
+            var result = new List<ArraySegment<byte>> {
+                    default(ArraySegment<byte>),    // total length
+                    new ArraySegment<byte>(Array.Empty<byte>())     // header
+                    // item
+                };
+
+            uint length = 10 + SecsItem.EncodeTo(result, usePooled); // total length = item + header
+
+            var msgLengthByte = GetBytes(length, usePooled);
+            Array.Reverse(msgLengthByte.Array);
+            result[0] = msgLengthByte;
+
+            return result;
+        }
+
+        static unsafe ArraySegment<byte> GetBytes(uint value, bool usePooled)
+        {
+            byte[] array = usePooled? ArrayPool<byte>.Shared.Rent(4): new byte[4];
+            fixed (byte* ptr = array)
+            {
+                *(uint*)ptr = value;
+            }
+            return new ArraySegment<byte>(array, 0, 4);
         }
 
         #region ISerializable Members

@@ -99,10 +99,10 @@ namespace Secs4Net.LinqPad.Deriver
                     };
 
                 case SecsFormat.ASCII:
-                    return CreateExplorerItem(item.GetValue<string>(), "A", item.Count);
+                    return CreateExplorerItem(item.GetString(), "A", item.Count);
 
                 case SecsFormat.JIS8:
-                    return CreateExplorerItem(item.GetValue<string>(), "J", item.Count);
+                    return CreateExplorerItem(item.GetString(), "J", item.Count);
                 default:
                     return CreateExplorerItem(item);
             }

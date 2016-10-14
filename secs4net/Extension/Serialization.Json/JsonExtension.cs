@@ -71,7 +71,7 @@ namespace Secs4Net.Json
 
                 if (item.Format == SecsFormat.ASCII || item.Format == SecsFormat.JIS8)
                 {
-                    writer.WriteValue(item.GetValue<string>());
+                    writer.WriteValue(item.GetString());
                 }
                 else
                 {

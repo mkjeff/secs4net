@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Buffers;
+using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
@@ -12,15 +14,13 @@ namespace Secs4Net
                 Unsafe.CopyBlock(ptr, Unsafe.AsPointer(ref data[startIndex]), 10);
         }
 
-        internal byte[] Bytes
+        internal ArraySegment<byte> GetBytes(bool usePooled)
         {
-            get
-            {
-                var result = new byte[10];
-                fixed (byte* ptr = _bytes)
-                    Unsafe.CopyBlock(Unsafe.AsPointer(ref result[0]), ptr, 10);
-                return result;
-            }
+
+            var result = usePooled ? ArrayPool<byte>.Shared.Rent(10) : new byte[10];
+            fixed (byte* ptr = _bytes)
+                Unsafe.CopyBlock(Unsafe.AsPointer(ref result[0]), ptr, 10);
+            return new ArraySegment<byte>(result, 0, 10);
         }
 
         public ushort DeviceId

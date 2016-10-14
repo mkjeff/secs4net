@@ -52,11 +52,11 @@ namespace Secs4Net.Sml
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
                     writer.Write('\'');
-                    writer.Write(item.GetValue<string>());
+                    writer.Write(item.GetString());
                     writer.Write('\'');
                     break;
                 case SecsFormat.Binary:
-                    writer.Write(item.GetValue<byte[]>().ToHexString());
+                    writer.Write(item.GetValues<byte>().ToHexString());
                     break;
                 case SecsFormat.F4:
                     writer.Write(string.Join(" ", item.Values.Cast<float>()));

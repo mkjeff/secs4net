@@ -5,7 +5,7 @@ namespace Cim.Eap {
     partial class Driver {
         void EQP_WaferProcessData_LLH_LHC(SecsMessage msg) {
             Item tempList = msg.SecsItem.Items[2].Items[0].Items[1].Items[0];
-            string pjID = tempList.Items[1].GetValue<string>();
+            string pjID = tempList.Items[1].GetString();
             byte slotNo = (byte)tempList.Items[4].Items[0].Items[1];
 
             tempList = tempList.Items[4].Items[0].Items[2].Items[0];
@@ -27,11 +27,11 @@ namespace Cim.Eap {
 
         void EQP_WaferProcessData_PVD(SecsMessage msg) {
             Item tempList = msg.SecsItem.Items[2].Items[0].Items[1].Items[0];
-            string pjID = tempList.Items[1].GetValue<string>();
+            string pjID = tempList.Items[1].GetString();
             byte slotNo = (byte)tempList.Items[4].Items[0].Items[1];
 
             tempList = tempList.Items[4].Items[0].Items[2].Items[0];
-            string chamber = tempList.Items[0].Items[1].GetValue<string>();
+            string chamber = tempList.Items[0].Items[1].GetString();
 
             var dc = new DataCollectionReport(GetProcessJob(pjID));
             try {

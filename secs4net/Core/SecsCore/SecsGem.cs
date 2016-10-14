@@ -117,6 +117,7 @@ namespace Secs4Net
 
         readonly Func<Task> _startImpl;
         readonly Action _stopImpl;
+        readonly bool _usePooled;
 
         static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
@@ -135,7 +136,7 @@ namespace Secs4Net
         /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
         /// <param name="port">if active mode it should be remote deivice listener's port</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
+        public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000, bool pooled = false)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
@@ -143,6 +144,7 @@ namespace Secs4Net
             if (port <= 0)
                 throw new ArgumentOutOfRangeException(nameof(port), port, $"port number must greater than 0");
 
+            _usePooled = pooled;
             IPAddress = ip;
             Port = port;
             IsActive = isActive;
@@ -327,11 +329,11 @@ namespace Secs4Net
             {
                 BufferList = new List<ArraySegment<byte>>(2) {
                     ControlMessageLengthBytes,
-                    new ArraySegment<byte>(new MessageHeader{
+                    new MessageHeader{
                         DeviceId = 0xFFFF,
                         MessageType = msgType,
                         SystemBytes = systembyte
-                    }.Bytes)
+                    }.GetBytes(_usePooled)
                 },
                 UserToken = token,
             };
@@ -342,6 +344,12 @@ namespace Secs4Net
 
         void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
         {
+            if (_usePooled)
+            {
+                foreach (var b in e.BufferList)
+                    ArrayPool<byte>.Shared.Return(b.Array);
+            }
+
             var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
             if (e.SocketError != SocketError.Success)
@@ -432,8 +440,8 @@ namespace Secs4Net
                 SystemBytes = systembyte
             };
 
-            var bufferList = msg.RawDatas.Value;
-            bufferList[1] = new ArraySegment<byte>(header.Bytes);
+            var bufferList = msg.GetRawDatas(_usePooled);
+            bufferList[1] = header.GetBytes(_usePooled);
             var eap = new SocketAsyncEventArgs
             {
                 BufferList = bufferList,
@@ -448,6 +456,12 @@ namespace Secs4Net
 
         void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
         {
+            if (_usePooled)
+            {
+                foreach (var b in e.BufferList)
+                    ArrayPool<byte>.Shared.Return(b.Array);
+            }
+
             var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
             if (e.SocketError != SocketError.Success)
@@ -477,7 +491,7 @@ namespace Secs4Net
             {
                 _logger.MessageIn(msg, systembyte);
                 _logger.Warning("Received Unrecognized Device Id Message");
-                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.Bytes)), NewSystemId);
+                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.GetBytes(false))), NewSystemId);
                 return;
             }
 
@@ -544,7 +558,7 @@ namespace Secs4Net
 
                 _socket.Dispose();
                 _socket = null;
-            }          
+            }
         }
         public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
 

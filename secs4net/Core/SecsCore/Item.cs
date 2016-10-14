@@ -12,47 +12,30 @@ namespace Secs4Net
 {
     public abstract class Item
     {
-        protected abstract ArraySegment<byte> EncodedData { get; }
-
-        protected readonly IEnumerable _values;
-
-        protected Item(SecsFormat format, IEnumerable value)
+        protected abstract ArraySegment<byte> GetEncodedData(bool usePooled = false);
+        protected Item(SecsFormat format)
         {
             Format = format;
-            _values = value;
         }
 
         public SecsFormat Format { get; }
-
-        public int Count =>
-            Format == SecsFormat.List
-            ? Unsafe.As<IReadOnlyList<Item>>(_values).Count
-            : Unsafe.As<Array>(_values).Length;
-
-        public IReadOnlyList<byte> RawBytes => EncodedData.ToArray();
+        public abstract int Count { get; }
+        public IReadOnlyList<byte> RawBytes => GetEncodedData().ToArray();
 
         /// <summary>
         /// Non-list item values
         /// </summary>
-        public IEnumerable Values
+        public virtual IEnumerable Values
         {
-            get
-            {
-                if (Format == SecsFormat.List) throw new InvalidOperationException("Item is a list");
-                return _values;
-            }
+            get { throw new NotSupportedException("This is not a value Item"); }
         }
 
         /// <summary>
         /// List items
         /// </summary>
-        public IReadOnlyList<Item> Items
+        public virtual IReadOnlyList<Item> Items
         {
-            get
-            {
-                if (Format != SecsFormat.List) throw new InvalidOperationException("Item is not a list");
-                return Unsafe.As<IReadOnlyList<Item>>(_values);
-            }
+            get { throw new NotSupportedException("This is not a list Item"); }
         }
 
         /// <summary>
@@ -60,51 +43,23 @@ namespace Secs4Net
         /// </summary>
         /// <typeparam name="T">return value type</typeparam>
         /// <returns></returns>
-        public T GetValue<T>()
+        public virtual T GetValue<T>() where T : struct
         {
-            if (Format == SecsFormat.List)
-                throw new InvalidOperationException("Item is list");
-
-            if (_values is T)
-                return (T)_values;
-
-            if (_values is IEnumerable<T>)
-                return ((IEnumerable<T>)_values).First();
-
-            throw new InvalidOperationException("Item value type is incompatible");
+            throw new NotSupportedException("This is not a value Item");
+        }
+        public virtual T[] GetValues<T>() where T : struct
+        {
+            throw new NotSupportedException("This is not a value Item");
+        }
+        public virtual string GetString()
+        {
+            throw new NotSupportedException("This is not a string value Item");
         }
 
-        public bool IsMatch(Item target)
-        {
-            if (Format != target.Format) return false;
-            if (target.Count == 0) return true;
-            if (Count != target.Count) return false;
-
-            switch (target.Format)
-            {
-                case SecsFormat.List:
-                    return IsMatch(Items, target.Items);
-                case SecsFormat.ASCII:
-                case SecsFormat.JIS8:
-                    return (string)_values == (string)target._values;
-                default:
-                    //return memcmp(Unsafe.As<byte[]>(_values), Unsafe.As<byte[]>(target._values), Buffer.ByteLength((Array)_values)) == 0;
-                    return UnsafeCompare((Array)_values, (Array)target._values);
-            }
-        }
-
-        static bool IsMatch(IReadOnlyList<Item> a, IReadOnlyList<Item> b)
-        {
-            for (int i = 0; i < a.Count; i++)
-                if (!a[i].IsMatch(b[i]))
-                    return false;
-            return true;
-        }
-
-        protected static string JoinAsString<T>(IEnumerable src) where T : struct => string.Join(" ", Unsafe.As<T[]>(src));
+        public abstract bool IsMatch(Item target);
 
         #region Type Casting Operator
-        public static implicit operator string(Item item) => item.GetValue<string>();
+        public static implicit operator string(Item item) => item.GetString();
         public static implicit operator byte(Item item) => item.GetValue<byte>();
         public static implicit operator sbyte(Item item) => item.GetValue<sbyte>();
         public static implicit operator ushort(Item item) => item.GetValue<ushort>();
@@ -214,29 +169,118 @@ namespace Secs4Net
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
         #endregion
 
-        public static T[] ToArray<T>(T value) where T : struct
+        /// <summary>
+        /// Encode item to raw data buffer
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        internal uint EncodeTo(List<ArraySegment<byte>> buffer, bool usePooled = false)
         {
-            var arr = ArrayPool<T>.Shared.Rent(1);
-            arr[0] = value;
-            return arr;
+            var bytes = GetEncodedData(usePooled);
+            uint length = unchecked((uint)bytes.Count);
+            buffer.Add(bytes);
+            if (Format == SecsFormat.List)
+                foreach (var subItem in Items)
+                    length += subItem.EncodeTo(buffer);
+            return length;
         }
 
-        public static T[] ToArray<T>(T value0, T value1) where T : struct
+        /// <summary>
+        /// Encode Item header + value (initial array only)
+        /// </summary>
+        /// <param name="valueCount">Item value bytes length</param>
+        /// <param name="headerlength">return header bytes length</param>
+        /// <returns>header bytes + initial bytes of value </returns>
+        protected static unsafe byte[] EncodeItem(bool usePooled, SecsFormat format, int valueCount, out int headerlength)
         {
-            var arr = ArrayPool<T>.Shared.Rent(2);
-            arr[0] = value0;
-            arr[1] = value1;
-            return arr;
+            var ptr = (byte*)Unsafe.AsPointer(ref valueCount);
+            if (valueCount <= 0xff)
+            {//	1 byte
+                headerlength = 2;
+                var result = usePooled ? ArrayPool<byte>.Shared.Rent(valueCount + 2) : new byte[valueCount + 2];
+                result[0] = (byte)((byte)format | 1);
+                result[1] = ptr[0];
+                return result;
+            }
+            if (valueCount <= 0xffff)
+            {//	2 byte
+                headerlength = 3;
+                var result = usePooled ? ArrayPool<byte>.Shared.Rent(valueCount + 3) : new byte[valueCount + 3];
+                result[0] = (byte)((byte)format | 2);
+                result[1] = ptr[1];
+                result[2] = ptr[0];
+                return result;
+            }
+            if (valueCount <= 0xffffff)
+            {//	3 byte
+                headerlength = 4;
+                var result = usePooled ? ArrayPool<byte>.Shared.Rent(valueCount + 4) : new byte[valueCount + 4];
+                result[0] = (byte)((byte)format | 3);
+                result[1] = ptr[2];
+                result[2] = ptr[1];
+                result[3] = ptr[0];
+                return result;
+            }
+            throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $"Item data length({valueCount}) is overflow");
         }
 
-        public static T[] ToArray<T>(T value0, T value1, T value2) where T : struct
+        protected static ArraySegment<byte> EmptyEncodedData(SecsFormat format, bool usePooled)
         {
-            var arr = ArrayPool<T>.Shared.Rent(3);
-            arr[0] = value0;
-            arr[1] = value1;
-            arr[2] = value2;
-            return arr;
+            var arr = usePooled ? ArrayPool<byte>.Shared.Rent(2) : new byte[2];
+            arr[0] = (byte)((byte)format | 1);
+            arr[1] = 0;
+            return new ArraySegment<byte>(arr, 0, 2);
         }
+    }
+
+    sealed class Item<TValue> : Item where TValue : struct
+    {
+        protected override ArraySegment<byte> GetEncodedData(bool usePooled)
+        {
+            var arr = _values;
+            if (arr.Length == 0)
+                return EmptyEncodedData(Format, usePooled);
+
+            int bytelength = Buffer.ByteLength(arr);
+            int headerLength;
+            byte[] result = EncodeItem(usePooled, Format, bytelength, out headerLength);
+            Buffer.BlockCopy(arr, 0, result, headerLength, bytelength);
+            result.Reverse(headerLength, headerLength + bytelength, bytelength / arr.Length);
+            return new ArraySegment<byte>(result, 0, headerLength + bytelength);
+        }
+        readonly TValue[] _values;
+        internal Item(SecsFormat format, TValue[] value) : base(format)
+        {
+            _values = value;
+        }
+
+        public override int Count => _values.Length;
+
+        public override IEnumerable Values => _values;
+
+        public unsafe override T GetValue<T>()
+        {
+            if (typeof(TValue) == typeof(T))
+                return Unsafe.Read<T>(Unsafe.AsPointer(ref _values[0]));
+            throw new InvalidOperationException("Item value type is incompatible");
+        }
+
+        public override T[] GetValues<T>() => Unsafe.As<T[]>(_values);
+
+        public override bool IsMatch(Item target)
+        {
+            if (Format != target.Format) return false;
+            if (target.Count == 0) return true;
+            if (Count != target.Count) return false;
+
+            //return memcmp(Unsafe.As<byte[]>(_values), Unsafe.As<byte[]>(target._values), Buffer.ByteLength((Array)_values)) == 0;
+            return UnsafeCompare(_values, Unsafe.As<Item<TValue>>(target)._values);
+        }
+
+        public override string ToString()
+            => $"<{Format.GetName()} [{_values.Length}] {(Format == SecsFormat.Binary ? Unsafe.As<byte[]>(_values).ToHexString() : JoinAsString<TValue>(_values))} >";
+
+        static string JoinAsString<T>(IEnumerable src) where T : struct => string.Join(" ", Unsafe.As<T[]>(src));
 
         //[DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
         //static extern int memcmp(byte[] b1, byte[] b2, long count);
@@ -244,9 +288,6 @@ namespace Secs4Net
         /// <summary>
         /// http://stackoverflow.com/questions/43289/comparing-two-byte-arrays-in-net/8808245#8808245
         /// </summary>
-        /// <param name="a1"></param>
-        /// <param name="a2"></param>
-        /// <returns></returns>
         static unsafe bool UnsafeCompare(Array a1, Array a2)
         {
             int length = Buffer.ByteLength(a2);
@@ -262,169 +303,83 @@ namespace Secs4Net
                 return true;
             }
         }
-
-        /// <summary>
-        /// Encode item to raw data buffer
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
-        internal uint EncodeTo(List<ArraySegment<byte>> buffer)
-        {
-            var bytes = EncodedData;
-            uint length = unchecked((uint)bytes.Count);
-            buffer.Add(bytes);
-            if (Format == SecsFormat.List)
-                foreach (var subItem in Items)
-                    length += subItem.EncodeTo(buffer);
-            return length;
-        }
-
-        /// <summary>
-        /// Encode Item header + value (initial array only)
-        /// </summary>
-        /// <param name="valueCount">Item value bytes length</param>
-        /// <param name="headerlength">return header bytes length</param>
-        /// <returns>header bytes + initial bytes of value </returns>
-        protected static unsafe byte[] EncodeItem(SecsFormat format, int valueCount, out int headerlength)
-        {
-            var ptr = (byte*)Unsafe.AsPointer(ref valueCount);
-            if (valueCount <= 0xff)
-            {//	1 byte
-                headerlength = 2;
-                var result = ArrayPool<byte>.Shared.Rent(valueCount + 2);
-                result[0] = (byte)((byte)format | 1);
-                result[1] = ptr[0];
-                return result;
-            }
-            if (valueCount <= 0xffff)
-            {//	2 byte
-                headerlength = 3;
-                var result = ArrayPool<byte>.Shared.Rent(valueCount + 3);
-                result[0] = (byte)((byte)format | 2);
-                result[1] = ptr[1];
-                result[2] = ptr[0];
-                return result;
-            }
-            if (valueCount <= 0xffffff)
-            {//	3 byte
-                headerlength = 4;
-                var result = ArrayPool<byte>.Shared.Rent(valueCount + 4);
-                result[0] = (byte)((byte)format | 3);
-                result[1] = ptr[2];
-                result[2] = ptr[1];
-                result[3] = ptr[0];
-                return result;
-            }
-            throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $"Item data length({valueCount}) is overflow");
-        }
-
-        protected static ArraySegment< byte> EmptyEncodedData(SecsFormat format)
-        {
-            var arr = ArrayPool<byte>.Shared.Rent(2);
-            arr[0] = (byte)((byte)format | 1);
-            arr[1] = 0;
-            return new ArraySegment<byte>(arr, 0, 2);
-        }
-    }
-
-    sealed class Item<T> : Item where T : struct
-    {
-        protected override ArraySegment< byte> EncodedData => _encodedData.Value;
-        readonly Lazy<ArraySegment<byte>> _encodedData;
-        internal Item(SecsFormat format, T[] value) : base(format, value)
-        {
-            _encodedData = new Lazy<ArraySegment<byte>>(() =>
-            {
-                var arr = (Array)_values;
-                if (arr.Length == 0)
-                    return EmptyEncodedData(Format);
-
-                int bytelength = Buffer.ByteLength(arr);
-                int headerLength;
-                byte[] result = EncodeItem(Format, bytelength, out headerLength);
-                Buffer.BlockCopy(arr, 0, result, headerLength, bytelength);
-                result.Reverse(headerLength, headerLength + bytelength, bytelength / arr.Length);
-                return new ArraySegment<byte>( result,0, headerLength+ bytelength);
-            });
-        }
-
-        ~Item()
-        {
-            //ArrayPool<T>.Shared.Return((T[])_values);
-            if (_encodedData.IsValueCreated)
-                ArrayPool<byte>.Shared.Return(_encodedData.Value.Array);
-        }
-
-        public override string ToString()
-            => new StringBuilder("<").Append(Format.GetName()).Append(" [").Append(((T[])_values).Length).Append("] ")
-                .Append(Format == SecsFormat.Binary
-                    ? Unsafe.As<byte[]>(_values).ToHexString()
-                    : JoinAsString<T>(_values))
-                .Append('>')
-                .ToString();
     }
 
     sealed class StringItem : Item
     {
-        readonly Lazy<ArraySegment<byte>> _encodedData;
+        readonly string _values;
 
-        protected override ArraySegment<byte> EncodedData => _encodedData.Value;
-
-        internal StringItem(SecsFormat format, string value) : base(format, value)
+        internal StringItem(SecsFormat format, string value) : base(format)
         {
-            _encodedData = new Lazy<ArraySegment< byte>>(() =>
-            {
-                var str = (string)_values;
-                if (str.Length == 0)
-                    return EmptyEncodedData(Format);
-
-                int bytelength = str.Length;
-                int headerLength;
-                byte[] result = EncodeItem(Format, bytelength, out headerLength);
-                var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : JIS8Encoding;
-                encoder.GetBytes(str, 0, str.Length, result, headerLength);
-                return new ArraySegment<byte>(result, 0, headerLength + bytelength);
-            });
+            _values = value;
         }
 
-        ~StringItem()
+        protected override ArraySegment<byte> GetEncodedData(bool usePooled)
         {
-            if (_encodedData.IsValueCreated)
-                ArrayPool<byte>.Shared.Return(_encodedData.Value.Array);
+            var str = _values;
+            if (str.Length == 0)
+                return EmptyEncodedData(Format, usePooled);
+
+            int bytelength = str.Length;
+            int headerLength;
+            byte[] result = EncodeItem(usePooled, Format, bytelength, out headerLength);
+            var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : JIS8Encoding;
+            encoder.GetBytes(str, 0, str.Length, result, headerLength);
+            return new ArraySegment<byte>(result, 0, headerLength + bytelength);
+        }
+        public override int Count => _values.Length;
+        public override IEnumerable Values => _values;
+        public override string GetString() => _values;
+
+        public override bool IsMatch(Item target)
+        {
+            if (Format != target.Format) return false;
+            if (target.Count == 0) return true;
+            if (Count != target.Count) return false;
+
+            return _values == ((StringItem)target)._values;
         }
 
         public override string ToString()
-            => new StringBuilder("<").Append(Format == SecsFormat.ASCII ? "A" : "J").Append(" [")
-                .Append(Unsafe.As<string>(_values).Length).Append("] ").Append(Unsafe.As<string>(_values)).Append('>')
-                .ToString();
+            => $"<{(Format == SecsFormat.ASCII ? "A" : "J")} [{_values.Length}] {_values} >";
     }
 
     sealed class ListItem : Item
     {
-        protected override ArraySegment< byte> EncodedData => _encodedData.Value;
-        readonly Lazy< ArraySegment<byte>> _encodedData;
-        internal ListItem(IReadOnlyList<Item> items) : base(SecsFormat.List, items)
+        readonly IReadOnlyList<Item> _values;
+        readonly Lazy<ArraySegment<byte>> _encodedData;
+        internal ListItem(IReadOnlyList<Item> items) : base(SecsFormat.List)
         {
             Debug.Assert(items.Count <= byte.MaxValue, $"List length out of range, max length: 255");
-
-            _encodedData = new Lazy<ArraySegment<byte>>(() =>
-            {
-                var arr = ArrayPool<byte>.Shared.Rent(2);
-                arr[0] = (byte)SecsFormat.List | 1;
-                arr[1] = unchecked((byte)items.Count);
-                return new ArraySegment<byte>(arr, 0, 2);
-            });
+            _values = items;
         }
 
-        ~ListItem()
+        protected override ArraySegment<byte> GetEncodedData(bool usePooled)
         {
-            if (_encodedData.IsValueCreated)
-                ArrayPool<byte>.Shared.Return(_encodedData.Value.Array);
+            var arr = usePooled ? ArrayPool<byte>.Shared.Rent(2) : new byte[2];
+            arr[0] = (byte)SecsFormat.List | 1;
+            arr[1] = unchecked((byte)_values.Count);
+            return new ArraySegment<byte>(arr, 0, 2);
+        }
+        public override int Count => _values.Count;
+        public override IReadOnlyList<Item> Items => _values;
+        public override string ToString() => $"<List [{_values.Count}] >";
+
+        public override bool IsMatch(Item target)
+        {
+            if (Format != target.Format) return false;
+            if (target.Count == 0) return true;
+            if (Count != target.Count) return false;
+
+            return IsMatch(Items, target.Items);
         }
 
-        public override string ToString() =>
-            new StringBuilder("<").Append(nameof(SecsFormat.List)).Append(" [")
-                .Append(Unsafe.As<IReadOnlyList<Item>>(_values).Count).Append("] >")
-                .ToString();
+        static bool IsMatch(IReadOnlyList<Item> a, IReadOnlyList<Item> b)
+        {
+            for (int i = 0; i < a.Count; i++)
+                if (!a[i].IsMatch(b[i]))
+                    return false;
+            return true;
+        }
     }
 }

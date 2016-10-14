@@ -5,7 +5,7 @@ namespace Cim.Eap {
     partial class Driver {
         void EQP_DataCollection(SecsMessage msg) {
             Item dataList = msg.SecsItem.Items[2].Items[0].Items[1];
-            string pjId = dataList.Items[0].GetValue<string>();
+            string pjId = dataList.Items[0].GetString();
             string carrier_slot_port = (string)dataList.Items[1];
             int i = carrier_slot_port.IndexOf('.');
             byte slotNo = Convert.ToByte(carrier_slot_port.Substring(i + 1, 2));

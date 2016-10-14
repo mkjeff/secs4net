@@ -13,7 +13,7 @@ try
     //access item value
     byte b1 = (byte)s3f18.SecsItem.Items[0]; 
     byte b2 = s3f18.SecsItem.Items[0].GetValue<byte>();
-    string str = s3f18.SecsItem.Items[0].GetValue<string>();
+    string str = s3f18.SecsItem.Items[0].GetString();
 
     // LINQ query
     var query =

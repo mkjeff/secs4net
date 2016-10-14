@@ -33,7 +33,7 @@ namespace Cim.Eap {
             var S3F24 = await EAP.SendAsync(S3F23);
             byte returnCode = (byte)S3F24.SecsItem.Items[0];
             if (returnCode != 0 && returnCode != 4)
-                throw new ScenarioException("Change Loadport[" + portNo + "] access mode fial. " + S3F24.SecsItem.Items[1].Items[1].GetValue<string>());
+                throw new ScenarioException("Change Loadport[" + portNo + "] access mode fial. " + S3F24.SecsItem.Items[1].Items[1].GetString());
         }
     }
 }

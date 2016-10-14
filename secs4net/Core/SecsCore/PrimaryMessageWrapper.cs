@@ -32,7 +32,7 @@ namespace Secs4Net
             if (!Message.ReplyExpected)
                 return true;
 
-            replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(_header.Bytes));
+            replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(_header.GetBytes(false)));
             replyMessage.ReplyExpected = false;
 
             _secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes);
