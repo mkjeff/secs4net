@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    static class SocketAsyncExtension
+    internal static class SocketAsyncExtension
     {
-        private static readonly Task<bool> _ConnectAsyncResultCache = Task.FromResult(true);
+        private static readonly Task<bool> ConnectAsyncResultCache = Task.FromResult(true);
 
         internal static Task<bool> ConnectAsync(this Socket socket, IPAddress target, int port)
         {
@@ -16,10 +16,10 @@ namespace Secs4Net
             ce.Completed += ConnectCompleted;
             if (socket.ConnectAsync(ce))
                 return tcs.Task;
-            return _ConnectAsyncResultCache;
+            return ConnectAsyncResultCache;
         }
 
-        static void ConnectCompleted(object sender, SocketAsyncEventArgs e)
+        private static void ConnectCompleted(object sender, SocketAsyncEventArgs e)
         {
             var tcs2 = Unsafe.As<TaskCompletionSource<bool>>(e.UserToken);
             if (e.SocketError == SocketError.Success)
@@ -42,7 +42,7 @@ namespace Secs4Net
             return Task.FromResult(ce.AcceptSocket);
         }
 
-        static void AcceptCompleted(object sender, SocketAsyncEventArgs e)
+        private static void AcceptCompleted(object sender, SocketAsyncEventArgs e)
         {
             var tcs2 = Unsafe.As<TaskCompletionSource<Socket>>(e.UserToken);
             if (e.AcceptSocket != null && e.SocketError == SocketError.Success)

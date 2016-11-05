@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -23,7 +24,7 @@ namespace Secs4Net
         /// </summary>
         public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived;
 
-        ISecsGemLogger _logger = DefaultLogger;
+        private ISecsGemLogger _logger = DefaultLogger;
         public ISecsGemLogger Logger
         {
             get { return _logger; }
@@ -65,7 +66,7 @@ namespace Secs4Net
         /// </summary>
         public int T8 { get; set; } = 5000;
 
-        int _linkTestInterval = 60000;
+        private int _linkTestInterval = 60000;
         /// <summary>
         /// Linking test timer interval
         /// </summary>
@@ -82,7 +83,7 @@ namespace Secs4Net
             }
         }
 
-        bool _linkTestEnable;
+        private bool _linkTestEnable;
         /// <summary>
         /// get or set linking test timer enable or not 
         /// </summary>
@@ -103,29 +104,30 @@ namespace Secs4Net
         }
 
         public bool IsActive { get; }
-        public IPAddress IPAddress { get; }
+        public IPAddress IpAddress { get; }
         public int Port { get; }
         public int DecoderBufferSize { get; private set; }
 
-        Socket _socket;
+        private Socket _socket;
 
-        readonly StreamDecoder _secsDecoder;
-        readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
-        readonly Timer _timer7;	// between socket connected and received Select.req timer
-        readonly Timer _timer8;
-        readonly Timer _timerLinkTest;
+        private readonly StreamDecoder _secsDecoder;
+        private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
+        private readonly Timer _timer7;	// between socket connected and received Select.req timer
+        private readonly Timer _timer8;
+        private readonly Timer _timerLinkTest;
 
-        readonly Func<Task> _startImpl;
-        readonly Action _stopImpl;
-        readonly bool _usePooled;
+        private readonly Func<Task> _startImpl;
+        private readonly Action _stopImpl;
 
-        static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
-        static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
-        static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
-        readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
+        private static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
+        private static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
+        static readonly Pool<IList<ArraySegment<byte>>> EncoderPool
+            = new Pool<IList<ArraySegment<byte>>>(1000, p => new List<ArraySegment<byte>>());
 
-        readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
-        readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
+        private readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
+
+        private readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
+        private readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
 
         internal int NewSystemId => _systemByte.New();
 
@@ -136,16 +138,15 @@ namespace Secs4Net
         /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
         /// <param name="port">if active mode it should be remote deivice listener's port</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000, bool pooled = false)
+        public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
 
             if (port <= 0)
-                throw new ArgumentOutOfRangeException(nameof(port), port, $"port number must greater than 0");
+                throw new ArgumentOutOfRangeException(nameof(port), port, Resources.SecsGemTcpPortMustGreaterThan0);
 
-            _usePooled = pooled;
-            IPAddress = ip;
+            IpAddress = ip;
             Port = port;
             IsActive = isActive;
             DecoderBufferSize = receiveBufferSize;
@@ -180,7 +181,7 @@ namespace Secs4Net
             {
                 _startImpl = async () =>
                 {
-                    bool connected = false;
+                    var connected = false;
                     do
                     {
                         if (IsDisposed)
@@ -191,7 +192,7 @@ namespace Secs4Net
                             if (IsDisposed)
                                 return;
                             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                            await _socket.ConnectAsync(IPAddress, Port).ConfigureAwait(false);
+                            await _socket.ConnectAsync(IpAddress, Port).ConfigureAwait(false);
                             connected = true;
                         }
                         catch (Exception ex)
@@ -218,7 +219,7 @@ namespace Secs4Net
             else
             {
                 var server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                server.Bind(new IPEndPoint(IPAddress, Port));
+                server.Bind(new IPEndPoint(IpAddress, Port));
                 server.Listen(0);
 
                 _startImpl = async () =>
@@ -260,7 +261,7 @@ namespace Secs4Net
             }
         }
 
-        void ReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
+        private void ReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
         {
             if (e.SocketError != SocketError.Success)
             {
@@ -317,24 +318,26 @@ namespace Secs4Net
             }
         }
 
-        void SendControlMessage(MessageType msgType, int systembyte)
+        private void SendControlMessage(MessageType msgType, int systembyte)
         {
             var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
             {
                 _replyExpectedMsgs[systembyte] = token;
             }
+            var bufferList = EncoderPool.Acquire();
+
+            bufferList.Add(GetEmptyDataMessageLengthBytes());
+            bufferList.Add(new MessageHeader(GetHeaderBytes())
+            {
+                DeviceId = 0xFFFF,
+                MessageType = msgType,
+                SystemBytes = systembyte
+            });
 
             var eap = new SocketAsyncEventArgs
             {
-                BufferList = new List<ArraySegment<byte>>(2) {
-                    ControlMessageLengthBytes,
-                    new MessageHeader{
-                        DeviceId = 0xFFFF,
-                        MessageType = msgType,
-                        SystemBytes = systembyte
-                    }.GetBytes(_usePooled)
-                },
+                BufferList = bufferList,
                 UserToken = token,
             };
             eap.Completed += _sendControlMessageCompleteHandler;
@@ -342,14 +345,21 @@ namespace Secs4Net
                 SendControlMessageCompleteHandler(_socket, eap);
         }
 
-        void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
+        internal static ArraySegment<byte> GetEmptyDataMessageLengthBytes()
         {
-            if (_usePooled)
-            {
-                foreach (var b in e.BufferList)
-                    ArrayPool<byte>.Shared.Return(b.Array);
-            }
+            var lengthBytes = ArrayPool<byte>.Shared.Rent(4);
+            lengthBytes[0] = 0;
+            lengthBytes[1] = 0;
+            lengthBytes[2] = 0;
+            lengthBytes[3] = 10;
+            return new ArraySegment<byte>(lengthBytes, 0, 4);
+        }
 
+        internal static ArraySegment<byte> GetHeaderBytes() 
+            => new ArraySegment<byte>(ArrayPool<byte>.Shared.Rent(10), 0, 10);
+
+        private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
+        {
             var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
             if (e.SocketError != SocketError.Success)
@@ -357,6 +367,8 @@ namespace Secs4Net
                 completeToken.SetException(new SocketException((int)e.SocketError));
                 return;
             }
+
+            ReleaseEncoderBuffer(e.BufferList);
 
             _logger.Info($"Sent Control Message: {completeToken.MsgType.GetName()}");
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
@@ -370,7 +382,16 @@ namespace Secs4Net
             }
         }
 
-        void HandleControlMessage(MessageHeader header)
+        private static void ReleaseEncoderBuffer(IList<ArraySegment<byte>> e)
+        {
+            foreach (var b in e)
+                ArrayPool<byte>.Shared.Return(b.Array);
+
+            e.Clear();
+            EncoderPool.Release(e);
+        }
+
+        private void HandleControlMessage(MessageHeader header)
         {
             int systembyte = header.SystemBytes;
             if ((byte)header.MessageType % 2 == 0)
@@ -431,17 +452,18 @@ namespace Secs4Net
             if (msg.ReplyExpected)
                 _replyExpectedMsgs[systembyte] = token;
 
-            var header = new MessageHeader
-            {
-                S = msg.S,
-                F = msg.F,
-                ReplyExpected = msg.ReplyExpected,
-                DeviceId = DeviceId,
-                SystemBytes = systembyte
-            };
 
-            var bufferList = msg.GetRawDatas(_usePooled);
-            bufferList[1] = header.GetBytes(_usePooled);
+            var bufferList = EncoderPool.Acquire();
+            msg.EncodeTo(bufferList,
+                         new MessageHeader(GetHeaderBytes())
+                         {
+                             S = msg.S,
+                             F = msg.F,
+                             ReplyExpected = msg.ReplyExpected,
+                             DeviceId = DeviceId,
+                             SystemBytes = systembyte
+                         });
+
             var eap = new SocketAsyncEventArgs
             {
                 BufferList = bufferList,
@@ -454,13 +476,9 @@ namespace Secs4Net
             return token.Task;
         }
 
-        void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
+        private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
         {
-            if (_usePooled)
-            {
-                foreach (var b in e.BufferList)
-                    ArrayPool<byte>.Shared.Return(b.Array);
-            }
+            ReleaseEncoderBuffer(e.BufferList);
 
             var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
@@ -483,7 +501,7 @@ namespace Secs4Net
             }
         }
 
-        void HandleDataMessage(MessageHeader header, SecsMessage msg)
+        private void HandleDataMessage(MessageHeader header, SecsMessage msg)
         {
             int systembyte = header.SystemBytes;
 
@@ -491,7 +509,8 @@ namespace Secs4Net
             {
                 _logger.MessageIn(msg, systembyte);
                 _logger.Warning("Received Unrecognized Device Id Message");
-                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.GetBytes(false))), NewSystemId);
+                var headerBytes = ((ArraySegment<byte>) header).ToArray();
+                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(headerBytes)), NewSystemId);
                 return;
             }
 
@@ -516,7 +535,7 @@ namespace Secs4Net
                 ar.HandleReplyMessage(msg);
         }
 
-        void CommunicationStateChanging(ConnectionState newState)
+        private void CommunicationStateChanging(ConnectionState newState)
         {
             State = newState;
             ConnectionChanged?.Invoke(this, State);
@@ -542,7 +561,7 @@ namespace Secs4Net
             }
         }
 
-        void Reset()
+        private void Reset()
         {
             _timer7.Change(Timeout.Infinite, Timeout.Infinite);
             _timer8.Change(Timeout.Infinite, Timeout.Infinite);
@@ -551,14 +570,14 @@ namespace Secs4Net
             _replyExpectedMsgs.Clear();
             _stopImpl?.Invoke();
 
-            if (_socket != null)
-            {
-                if (_socket.Connected)
-                    _socket.Shutdown(SocketShutdown.Both);
+            if (_socket == null)
+                return;
 
-                _socket.Dispose();
-                _socket = null;
-            }
+            if (_socket.Connected)
+                _socket.Shutdown(SocketShutdown.Both);
+
+            _socket.Dispose();
+            _socket = null;
         }
         public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
 
@@ -569,9 +588,9 @@ namespace Secs4Net
         /// <returns>secondary message</returns>
         public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessageAsync(msg, NewSystemId);
 
-        const int DisposalNotStarted = 0;
-        const int DisposalComplete = 1;
-        int _disposeStage;
+        private const int DisposalNotStarted = 0;
+        private const int DisposalComplete = 1;
+        private int _disposeStage;
 
         public bool IsDisposed => Interlocked.CompareExchange(ref _disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
 
@@ -593,10 +612,10 @@ namespace Secs4Net
         /// remote device endpoint address
         /// </summary>
         public string DeviceAddress => IsActive
-            ? IPAddress.ToString()
+            ? IpAddress.ToString()
             : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
 
-        sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
+        private sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {
             internal readonly SecsMessage MessageSent;
             internal readonly int Id;

@@ -1,9 +1,16 @@
-﻿namespace Secs4Net {
+﻿using System;
+using System.Buffers;
+using System.Collections;
+using System.Reflection;
+
+namespace Secs4Net
+{
 
     /// <summary>
     /// The enumeration of SECS item value format 
     /// </summary>
-    public enum SecsFormat : byte {
+    public enum SecsFormat : byte
+    {
 
         /// <summary>
         /// List
@@ -23,8 +30,8 @@
         /// <summary>
         /// ASCII string
         /// </summary>
-        ASCII = 0x40,	// 010000 00
-        
+        ASCII = 0x40,   // 010000 00
+
         /// <summary>
         /// JIS8 string
         /// </summary>

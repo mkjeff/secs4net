@@ -133,6 +133,24 @@ namespace Secs4Net.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to port number must greater than 0.
+        /// </summary>
+        internal static string SecsGemTcpPortMustGreaterThan0 {
+            get {
+                return ResourceManager.GetString("SecsGemTcpPortMustGreaterThan0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stream number must be less than 127.
+        /// </summary>
+        internal static string SecsMessageStreamNumberMustLessThan127 {
+            get {
+                return ResourceManager.GetString("SecsMessageStreamNumberMustLessThan127", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Equipment is not online mode.
         /// </summary>
         internal static string SxF0 {
@@ -147,6 +165,15 @@ namespace Secs4Net.Properties {
         internal static string T3Timeout {
             get {
                 return ResourceManager.GetString("T3Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item data length: {0} is overflow.
+        /// </summary>
+        internal static string ValueItemDataLength__0__Overflow {
+            get {
+                return ResourceManager.GetString("ValueItemDataLength__0__Overflow", resourceCulture);
             }
         }
     }

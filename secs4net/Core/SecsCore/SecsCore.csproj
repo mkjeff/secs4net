@@ -159,7 +159,10 @@
     <Compile Include="Header.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="ISecsGemLogger.cs" />
+    <Compile Include="ItemFactory..cs" />
     <Compile Include="MessageType.cs" />
+    <Compile Include="ItemPool.cs" />
+    <Compile Include="Pool.cs" />
     <Compile Include="PrimaryMessageWrapper.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

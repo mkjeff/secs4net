@@ -157,4 +157,13 @@
     <value>S9Fy message reply.</value>
     <comment>S9Fy description</comment>
   </data>
+  <data name="SecsMessageStreamNumberMustLessThan127" xml:space="preserve">
+    <value>Stream number must be less than 127</value>
+  </data>
+  <data name="ValueItemDataLength__0__Overflow" xml:space="preserve">
+    <value>Item data length: {0} is overflow</value>
+  </data>
+  <data name="SecsGemTcpPortMustGreaterThan0" xml:space="preserve">
+    <value>port number must greater than 0</value>
+  </data>
 </root>

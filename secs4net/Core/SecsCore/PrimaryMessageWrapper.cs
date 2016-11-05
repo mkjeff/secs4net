@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 
 namespace Secs4Net
@@ -32,7 +33,7 @@ namespace Secs4Net
             if (!Message.ReplyExpected)
                 return true;
 
-            replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(_header.GetBytes(false)));
+            replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(((ArraySegment<byte>)_header).ToArray()));
             replyMessage.ReplyExpected = false;
 
             _secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes);

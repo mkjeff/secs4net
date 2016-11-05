@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Secs4Net.Properties;
 
 namespace Secs4Net
 {
-    public sealed class SecsMessage
+    public sealed class SecsMessage:IDisposable
     {
         static SecsMessage()
         {
@@ -14,6 +16,10 @@ namespace Secs4Net
         }
 
         public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
+        public void Dispose()
+        {
+            SecsItem?.Dispose();
+        }
 
         /// <summary>
         /// message stream number
@@ -37,14 +43,24 @@ namespace Secs4Net
 
         public string Name { get; set; }
 
-        public IReadOnlyList<ArraySegment<byte>> RawBytes => GetRawDatas(false).AsReadOnly();
-
-        static readonly List<ArraySegment<byte>> emptyMsgDatas =
-            new List<ArraySegment<byte>>
+        [Obsolete("This property only for debuging. Don't use in production.")]
+        public IReadOnlyList<ArraySegment<byte>> RawBytes
+        {
+            get
             {
-                new ArraySegment<byte>(new byte[]{ 0, 0, 0, 10 }), // total length = header
-                new ArraySegment<byte>(Array.Empty<byte>())        // header placeholder
-            };
+                var result =  new List<ArraySegment<byte>>();
+                EncodeTo(result,
+                         new MessageHeader(new ArraySegment<byte>(new byte[10]))
+                         {
+                             S = S,
+                             F = F,
+                             ReplyExpected = ReplyExpected,
+                             DeviceId = 0,
+                             SystemBytes = 0
+                         });
+                return result;
+            }
+        } 
 
         /// <summary>
         /// constructor of SecsMessage
@@ -57,7 +73,9 @@ namespace Secs4Net
         public SecsMessage(byte stream, byte function, bool replyExpected = true, string name = null, Item item = null)
         {
             if (stream > 0x7F)
-                throw new ArgumentOutOfRangeException(nameof(stream), stream, "Stream number must be less than 127");
+                throw new ArgumentOutOfRangeException(nameof(stream),
+                                                      stream,
+                                                      Resources.SecsMessageStreamNumberMustLessThan127);
 
             S = stream;
             F = function;
@@ -100,39 +118,40 @@ namespace Secs4Net
                 if (length == 0)
                     return Item.L();
 
-                var list = new List<Item>(length);
-                for (int i = 0; i < length; i++)
-                    list.Add(Decode(bytes, ref index));
-                return Item.L(list);
+                using (var list = ListItemDecoderBuffer.Create(length))
+                {
+                    for (int i = 0; i < length; i++)
+                        list.Add(Decode(bytes, ref index));
+                    return Item.L(list.Items);
+                }
             }
             var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, ref index, ref length);
             index += length;
             return item;
         }
 
-        internal List<ArraySegment<byte>> GetRawDatas(bool usePooled)
+        internal void EncodeTo(IList<ArraySegment<byte>> buffer, ArraySegment<byte> header)
         {
             if (SecsItem == null)
-                return emptyMsgDatas;
+            {
+                buffer.Add(SecsGem.GetEmptyDataMessageLengthBytes()); // total length = header
+                buffer.Add(header); // header placeholder
+                return;
+            }
 
-            var result = new List<ArraySegment<byte>> {
-                    default(ArraySegment<byte>),    // total length
-                    new ArraySegment<byte>(Array.Empty<byte>())     // header
-                    // item
-                };
+            buffer.Add(default(ArraySegment<byte>)); // total length
+            buffer.Add(header); // header
+            // encode item
+            var totalLength = 10 + SecsItem.EncodeTo(buffer); // total length = item + header
 
-            uint length = 10 + SecsItem.EncodeTo(result, usePooled); // total length = item + header
-
-            var msgLengthByte = GetBytes(length, usePooled);
+            var msgLengthByte = GetBytes(totalLength);
             Array.Reverse(msgLengthByte.Array);
-            result[0] = msgLengthByte;
-
-            return result;
+            buffer[0] = msgLengthByte;
         }
 
-        static unsafe ArraySegment<byte> GetBytes(uint value, bool usePooled)
+        static unsafe ArraySegment<byte> GetBytes(uint value)
         {
-            byte[] array = usePooled? ArrayPool<byte>.Shared.Rent(4): new byte[4];
+            byte[] array = ArrayPool<byte>.Shared.Rent(4);
             fixed (byte* ptr = array)
             {
                 *(uint*)ptr = value;

@@ -189,7 +189,6 @@ namespace Secs4Net.Sml
                     if (format == "L")
                     {
                         stack.Push(new List<Item>());
-                        continue;
                     }
                     else
                     {
@@ -258,7 +257,6 @@ namespace Secs4Net.Sml
                     if (format == "L")
                     {
                         stack.Push(new List<Item>());
-                        continue;
                     }
                     else
                     {
