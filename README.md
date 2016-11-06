@@ -7,9 +7,10 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
 ```cs
 try
 {
-    //await secondary message
-    using(var s3f17 = CreateS3F17())
-    using(var s3f18 = await device.SendAsync(s3f17)){
+    // await secondary message. 
+    // primary message will auto-dispose by default.
+    // developer manualy dispose for pooled object releasing
+    using(var s3f18 = await device.SendAsync(CreateS3F17())){ 
     
         //access item value
         byte b1 = (byte)s3f18.SecsItem.Items[0]; 
@@ -36,10 +37,10 @@ catch(SecsException)
 ```cs
 secsGem.PrimaryMessageReceived += (sender, messageWrapper) => 
 {
-    var primaryMsg = messageWrapper.Message;
     try 
     {
-        //do something for primaryMsg
+        var primaryMsg = messageWrapper.Message;
+        //do something on primaryMsg
 	   
 
         // reply secondary msg to device
@@ -48,8 +49,6 @@ secsGem.PrimaryMessageReceived += (sender, messageWrapper) =>
     catch (Exception ex) 
     {
 
-    } finally {
-        primaryMsg.Dispose(); // release to the pool
     }
 };
 ```
@@ -68,19 +67,18 @@ var s16f15 =
                     A(pj.Id),
                     B(0x0D),
                     L(from carrier in pj.Carriers select
-                    L(
-                        A(carrier.Id),
-                        L(from slotInfo in carrier.SlotMap select
-                            U1(slotInfo.SlotNo)))),
                         L(
-                            U1(1),
-                            A(pj.RecipeId),
-                            L()),
-                        Boolean(true),
-                        L()))));
+                            A(carrier.Id),
+                            L(from slotInfo in carrier.SlotMap select
+                                U1(slotInfo.SlotNo)))),
+                            L(
+                                U1(1),
+                                A(pj.RecipeId),
+                                L()),
+                            Boolean(true),
+                            L()))));
 ```
 
 4\. SecsMessage/Item is immutable(API level). 
 
-5\. All object are allocated in shared pools.
-    When using complete invoke Dispose(using) method to ensure release to pools
+5\. Almost all of the object had to be allocated in shared pools.
