@@ -26,14 +26,14 @@ namespace Cim.Eap {
         }
 
         async Task TestCommunication() {
-            using (var s1f14 = await EAP.SendAsync(EAP.SecsMessages[1, 13, "EstablishCommunicationsRequest_Host"]))
+            using (var s1f14 = await EAP.SendAsync(EAP.SecsMessages[1, 13, "EstablishCommunicationsRequest_Host"], false))
                 if ((byte) s1f14.SecsItem.Items[0] != 0)
                     throw new ScenarioException("S1F14 return code is not 0");
         }
 
 
         async Task RequestOnline() {
-            using (var s1f18 = await EAP.SendAsync(EAP.SecsMessages[1, 17, "RequestOnline"]))
+            using (var s1f18 = await EAP.SendAsync(EAP.SecsMessages[1, 17, "RequestOnline"], false))
             {
                 var returnCode = (byte) s1f18.SecsItem;
                 if (returnCode != 0 && returnCode != 2)
@@ -42,14 +42,14 @@ namespace Cim.Eap {
         }
 
         async Task QueryControlState() {
-            using (var s1f4 = await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryOnlineSubStatus"]))
+            using (var s1f4 = await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryOnlineSubStatus"], false))
                 if ((ushort)s1f4.SecsItem.Items[0] != 5)
                     throw new ScenarioException("S1F4_ControlState return code is " + s1f4.SecsItem.Items[0] + ", not Online/Remote mode");
         }
 
         async Task QueryPortStatus()
         {
-            using (await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryPortStatus"]))
+            using (await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryPortStatus"], false))
             {
             }
         }
@@ -70,17 +70,14 @@ namespace Cim.Eap {
             } catch { }
         }
 
-        private static SecsMessage CreateS3F23(LoadPort port) =>
-            new SecsMessage(3,
-                            23,
-                            "ChangeAccessMode",
-                            L(
-                              A("ChangeAccess"),
-                              A(GetPortNo(port.Id)
-                                    .ToString()),
-                              L(
-                                L(
-                                  A("AccessMode"),
-                                  B(0)))));
+        private static SecsMessage CreateS3F23(LoadPort port)
+            => new SecsMessage(3, 23, "ChangeAccessMode",
+                   L(
+                       A("ChangeAccess"),
+                       A(GetPortNo(port.Id).ToString()),
+                       L(
+                           L(
+                               A("AccessMode"),
+                               B(0)))));
     }
 }

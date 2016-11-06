@@ -10,7 +10,7 @@ namespace Cim.Eap {
         Task TCS_AccessModeChange(AccessModeChangeRequest tx) => QueryAndChangeAccessMode(tx.LoadPorts);
 
         async Task QueryAndChangeAccessMode(IEnumerable<LoadPort> requestLoadPorts) {
-            using (var s1f4 = await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryLoadPortAccessMode"]))
+            using (var s1f4 = await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryLoadPortAccessMode"], false))
             {
                 foreach (var port in requestLoadPorts)
                 {
@@ -33,16 +33,14 @@ namespace Cim.Eap {
             }
         }
 
-        private static SecsMessage CreateS3F23(AccessMode changeAccessMode, int portNo) =>
-            new SecsMessage(3,
-                            23,
-                            "ChangeAccessMode",
-                            L(
-                              A("ChangeAccess"),
-                              A(portNo.ToString()),
-                              L(
-                                L(
-                                  A("AccessMode"),
-                                  B((byte) changeAccessMode)))));
+        private static SecsMessage CreateS3F23(AccessMode changeAccessMode, int portNo)
+            => new SecsMessage(3, 23, "ChangeAccessMode",
+                   L(
+                       A("ChangeAccess"),
+                       A(portNo.ToString()),
+                       L(
+                           L(
+                               A("AccessMode"),
+                               B((byte) changeAccessMode)))));
     }
 }

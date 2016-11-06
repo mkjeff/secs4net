@@ -307,7 +307,7 @@ namespace Cim.Eap
             2<<8 | 37  //s2f37 define link
         };
 
-        public Task<SecsMessage> SendAsync(SecsMessage msg)
+        Task<SecsMessage> ISecsDevice.SendAsync(SecsMessage msg, bool autoDispose)
         {
             if (_secsGem == null)
                 throw new Exception("SECS/GEM not enable!");

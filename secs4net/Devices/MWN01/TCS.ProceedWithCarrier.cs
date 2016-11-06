@@ -17,15 +17,13 @@ namespace Cim.Eap
             }
         }
 
-        private static SecsMessage CreateS3F17(ProceedWithCarrierRequest tx) =>
-            new SecsMessage(3,
-                            17,
-                            "ProceedWithCarrier",
-                            L(
-                              U4(2),
-                              A("ProceedWithCarrier"),
-                              A(tx.Carrier.Id),
-                              B(GetPortNo(tx.Carrier.LoadPortId)),
-                              L()));
+        private static SecsMessage CreateS3F17(ProceedWithCarrierRequest tx)
+            => new SecsMessage(3, 17, "ProceedWithCarrier",
+                   L(
+                       U4(2),
+                       A("ProceedWithCarrier"),
+                       A(tx.Carrier.Id),
+                       B(GetPortNo(tx.Carrier.LoadPortId)),
+                       L()));
     }
 }

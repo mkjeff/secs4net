@@ -22,25 +22,25 @@ namespace Cim.Eap
 
         private static SecsMessage GetS16F15(ref CreateProcessJobRequest tx)
             => new SecsMessage(16, 15, "CreateProcessJob",
-                L(
-                    U4(0),
-                    L(from pj in tx.ProcessJobs
-                      select
-                      L(
-                          A(pj.Id),
-                          B(0x0D),
-                          L(from carrier in pj.Carriers
-                            select
-                            L(
-                                A(carrier.Id),
-                                L(from slotInfo in carrier.SlotMap
-                                  select
-                                  U1(slotInfo.SlotNo)))),
-                          L(
-                              U1(1),
-                              A(pj.RecipeId),
-                              L()),
-                          Boolean(true),
-                          L()))));
+                   L(
+                       U4(0),
+                       L(from pj in tx.ProcessJobs
+                         select
+                         L(
+                             A(pj.Id),
+                             B(0x0D),
+                             L(from carrier in pj.Carriers
+                               select
+                               L(
+                                   A(carrier.Id),
+                                   L(from slotInfo in carrier.SlotMap
+                                     select
+                                     U1(slotInfo.SlotNo)))),
+                             L(
+                                 U1(1),
+                                 A(pj.RecipeId),
+                                 L()),
+                             Boolean(true),
+                             L()))));
     }
 }

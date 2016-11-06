@@ -3,13 +3,13 @@ using Secs4Net;
 namespace Cim.Eap {
     partial class Driver {
         void EQP_WaferProcessData_LLH_LHC(SecsMessage msg) {
-            SecsItem tempList = msg.SecsItem.Items[2].Items[0].Items[1].Items[0];
-            string pjID = tempList.Items[1].GetString();
-            byte slotNo = (byte)tempList.Items[4].Items[0].Items[1];
+            var tempList = msg.SecsItem.Items[2].Items[0].Items[1].Items[0];
+            var jobId = tempList.Items[1].GetString();
+            var slotNo = tempList.Items[4].Items[0].Items[1].GetValue<byte>();
 
             tempList = tempList.Items[4].Items[0].Items[2].Items[0];
 
-            var dc = new DataCollectionReport(GetProcessJob(pjID));
+            var dc = new DataCollectionReport(GetProcessJob(jobId));
             try {
                 dc.AddWaferData("CIWD", slotNo, tempList.Items[0].Items[1]);
 
@@ -25,12 +25,10 @@ namespace Cim.Eap {
         }
 
         void EQP_WaferProcessData_PVD(SecsMessage msg) {
-            SecsItem tempList = msg.SecsItem.Items[2].Items[0].Items[1].Items[0];
-            string pjID = tempList.Items[1].GetString();
-            byte slotNo = (byte)tempList.Items[4].Items[0].Items[1];
-
-            tempList = tempList.Items[4].Items[0].Items[2].Items[0];
-            string chamber = tempList.Items[0].Items[1].GetString();
+            var tempList = msg.SecsItem.Items[2].Items[0].Items[1].Items[0];
+            var pjID = tempList.Items[1].GetString();
+            var slotNo = tempList.Items[4].Items[0].Items[1].GetValue<byte>();
+            var chamber = tempList.Items[4].Items[0].Items[2].Items[0].Items[0].Items[1].GetString();
 
             var dc = new DataCollectionReport(GetProcessJob(pjID));
             try {

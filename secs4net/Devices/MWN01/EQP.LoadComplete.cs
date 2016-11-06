@@ -4,10 +4,8 @@ using Secs4Net;
 namespace Cim.Eap {
     partial class Driver {
         async void EQP_LoadComplete(SecsMessage msg) {
-            byte portNo = (byte)msg.SecsItem.Items[2].Items[0].Items[1].Items[0];
-            string portId = GetPortID(portNo);
             EAP.Report(new LoadCompReport {
-                PortID = portId
+                PortID = GetPortID(msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>())
             });
 
             // Wait CarrierIDRead Event 10 sec.

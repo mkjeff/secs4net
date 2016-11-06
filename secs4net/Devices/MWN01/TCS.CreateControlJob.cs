@@ -23,39 +23,37 @@ namespace Cim.Eap
             }
         }
 
-        private static SecsMessage CreateS14F9(CreateControlJobRequest tx) =>
-            new SecsMessage(14,
-                            9,
-                            "CreateControlJob",
-                            L(
-                              A("Equipment"),
-                              A("ControlJob"),
-                              L(
-                                L(
-                                  A("ObjID"),
-                                  A(tx.ControlJobID)),
-                                L(
-                                  A(
-                                    "ProcessingCtrlSpec"),
-                                  L(
-                                    from pjid in tx.ProcessJobIDs
-                                    select
-                                    A(pjid))),
-                                L(
-                                  A("CarrierInputSpec"),
-                                  L(
-                                    from carrier in tx.CarrierIDs
-                                    select
-                                    A(carrier))),
-                                L(
-                                  A("MtrlOutSpec"),
-                                  A()),
-                                L(
-                                  A("ProcessOrderMgmt"),
-                                  A("LIST")),
-                                L(
-                                  A("StartMethod"),
-                                  Boolean(true)))));
+        private static SecsMessage CreateS14F9(CreateControlJobRequest tx)
+            => new SecsMessage(14, 9, "CreateControlJob",
+                   L(
+                       A("Equipment"),
+                       A("ControlJob"),
+                       L(
+                           L(
+                               A("ObjID"),
+                               A(tx.ControlJobID)),
+                           L(
+                               A(
+                                   "ProcessingCtrlSpec"),
+                               L(
+                                   from pjid in tx.ProcessJobIDs
+                                   select
+                                   A(pjid))),
+                           L(
+                               A("CarrierInputSpec"),
+                               L(
+                                   from carrier in tx.CarrierIDs
+                                   select
+                                   A(carrier))),
+                           L(
+                               A("MtrlOutSpec"),
+                               A()),
+                           L(
+                               A("ProcessOrderMgmt"),
+                               A("LIST")),
+                           L(
+                               A("StartMethod"),
+                               Boolean(true)))));
 
         async Task DeleteProcessJob(IEnumerable<string> processJobIds)
         {
@@ -75,13 +73,11 @@ namespace Cim.Eap
         }
 
         private static SecsMessage CreateS16F5(string id) =>
-            new SecsMessage(16,
-                            5,
-                            "PJCancel",
-                            L(
-                              U4(0),
-                              A(id),
-                              A("Cancel"),
-                              L()));
+            new SecsMessage(16, 5, "PJCancel",
+                L(
+                    U4(0),
+                    A(id),
+                    A("Cancel"),
+                    L()));
     }
 }
