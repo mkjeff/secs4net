@@ -2,7 +2,6 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -124,6 +123,8 @@ namespace Secs4Net
         private static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
         static readonly Pool<IList<ArraySegment<byte>>> EncoderPool
             = new Pool<IList<ArraySegment<byte>>>(1000, p => new List<ArraySegment<byte>>());
+
+        private static readonly ArrayPool<byte> HeaderArrayPool = ArrayPool<byte>.Create(10, 100);
 
         private readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
 
@@ -310,14 +311,17 @@ namespace Secs4Net
             }
             catch (NullReferenceException ex)
             {
-                _logger.Warning("unexpected NullReferenceException:" + ex.ToString());
+                _logger.Error("Unexpected NullReferenceException", ex);
             }
             catch (Exception ex)
             {
-                _logger.Error("unexpected exception", ex);
+                _logger.Error("Unexpected exception", ex);
                 CommunicationStateChanging(ConnectionState.Retry);
             }
         }
+
+        internal static ArraySegment<byte> EncodeHeader(ref MessageHeader header)
+            => new ArraySegment<byte>(header.EncodeTo(HeaderArrayPool.Rent(10)));
 
         private void SendControlMessage(MessageType msgType, int systembyte)
         {
@@ -329,12 +333,15 @@ namespace Secs4Net
             var bufferList = EncoderPool.Acquire();
 
             bufferList.Add(GetEmptyDataMessageLengthBytes());
-            bufferList.Add(new MessageHeader(GetHeaderBytes())
+
+            var header = new MessageHeader
             {
                 DeviceId = 0xFFFF,
                 MessageType = msgType,
                 SystemBytes = systembyte
-            });
+            };
+
+            bufferList.Add(EncodeHeader(ref header));
 
             var eap = new SocketAsyncEventArgs
             {
@@ -355,9 +362,6 @@ namespace Secs4Net
             lengthBytes[3] = 10;
             return new ArraySegment<byte>(lengthBytes, 0, 4);
         }
-
-        internal static ArraySegment<byte> GetHeaderBytes()
-            => new ArraySegment<byte>(ArrayPool<byte>.Shared.Rent(10), 0, 10);
 
         private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
         {
@@ -444,7 +448,7 @@ namespace Secs4Net
             }
         }
 
-        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, bool autoDispose)
+        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, bool autoDispose = true)
         {
             if (State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
@@ -454,16 +458,17 @@ namespace Secs4Net
                 _replyExpectedMsgs[systembyte] = token;
 
 
-            var bufferList = EncoderPool.Acquire();
-            msg.EncodeTo(bufferList,
-                         new MessageHeader(GetHeaderBytes())
+            var header = new MessageHeader
                          {
                              S = msg.S,
                              F = msg.F,
                              ReplyExpected = msg.ReplyExpected,
                              DeviceId = DeviceId,
                              SystemBytes = systembyte
-                         });
+                         };
+
+            var bufferList = EncoderPool.Acquire();
+            msg.EncodeTo(bufferList, EncodeHeader(ref header));
 
             var eap = new SocketAsyncEventArgs
             {
@@ -490,39 +495,35 @@ namespace Secs4Net
                 return;
             }
 
-            _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
-            if (completeToken.AutoDispose)
-                completeToken.MessageSent.Dispose();
+            var messageSent = completeToken.MessageSent;
+            _logger.MessageOut(messageSent, completeToken.Id);
 
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
                 if (!completeToken.Task.Wait(T3))
                 {
                     _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
-                    completeToken.SetException(new SecsException(completeToken.MessageSent, Resources.T3Timeout));
+                    completeToken.SetException(new SecsException(completeToken.Id, Resources.T3Timeout));
                 }
                 _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
             }
+
+            if (completeToken.AutoDispose)
+                messageSent.Dispose();
         }
 
-        private void HandleDataMessage(MessageHeader header, SecsMessage msg)
+        private void HandleDataMessage(ref MessageHeader header, SecsMessage msg)
         {
-            int systembyte = header.SystemBytes;
+            var systembyte = header.SystemBytes;
 
             if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
             {
                 _logger.MessageIn(msg, systembyte);
                 _logger.Warning("Received Unrecognized Device Id Message");
-                var arr = ArrayPool<byte>.Shared.Rent(10);
-                Buffer.BlockCopy(((ArraySegment<byte>)header).Array, 0, arr, 0, 10);
-                SendDataMessageAsync(
-                                     new SecsMessage(9,
-                                                     1,
-                                                     false,
-                                                     "Unrecognized Device Id",
-                                                     B(new ArraySegment<byte>(arr))),
-                                     NewSystemId,
-                                     true);
+                msg.Dispose();
+
+                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", B(EncodeHeader(ref header))), NewSystemId);
+
                 return;
             }
 
@@ -533,11 +534,19 @@ namespace Secs4Net
                     //Primary message
                     _logger.MessageIn(msg, systembyte);
                     PrimaryMessageReceived?.Invoke(this, new PrimaryMessageWrapper(this, header, msg));
+                    msg.Dispose();
                     return;
                 }
-                // Error message
-                var headerBytes = Unsafe.As<byte[]>(msg.SecsItem.Values);
-                systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
+                // Error message systembyte
+                unsafe
+                {
+                    var headerBytes = Unsafe.As<byte[]>(msg.SecsItem.Values);
+                    Array.Reverse(headerBytes, 0, 10);
+                    Unsafe.CopyBlock(
+                        destination: Unsafe.AsPointer(ref systembyte),
+                        source: Unsafe.AsPointer(ref headerBytes[0]),
+                        byteCount: 4);
+                }
             }
 
             // Secondary message
@@ -649,7 +658,8 @@ namespace Secs4Net
                 replyMsg.Name = MessageSent.Name;
                 if (replyMsg.F == 0)
                 {
-                    SetException(new SecsException(MessageSent, Resources.SxF0));
+                    SetException(new SecsException(Id, Resources.SxF0));
+                    MessageSent.Dispose();
                     return;
                 }
 
@@ -658,30 +668,31 @@ namespace Secs4Net
                     switch (replyMsg.F)
                     {
                         case 1:
-                            SetException(new SecsException(MessageSent, Resources.S9F1));
+                            SetException(new SecsException(Id, Resources.S9F1));
                             break;
                         case 3:
-                            SetException(new SecsException(MessageSent, Resources.S9F3));
+                            SetException(new SecsException(Id, Resources.S9F3));
                             break;
                         case 5:
-                            SetException(new SecsException(MessageSent, Resources.S9F5));
+                            SetException(new SecsException(Id, Resources.S9F5));
                             break;
                         case 7:
-                            SetException(new SecsException(MessageSent, Resources.S9F7));
+                            SetException(new SecsException(Id, Resources.S9F7));
                             break;
                         case 9:
-                            SetException(new SecsException(MessageSent, Resources.S9F9));
+                            SetException(new SecsException(Id, Resources.S9F9));
                             break;
                         case 11:
-                            SetException(new SecsException(MessageSent, Resources.S9F11));
+                            SetException(new SecsException(Id, Resources.S9F11));
                             break;
                         case 13:
-                            SetException(new SecsException(MessageSent, Resources.S9F13));
+                            SetException(new SecsException(Id, Resources.S9F13));
                             break;
                         default:
-                            SetException(new SecsException(MessageSent, Resources.S9Fy));
+                            SetException(new SecsException(Id, Resources.S9Fy));
                             break;
                     }
+                    MessageSent.Dispose();
                     return;
                 }
 

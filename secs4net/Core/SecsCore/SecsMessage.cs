@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Secs4Net.Properties;
 
 namespace Secs4Net
@@ -18,11 +19,6 @@ namespace Secs4Net
         {
             SecsItem?.Dispose();
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool AutoDispose { get; } = true;
 
         /// <summary>
         /// message stream number
@@ -52,18 +48,18 @@ namespace Secs4Net
             get
             {
                 var result =  new List<ArraySegment<byte>>();
-                EncodeTo(result,
-                         new MessageHeader(new ArraySegment<byte>(new byte[10]))
-                         {
-                             S = S,
-                             F = F,
-                             ReplyExpected = ReplyExpected,
-                             DeviceId = 0,
-                             SystemBytes = 0
-                         });
+                var header = new MessageHeader
+                             {
+                                 S = S,
+                                 F = F,
+                                 ReplyExpected = ReplyExpected,
+                                 DeviceId = 0,
+                                 SystemBytes = 0
+                             };
+                EncodeTo(result, SecsGem.EncodeHeader(ref header) );
                 return result;
             }
-        } 
+        }
 
         /// <summary>
         /// constructor of SecsMessage
@@ -123,7 +119,7 @@ namespace Secs4Net
 
                 using (var list = ListItemDecoderBuffer.Create(length))
                 {
-                    for (int i = 0; i < length; i++)
+                    for (var i = 0; i < length; i++)
                         list.Add(Decode(bytes, ref index));
                     return Item.L(list.Items);
                 }
@@ -138,7 +134,7 @@ namespace Secs4Net
             if (SecsItem == null)
             {
                 buffer.Add(SecsGem.GetEmptyDataMessageLengthBytes()); // total length = header
-                buffer.Add(header); // header placeholder
+                buffer.Add(header); // header
                 return;
             }
 
@@ -147,19 +143,15 @@ namespace Secs4Net
             // encode item
             var totalLength = 10 + SecsItem.EncodeTo(buffer); // total length = item + header
 
-            var msgLengthByte = GetBytes(totalLength);
-            Array.Reverse(msgLengthByte.Array);
-            buffer[0] = msgLengthByte;
-        }
-
-        static unsafe ArraySegment<byte> GetBytes(uint value)
-        {
-            byte[] array = ArrayPool<byte>.Shared.Rent(4);
-            fixed (byte* ptr = array)
+            // encode total length
+            var msgLengthByte = ArrayPool<byte>.Shared.Rent(4);
+            unsafe
             {
-                *(uint*)ptr = value;
+                Unsafe.Write(Unsafe.AsPointer(ref msgLengthByte[0]), totalLength);
             }
-            return new ArraySegment<byte>(array, 0, 4);
+
+            Array.Reverse(msgLengthByte);
+            buffer[0] = new ArraySegment<byte>(msgLengthByte, 0, 4);
         }
 
         #region ISerializable Members

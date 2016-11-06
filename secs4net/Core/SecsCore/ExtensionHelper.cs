@@ -180,6 +180,14 @@ namespace Secs4Net
             var arrLength = length/elmSize;
             var values = ArrayPool<T>.Shared.Rent(arrLength);
             Buffer.BlockCopy(data, index, values, 0, length);
+            //unsafe
+            //{
+            //    Unsafe.CopyBlock(
+            //        Unsafe.AsPointer(ref values[0]),
+            //        Unsafe.AsPointer(ref data[0]),
+            //        (uint) length
+            //    );
+            //}
             return new ArraySegment<T>(values, 0, arrLength);
         }
 

@@ -3,13 +3,13 @@
 namespace Secs4Net {
     public class SecsException : Exception
     {
-        public SecsMessage SecsMsg { get; }
+        public int? MessageId { get; }
 
-        public SecsException(SecsMessage msg, string description) : base(description)
+        public SecsException(int messageId, string description) : base(description)
         {
-            SecsMsg = msg;
+            MessageId = messageId;
         }
 
-        public SecsException(string msg) : this(null, msg) { }
+        public SecsException(string msg) : base(msg) { }
     }
 }

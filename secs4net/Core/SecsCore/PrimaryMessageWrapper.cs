@@ -8,9 +8,9 @@ namespace Secs4Net
 {
     public sealed class PrimaryMessageWrapper
     {
-        int _isReplied = 0;
-        readonly SecsGem _secsGem;
-        readonly MessageHeader _header;
+        private int _isReplied = 0;
+        private readonly SecsGem _secsGem;
+        private MessageHeader _header;
         public SecsMessage Message { get; }
         public int MessageId => _header.SystemBytes;
 
@@ -35,17 +35,9 @@ namespace Secs4Net
             if (!Message.ReplyExpected)
                 return true;
 
-            var autoDispose = false;
             if (replyMessage == null)
             {
-                autoDispose = true;
-                var arr = ArrayPool<byte>.Shared.Rent(10);
-                Buffer.BlockCopy(((ArraySegment<byte>) _header).Array, 0, arr, 0, 10);
-                replyMessage = new SecsMessage(9,
-                                               7,
-                                               false,
-                                               "Unknown Message",
-                                               B(arr));
+                replyMessage = new SecsMessage(9, 7, false, "Unknown Message", B(SecsGem.EncodeHeader(ref _header)));
             }
             else
             {
@@ -53,8 +45,7 @@ namespace Secs4Net
             }
 
             _secsGem.SendDataMessageAsync(replyMessage,
-                                          replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes,
-                                          autoDispose);
+                replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes);
 
             return true;
         }
