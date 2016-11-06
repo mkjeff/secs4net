@@ -8,19 +8,21 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
 try
 {
     //await secondary message
-    var s3f18 = await device.SendAsync(s3f17); 
+    using(var s3f17 = CreateS3F17())
+    using(var s3f18 = await device.SendAsync(s3f17)){
     
-    //access item value
-    byte b1 = (byte)s3f18.SecsItem.Items[0]; 
-    byte b2 = s3f18.SecsItem.Items[0].GetValue<byte>();
-    string str = s3f18.SecsItem.Items[0].GetString();
+        //access item value
+        byte b1 = (byte)s3f18.SecsItem.Items[0]; 
+        byte b2 = s3f18.SecsItem.Items[0].GetValue<byte>();
+        string str = s3f18.SecsItem.Items[0].GetString();
 
-    // LINQ query
-    var query =
-        from a in s3f18.SecsItem.Items[3].Items
-        select new {
-            num = a.GetValue<int>(),
-        };
+        // LINQ query
+        var query =
+            from a in s3f18.SecsItem.Items[3].Items
+            select new {
+                num = a.GetValue<int>(),
+            };
+    }
 }
 catch(SecsException)
 {
@@ -34,10 +36,10 @@ catch(SecsException)
 ```cs
 secsGem.PrimaryMessageReceived += (sender, messageWrapper) => 
 {
+    var primaryMsg = messageWrapper.Message;
     try 
     {
         //do something for primaryMsg
-        var primaryMsg = messageWrapper.Message;
 	   
 
         // reply secondary msg to device
@@ -46,6 +48,8 @@ secsGem.PrimaryMessageReceived += (sender, messageWrapper) =>
     catch (Exception ex) 
     {
 
+    } finally {
+        primaryMsg.Dispose(); // release to the pool
     }
 };
 ```
@@ -76,4 +80,7 @@ var s16f15 =
                         L()))));
 ```
 
-4\. SecsMessage/Item is immutable(API level).  
+4\. SecsMessage/Item is immutable(API level). 
+
+5\. All object are allocated in shared pools.
+    When using complete invoke Dispose(using) method to ensure release to pools
