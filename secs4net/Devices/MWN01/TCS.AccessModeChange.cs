@@ -25,8 +25,7 @@ namespace Cim.Eap {
 
         async Task ChangeAccessMode(AccessMode changeAccessMode, int portNo)
         {
-            using (var s3f23 = CreateS3F23(changeAccessMode, portNo))
-            using (var s3f24 = await EAP.SendAsync(s3f23))
+            using (var s3f24 = await EAP.SendAsync(CreateS3F23(changeAccessMode, portNo)))
             {
                 byte returnCode = (byte) s3f24.SecsItem.Items[0];
                 if (returnCode != 0 && returnCode != 4)

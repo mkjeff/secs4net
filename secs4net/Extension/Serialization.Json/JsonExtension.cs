@@ -51,7 +51,7 @@ namespace Secs4Net.Json
             jwtr.Flush();
         }
 
-        public static void WriteTo(this Item item, JsonTextWriter writer)
+        public static void WriteTo(this SecsItem item, JsonTextWriter writer)
         {
             writer.WriteStartObject();
 
@@ -110,9 +110,9 @@ namespace Secs4Net.Json
         }
 
         // Define other methods and classes here
-        public static Item ToItem(this JObject json)
+        public static SecsItem ToItem(this JObject json)
         {
-            var item = default(Item);
+            var item = default(SecsItem);
             var format = json.Value<JValue>(nameof(item.Format)).ToObject<SecsFormat>();
             if (format == SecsFormat.List)
             {

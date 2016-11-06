@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Cim.Eap.Data;
 using Cim.Eap.Tx;
 using System.Threading.Tasks;
 

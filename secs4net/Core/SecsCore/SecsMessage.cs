@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Secs4Net.Properties;
 
 namespace Secs4Net
@@ -22,6 +20,11 @@ namespace Secs4Net
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public bool AutoDispose { get; } = true;
+
+        /// <summary>
         /// message stream number
         /// </summary>
         public byte S { get; }
@@ -39,7 +42,7 @@ namespace Secs4Net
         /// <summary>
         /// the root item of message
         /// </summary>
-        public Item SecsItem { get; }
+        public SecsItem SecsItem { get; }
 
         public string Name { get; set; }
 
@@ -69,8 +72,8 @@ namespace Secs4Net
         /// <param name="function">message function number</param>
         /// <param name="replyExpected">expect reply message</param>
         /// <param name="name"></param>
-        /// <param name="item">root item</param>
-        public SecsMessage(byte stream, byte function, bool replyExpected = true, string name = null, Item item = null)
+        /// <param name="secsItem">root item</param>
+        public SecsMessage(byte stream, byte function, bool replyExpected = true, string name = null, SecsItem secsItem = null)
         {
             if (stream > 0x7F)
                 throw new ArgumentOutOfRangeException(nameof(stream),
@@ -81,7 +84,7 @@ namespace Secs4Net
             F = function;
             Name = name;
             ReplyExpected = replyExpected;
-            SecsItem = item;
+            SecsItem = secsItem;
         }
 
         /// <summary>
@@ -90,9 +93,9 @@ namespace Secs4Net
         /// <param name="stream">message stream number</param>
         /// <param name="function">message function number</param>
         /// <param name="name"></param>
-        /// <param name="item">root item</param>
-        public SecsMessage(byte stream, byte function, string name, Item item = null)
-            : this(stream, function, true, name, item)
+        /// <param name="secsItem">root item</param>
+        public SecsMessage(byte stream, byte function, string name, SecsItem secsItem = null)
+            : this(stream, function, true, name, secsItem)
         { }
 
         internal SecsMessage(byte stream, byte function, bool replyExpected, byte[] itemBytes, ref int index)
@@ -100,7 +103,7 @@ namespace Secs4Net
         { }
 
 
-        static Item Decode(byte[] bytes, ref int index)
+        static SecsItem Decode(byte[] bytes, ref int index)
         {
             var format = (SecsFormat)(bytes[index] & 0xFC);
             var lengthBits = (byte)(bytes[index] & 3);

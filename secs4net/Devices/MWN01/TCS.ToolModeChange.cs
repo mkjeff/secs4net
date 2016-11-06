@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using Cim.Eap.Data;
+﻿using Cim.Eap.Data;
 using Cim.Eap.Tx;
 using Secs4Net;
 using System.Threading.Tasks;

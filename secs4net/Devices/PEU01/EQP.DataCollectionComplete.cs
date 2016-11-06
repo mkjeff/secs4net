@@ -4,7 +4,7 @@ using Secs4Net;
 namespace Cim.Eap {
     partial class Driver {
         void EQP_DataCollectionComplete(SecsMessage msg) {
-            Item tmpList = msg.SecsItem.Items[2].Items[0].Items[1];
+            SecsItem tmpList = msg.SecsItem.Items[2].Items[0].Items[1];
 
             string carrier_slot_port = (string)tmpList.Items[1];
             int i = carrier_slot_port.IndexOf('.');

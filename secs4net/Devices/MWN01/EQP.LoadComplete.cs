@@ -1,7 +1,6 @@
 ﻿using Cim.Eap.Tx;
 using Secs4Net;
-using System.Threading;
-using System;
+
 namespace Cim.Eap {
     partial class Driver {
         async void EQP_LoadComplete(SecsMessage msg) {

@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Secs4Net.Properties;
+using static Secs4Net.Item;
 
 namespace Secs4Net
 {
@@ -320,7 +321,7 @@ namespace Secs4Net
 
         private void SendControlMessage(MessageType msgType, int systembyte)
         {
-            var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
+            var token = new TaskCompletionSourceToken(ControlMessage, systembyte, false, msgType);
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
             {
                 _replyExpectedMsgs[systembyte] = token;
@@ -355,7 +356,7 @@ namespace Secs4Net
             return new ArraySegment<byte>(lengthBytes, 0, 4);
         }
 
-        internal static ArraySegment<byte> GetHeaderBytes() 
+        internal static ArraySegment<byte> GetHeaderBytes()
             => new ArraySegment<byte>(ArrayPool<byte>.Shared.Rent(10), 0, 10);
 
         private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
@@ -443,12 +444,12 @@ namespace Secs4Net
             }
         }
 
-        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
+        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, bool autoDispose)
         {
             if (State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
 
-            var token = new TaskCompletionSourceToken(msg, systembyte);
+            var token = new TaskCompletionSourceToken(msg, systembyte, autoDispose);
             if (msg.ReplyExpected)
                 _replyExpectedMsgs[systembyte] = token;
 
@@ -490,6 +491,9 @@ namespace Secs4Net
             }
 
             _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
+            if (completeToken.AutoDispose)
+                completeToken.MessageSent.Dispose();
+
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
                 if (!completeToken.Task.Wait(T3))
@@ -509,8 +513,16 @@ namespace Secs4Net
             {
                 _logger.MessageIn(msg, systembyte);
                 _logger.Warning("Received Unrecognized Device Id Message");
-                var headerBytes = ((ArraySegment<byte>) header).ToArray();
-                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(headerBytes)), NewSystemId);
+                var arr = ArrayPool<byte>.Shared.Rent(10);
+                Buffer.BlockCopy(((ArraySegment<byte>)header).Array, 0, arr, 0, 10);
+                SendDataMessageAsync(
+                                     new SecsMessage(9,
+                                                     1,
+                                                     false,
+                                                     "Unrecognized Device Id",
+                                                     B(new ArraySegment<byte>(arr))),
+                                     NewSystemId,
+                                     true);
                 return;
             }
 
@@ -585,8 +597,10 @@ namespace Secs4Net
         /// Asynchronously send message to device .
         /// </summary>
         /// <param name="msg">primary message</param>
+        /// <param name="autoDispose">auto dispose message after message sent.</param>
         /// <returns>secondary message</returns>
-        public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessageAsync(msg, NewSystemId);
+        public Task<SecsMessage> SendAsync(SecsMessage msg, bool autoDispose = true)
+            => SendDataMessageAsync(msg, NewSystemId, autoDispose);
 
         private const int DisposalNotStarted = 0;
         private const int DisposalComplete = 1;
@@ -620,12 +634,14 @@ namespace Secs4Net
             internal readonly SecsMessage MessageSent;
             internal readonly int Id;
             internal readonly MessageType MsgType;
+            internal readonly bool AutoDispose;
 
-            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType = MessageType.DataMessage)
+            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, bool autoDispose, MessageType msgType = MessageType.DataMessage)
             {
                 MessageSent = primaryMessageMsg;
                 Id = id;
                 MsgType = msgType;
+                AutoDispose = autoDispose;
             }
 
             internal void HandleReplyMessage(SecsMessage replyMsg)

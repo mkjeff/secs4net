@@ -4,7 +4,7 @@ using Secs4Net;
 namespace Cim.Eap {
     partial class Driver {
         void EQP_WaferStatusChange(SecsMessage msg) {
-            Item dataList = msg.SecsItem.Items[2].Items[0].Items[1];
+            SecsItem dataList = msg.SecsItem.Items[2].Items[0].Items[1];
             string pjId = dataList.Items[0].GetString();
 
             string carrier_slot_port = (string)dataList.Items[1];

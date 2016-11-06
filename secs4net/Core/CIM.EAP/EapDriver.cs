@@ -1,6 +1,7 @@
 ﻿using Secs4Net;
 using System.Threading.Tasks;
 using System.Linq;
+using static Secs4Net.Item;
 
 namespace Cim.Eap {
     public abstract class EapDriver {
@@ -8,10 +9,10 @@ namespace Cim.Eap {
         internal protected virtual void Init() { }
         internal protected virtual void Unload() { }
 
-        internal protected abstract Item CeidLinkCreator(string ceid);
-        internal protected abstract Item ReportIdLinkCreator(string reportId);
-        internal protected abstract Item SvidLinkCreator(string svid);
-        internal protected abstract Item LinkDataIdCreator(string dataId);
+        internal protected abstract SecsItem CeidLinkCreator(string ceid);
+        internal protected abstract SecsItem ReportIdLinkCreator(string reportId);
+        internal protected abstract SecsItem SvidLinkCreator(string svid);
+        internal protected abstract SecsItem LinkDataIdCreator(string dataId);
 
         #region Default Define Link Message
         SecsMessage _disableEvent;
@@ -22,60 +23,60 @@ namespace Cim.Eap {
         SecsMessage _defineReport;
         public SecsMessage S2F37_DisableEvent => _disableEvent ?? (_disableEvent =
             new SecsMessage(2, 37, "DisableEvent",
-                Item.L(
-                    Item.Boolean(false),
-                    Item.L())));
+                L(
+                    Boolean(false),
+                    L())));
 
         public SecsMessage S2F37_EnableEvent => _enableEvent ?? (_enableEvent =
             new SecsMessage(2, 37, "EnableEvent",
-                Item.L(
-                    Item.Boolean(true),
-                    Item.L(
+                L(
+                    Boolean(true),
+                    L(
                         from ceid in EAP.EventReportLink.Events
                         select CeidLinkCreator(ceid.Id)
                     ))));
 
         public SecsMessage S2F35_DisableEventReportLink => _disableEventReportLink ?? (_disableEventReportLink =
             new SecsMessage(2, 35, "DisableEventReportLink",
-                Item.L(
+                L(
                     LinkDataIdCreator("1"),
-                    Item.L(
+                    L(
                         from reportLink in EAP.EventReportLink.Events
                         where reportLink.ReportIDs.Any()
-                        select Item.L(
+                        select L(
                             CeidLinkCreator(reportLink.Id),
-                            Item.L())))));
+                            L())))));
 
         public SecsMessage S2F35_DefineEventReportLink => _defineEventReportLink ?? (_defineEventReportLink =
             new SecsMessage(2, 35, "DefineEventReportLink",
-                Item.L(
+                L(
                     LinkDataIdCreator("2"),
-                    Item.L(
+                    L(
                         from reportLink in EAP.EventReportLink.Events
                         where reportLink.ReportIDs.Any()
-                        select Item.L(
+                        select L(
                             CeidLinkCreator(reportLink.Id),
-                            Item.L(
+                            L(
                                 from rptid in reportLink.ReportIDs
                                 select ReportIdLinkCreator(rptid)
                             ))))));
 
         public SecsMessage S2F33_DisableReport => _disableReport ?? (_disableReport =
             new SecsMessage(2, 33, "DisableReport",
-                Item.L(
+                L(
                     LinkDataIdCreator("3"),
-                    Item.L())));
+                    L())));
 
         public SecsMessage S2F33_DefineReport => _defineReport ?? (_defineReport =
             new SecsMessage(2, 33, "DefineReport",
-                Item.L(
+                L(
                     LinkDataIdCreator("4"),
-                    Item.L(
+                    L(
                         from rptid in EAP.EventReportLink.Reports
                         where rptid.VIDs.Any()
-                        select Item.L(
+                        select L(
                             ReportIdLinkCreator(rptid.Id),
-                            Item.L(
+                            L(
                                 from svid in rptid.VIDs
                                 select SvidLinkCreator(svid)
                             ))))));

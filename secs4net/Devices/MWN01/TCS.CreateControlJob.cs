@@ -11,8 +11,7 @@ namespace Cim.Eap
     {
         async Task TCS_CreateControlJob(CreateControlJobRequest tx)
         {
-            using (var s14f9 = CreateS14F9(tx))
-            using (var s14f10 = await EAP.SendAsync(s14f9))
+            using (var s14f10 = await EAP.SendAsync(CreateS14F9(tx)))
             {
 
                 var returnCode = (byte)s14f10.SecsItem.Items[2].Items[0];
@@ -65,8 +64,7 @@ namespace Cim.Eap
                 _ProcessingJobs.Remove(id);
                 try
                 {
-                    using (var s16f5 = CreateS16F5(id))
-                    using (await EAP.SendAsync(s16f5))
+                    using (await EAP.SendAsync(CreateS16F5(id)))
                     {
                     }
                 }

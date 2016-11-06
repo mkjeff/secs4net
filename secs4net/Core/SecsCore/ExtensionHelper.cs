@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
 using System.Runtime.CompilerServices;
-using static Secs4Net.Item;
 using System.Buffers;
+using static Secs4Net.Item;
 
 namespace Secs4Net
 {
@@ -99,7 +99,7 @@ namespace Secs4Net
             return src.SecsItem.IsMatch(target.SecsItem);
         }
 
-        internal static Item BytesDecode(this SecsFormat format)
+        internal static SecsItem BytesDecode(this SecsFormat format)
         {
             switch (format)
             {
@@ -137,7 +137,7 @@ namespace Secs4Net
 
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
 
-        internal static Item BytesDecode(this SecsFormat format, byte[] data, ref int index, ref int length)
+        internal static SecsItem BytesDecode(this SecsFormat format, byte[] data, ref int index, ref int length)
         {
             switch (format)
             {

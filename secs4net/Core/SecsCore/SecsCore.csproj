@@ -156,10 +156,11 @@
   <ItemGroup>
     <Compile Include="ConnectionState.cs" />
     <Compile Include="ExtensionHelper.cs" />
+    <Compile Include="Format.cs" />
     <Compile Include="Header.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="ISecsGemLogger.cs" />
-    <Compile Include="ItemFactory..cs" />
+    <Compile Include="ItemFactory.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="ItemPool.cs" />
     <Compile Include="Pool.cs" />

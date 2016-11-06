@@ -3,6 +3,7 @@ using Cim.Eap.Data;
 using Cim.Eap.Tx;
 using Secs4Net;
 using System.Threading.Tasks;
+using static Secs4Net.Item;
 
 namespace Cim.Eap {
     partial class Driver {
@@ -24,11 +25,11 @@ namespace Cim.Eap {
 
         async Task ChangeAccessMode(AccessMode changeAccessMode, byte portNo) {
             var S3F23 = new SecsMessage(3, 23, "ChangeAccessMode",
-                Item.L(
-                    Item.A(),
-                    Item.U1((byte)changeAccessMode),
-                    Item.L(
-                        Item.U1(portNo))));
+                L(
+                    A(),
+                    U1((byte)changeAccessMode),
+                    L(
+                        U1(portNo))));
 
             var S3F24 = await EAP.SendAsync(S3F23);
             byte returnCode = (byte)S3F24.SecsItem.Items[0];

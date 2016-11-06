@@ -7,8 +7,7 @@ namespace Cim.Eap {
     partial class Driver {
         async Task TCS_CancelCarrier(CancelCarrierRequest tx)
         {
-            using (var s3f17 = CreateS3F17(tx))
-            using (var s3f18 = await EAP.SendAsync(s3f17))
+            using (var s3f18 = await EAP.SendAsync(CreateS3F17(tx)))
             {
                 var returnCode = (byte) s3f18.SecsItem.Items[0];
                 if (returnCode != 0 && returnCode != 4)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using static System.Diagnostics.Debug;
@@ -166,7 +165,7 @@ namespace Secs4Net
                             (ref int length, out int need) =>
                             {
                                 need = 0;
-                                Item item;
+                                SecsItem item;
                                 if (_format == SecsFormat.List)
                                 {
                                     if (_itemLength == 0)
@@ -341,16 +340,16 @@ namespace Secs4Net
 
         private readonly IPool<ListItemDecoderBuffer> _pool;
 
-        internal ArraySegment<Item> Items { get; private set; }
+        internal ArraySegment<SecsItem> Items { get; private set; }
 
         void SetBuffer(int capacity)
         {
-            Items = new ArraySegment<Item>(ArrayPool<Item>.Shared.Rent(capacity), 0, capacity);
+            Items = new ArraySegment<SecsItem>(ArrayPool<SecsItem>.Shared.Rent(capacity), 0, capacity);
         }
 
-        internal void Add(Item item)
+        internal void Add(SecsItem secsItem)
         {
-            Items.Array[Count++] = item;
+            Items.Array[Count++] = secsItem;
         }
 
         internal int Capacity => Items.Count;

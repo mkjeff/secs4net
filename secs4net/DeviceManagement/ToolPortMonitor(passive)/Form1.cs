@@ -1,17 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Services;
 using System.Threading;
 using System.Windows.Forms;
 using LoadPortMonitor.Properties;
 using Cim.Services;
 using Cim.Management;
 using Secs4Net;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Configuration;
 using System.Runtime.CompilerServices;
+using static Secs4Net.Item;
 
 namespace LoadPortMonitor
 {
@@ -37,10 +34,10 @@ namespace LoadPortMonitor
         }
 
         readonly SecsMessage s1f3 = new SecsMessage(1, 3, "QueryLoadPortStatus",
-                            Item.L(
-                                Item.U2(18026),
-                                Item.U2(18027),
-                                Item.U2(18028)));
+                            L(
+                                U2(18026),
+                                U2(18027),
+                                U2(18028)));
 
         async void GetLoadPortStatus(ISecsDevice device)
         {
@@ -108,10 +105,10 @@ namespace LoadPortMonitor
                     });
                     var readytoload = device.Subscribe(
                         new SecsMessage(6, 11, "ReadyToLoad",
-                            Item.L(
-                                Item.U4(),
-                                Item.U4(114),
-                                Item.L())),
+                            L(
+                                U4(),
+                                U4(114),
+                                L())),
                         msg =>
                         {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
@@ -120,10 +117,10 @@ namespace LoadPortMonitor
 
                     var readytounload = device.Subscribe(
                         new SecsMessage(6, 11, "ReadyToUnload",
-                            Item.L(
-                                Item.U4(),
-                                Item.U4(115),
-                                Item.L())),
+                            L(
+                                U4(),
+                                U4(115),
+                                L())),
                         msg =>
                         {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
@@ -132,10 +129,10 @@ namespace LoadPortMonitor
 
                     var loadcomplete = device.Subscribe(
                         new SecsMessage(6, 11, "LoadComplete",
-                            Item.L(
-                                Item.U4(),
-                                Item.U4(101),
-                                Item.L())),
+                            L(
+                                U4(),
+                                U4(101),
+                                L())),
                         msg =>
                         {
                             byte portId = msg.SecsItem.Items[2].Items[0].Items[1].Items[0].GetValue<byte>();
@@ -144,10 +141,10 @@ namespace LoadPortMonitor
 
                     var unloadcomplete = device.Subscribe(
                         new SecsMessage(6, 11, "",
-                             Item.L(
-                                Item.U4(),
-                                Item.U4(102),
-                                Item.L())),
+                             L(
+                                U4(),
+                                U4(102),
+                                L())),
                         true,
                         msg =>
                         {

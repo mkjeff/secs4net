@@ -22,6 +22,7 @@ using log4net.Layout;
 using log4net.Repository.Hierarchy;
 using Secs4Net;
 using Secs4Net.Json;
+using static Secs4Net.Item;
 
 namespace Cim.Eap
 {
@@ -149,7 +150,7 @@ namespace Cim.Eap
                     gemStatusLabel.Text = _secsGem.State.ToString();
                     eqpAddressStatusLabel.Text = "Device IP: " + _secsGem.DeviceAddress;
                     if (_secsGem.State == ConnectionState.Selected)
-                        _secsGem.SendAsync(new SecsMessage(1, 13, "TestCommunicationsRequest", Item.L()));
+                        _secsGem.SendAsync(new SecsMessage(1, 13, "TestCommunicationsRequest", L()));
                 });
             };
 

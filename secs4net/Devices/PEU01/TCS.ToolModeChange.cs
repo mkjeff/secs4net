@@ -4,6 +4,7 @@ using Cim.Eap.Tx;
 using Secs4Net;
 using System.Linq;
 using System.Threading.Tasks;
+using static Secs4Net.Item;
 
 namespace Cim.Eap {
     partial class Driver {
@@ -63,11 +64,11 @@ namespace Cim.Eap {
 			try {
                 foreach (var port in request.LoadPorts)
                     await EAP.SendAsync(new SecsMessage(3, 23, "ChangeAccessMode",
-                        Item.L(
-                            Item.A(),
-                            Item.U1(0),
-                            Item.L(
-                                Item.U1(GetPortNo(port.Id))))));
+                        L(
+                            A(),
+                            U1(0),
+                            L(
+                                U1(GetPortNo(port.Id))))));
             }catch{}
             try{
                 await EAP.SendAsync(EAP.SecsMessages[1, 15, "RequestOffLine"]);

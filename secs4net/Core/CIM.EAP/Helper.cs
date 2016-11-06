@@ -2,19 +2,27 @@
 using System.Linq;
 using Secs4Net;
 using Cim.Management;
-namespace Cim.Eap {
-    public static class Helper {
-        public static IDisposable SubscribeS6F11(this IEAP eap, string eventName, Action<SecsMessage> callback) {
-            try {
+using static Secs4Net.Item;
+
+namespace Cim.Eap
+{
+    public static class Helper
+    {
+        public static IDisposable SubscribeS6F11(this IEAP eap, string eventName, Action<SecsMessage> callback)
+        {
+            try
+            {
                 var ceid = eap.EventReportLink.Events.FirstOrDefault(id => id.Name == eventName);
                 return eap.Subscribe(
                     new SecsMessage(16, 11, true, eventName,
-                        Item.L(
+                        L(
                             eap.Driver.LinkDataIdCreator(string.Empty),
                             eap.Driver.CeidLinkCreator(ceid.Id),
-                            Item.L())),
+                            L())),
                     callback);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 EapLogger.Warn($"EAP.Subscribe_S6F11 error, event({eventName});{ex.Message}");
                 return null;
             }

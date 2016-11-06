@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Buffers;
 using System.Linq;
 using System.Threading;
+using static Secs4Net.Item;
 
 namespace Secs4Net
 {
@@ -33,10 +35,26 @@ namespace Secs4Net
             if (!Message.ReplyExpected)
                 return true;
 
-            replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(((ArraySegment<byte>)_header).ToArray()));
-            replyMessage.ReplyExpected = false;
+            var autoDispose = false;
+            if (replyMessage == null)
+            {
+                autoDispose = true;
+                var arr = ArrayPool<byte>.Shared.Rent(10);
+                Buffer.BlockCopy(((ArraySegment<byte>) _header).Array, 0, arr, 0, 10);
+                replyMessage = new SecsMessage(9,
+                                               7,
+                                               false,
+                                               "Unknown Message",
+                                               B(arr));
+            }
+            else
+            {
+                replyMessage.ReplyExpected = false;
+            }
 
-            _secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes);
+            _secsGem.SendDataMessageAsync(replyMessage,
+                                          replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes,
+                                          autoDispose);
 
             return true;
         }

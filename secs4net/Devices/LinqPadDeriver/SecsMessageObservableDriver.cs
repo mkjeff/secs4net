@@ -20,7 +20,7 @@ namespace Secs4Net.LinqPad.Deriver
     {
         public override IEnumerable<string> GetAssembliesToAdd(IConnectionInfo cxInfo)
         {
-            yield return typeof(Item).Assembly.Location;
+            yield return typeof(SecsItem).Assembly.Location;
             yield return typeof(JsonExtension).Assembly.Location;
             yield return typeof(SecsObservableDataContext).Assembly.Location;
             yield return typeof(JsonConvert).Assembly.Location;
@@ -82,7 +82,7 @@ namespace Secs4Net.LinqPad.Deriver
 
     static class ExtensionMethod
     {
-        public static ExplorerItem ToExplorerItem(this Item item)
+        public static ExplorerItem ToExplorerItem(this SecsItem item)
         {
             if (item == null || item.Count == 0)
                 return null;
@@ -108,8 +108,8 @@ namespace Secs4Net.LinqPad.Deriver
             }
         }
 
-        static ExplorerItem CreateExplorerItem(Item item)
-            => new ExplorerItem($"{item.Format} [{item.Count}] {string.Join(" ", Unsafe.As<byte[]>(item.Values))}"
+        static ExplorerItem CreateExplorerItem(SecsItem secsItem)
+            => new ExplorerItem($"{secsItem.Format} [{secsItem.Count}] {string.Join(" ", Unsafe.As<byte[]>(secsItem.Values))}"
                 , ExplorerItemKind.Property, ExplorerIcon.Column);
 
         static ExplorerItem CreateExplorerItem(string value, string format,int count)

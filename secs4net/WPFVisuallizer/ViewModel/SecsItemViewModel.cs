@@ -2,19 +2,19 @@
 
 namespace SecsMessageVisuallizer.ViewModel {
     public class SecsItemViewModel : TreeViewItemViewModel {
-        readonly Item _secsItem;
-        public SecsItemViewModel(Item item, SecsMessageViewModel secsMsg)
+        readonly SecsItem _secsItem;
+        public SecsItemViewModel(SecsItem item, SecsMessageViewModel secsMsg)
             : base(secsMsg, item.Format == SecsFormat.List && item.Items.Count > 0) {
             _secsItem = item;
         }
 
-        public SecsItemViewModel(Item item, SecsItemViewModel parentItem)
+        public SecsItemViewModel(SecsItem item, SecsItemViewModel parentItem)
             : base(parentItem, item.Format == SecsFormat.List && item.Items.Count > 0) {
             _secsItem = item;
         }
 
         protected override void LoadChildren() {
-            foreach (Item item in _secsItem.Items) {
+            foreach (var item in _secsItem.Items) {
                 base.Children.Add(new SecsItemViewModel(item, this));
             }
         }

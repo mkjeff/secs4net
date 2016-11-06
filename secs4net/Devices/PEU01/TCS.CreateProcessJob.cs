@@ -3,28 +3,29 @@ using Cim.Eap.Data;
 using Cim.Eap.Tx;
 using Secs4Net;
 using System.Threading.Tasks;
+using static Secs4Net.Item;
 
 namespace Cim.Eap {
     partial class Driver {
         async Task HandleTCS(CreateProcessJobRequest tx) {
             var s16f16 = await EAP.SendAsync(new SecsMessage(16, 15, "CreateProcessJob",
-                Item.L(
-                    Item.U4(0),
-                    Item.L(from pj in tx.ProcessJobs select
-                        Item.L(
-                            Item.A(pj.Id),
-                            Item.B(2),
-                            Item.L(from carrier in pj.Carriers select
-                                Item.L(
-                                    Item.A(carrier.Id),
-                                    Item.L(from slot in carrier.SlotMap select
-                                        Item.U1(slot.SlotNo)))),
-                            Item.L(
-                                Item.A("STANDARD"),
-                                Item.A(pj.RecipeId),
-                                Item.L()),
-                            Item.Boolean(true),
-                            Item.L())))));
+                L(
+                    U4(0),
+                    L(from pj in tx.ProcessJobs select
+                        L(
+                            A(pj.Id),
+                            B(2),
+                            L(from carrier in pj.Carriers select
+                                L(
+                                    A(carrier.Id),
+                                    L(from slot in carrier.SlotMap select
+                                        U1(slot.SlotNo)))),
+                            L(
+                                A("STANDARD"),
+                                A(pj.RecipeId),
+                                L()),
+                            Boolean(true),
+                            L())))));
 
             if (!(bool)s16f16.SecsItem.Items[1].Items[0])
                 throw new ScenarioException("CreateProcessJob fail. ");

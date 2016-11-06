@@ -7,6 +7,7 @@ using Cim.Management;
 using Cim.Services;
 using LoadPortMonitor.Properties;
 using Secs4Net;
+using static Secs4Net.Item;
 
 namespace LoadPortMonitor
 {
@@ -29,10 +30,10 @@ namespace LoadPortMonitor
         }
 
         readonly SecsMessage s1f3 = new SecsMessage(1, 3, "QueryLoadPortStatus",
-                            Item.L(
-                                Item.U2(18026),
-                                Item.U2(18027),
-                                Item.U2(18028)));
+                            L(
+                                U2(18026),
+                                U2(18027),
+                                U2(18028)));
 
         async void btnRefresh_Click(object sender, EventArgs e)
         {
