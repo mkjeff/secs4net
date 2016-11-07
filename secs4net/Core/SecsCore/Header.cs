@@ -33,6 +33,8 @@ namespace Secs4Net
             // F
             buffer[3] = F;
 
+            buffer[4] = 0;
+
             // MessageType
             buffer[5] = (byte)MessageType;
 
@@ -50,7 +52,6 @@ namespace Secs4Net
             Unsafe.Copy(target + 6, ref tmp);
 
             return buffer;
-            ;
         }
 
         internal static unsafe MessageHeader Decode(byte[] buffer, int startIndex)

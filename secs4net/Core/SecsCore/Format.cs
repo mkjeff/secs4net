@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,14 +24,14 @@ namespace Secs4Net
 
         public static SecsItem Create(SecsItem v0)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(1);
+            var result = PooledListItem.ItemListPool.Rent(1);
             result[0] = v0;
             return Create(new ArraySegment<SecsItem>(result, 0, 1));
         }
 
         public static SecsItem Create(SecsItem v0, SecsItem v1)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(2);
+            var result = PooledListItem.ItemListPool.Rent(2);
             result[0] = v0;
             result[1] = v1;
             return Create(new ArraySegment<SecsItem>(result, 0, 2));
@@ -40,7 +39,7 @@ namespace Secs4Net
 
         public static SecsItem Create(SecsItem v0, SecsItem v1, SecsItem v2)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(3);
+            var result = PooledListItem.ItemListPool.Rent(3);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -49,7 +48,7 @@ namespace Secs4Net
 
         public static SecsItem Create(SecsItem v0, SecsItem v1, SecsItem v2, SecsItem v3)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(4);
+            var result = PooledListItem.ItemListPool.Rent(4);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -59,7 +58,7 @@ namespace Secs4Net
 
         public static SecsItem Create(SecsItem v0, SecsItem v1, SecsItem v2, SecsItem v3, SecsItem v4)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(5);
+            var result = PooledListItem.ItemListPool.Rent(5);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -70,7 +69,7 @@ namespace Secs4Net
 
         public static SecsItem Create(SecsItem v0, SecsItem v1, SecsItem v2, SecsItem v3, SecsItem v4, SecsItem v5)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(6);
+            var result = PooledListItem.ItemListPool.Rent(6);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -82,7 +81,7 @@ namespace Secs4Net
 
         public static SecsItem Create(SecsItem v0, SecsItem v1, SecsItem v2, SecsItem v3, SecsItem v4, SecsItem v5, SecsItem v6)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(7);
+            var result = PooledListItem.ItemListPool.Rent(7);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -95,7 +94,7 @@ namespace Secs4Net
 
         public static SecsItem Create(SecsItem v0, SecsItem v1, SecsItem v2, SecsItem v3, SecsItem v4, SecsItem v5, SecsItem v6, SecsItem v7)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(8);
+            var result = PooledListItem.ItemListPool.Rent(8);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -109,7 +108,7 @@ namespace Secs4Net
 
         public static SecsItem Create(SecsItem v0, SecsItem v1, SecsItem v2, SecsItem v3, SecsItem v4, SecsItem v5, SecsItem v6, SecsItem v7, SecsItem v8)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(9);
+            var result = PooledListItem.ItemListPool.Rent(9);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -124,7 +123,7 @@ namespace Secs4Net
 
         public static SecsItem Create(SecsItem v0, SecsItem v1, SecsItem v2, SecsItem v3, SecsItem v4, SecsItem v5, SecsItem v6, SecsItem v7, SecsItem v8, SecsItem v9)
         {
-            var result = ArrayPool<SecsItem>.Shared.Rent(10);
+            var result = PooledListItem.ItemListPool.Rent(10);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -181,14 +180,14 @@ namespace Secs4Net
 
         public static SecsItem Create(TValue v0)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(1);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(1);
             result[0] = v0;
             return Create(new ArraySegment<TValue>(result, 0, 1));
         }
 
         public static SecsItem Create(TValue v0, TValue v1)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(2);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(2);
             result[0] = v0;
             result[1] = v1;
             return Create(new ArraySegment<TValue>(result, 0, 2));
@@ -196,7 +195,7 @@ namespace Secs4Net
 
         public static SecsItem Create(TValue v0, TValue v1, TValue v2)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(3);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(3);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -205,7 +204,7 @@ namespace Secs4Net
 
         public static SecsItem Create(TValue v0, TValue v1, TValue v2, TValue v3)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(4);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(4);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -215,7 +214,7 @@ namespace Secs4Net
 
         public static SecsItem Create(TValue v0, TValue v1, TValue v2, TValue v3, TValue v4)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(5);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(5);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -226,7 +225,7 @@ namespace Secs4Net
 
         public static SecsItem Create(TValue v0, TValue v1, TValue v2, TValue v3, TValue v4, TValue v5)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(6);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(6);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -238,7 +237,7 @@ namespace Secs4Net
 
         public static SecsItem Create(TValue v0, TValue v1, TValue v2, TValue v3, TValue v4, TValue v5, TValue v6)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(7);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(7);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -251,7 +250,7 @@ namespace Secs4Net
 
         public static SecsItem Create(TValue v0, TValue v1, TValue v2, TValue v3, TValue v4, TValue v5, TValue v6, TValue v7)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(8);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(8);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -265,7 +264,7 @@ namespace Secs4Net
 
         public static SecsItem Create(TValue v0, TValue v1, TValue v2, TValue v3, TValue v4, TValue v5, TValue v6, TValue v7, TValue v8)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(9);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(9);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;
@@ -280,7 +279,7 @@ namespace Secs4Net
 
         public static SecsItem Create(TValue v0, TValue v1, TValue v2, TValue v3, TValue v4, TValue v5, TValue v6, TValue v7, TValue v8, TValue v9)
         {
-            var result = ArrayPool<TValue>.Shared.Rent(10);
+            var result = ValueTypeArrayPool<TValue>.Pool.Rent(10);
             result[0] = v0;
             result[1] = v1;
             result[2] = v2;

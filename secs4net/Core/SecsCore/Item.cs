@@ -10,9 +10,8 @@ using static System.Diagnostics.Debug;
 
 namespace Secs4Net
 {
-    public abstract class SecsItem : IDisposable
+    public abstract class SecsItem
     {
-        protected internal abstract ArraySegment<byte> GetEncodedData();
         protected SecsItem(SecsFormat format)
         {
             Format = format;
@@ -22,14 +21,14 @@ namespace Secs4Net
         public abstract int Count { get; }
         public abstract bool IsMatch(SecsItem target);
 
-        [Obsolete("This property only for debuging. Don't use in production.")]
+        [Obsolete("This property only for debugging. Don't use in production.")]
         public IReadOnlyList<byte> RawBytes
         {
             get
             {
                 var tmp = GetEncodedData();
                 var result = tmp.ToArray();
-                ArrayPool<byte>.Shared.Return(tmp.Array);
+                SecsGem.EncodedBytePool.Return(tmp.Array);
                 return result;
             }
         }
@@ -51,24 +50,34 @@ namespace Secs4Net
         }
 
         /// <summary>
-        /// get value0 by specific type
+        /// get first value by specific type
         /// </summary>
-        /// <typeparam name="T">return value0 type</typeparam>
+        /// <typeparam name="T">value type</typeparam>
         /// <returns></returns>
         public virtual T GetValue<T>() where T : struct
         {
             throw new NotSupportedException("This is not a value Item");
         }
+
+        /// <summary>
+        /// get value array by specific type
+        /// </summary>
+        /// <typeparam name="T">value type</typeparam>
+        /// <returns></returns>
         public virtual T[] GetValues<T>() where T : struct
         {
             throw new NotSupportedException("This is not a value Item");
         }
+
+        /// <summary>
+        /// get string value
+        /// </summary>
+        /// <returns></returns>
         public virtual string GetString()
         {
             throw new NotSupportedException("This is not a string value Item");
         }
 
-        #region conversion operator
         public static explicit operator string(SecsItem secsItem) => secsItem.GetString();
         public static explicit operator byte(SecsItem secsItem) => secsItem.GetValue<byte>();
         public static explicit operator sbyte(SecsItem secsItem) => secsItem.GetValue<sbyte>();
@@ -81,8 +90,6 @@ namespace Secs4Net
         public static explicit operator float(SecsItem secsItem) => secsItem.GetValue<float>();
         public static explicit operator double(SecsItem secsItem) => secsItem.GetValue<double>();
         public static explicit operator bool(SecsItem secsItem) => secsItem.GetValue<bool>();
-
-        #endregion
 
         /// <summary>
         /// Encode item to raw data buffer
@@ -101,6 +108,8 @@ namespace Secs4Net
             return length;
         }
 
+        protected internal abstract ArraySegment<byte> GetEncodedData();
+
         /// <summary>
         /// Encode Item header + value0 (initial array only)
         /// </summary>
@@ -114,7 +123,7 @@ namespace Secs4Net
             if (valueCount <= 0xff)
             {//	1 byte
                 headerlength = 2;
-                var result = ArrayPool<byte>.Shared.Rent(valueCount + 2);
+                var result = SecsGem.EncodedBytePool.Rent(valueCount + 2);
                 result[0] = (byte)((byte)format | 1);
                 result[1] = ptr[0];
                 return result;
@@ -122,7 +131,7 @@ namespace Secs4Net
             if (valueCount <= 0xffff)
             {//	2 byte
                 headerlength = 3;
-                var result = ArrayPool<byte>.Shared.Rent(valueCount + 3);
+                var result = SecsGem.EncodedBytePool.Rent(valueCount + 3);
                 result[0] = (byte)((byte)format | 2);
                 result[1] = ptr[1];
                 result[2] = ptr[0];
@@ -131,7 +140,7 @@ namespace Secs4Net
             if (valueCount <= 0xffffff)
             {//	3 byte
                 headerlength = 4;
-                var result = ArrayPool<byte>.Shared.Rent(valueCount + 4);
+                var result = SecsGem.EncodedBytePool.Rent(valueCount + 4);
                 result[0] = (byte)((byte)format | 3);
                 result[1] = ptr[2];
                 result[2] = ptr[1];
@@ -143,13 +152,13 @@ namespace Secs4Net
 
         protected static ArraySegment<byte> EncodEmpty(SecsFormat format)
         {
-            var arr = ArrayPool<byte>.Shared.Rent(2);
+            var arr = SecsGem.EncodedBytePool.Rent(2);
             arr[0] = (byte)((byte)format | 1);
             arr[1] = 0;
             return new ArraySegment<byte>(arr, 0, 2);
         }
 
-        public virtual void Dispose()
+        internal virtual void ReleaseValue()
         {
         }
     }
@@ -157,19 +166,19 @@ namespace Secs4Net
     internal abstract class SecsItem<TFormat, TValue> : SecsItem
         where TFormat : IFormat<TValue>
     {
-        private static readonly SecsFormat _Format;
+        private static readonly SecsFormat SecsFormat;
 
         static SecsItem()
         {
             var format = typeof(TFormat)
                 .GetFields()
                 .First(f => f.IsLiteral && f.Name == "Format");
-            _Format = (SecsFormat)format.GetValue(null);
+            SecsFormat = (SecsFormat)format.GetValue(null);
         }
 
 
         protected SecsItem()
-            : base(_Format)
+            : base(SecsFormat)
         {
         }
 
@@ -193,10 +202,10 @@ namespace Secs4Net
             if (values.Count == 0)
                 return EncodEmpty(Format);
 
-            int sizeOf = Unsafe.SizeOf<TValue>();
-            int bytelength = values.Count * sizeOf;
+            var sizeOf = Unsafe.SizeOf<TValue>();
+            var bytelength = values.Count * sizeOf;
             int headerLength;
-            byte[] result = EncodeValue(Format, bytelength, out headerLength);
+            var result = EncodeValue(Format, bytelength, out headerLength);
             Buffer.BlockCopy(values.Array, 0, result, headerLength, bytelength);
             result.Reverse(headerLength, headerLength + bytelength, sizeOf);
             return new ArraySegment<byte>(result, 0, headerLength + bytelength);
@@ -233,7 +242,7 @@ namespace Secs4Net
 
             //return memcmp(Unsafe.As<byte[]>(_values), Unsafe.As<byte[]>(target._values), Buffer.ByteLength((Array)_values)) == 0;
             return UnsafeCompare(values.Array,
-                Unsafe.As<SecsItemPooledWrapper<ValueItem<TFormat, TValue>, TFormat, TValue>>(target).Item.values.Array, values.Count);
+                Unsafe.As<PooledSecsItemWrapper<ValueItem<TFormat, TValue>, TFormat, TValue>>(target).WrappedItem.values.Array, values.Count);
         }
 
         public sealed override string ToString()
@@ -266,9 +275,9 @@ namespace Secs4Net
         where TFormat : IFormat<TValue>
         where TValue : struct
     {
-        public override void Dispose()
+        internal override void ReleaseValue()
         {
-            ArrayPool<TValue>.Shared.Return(values.Array);
+            ValueTypeArrayPool<TValue>.Pool.Return(values.Array);
         }
     }
 
@@ -287,9 +296,9 @@ namespace Secs4Net
             if (string.IsNullOrEmpty(_str))
                 return EncodEmpty(Format);
 
-            int bytelength = _str.Length;
+            var bytelength = _str.Length;
             int headerLength;
-            byte[] result = EncodeValue(Format, bytelength, out headerLength);
+            var result = EncodeValue(Format, bytelength, out headerLength);
             var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : SecsExtension.JIS8Encoding;
             encoder.GetBytes(_str, 0, _str.Length, result, headerLength);
             return new ArraySegment<byte>(result, 0, headerLength + bytelength);
@@ -312,7 +321,7 @@ namespace Secs4Net
             if (Count != target.Count)
                 return false;
 
-            return _str == Unsafe.As<SecsItemPooledWrapper<StringItem<TFormat>,TFormat,string>>(target).Item._str;
+            return _str == Unsafe.As<PooledSecsItemWrapper<StringItem<TFormat>,TFormat,string>>(target).WrappedItem._str;
         }
 
         public override string ToString()
@@ -331,7 +340,7 @@ namespace Secs4Net
 
         protected internal sealed override ArraySegment<byte> GetEncodedData()
         {
-            var arr = ArrayPool<byte>.Shared.Rent(2);
+            var arr = SecsGem.EncodedBytePool.Rent(2);
             arr[0] = (byte)SecsFormat.List | 1;
             arr[1] = unchecked((byte)list.Count);
             return new ArraySegment<byte>(arr, 0, 2);
@@ -356,7 +365,7 @@ namespace Secs4Net
                 return false;
 
             return IsMatch(list.Array,
-                           Unsafe.As<SecsItemPooledWrapper<ListItem, ListFormat, SecsItem>>(target).Item
+                           Unsafe.As<PooledSecsItemWrapper<ListItem, ListFormat, SecsItem>>(target).WrappedItem
                                  .list.Array,
                            Count);
         }
@@ -369,19 +378,21 @@ namespace Secs4Net
             return true;
         }
 
-        public override void Dispose()
+        internal override void ReleaseValue()
         {
             foreach (var item in list)
-                item.Dispose();
+                item.ReleaseValue();
         }
     }
 
     internal sealed class PooledListItem : ListItem
     {
-        public override void Dispose()
+        internal static ArrayPool<SecsItem> ItemListPool = ArrayPool<SecsItem>.Create(10, 100);
+
+        internal override void ReleaseValue()
         {
-            base.Dispose();
-            ArrayPool<SecsItem>.Shared.Return(list.Array);
+            base.ReleaseValue();
+            ItemListPool.Return(list.Array);
         }
     }
 }

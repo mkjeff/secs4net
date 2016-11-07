@@ -8,9 +8,9 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
 try
 {
     // await secondary message. 
-    // primary message will auto-dispose by default.
-    // developer manualy dispose for pooled object releasing
-    using(var s3f18 = await device.SendAsync(CreateS3F17())){ 
+    // primary message auto-dispose after sent by default.
+    // replied message need manualy dispose for pooled object releasing
+    using(var s3f18 = await device.SendAsync(CreateS3F17() /* , autoDispose: true */)){ 
     
         //access item value
         byte b1 = (byte)s3f18.SecsItem.Items[0]; 

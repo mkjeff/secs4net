@@ -73,7 +73,7 @@ namespace Secs4Net
             if (value.Length == 0)
                 return string.Empty;
             int length = value.Length*3;
-            char[] chs = ArrayPool<char>.Shared.Rent(length);
+            var chs = new char[length];
             for (int ci = 0, i = 0; ci < length; ci += 3)
             {
                 byte num = value[i++];
@@ -82,7 +82,6 @@ namespace Secs4Net
                 chs[ci + 2] = ' ';
             }
             var result = new string(chs, 0, length - 1);
-            ArrayPool<char>.Shared.Return(chs);
             return result;
         }
 
@@ -132,7 +131,7 @@ namespace Secs4Net
                 case SecsFormat.F8:
                     return F8();
             }
-            throw new ArgumentException($"Invalid format: {format.GetName()}", nameof(format));
+            throw new ArgumentException("Invalid format", nameof(format));
         }
 
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
@@ -178,7 +177,7 @@ namespace Secs4Net
             int elmSize = Unsafe.SizeOf<T>();
             data.Reverse(index, index + length, elmSize);
             var arrLength = length/elmSize;
-            var values = ArrayPool<T>.Shared.Rent(arrLength);
+            var values = ValueTypeArrayPool<T>.Pool.Rent(arrLength);
             Buffer.BlockCopy(data, index, values, 0, length);
             //unsafe
             //{

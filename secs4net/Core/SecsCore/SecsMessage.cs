@@ -17,7 +17,7 @@ namespace Secs4Net
         public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
         public void Dispose()
         {
-            SecsItem?.Dispose();
+            SecsItem?.ReleaseValue();
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Secs4Net
 
         public string Name { get; set; }
 
-        [Obsolete("This property only for debuging. Don't use in production.")]
+        [Obsolete("This property only for debugging. Don't use in production.")]
         public IReadOnlyList<ArraySegment<byte>> RawBytes
         {
             get
@@ -52,9 +52,7 @@ namespace Secs4Net
                              {
                                  S = S,
                                  F = F,
-                                 ReplyExpected = ReplyExpected,
-                                 DeviceId = 0,
-                                 SystemBytes = 0
+                                 ReplyExpected = ReplyExpected
                              };
                 EncodeTo(result, SecsGem.EncodeHeader(ref header) );
                 return result;
@@ -105,11 +103,17 @@ namespace Secs4Net
             var lengthBits = (byte)(bytes[index] & 3);
             index++;
 
-            var itemLengthBytes = ArrayPool<byte>.Shared.Rent(4);
-            Array.Copy(bytes, index, itemLengthBytes, 0, lengthBits);
-            Array.Reverse(itemLengthBytes, 0, lengthBits);
-            int length = BitConverter.ToInt32(itemLengthBytes, 0);  // max to 3 byte length
-            ArrayPool<byte>.Shared.Return(itemLengthBytes);
+            Array.Reverse(bytes, index, lengthBits);
+            var length = 0;
+            unsafe
+            {
+                Unsafe.CopyBlock(
+                    Unsafe.AsPointer(ref length),
+                    Unsafe.AsPointer(ref bytes[index]),
+                    lengthBits
+                );
+            }
+
             index += lengthBits;
 
             if (format == SecsFormat.List)
@@ -144,13 +148,13 @@ namespace Secs4Net
             var totalLength = 10 + SecsItem.EncodeTo(buffer); // total length = item + header
 
             // encode total length
-            var msgLengthByte = ArrayPool<byte>.Shared.Rent(4);
+            var msgLengthByte = SecsGem.EncodedBytePool.Rent(4);
             unsafe
             {
                 Unsafe.Write(Unsafe.AsPointer(ref msgLengthByte[0]), totalLength);
             }
 
-            Array.Reverse(msgLengthByte);
+            Array.Reverse(msgLengthByte, 0, 4);
             buffer[0] = new ArraySegment<byte>(msgLengthByte, 0, 4);
         }
 

@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using static System.Diagnostics.Debug;
 
 namespace Secs4Net
@@ -54,6 +55,8 @@ namespace Secs4Net
         private byte _lengthBits;
         private int _itemLength;
 
+        private byte[] itemLengthBytes =new byte[4];
+
         public void Reset()
         {
             _stack.Clear();
@@ -83,7 +86,14 @@ namespace Secs4Net
                                     return 0;
 
                                 Array.Reverse(Buffer, _decodeIndex, 4);
-                                _messageDataLength = BitConverter.ToUInt32(Buffer, _decodeIndex);
+                                unsafe
+                                {
+                                    Unsafe.CopyBlock(
+                                        Unsafe.AsPointer(ref _messageDataLength),
+                                        Unsafe.AsPointer(ref Buffer[_decodeIndex]),
+                                        4);
+                                }
+
                                 Trace.WriteLine($"Get Message Length: {_messageDataLength}");
                                 _decodeIndex += 4;
                                 length -= 4;
@@ -147,13 +157,17 @@ namespace Secs4Net
                                 if (!CheckAvailable(ref length, _lengthBits, out need))
                                     return 3;
 
-                                var itemLengthBytes = ArrayPool<byte>.Shared.Rent(4);
-                                Array.Clear(itemLengthBytes, 0, 4);
-                                Array.Copy(Buffer, _decodeIndex, itemLengthBytes, 0, _lengthBits);
-                                Array.Reverse(itemLengthBytes, 0, _lengthBits);
+                                Array.Reverse(Buffer, _decodeIndex, _lengthBits);
+                                unsafe
+                                {
+                                    Unsafe.CopyBlock(
+                                        Unsafe.AsPointer(ref _itemLength),
+                                        Unsafe.AsPointer(ref Buffer[_decodeIndex]),
+                                        _lengthBits
+                                    );
+                                }
 
                                 _itemLength = BitConverter.ToInt32(itemLengthBytes, 0);
-                                ArrayPool<byte>.Shared.Return(itemLengthBytes);
                                 Trace.WriteLineIf(_format != SecsFormat.List,
                                                   $"Get format: {_format}, length: {_itemLength}");
 
@@ -347,7 +361,7 @@ namespace Secs4Net
 
         void SetBuffer(int capacity)
         {
-            Items = new ArraySegment<SecsItem>(ArrayPool<SecsItem>.Shared.Rent(capacity), 0, capacity);
+            Items = new ArraySegment<SecsItem>(PooledListItem.ItemListPool.Rent(capacity), 0, capacity);
         }
 
         internal void Add(SecsItem secsItem)

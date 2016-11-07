@@ -155,6 +155,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectionState.cs" />
+    <Compile Include="DecodeValuePool.cs" />
     <Compile Include="ExtensionHelper.cs" />
     <Compile Include="Format.cs" />
     <Compile Include="Header.cs" />

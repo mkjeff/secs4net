@@ -14,6 +14,9 @@ namespace Secs4Net
 {
     public sealed class SecsGem : IDisposable
     {
+        internal const int EncodeBytePoolMaxArrayLength = 1024*1024;
+        internal const int EncodeBytePoolMaxArrayPerBucket = 500;
+
         /// <summary>
         /// HSMS connection state changed event
         /// </summary>
@@ -121,10 +124,11 @@ namespace Secs4Net
 
         private static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         private static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
-        static readonly Pool<IList<ArraySegment<byte>>> EncoderPool
+        private static readonly Pool<IList<ArraySegment<byte>>> EncodedBufferPool
             = new Pool<IList<ArraySegment<byte>>>(1000, p => new List<ArraySegment<byte>>());
 
-        private static readonly ArrayPool<byte> HeaderArrayPool = ArrayPool<byte>.Create(10, 100);
+        internal static readonly ArrayPool<byte> EncodedBytePool
+            = ArrayPool<byte>.Create(EncodeBytePoolMaxArrayLength, EncodeBytePoolMaxArrayPerBucket);
 
         private readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
 
@@ -321,7 +325,7 @@ namespace Secs4Net
         }
 
         internal static ArraySegment<byte> EncodeHeader(ref MessageHeader header)
-            => new ArraySegment<byte>(header.EncodeTo(HeaderArrayPool.Rent(10)));
+            => new ArraySegment<byte>(header.EncodeTo(EncodedBytePool.Rent(10)), 0, 10);
 
         private void SendControlMessage(MessageType msgType, int systembyte)
         {
@@ -330,7 +334,7 @@ namespace Secs4Net
             {
                 _replyExpectedMsgs[systembyte] = token;
             }
-            var bufferList = EncoderPool.Acquire();
+            var bufferList = EncodedBufferPool.Acquire();
 
             bufferList.Add(GetEmptyDataMessageLengthBytes());
 
@@ -355,7 +359,7 @@ namespace Secs4Net
 
         internal static ArraySegment<byte> GetEmptyDataMessageLengthBytes()
         {
-            var lengthBytes = ArrayPool<byte>.Shared.Rent(4);
+            var lengthBytes = SecsGem.EncodedBytePool.Rent(4);
             lengthBytes[0] = 0;
             lengthBytes[1] = 0;
             lengthBytes[2] = 0;
@@ -390,10 +394,10 @@ namespace Secs4Net
         private static void ReleaseEncoderBuffer(IList<ArraySegment<byte>> e)
         {
             foreach (var b in e)
-                ArrayPool<byte>.Shared.Return(b.Array);
+                EncodedBytePool.Return(b.Array);
 
             e.Clear();
-            EncoderPool.Release(e);
+            EncodedBufferPool.Release(e);
         }
 
         private void HandleControlMessage(MessageHeader header)
@@ -467,7 +471,7 @@ namespace Secs4Net
                              SystemBytes = systembyte
                          };
 
-            var bufferList = EncoderPool.Acquire();
+            var bufferList = EncodedBufferPool.Acquire();
             msg.EncodeTo(bufferList, EncodeHeader(ref header));
 
             var eap = new SocketAsyncEventArgs
