@@ -20,7 +20,7 @@ namespace Secs4Net
         public static SecsItem Create(SecsItem[] value)
             => ItemPool<ListItem, ListFormat, SecsItem>.Acquire(new ArraySegment<SecsItem>(value));
 
-        public static SecsItem Create(ArraySegment<SecsItem> value)
+        internal static SecsItem Create(ArraySegment<SecsItem> value)
             => ItemPool<PooledListItem, ListFormat, SecsItem>.Acquire(value);
 
         public static SecsItem Create(SecsItem v0)
@@ -176,7 +176,7 @@ namespace Secs4Net
         public static SecsItem Create(TValue[] value)
             => ItemPool<ValueItem<TFormat, TValue>, TFormat, TValue>.Acquire(new ArraySegment<TValue>(value));
 
-        public static SecsItem Create(ArraySegment<TValue> value)
+        internal static SecsItem Create(ArraySegment<TValue> value)
             => ItemPool<PooledValueItem<TFormat, TValue>, TFormat, TValue>.Acquire(value);
 
         public static SecsItem Create(TValue v0)
