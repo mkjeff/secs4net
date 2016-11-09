@@ -37,7 +37,10 @@ namespace Secs4Net
 
             if (replyMessage == null)
             {
-                replyMessage = new SecsMessage(9, 7, false, "Unknown Message", B(SecsGem.EncodeHeader(ref _header)));
+                var tempHeaderBytes = SecsGem.EncodeHeader(ref _header);
+                replyMessage = new SecsMessage(9, 7, false, "Unknown Message", B(tempHeaderBytes.ToArray()));
+                // EncodeHeader will use EncodedBytePool, need return to pool
+                SecsGem.EncodedBytePool.Return(tempHeaderBytes.Array);
             }
             else
             {

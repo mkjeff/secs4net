@@ -48,7 +48,7 @@ namespace Secs4Net
         /// </summary>
         private int _previousRemainedCount;
 
-        private readonly Stack<ListItemDecoderBuffer> _stack = new Stack<ListItemDecoderBuffer>();
+        private readonly Stack<ItemListBuffer> _stack = new Stack<ItemListBuffer>();
         private uint _messageDataLength;
         private MessageHeader _msgHeader;
         private SecsFormat _format;
@@ -189,7 +189,7 @@ namespace Secs4Net
                                     }
                                     else
                                     {
-                                        _stack.Push(ListItemDecoderBuffer.Create(_itemLength));
+                                        _stack.Push(ItemListBuffer.Create(_itemLength));
                                         return 2;
                                     }
                                 }
@@ -226,7 +226,7 @@ namespace Secs4Net
                                 while (list.Count == list.Capacity)
                                 {
                                     using (var buffer = _stack.Pop())
-                                        item = Item.L(buffer.Items);
+                                        item = Item.L(buffer.PooledItems);
 
                                     Trace.WriteLine($"Complete List: {item.Count}");
                                     if (_stack.Count > 0)
@@ -338,38 +338,34 @@ namespace Secs4Net
         }
     }
 
-    internal sealed class ListItemDecoderBuffer : IDisposable
+    internal sealed class ItemListBuffer : IDisposable
     {
-        private static readonly Pool<ListItemDecoderBuffer> Pool
-            = new Pool<ListItemDecoderBuffer>(100, p => new ListItemDecoderBuffer(p), poolAccessMode: PoolAccessMode.LIFO);
+        private static readonly Pool<ItemListBuffer> Pool
+            = new Pool<ItemListBuffer>(100, p => new ItemListBuffer(p), poolAccessMode: PoolAccessMode.LIFO);
 
-        internal static ListItemDecoderBuffer Create(int capacity)
+        internal static ItemListBuffer Create(int capacity)
         {
             var result = Pool.Acquire();
-            result.SetBuffer(capacity);
+            result.Count = 0; // reset filled index
+            result.PooledItems = new ArraySegment<SecsItem>(SecsItemArrayPool.Pool.Rent(capacity), 0, capacity);
             return result;
         }
 
-        private ListItemDecoderBuffer(IPool<ListItemDecoderBuffer> pool)
+        private ItemListBuffer(Pool<ItemListBuffer> pool)
         {
             _pool = pool;
         }
 
-        private readonly IPool<ListItemDecoderBuffer> _pool;
+        private readonly Pool<ItemListBuffer> _pool;
 
-        internal ArraySegment<SecsItem> Items { get; private set; }
-
-        void SetBuffer(int capacity)
-        {
-            Items = new ArraySegment<SecsItem>(PooledListItem.ItemListPool.Rent(capacity), 0, capacity);
-        }
+        internal ArraySegment<SecsItem> PooledItems { get; private set; }
 
         internal void Add(SecsItem secsItem)
         {
-            Items.Array[Count++] = secsItem;
+            PooledItems.Array[Count++] = secsItem;
         }
 
-        internal int Capacity => Items.Count;
+        internal int Capacity => PooledItems.Count;
 
         internal int Count { get; private set; }
 

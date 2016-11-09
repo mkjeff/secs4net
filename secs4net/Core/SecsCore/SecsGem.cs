@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -142,7 +143,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="isActive">passive or active mode</param>
         /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
-        /// <param name="port">if active mode it should be remote deivice listener's port</param>
+        /// <param name="port">if active mode it should be remote device listener's port</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
         public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
         {
@@ -182,7 +183,7 @@ namespace Secs4Net
 
             var receiveCompleteEvent = new SocketAsyncEventArgs();
             receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-            receiveCompleteEvent.Completed += ReceiveEventCompleted;
+            receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
             if (IsActive)
             {
                 _startImpl = async () =>
@@ -215,7 +216,7 @@ namespace Secs4Net
 
                     // hook receive event first, because no message will received before 'SelectRequest' send to device
                     if (!_socket.ReceiveAsync(receiveCompleteEvent))
-                        ReceiveEventCompleted(_socket, receiveCompleteEvent);
+                        SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
 
                     SendControlMessage(MessageType.SelectRequest, NewSystemId);
                 };
@@ -254,7 +255,7 @@ namespace Secs4Net
 
                     CommunicationStateChanging(ConnectionState.Connected);
                     if (!_socket.ReceiveAsync(receiveCompleteEvent))
-                        ReceiveEventCompleted(_socket, receiveCompleteEvent);
+                        SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
                 };
 
                 _stopImpl = delegate
@@ -267,7 +268,7 @@ namespace Secs4Net
             }
         }
 
-        private void ReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
+        private void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
         {
             if (e.SocketError != SocketError.Success)
             {
@@ -311,11 +312,7 @@ namespace Secs4Net
                     return;
 
                 if (!_socket.ReceiveAsync(e))
-                    ReceiveEventCompleted(sender, e);
-            }
-            catch (NullReferenceException ex)
-            {
-                _logger.Error("Unexpected NullReferenceException", ex);
+                    SocketReceiveEventCompleted(sender, e);
             }
             catch (Exception ex)
             {
@@ -324,7 +321,7 @@ namespace Secs4Net
             }
         }
 
-        internal static ArraySegment<byte> EncodeHeader(ref MessageHeader header)
+        internal static ArraySegment<byte> EncodeHeader(/* readonly */ref MessageHeader header)
             => new ArraySegment<byte>(header.EncodeTo(EncodedBytePool.Rent(10)), 0, 10);
 
         private void SendControlMessage(MessageType msgType, int systembyte)
@@ -359,7 +356,7 @@ namespace Secs4Net
 
         internal static ArraySegment<byte> GetEmptyDataMessageLengthBytes()
         {
-            var lengthBytes = SecsGem.EncodedBytePool.Rent(4);
+            var lengthBytes = EncodedBytePool.Rent(4);
             lengthBytes[0] = 0;
             lengthBytes[1] = 0;
             lengthBytes[2] = 0;
@@ -502,6 +499,8 @@ namespace Secs4Net
             var messageSent = completeToken.MessageSent;
             _logger.MessageOut(messageSent, completeToken.Id);
 
+            // pre-fetch, coz _replyExpectedMsgs will be cleaned after reconnected
+            var autoDispose = completeToken.AutoDispose;
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
                 if (!completeToken.Task.Wait(T3))
@@ -512,7 +511,7 @@ namespace Secs4Net
                 _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
             }
 
-            if (completeToken.AutoDispose)
+            if (autoDispose)
                 messageSent.Dispose();
         }
 
@@ -526,7 +525,9 @@ namespace Secs4Net
                 _logger.Warning("Received Unrecognized Device Id Message");
                 msg.Dispose();
 
-                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", B(EncodeHeader(ref header))), NewSystemId);
+                var tempHeaderBytes = EncodeHeader(ref header);
+                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", B(tempHeaderBytes.ToArray())), NewSystemId);
+                EncodedBytePool.Return(tempHeaderBytes.Array);
 
                 return;
             }
@@ -544,7 +545,7 @@ namespace Secs4Net
                 // Error message systembyte
                 unsafe
                 {
-                    var headerBytes = Unsafe.As<byte[]>(msg.SecsItem.Values);
+                    var headerBytes = msg.SecsItem.GetValues<byte>();
                     Array.Reverse(headerBytes, 0, 10);
                     Unsafe.CopyBlock(
                         destination: Unsafe.AsPointer(ref systembyte),
@@ -592,7 +593,15 @@ namespace Secs4Net
             _timer8.Change(Timeout.Infinite, Timeout.Infinite);
             _timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
             _secsDecoder.Reset();
+
+            foreach (var taskCompletionSourceToken in _replyExpectedMsgs.Values)
+            {
+                if(taskCompletionSourceToken.AutoDispose)
+                    taskCompletionSourceToken.MessageSent.Dispose();
+            }
+
             _replyExpectedMsgs.Clear();
+
             _stopImpl?.Invoke();
 
             if (_socket == null)
