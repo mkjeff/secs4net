@@ -11,9 +11,9 @@ namespace Secs4Net.Sml
 {
     public static class SmlExtenstion
     {
-        const int SmlIndent = 2;
+        private const int SmlIndent = 2;
 
-        public static string ToSML(this SecsMessage msg)
+        public static string ToSml(this SecsMessage msg)
         {
             using (var sw = new StringWriter())
             {
@@ -30,12 +30,12 @@ namespace Secs4Net.Sml
             writer.Write('.');
         }
 
-        static void Write(TextWriter writer, SecsItem item, int indent)
+        private static void Write(TextWriter writer, SecsItem item, int indent)
         {
             var indentStr = new string(' ', indent);
             writer.Write(indentStr);
             writer.Write('<');
-            writer.Write(item.Format.ToSML());
+            writer.Write(item.Format.ToSml());
             writer.Write(" [");
             writer.Write(item.Count);
             writer.Write("] ");
@@ -59,37 +59,37 @@ namespace Secs4Net.Sml
                     writer.Write(item.GetValues<byte>().ToHexString());
                     break;
                 case SecsFormat.F4:
-                    writer.Write(string.Join(" ", item.Values.Cast<float>()));
+                    writer.Write(string.Join(" ", item.GetValues<float>()));
                     break;
                 case SecsFormat.F8:
-                    writer.Write(string.Join(" ", item.Values.Cast<double>()));
+                    writer.Write(string.Join(" ", item.GetValues<double>()));
                     break;
                 case SecsFormat.I1:
-                    writer.Write(string.Join(" ", item.Values.Cast<sbyte>()));
+                    writer.Write(string.Join(" ", item.GetValues<sbyte>()));
                     break;
                 case SecsFormat.I2:
-                    writer.Write(string.Join(" ", item.Values.Cast<short>()));
+                    writer.Write(string.Join(" ", item.GetValues<short>()));
                     break;
                 case SecsFormat.I4:
-                    writer.Write(string.Join(" ", item.Values.Cast<int>()));
+                    writer.Write(string.Join(" ", item.GetValues<int>()));
                     break;
                 case SecsFormat.I8:
-                    writer.Write(string.Join(" ", item.Values.Cast<long>()));
+                    writer.Write(string.Join(" ", item.GetValues<long>()));
                     break;
                 case SecsFormat.U1:
-                    writer.Write(string.Join(" ", item.Values.Cast<byte>()));
+                    writer.Write(string.Join(" ", item.GetValues<byte>()));
                     break;
                 case SecsFormat.U2:
-                    writer.Write(string.Join(" ", item.Values.Cast<ushort>()));
+                    writer.Write(string.Join(" ", item.GetValues<ushort>()));
                     break;
                 case SecsFormat.U4:
-                    writer.Write(string.Join(" ", item.Values.Cast<uint>()));
+                    writer.Write(string.Join(" ", item.GetValues<uint>()));
                     break;
                 case SecsFormat.U8:
-                    writer.Write(string.Join(" ", item.Values.Cast<ulong>()));
+                    writer.Write(string.Join(" ", item.GetValues<ulong>()));
                     break;
                 case SecsFormat.Boolean:
-                    writer.Write(string.Join(" ", item.Values.Cast<bool>()));
+                    writer.Write(string.Join(" ", item.GetValues<bool>()));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(item.Format), item.Format, "invalid SecsFormat value");
@@ -97,7 +97,7 @@ namespace Secs4Net.Sml
             writer.WriteLine('>');
         }
 
-        public static string ToSML(this SecsFormat format)
+        public static string ToSml(this SecsFormat format)
         {
             switch (format)
             {
@@ -280,30 +280,30 @@ namespace Secs4Net.Sml
             }
         }
 
-        static string ToSmlString<T>(this T[] value) where T : struct =>
+        private static string ToSmlString<T>(this T[] value) where T : struct =>
             value.Length == 1 ? value[0].ToString() : string.Join(" ", value);
 
-        static readonly Func<string, SecsItem> SmlParser_A = CreateSmlParser(A, A);
+        private static readonly Func<string, SecsItem> SmlParser_A = CreateSmlParser(A, A);
 #pragma warning disable CS0618 // Type or member is obsolete
-        static readonly Func<string, SecsItem> SmlParser_J = CreateSmlParser(J, J);
+        private static readonly Func<string, SecsItem> SmlParser_J = CreateSmlParser(J, J);
 #pragma warning restore CS0618 // Type or member is obsolete
-        static readonly Func<string, SecsItem> SmlParser_Boolean = CreateSmlParser(Boolean, Boolean, bool.Parse);
-        static readonly Func<string, SecsItem> SmlParser_B = CreateSmlParser(B, B, HexStringToByte);
-        static readonly Func<string, SecsItem> SmlParser_I1 = CreateSmlParser(I1, I1, sbyte.Parse);
-        static readonly Func<string, SecsItem> SmlParser_I2 = CreateSmlParser(I2, I2, short.Parse);
-        static readonly Func<string, SecsItem> SmlParser_I4 = CreateSmlParser(I4, I4, int.Parse);
-        static readonly Func<string, SecsItem> SmlParser_I8 = CreateSmlParser(I8, I8, long.Parse);
-        static readonly Func<string, SecsItem> SmlParser_U1 = CreateSmlParser(U1, U1, byte.Parse);
-        static readonly Func<string, SecsItem> SmlParser_U2 = CreateSmlParser(U2, U2, ushort.Parse);
-        static readonly Func<string, SecsItem> SmlParser_U4 = CreateSmlParser(U4, U4, uint.Parse);
-        static readonly Func<string, SecsItem> SmlParser_U8 = CreateSmlParser(U8, U8, ulong.Parse);
-        static readonly Func<string, SecsItem> SmlParser_F4 = CreateSmlParser(F4, F4, float.Parse);
-        static readonly Func<string, SecsItem> SmlParser_F8 = CreateSmlParser(F8, F8, double.Parse);
-        static readonly ConcurrentDictionary<string, SecsItem> Cache = new ConcurrentDictionary<string, SecsItem>();
+        private static readonly Func<string, SecsItem> SmlParser_Boolean = CreateSmlParser(Boolean, Boolean, bool.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_B = CreateSmlParser(B, B, HexStringToByte);
+        private static readonly Func<string, SecsItem> SmlParser_I1 = CreateSmlParser(I1, I1, sbyte.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_I2 = CreateSmlParser(I2, I2, short.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_I4 = CreateSmlParser(I4, I4, int.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_I8 = CreateSmlParser(I8, I8, long.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_U1 = CreateSmlParser(U1, U1, byte.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_U2 = CreateSmlParser(U2, U2, ushort.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_U4 = CreateSmlParser(U4, U4, uint.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_U8 = CreateSmlParser(U8, U8, ulong.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_F4 = CreateSmlParser(F4, F4, float.Parse);
+        private static readonly Func<string, SecsItem> SmlParser_F8 = CreateSmlParser(F8, F8, double.Parse);
+        private static readonly ConcurrentDictionary<string, SecsItem> Cache = new ConcurrentDictionary<string, SecsItem>();
 
-        static byte HexStringToByte(string str) => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? Convert.ToByte(str, 16) : byte.Parse(str);
+        private static byte HexStringToByte(string str) => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? Convert.ToByte(str, 16) : byte.Parse(str);
 
-        static Func<string, SecsItem> CreateSmlParser(Func<string, SecsItem> itemCreator, Func<SecsItem> emptyCreator) => valueStr =>
+        private static Func<string, SecsItem> CreateSmlParser(Func<string, SecsItem> itemCreator, Func<SecsItem> emptyCreator) => valueStr =>
                  Cache.GetOrAdd(valueStr, str =>
                  {
                      str = str.TrimStart(' ', '\'', '"').TrimEnd(' ', '\'', '"');
@@ -312,7 +312,7 @@ namespace Secs4Net.Sml
                              itemCreator(str);
                  });
 
-        static Func<string, SecsItem> CreateSmlParser<T>(Func<T[], SecsItem> creator, Func<SecsItem> emptyCreator, Func<string, T> converter) where T : struct => valueStr =>
+        private static Func<string, SecsItem> CreateSmlParser<T>(Func<T[], SecsItem> creator, Func<SecsItem> emptyCreator, Func<string, T> converter) where T : struct => valueStr =>
                  Cache.GetOrAdd(valueStr, str =>
                  {
                      var valueStrs = str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -346,6 +346,6 @@ namespace Secs4Net.Sml
                 default: throw new SecsException("Unknown SML format :" + format);
             }
         }
-        public static SecsItem Create(this SecsFormat format, string smlValue) => Create(format.ToSML(), smlValue);
+        public static SecsItem Create(this SecsFormat format, string smlValue) => Create(format.ToSml(), smlValue);
     }
 }

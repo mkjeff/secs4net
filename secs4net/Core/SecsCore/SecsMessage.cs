@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Messaging;
+using System.Threading;
 using Secs4Net.Properties;
 
 namespace Secs4Net
 {
-    public sealed class SecsMessage:IDisposable
+    public sealed class SecsMessage : IDisposable
     {
         static SecsMessage()
         {
@@ -15,9 +18,15 @@ namespace Secs4Net
         }
 
         public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
+
+        private int _isDisposed = 0;
+
         public void Dispose()
         {
-            SecsItem?.ReleaseValue();
+            if (Interlocked.Exchange(ref _isDisposed, 1) == 1)
+                return;
+
+            SecsItem?.Release();
         }
 
         /// <summary>
@@ -47,14 +56,16 @@ namespace Secs4Net
         {
             get
             {
-                var result =  new List<ArraySegment<byte>>();
+                var result = new List<ArraySegment<byte>>();
                 var header = new MessageHeader
-                             {
-                                 S = S,
-                                 F = F,
-                                 ReplyExpected = ReplyExpected
-                             };
-                EncodeTo(result, SecsGem.EncodeHeader(ref header) );
+                {
+                    S = S,
+                    F = F,
+                    ReplyExpected = ReplyExpected
+                };
+                var tempHeaderBytes = SecsGem.EncodeHeader(ref header);
+                EncodeTo(result, new ArraySegment<byte>(tempHeaderBytes.ToArray()));
+                SecsGem.EncodedBytePool.Return(tempHeaderBytes.Array);
                 return result;
             }
         }
@@ -121,11 +132,11 @@ namespace Secs4Net
                 if (length == 0)
                     return Item.L();
 
-                using (var list = ListItemDecoderBuffer.Create(length))
+                using (var buffer = ItemListBuffer.Create(length))
                 {
                     for (var i = 0; i < length; i++)
-                        list.Add(Decode(bytes, ref index));
-                    return Item.L(list.Items);
+                        buffer.Add(Decode(bytes, ref index));
+                    return Item.L(buffer.PooledItems);
                 }
             }
             var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, ref index, ref length);

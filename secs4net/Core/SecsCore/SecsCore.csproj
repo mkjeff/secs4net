@@ -155,15 +155,32 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectionState.cs" />
-    <Compile Include="DecodeValuePool.cs" />
+    <Compile Include="ArrayPool.cs" />
     <Compile Include="ExtensionHelper.cs" />
     <Compile Include="Format.cs" />
+    <Compile Include="Format.List.cs">
+      <DependentUpon>Format.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Format.String.cs">
+      <DependentUpon>Format.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Format.ValueType.cs">
+      <DependentUpon>Format.cs</DependentUpon>
+    </Compile>
     <Compile Include="Header.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="ISecsGemLogger.cs" />
     <Compile Include="ItemFactory.cs" />
+    <Compile Include="Item.List.cs">
+      <DependentUpon>Item.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Item.String.cs">
+      <DependentUpon>Item.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Item.ValueType.cs">
+      <DependentUpon>Item.cs</DependentUpon>
+    </Compile>
     <Compile Include="MessageType.cs" />
-    <Compile Include="ItemPool.cs" />
     <Compile Include="Pool.cs" />
     <Compile Include="PrimaryMessageWrapper.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
