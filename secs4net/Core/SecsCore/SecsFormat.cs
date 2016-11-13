@@ -1,9 +1,4 @@
-﻿using System;
-using System.Buffers;
-using System.Collections;
-using System.Reflection;
-
-namespace Secs4Net
+﻿namespace Secs4Net
 {
 
     /// <summary>
