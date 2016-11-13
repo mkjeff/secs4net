@@ -127,11 +127,11 @@ namespace Secs4Net
                                 {
                                     Trace.WriteLine("Get Complete Data Message with total data");
                                     _dataMsgHandler(ref _msgHeader,
-                                                    new SecsMessage(_msgHeader.S,
-                                                                    _msgHeader.F,
-                                                                    _msgHeader.ReplyExpected,
-                                                                    Buffer,
-                                                                    ref _decodeIndex));
+                                        new SecsMessage(_msgHeader.S,
+                                            _msgHeader.F,
+                                            _msgHeader.ReplyExpected,
+                                            string.Empty,
+                                            BufferedDecode(Buffer, ref _decodeIndex)));
                                     length -= (int) _messageDataLength;
                                     _messageDataLength = 0;
                                     return 0; //completeWith message received
@@ -253,6 +253,43 @@ namespace Secs4Net
                         };
         }
 
+        private static SecsItem BufferedDecode(byte[] bytes, ref int index)
+        {
+            var format = (SecsFormat)(bytes[index] & 0xFC);
+            var lengthBits = (byte)(bytes[index] & 3);
+            index++;
+
+            Array.Reverse(bytes, index, lengthBits);
+            var length = 0;
+            unsafe
+            {
+                Unsafe.CopyBlock(
+                    Unsafe.AsPointer(ref length),
+                    Unsafe.AsPointer(ref bytes[index]),
+                    lengthBits
+                );
+            }
+
+            index += lengthBits;
+
+            if (format == SecsFormat.List)
+            {
+                if (length == 0)
+                    return Item.L();
+
+                using (var buffer = ItemListBuffer.Create(length))
+                {
+                    for (var i = 0; i < length; i++)
+                        buffer.Add(BufferedDecode(bytes, ref index));
+                    return Item.L(buffer.PooledItems);
+                }
+            }
+            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, ref index, ref length);
+            index += length;
+            return item;
+        }
+
+
         private static bool CheckAvailable(ref int length, int required, out int need)
         {
             if (length < required)
@@ -336,43 +373,42 @@ namespace Secs4Net
 
             return _messageDataLength > 0;
         }
+
+        private sealed class ItemListBuffer : IDisposable
+        {
+            private static readonly Pool<ItemListBuffer> Pool
+                = new Pool<ItemListBuffer>(p => new ItemListBuffer(p), poolAccessMode: PoolAccessMode.LIFO);
+
+            internal static ItemListBuffer Create(int capacity)
+            {
+                var result = Pool.Acquire();
+                result.Count = 0; // reset filled index
+                result.PooledItems = new ArraySegment<SecsItem>(SecsItemArrayPool.Pool.Rent(capacity), 0, capacity);
+                return result;
+            }
+
+            private ItemListBuffer(Pool<ItemListBuffer> pool)
+            {
+                _pool = pool;
+            }
+
+            private readonly Pool<ItemListBuffer> _pool;
+
+            internal ArraySegment<SecsItem> PooledItems { get; private set; }
+
+            internal void Add(SecsItem secsItem)
+            {
+                PooledItems.Array[Count++] = secsItem;
+            }
+
+            internal int Capacity => PooledItems.Count;
+
+            internal int Count { get; private set; }
+
+            public void Dispose()
+            {
+                _pool.Release(this);
+            }
+        }
     }
-
-    internal sealed class ItemListBuffer : IDisposable
-    {
-        private static readonly Pool<ItemListBuffer> Pool
-            = new Pool<ItemListBuffer>(100, p => new ItemListBuffer(p), poolAccessMode: PoolAccessMode.LIFO);
-
-        internal static ItemListBuffer Create(int capacity)
-        {
-            var result = Pool.Acquire();
-            result.Count = 0; // reset filled index
-            result.PooledItems = new ArraySegment<SecsItem>(SecsItemArrayPool.Pool.Rent(capacity), 0, capacity);
-            return result;
-        }
-
-        private ItemListBuffer(Pool<ItemListBuffer> pool)
-        {
-            _pool = pool;
-        }
-
-        private readonly Pool<ItemListBuffer> _pool;
-
-        internal ArraySegment<SecsItem> PooledItems { get; private set; }
-
-        internal void Add(SecsItem secsItem)
-        {
-            PooledItems.Array[Count++] = secsItem;
-        }
-
-        internal int Capacity => PooledItems.Count;
-
-        internal int Count { get; private set; }
-
-        public void Dispose()
-        {
-            _pool.Release(this);
-        }
-    }
-
 }

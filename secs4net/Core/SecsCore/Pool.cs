@@ -12,7 +12,7 @@ namespace Secs4Net
         private readonly IItemStore _itemStore;
         public bool IsDisposed { get; private set; }
 
-        public Pool(int size, Func<Pool<T>, T> factory, PoolAccessMode poolAccessMode = PoolAccessMode.FIFO)
+        public Pool(Func<Pool<T>, T> factory, PoolAccessMode poolAccessMode = PoolAccessMode.FIFO)
         {
             if (factory == null)
                 throw new ArgumentNullException(nameof(factory));

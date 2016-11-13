@@ -126,7 +126,7 @@ namespace Secs4Net
         private static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         private static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
         private static readonly Pool<IList<ArraySegment<byte>>> EncodedBufferPool
-            = new Pool<IList<ArraySegment<byte>>>(1000, p => new List<ArraySegment<byte>>());
+            = new Pool<IList<ArraySegment<byte>>>(p => new List<ArraySegment<byte>>());
 
         internal static readonly ArrayPool<byte> EncodedBytePool
             = ArrayPool<byte>.Create(EncodeBytePoolMaxArrayLength, EncodeBytePoolMaxArrayPerBucket);

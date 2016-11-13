@@ -9,10 +9,10 @@ namespace Secs4Net
        where TValue : struct
     {
         private static readonly Pool<SecsItem<TFormat, TValue>> ValueItemPool
-            = new Pool<SecsItem<TFormat, TValue>>(1000, p => new ValueItem<TFormat, TValue>(p));
+            = new Pool<SecsItem<TFormat, TValue>>(p => new ValueItem<TFormat, TValue>(p));
 
         private static readonly Pool<SecsItem<TFormat, TValue>> PooledValueItemPool =
-            new Pool<SecsItem<TFormat, TValue>>(100, p => new PooledValueItem<TFormat, TValue>(p));
+            new Pool<SecsItem<TFormat, TValue>>(p => new PooledValueItem<TFormat, TValue>(p));
 
         public static readonly SecsItem Empty = new ValueItem<TFormat, TValue>();
 

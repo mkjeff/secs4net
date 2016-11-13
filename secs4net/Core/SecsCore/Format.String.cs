@@ -5,7 +5,7 @@
         public static readonly SecsItem Empty = new StringItem<TFormat>();
 
         private static readonly Pool<SecsItem<TFormat, string>> StringItemPool
-            = new Pool<SecsItem<TFormat, string>>(1000, p => new StringItem<TFormat>(p));
+            = new Pool<SecsItem<TFormat, string>>(p => new StringItem<TFormat>(p));
 
         /// <summary>
         /// Create <typeparamref name="TFormat"/> item

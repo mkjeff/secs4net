@@ -103,47 +103,6 @@ namespace Secs4Net
             : this(stream, function, true, name, secsItem)
         { }
 
-        internal SecsMessage(byte stream, byte function, bool replyExpected, byte[] itemBytes, ref int index)
-            : this(stream, function, replyExpected, string.Empty, Decode(itemBytes, ref index))
-        { }
-
-
-        static SecsItem Decode(byte[] bytes, ref int index)
-        {
-            var format = (SecsFormat)(bytes[index] & 0xFC);
-            var lengthBits = (byte)(bytes[index] & 3);
-            index++;
-
-            Array.Reverse(bytes, index, lengthBits);
-            var length = 0;
-            unsafe
-            {
-                Unsafe.CopyBlock(
-                    Unsafe.AsPointer(ref length),
-                    Unsafe.AsPointer(ref bytes[index]),
-                    lengthBits
-                );
-            }
-
-            index += lengthBits;
-
-            if (format == SecsFormat.List)
-            {
-                if (length == 0)
-                    return Item.L();
-
-                using (var buffer = ItemListBuffer.Create(length))
-                {
-                    for (var i = 0; i < length; i++)
-                        buffer.Add(Decode(bytes, ref index));
-                    return Item.L(buffer.PooledItems);
-                }
-            }
-            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, ref index, ref length);
-            index += length;
-            return item;
-        }
-
         internal void EncodeTo(IList<ArraySegment<byte>> buffer, ArraySegment<byte> header)
         {
             if (SecsItem == null)
