@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -8,10 +7,10 @@ namespace Secs4Net
 {
     internal class ListItem : SecsItem<ListFormat, SecsItem>
     {
-        private readonly Pool<SecsItem<ListFormat, SecsItem>> _pool;
+        private readonly Pool<ListItem> _pool;
         protected ArraySegment<SecsItem> list = new ArraySegment<SecsItem>(Array.Empty<SecsItem>());
 
-        internal ListItem(Pool<SecsItem<ListFormat, SecsItem>> pool = null)
+        internal ListItem(Pool<ListItem> pool = null)
         {
             _pool = pool;
         }
@@ -24,13 +23,14 @@ namespace Secs4Net
             _pool?.Release(this);
         }
 
-        internal sealed override void SetValue(ArraySegment<SecsItem> items)
+        internal void SetValue(ArraySegment<SecsItem> items)
         {
-            Debug.Assert(items.Count <= byte.MaxValue, $"List length out of range, max length: 255");
+            if (items.Count > byte.MaxValue)
+                throw new ArgumentOutOfRangeException($"List length out of range, max length: 255");
             list = items;
         }
 
-        protected internal sealed override ArraySegment<byte> GetEncodedData()
+        protected sealed override ArraySegment<byte> GetEncodedData()
         {
             var arr = SecsGem.EncodedBytePool.Rent(2);
             arr[0] = (byte)SecsFormat.List | 1;
@@ -72,7 +72,7 @@ namespace Secs4Net
 
     internal sealed class PooledListItem : ListItem
     {
-        internal PooledListItem(Pool<SecsItem<ListFormat, SecsItem>> pool)
+        internal PooledListItem(Pool<ListItem> pool)
             : base(pool)
         {
         }

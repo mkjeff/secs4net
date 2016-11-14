@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Secs4Net
 {
@@ -12,9 +9,9 @@ namespace Secs4Net
      where TFormat : IFormat<TValue>
      where TValue : struct
     {
-        private readonly Pool<SecsItem<TFormat, TValue>> _pool;
+        private readonly Pool<ValueItem<TFormat, TValue>> _pool;
 
-        internal ValueItem(Pool<SecsItem<TFormat, TValue>> pool = null)
+        internal ValueItem(Pool<ValueItem<TFormat, TValue>> pool = null)
         {
             _pool = pool;
         }
@@ -23,7 +20,7 @@ namespace Secs4Net
             _pool?.Release(this);
         }
 
-        protected internal sealed override ArraySegment<byte> GetEncodedData()
+        protected sealed override ArraySegment<byte> GetEncodedData()
         {
             if (values.Count == 0)
                 return EncodEmpty(Format);
@@ -39,7 +36,7 @@ namespace Secs4Net
 
         protected ArraySegment<TValue> values = new ArraySegment<TValue>(Array.Empty<TValue>());
 
-        internal sealed override void SetValue(ArraySegment<TValue> itemValue)
+        internal void SetValue(ArraySegment<TValue> itemValue)
         {
             values = itemValue;
         }
@@ -105,7 +102,7 @@ namespace Secs4Net
         where TFormat : IFormat<TValue>
         where TValue : struct
     {
-        internal PooledValueItem(Pool<SecsItem<TFormat, TValue>> pool)
+        internal PooledValueItem(Pool<ValueItem<TFormat, TValue>> pool)
             : base(pool)
         {
         }

@@ -468,12 +468,9 @@ namespace Secs4Net
                              SystemBytes = systembyte
                          };
 
-            var bufferList = EncodedBufferPool.Acquire();
-            msg.EncodeTo(bufferList, EncodeHeader(ref header));
-
             var eap = new SocketAsyncEventArgs
             {
-                BufferList = bufferList,
+                BufferList = msg.EncodeTo(EncodedBufferPool.Acquire(), EncodeHeader(ref header)),
                 UserToken = token,
             };
             eap.Completed += _sendDataMessageCompleteHandler;
@@ -496,11 +493,10 @@ namespace Secs4Net
                 return;
             }
 
-            var messageSent = completeToken.MessageSent;
-            _logger.MessageOut(messageSent, completeToken.Id);
+            _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
+            if (completeToken.AutoDispose)
+                completeToken.MessageSent.Dispose();
 
-            // pre-fetch, coz _replyExpectedMsgs will be cleaned after reconnected
-            var autoDispose = completeToken.AutoDispose;
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
                 if (!completeToken.Task.Wait(T3))
@@ -511,8 +507,7 @@ namespace Secs4Net
                 _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
             }
 
-            if (autoDispose)
-                messageSent.Dispose();
+
         }
 
         private void HandleDataMessage(ref MessageHeader header, SecsMessage msg)
@@ -525,9 +520,7 @@ namespace Secs4Net
                 _logger.Warning("Received Unrecognized Device Id Message");
                 msg.Dispose();
 
-                var tempHeaderBytes = EncodeHeader(ref header);
-                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", B(tempHeaderBytes.ToArray())), NewSystemId);
-                EncodedBytePool.Return(tempHeaderBytes.Array);
+                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", B(header.EncodeTo(new byte[10]))), NewSystemId);
 
                 return;
             }
@@ -654,6 +647,7 @@ namespace Secs4Net
         private sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {
             internal readonly SecsMessage MessageSent;
+            private readonly string _messageName;
             internal readonly int Id;
             internal readonly MessageType MsgType;
             internal readonly bool AutoDispose;
@@ -661,6 +655,7 @@ namespace Secs4Net
             internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, bool autoDispose, MessageType msgType = MessageType.DataMessage)
             {
                 MessageSent = primaryMessageMsg;
+                _messageName = primaryMessageMsg.Name;
                 Id = id;
                 MsgType = msgType;
                 AutoDispose = autoDispose;
@@ -668,11 +663,10 @@ namespace Secs4Net
 
             internal void HandleReplyMessage(SecsMessage replyMsg)
             {
-                replyMsg.Name = MessageSent.Name;
+                replyMsg.Name = _messageName;
                 if (replyMsg.F == 0)
                 {
                     SetException(new SecsException(Id, Resources.SxF0));
-                    MessageSent.Dispose();
                     return;
                 }
 
@@ -705,7 +699,6 @@ namespace Secs4Net
                             SetException(new SecsException(Id, Resources.S9Fy));
                             break;
                     }
-                    MessageSent.Dispose();
                     return;
                 }
 

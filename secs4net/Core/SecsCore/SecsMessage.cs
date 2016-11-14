@@ -17,7 +17,7 @@ namespace Secs4Net
 
         public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
 
-        private int _isDisposed = 0;
+        private int _isDisposed;
 
         public void Dispose()
         {
@@ -50,23 +50,15 @@ namespace Secs4Net
         public string Name { get; set; }
 
         [Obsolete("This property only for debugging. Don't use in production.")]
-        public IReadOnlyList<ArraySegment<byte>> RawBytes
-        {
-            get
-            {
-                var result = new List<ArraySegment<byte>>();
-                var header = new MessageHeader
-                {
-                    S = S,
-                    F = F,
-                    ReplyExpected = ReplyExpected
-                };
-                var tempHeaderBytes = SecsGem.EncodeHeader(ref header);
-                EncodeTo(result, new ArraySegment<byte>(tempHeaderBytes.ToArray()));
-                SecsGem.EncodedBytePool.Return(tempHeaderBytes.Array);
-                return result;
-            }
-        }
+        public IList<ArraySegment<byte>> RawBytes =>
+            this.EncodeTo(
+                new List<ArraySegment<byte>>(),
+                new ArraySegment<byte>(new MessageHeader
+                                       {
+                                           S = S,
+                                           F = F,
+                                           ReplyExpected = ReplyExpected
+                                       }.EncodeTo(new byte[10])));
 
         /// <summary>
         /// constructor of SecsMessage
@@ -97,17 +89,17 @@ namespace Secs4Net
         /// <param name="function">message function number</param>
         /// <param name="name"></param>
         /// <param name="secsItem">root item</param>
-        public SecsMessage(byte stream, byte function, string name, SecsItem secsItem = null)
+        public SecsMessage(byte stream, byte function, string name = null, SecsItem secsItem = null)
             : this(stream, function, true, name, secsItem)
         { }
 
-        internal void EncodeTo(IList<ArraySegment<byte>> buffer, ArraySegment<byte> header)
+        internal IList<ArraySegment<byte>> EncodeTo(IList<ArraySegment<byte>> buffer, ArraySegment<byte> header)
         {
             if (SecsItem == null)
             {
                 buffer.Add(SecsGem.GetEmptyDataMessageLengthBytes()); // total length = header
                 buffer.Add(header); // header
-                return;
+                return buffer;
             }
 
             buffer.Add(default(ArraySegment<byte>)); // total length
@@ -124,6 +116,7 @@ namespace Secs4Net
 
             Array.Reverse(msgLengthByte, 0, 4);
             buffer[0] = new ArraySegment<byte>(msgLengthByte, 0, 4);
+            return buffer;
         }
 
         #region ISerializable Members

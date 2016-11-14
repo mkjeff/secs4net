@@ -105,7 +105,7 @@ namespace Secs4Net
             return length;
         }
 
-        protected internal abstract ArraySegment<byte> GetEncodedData();
+        protected abstract ArraySegment<byte> GetEncodedData();
 
         /// <summary>
         /// Encode Item header + value0 (initial array only)
@@ -178,18 +178,5 @@ namespace Secs4Net
             : base(SecsFormat)
         {
         }
-
-        internal virtual void SetValue(ArraySegment<TValue> itemValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal virtual void SetValue(string itemValue)
-        {
-            throw new NotImplementedException();
-        }
     }
-
-
-
 }

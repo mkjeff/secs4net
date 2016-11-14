@@ -25,7 +25,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="replyMessage"></param>
         /// <returns>ture, if reply message sent.</returns>
-        public bool Reply(SecsMessage replyMessage)
+        public bool Reply(SecsMessage replyMessage, bool autoDispose=true)
         {
             if (Interlocked.Exchange(ref _isReplied, 1) == 1)
                 return false;
@@ -35,10 +35,7 @@ namespace Secs4Net
 
             if (replyMessage == null)
             {
-                var tempHeaderBytes = SecsGem.EncodeHeader(ref _header);
-                replyMessage = new SecsMessage(9, 7, false, "Unknown Message", B(tempHeaderBytes.ToArray()));
-                // EncodeHeader will use EncodedBytePool, need return to pool
-                SecsGem.EncodedBytePool.Return(tempHeaderBytes.Array);
+                replyMessage = new SecsMessage(9, 7, false, "Unknown Message", B(_header.EncodeTo(new byte[10])));
             }
             else
             {
@@ -46,7 +43,7 @@ namespace Secs4Net
             }
 
             _secsGem.SendDataMessageAsync(replyMessage,
-                replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes);
+                replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes, autoDispose);
 
             return true;
         }

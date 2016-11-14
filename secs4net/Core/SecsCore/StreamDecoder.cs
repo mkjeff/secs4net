@@ -54,7 +54,7 @@ namespace Secs4Net
         private byte _lengthBits;
         private int _itemLength;
 
-        private byte[] itemLengthBytes =new byte[4];
+        private readonly byte[] _itemLengthBytes = new byte[4];
 
         public void Reset()
         {
@@ -166,7 +166,7 @@ namespace Secs4Net
                                     );
                                 }
 
-                                _itemLength = BitConverter.ToInt32(itemLengthBytes, 0);
+                                _itemLength = BitConverter.ToInt32(_itemLengthBytes, 0);
                                 Trace.WriteLineIf(_format != SecsFormat.List,
                                                   $"Get format: {_format}, length: {_itemLength}");
 

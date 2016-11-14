@@ -2,13 +2,13 @@
 
 namespace Secs4Net
 {
-    public struct MessageHeader
+    internal struct MessageHeader
     {
         public ushort DeviceId;
         public bool ReplyExpected;
         public byte S;
         public byte F;
-        internal MessageType MessageType;
+        public MessageType MessageType;
         public int SystemBytes;
 
         internal unsafe byte[] EncodeTo(byte[] buffer)

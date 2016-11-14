@@ -8,15 +8,15 @@ namespace Secs4Net
     internal sealed class StringItem<TFormat> : SecsItem<TFormat, string>
          where TFormat : IFormat<string>
     {
-        private readonly Pool<SecsItem<TFormat, string>> _pool;
+        private readonly Pool<StringItem<TFormat>> _pool;
         private string _str = string.Empty;
 
-        internal StringItem(Pool<SecsItem<TFormat, string>> pool = null)
+        internal StringItem(Pool<StringItem<TFormat>> pool = null)
         {
             _pool = pool;
         }
 
-        internal override void SetValue(string itemValue)
+        internal void SetValue(string itemValue)
         {
             _str = itemValue;
         }
@@ -26,7 +26,7 @@ namespace Secs4Net
             _pool?.Release(this);
         }
 
-        protected internal override ArraySegment<byte> GetEncodedData()
+        protected override ArraySegment<byte> GetEncodedData()
         {
             if (string.IsNullOrEmpty(_str))
                 return EncodEmpty(Format);

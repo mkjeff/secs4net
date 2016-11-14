@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Text;
 using System.Runtime.CompilerServices;
 using static Secs4Net.Item;
@@ -130,7 +131,7 @@ namespace Secs4Net
                 case SecsFormat.F8:
                     return F8();
             }
-            throw new ArgumentException("Invalid format", nameof(format));
+            throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(SecsFormat));
         }
 
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
@@ -168,7 +169,7 @@ namespace Secs4Net
                 case SecsFormat.F8:
                     return F8(Decode<double>(data, ref index, ref length));
             }
-            throw new ArgumentException("Invalid format", nameof(format));
+            throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(SecsFormat));
         }
 
         private static ArraySegment<T> Decode<T>(byte[] data, ref int index, ref int length) where T : struct

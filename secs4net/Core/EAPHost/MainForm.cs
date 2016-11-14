@@ -164,7 +164,7 @@ namespace Cim.Eap
         {
             try
             {
-                e.Reply(SecsMessages[e.Message.S, (byte)(e.Message.F + 1)].FirstOrDefault());
+                e.Reply(SecsMessages[e.Message.S, (byte) (e.Message.F + 1)].FirstOrDefault(), false);
                 Action<SecsMessage> handler = null;
                 if (_eventHandlers.TryGetValue(e.Message.GetKey(), out handler))
                     Parallel.ForEach(handler.GetInvocationList().Cast<Action<SecsMessage>>(), h => h(e.Message));

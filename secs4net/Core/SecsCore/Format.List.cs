@@ -8,11 +8,11 @@ namespace Secs4Net
     {
         public const SecsFormat Format = SecsFormat.List;
 
-        private static readonly Pool<SecsItem<ListFormat, SecsItem>> ListItemPool
-            = new Pool<SecsItem<ListFormat, SecsItem>>(p => new ListItem(p));
+        private static readonly Pool<ListItem> ListItemPool
+            = new Pool<ListItem>(p => new ListItem(p));
 
-        private static readonly Pool<SecsItem<ListFormat, SecsItem>> PooledListItemPool =
-            new Pool<SecsItem<ListFormat, SecsItem>>(p => new PooledListItem(p));
+        private static readonly Pool<ListItem> PooledListItemPool =
+            new Pool<ListItem>(p => new PooledListItem(p));
 
         public static readonly SecsItem Empty = new ListItem();
 
