@@ -168,6 +168,6 @@ namespace Secs4Net
             SecsFormat = (SecsFormat)format.GetValue(null);
         }
 
-        public override SecsFormat Format => SecsFormat;
+        public sealed override SecsFormat Format => SecsFormat;
     }
 }
