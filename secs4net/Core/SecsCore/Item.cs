@@ -9,12 +9,7 @@ namespace Secs4Net
 {
     public abstract class SecsItem
     {
-        protected SecsItem(SecsFormat format)
-        {
-            Format = format;
-        }
-
-        public SecsFormat Format { get; }
+        public abstract SecsFormat Format { get; }
         public abstract int Count { get; }
         public abstract bool IsMatch(SecsItem target);
 
@@ -173,10 +168,6 @@ namespace Secs4Net
             SecsFormat = (SecsFormat)format.GetValue(null);
         }
 
-
-        protected SecsItem()
-            : base(SecsFormat)
-        {
-        }
+        public override SecsFormat Format => SecsFormat;
     }
 }
