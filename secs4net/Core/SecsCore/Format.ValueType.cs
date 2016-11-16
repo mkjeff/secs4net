@@ -11,9 +11,6 @@ namespace Secs4Net
         private static readonly Pool<ValueItem<TFormat, TValue>> ValueItemPool
             = new Pool<ValueItem<TFormat, TValue>>(p => new ValueItem<TFormat, TValue>(p));
 
-        private static readonly Pool<ValueItem<TFormat, TValue>> PooledValueItemPool =
-            new Pool<ValueItem<TFormat, TValue>>(p => new PooledValueItem<TFormat, TValue>(p));
-
         public static readonly SecsItem Empty = new ValueItem<TFormat, TValue>();
 
         internal ValueTypeFormat()
@@ -39,7 +36,7 @@ namespace Secs4Net
         public static SecsItem Create(TValue[] value)
         {
             var item = ValueItemPool.Acquire();
-            item.SetValue(new ArraySegment<TValue>(value));
+            item.SetValues(new ArraySegment<TValue>(value), fromPool: false);
             return item;
         }
 
@@ -50,8 +47,8 @@ namespace Secs4Net
         /// <returns></returns>
         internal static SecsItem Create(ArraySegment<TValue> value)
         {
-            var item = PooledValueItemPool.Acquire();
-            item.SetValue(value);
+            var item = ValueItemPool.Acquire();
+            item.SetValues(value, fromPool: true);
             return item;
         }
 

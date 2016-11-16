@@ -5,51 +5,56 @@ using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
-    internal class ValueItem<TFormat, TValue> : SecsItem<TFormat, TValue>
+    internal sealed class ValueItem<TFormat, TValue> : SecsItem<TFormat, TValue>
      where TFormat : IFormat<TValue>
      where TValue : struct
     {
         private readonly Pool<ValueItem<TFormat, TValue>> _pool;
+        private ArraySegment<TValue> _values = new ArraySegment<TValue>(Array.Empty<TValue>());
+        private bool _isValuesPooled;
 
         internal ValueItem(Pool<ValueItem<TFormat, TValue>> pool = null)
         {
             _pool = pool;
         }
+
+        internal void SetValues(ArraySegment<TValue> itemValue, bool fromPool)
+        {
+            _values = itemValue;
+            _isValuesPooled = fromPool;
+        }
+
         internal override void Release()
         {
             _pool?.Release(this);
+
+            if (_isValuesPooled)
+                ValueTypeArrayPool<TValue>.Pool.Return(_values.Array);
         }
 
-        protected sealed override ArraySegment<byte> GetEncodedData()
+        protected override ArraySegment<byte> GetEncodedData()
         {
-            if (values.Count == 0)
+            if (_values.Count == 0)
                 return EncodEmpty(Format);
 
             var sizeOf = Unsafe.SizeOf<TValue>();
-            var bytelength = values.Count * sizeOf;
+            var bytelength = _values.Count * sizeOf;
             int headerLength;
             var result = EncodeValue(Format, bytelength, out headerLength);
-            Buffer.BlockCopy(values.Array, 0, result, headerLength, bytelength);
+            Buffer.BlockCopy(_values.Array, 0, result, headerLength, bytelength);
             result.Reverse(headerLength, headerLength + bytelength, sizeOf);
             return new ArraySegment<byte>(result, 0, headerLength + bytelength);
         }
 
-        protected ArraySegment<TValue> values = new ArraySegment<TValue>(Array.Empty<TValue>());
+        public override int Count => _values.Count;
 
-        internal void SetValue(ArraySegment<TValue> itemValue)
-        {
-            values = itemValue;
-        }
+        public override IEnumerable Values => _values;
 
-        public sealed override int Count => values.Count;
+        public override unsafe T GetValue<T>() => Unsafe.Read<T>(Unsafe.AsPointer(ref _values.Array[0]));
 
-        public sealed override IEnumerable Values => values;
+        public override T[] GetValues<T>() => Unsafe.As<T[]>(_values.ToArray());
 
-        public sealed override unsafe T GetValue<T>() => Unsafe.Read<T>(Unsafe.AsPointer(ref values.Array[0]));
-
-        public sealed override T[] GetValues<T>() => Unsafe.As<T[]>(values.ToArray());
-
-        public sealed override bool IsMatch(SecsItem target)
+        public override bool IsMatch(SecsItem target)
         {
             if (ReferenceEquals(this, target))
                 return true;
@@ -65,13 +70,13 @@ namespace Secs4Net
 
             //return memcmp(Unsafe.As<byte[]>(_values), Unsafe.As<byte[]>(target._values), Buffer.ByteLength((Array)_values)) == 0;
             return UnsafeCompare(
-                values.Array,
-                Unsafe.As<ValueItem<TFormat, TValue>>(target).values.Array,
-                values.Count);
+                _values.Array,
+                Unsafe.As<ValueItem<TFormat, TValue>>(target)._values.Array,
+                _values.Count);
         }
 
-        public sealed override string ToString()
-            => $"<{Format.GetName()} [{Count}] {(Format == SecsFormat.Binary ? Unsafe.As<byte[]>(values).ToHexString() : string.Join(" ", values))} >";
+        public override string ToString()
+            => $"<{Format.GetName()} [{Count}] {(Format == SecsFormat.Binary ? Unsafe.As<byte[]>(_values).ToHexString() : string.Join(" ", _values))} >";
 
         //[DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
         //static extern int memcmp(byte[] b1, byte[] b2, long count);
@@ -93,24 +98,6 @@ namespace Secs4Net
                 if ((l & 1) != 0) if (*((byte*)x1) != *((byte*)x2)) return false;
                 return true;
             }
-        }
-    }
-
-
-
-    internal sealed class PooledValueItem<TFormat, TValue> : ValueItem<TFormat, TValue>
-        where TFormat : IFormat<TValue>
-        where TValue : struct
-    {
-        internal PooledValueItem(Pool<ValueItem<TFormat, TValue>> pool)
-            : base(pool)
-        {
-        }
-
-        internal override void Release()
-        {
-            ValueTypeArrayPool<TValue>.Pool.Return(values.Array);
-            base.Release();
         }
     }
 }

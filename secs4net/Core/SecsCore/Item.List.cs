@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
-    internal class ListItem : SecsItem<ListFormat, SecsItem>
+    internal sealed class ListItem : SecsItem<ListFormat, SecsItem>
     {
         private readonly Pool<ListItem> _pool;
-        protected ArraySegment<SecsItem> list = new ArraySegment<SecsItem>(Array.Empty<SecsItem>());
+        private ArraySegment<SecsItem> _items = new ArraySegment<SecsItem>(Array.Empty<SecsItem>());
+        private bool _isItemsPooled;
 
         internal ListItem(Pool<ListItem> pool = null)
         {
@@ -17,32 +17,36 @@ namespace Secs4Net
 
         internal override void Release()
         {
-            foreach (var item in list)
+            foreach (var item in _items)
                 item.Release();
 
             _pool?.Release(this);
+
+            if(_isItemsPooled)
+                SecsItemArrayPool.Pool.Return(_items.Array);
         }
 
-        internal void SetValue(ArraySegment<SecsItem> items)
+        internal void SetItems(ArraySegment<SecsItem> items,bool fromPool)
         {
             if (items.Count > byte.MaxValue)
                 throw new ArgumentOutOfRangeException($"List length out of range, max length: 255");
-            list = items;
+            _items = items;
+            _isItemsPooled = fromPool;
         }
 
-        protected sealed override ArraySegment<byte> GetEncodedData()
+        protected override ArraySegment<byte> GetEncodedData()
         {
             var arr = SecsGem.EncodedBytePool.Rent(2);
             arr[0] = (byte)SecsFormat.List | 1;
-            arr[1] = unchecked((byte)list.Count);
+            arr[1] = unchecked((byte)_items.Count);
             return new ArraySegment<byte>(arr, 0, 2);
         }
 
-        public sealed override int Count => list.Count;
-        public sealed override IReadOnlyList<SecsItem> Items => list;
-        public sealed override string ToString() => $"<List [{list.Count}] >";
+        public override int Count => _items.Count;
+        public override IReadOnlyList<SecsItem> Items => _items;
+        public override string ToString() => $"<List [{_items.Count}] >";
 
-        public sealed override bool IsMatch(SecsItem target)
+        public override bool IsMatch(SecsItem target)
         {
             if (ReferenceEquals(this, target))
                 return true;
@@ -56,8 +60,8 @@ namespace Secs4Net
             if (Count != target.Count)
                 return false;
 
-            return IsMatch(list.Array,
-                           Unsafe.As<ListItem>(target).list.Array,
+            return IsMatch(_items.Array,
+                           Unsafe.As<ListItem>(target)._items.Array,
                            Count);
         }
 
@@ -67,20 +71,6 @@ namespace Secs4Net
                 if (!a[i].IsMatch(b[i]))
                     return false;
             return true;
-        }
-    }
-
-    internal sealed class PooledListItem : ListItem
-    {
-        internal PooledListItem(Pool<ListItem> pool)
-            : base(pool)
-        {
-        }
-
-        internal override void Release()
-        {
-            base.Release();
-            SecsItemArrayPool.Pool.Return(list.Array);
         }
     }
 }

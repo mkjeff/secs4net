@@ -11,9 +11,6 @@ namespace Secs4Net
         private static readonly Pool<ListItem> ListItemPool
             = new Pool<ListItem>(p => new ListItem(p));
 
-        private static readonly Pool<ListItem> PooledListItemPool =
-            new Pool<ListItem>(p => new PooledListItem(p));
-
         public static readonly SecsItem Empty = new ListItem();
 
         /// <summary>
@@ -34,9 +31,9 @@ namespace Secs4Net
         /// <returns></returns>
         public static SecsItem Create(SecsItem[] value)
         {
-            var item = ListItemPool.Acquire();
-            item.SetValue(new ArraySegment<SecsItem>(value));
-            return item;
+            var listItem = ListItemPool.Acquire();
+            listItem.SetItems(new ArraySegment<SecsItem>(value), fromPool: false);
+            return listItem;
         }
 
         /// <summary>
@@ -46,9 +43,9 @@ namespace Secs4Net
         /// <returns></returns>
         internal static SecsItem Create(ArraySegment<SecsItem> value)
         {
-            var item = PooledListItemPool.Acquire();
-            item.SetValue(value);
-            return item;
+            var listItem = ListItemPool.Acquire();
+            listItem.SetItems(value, fromPool: true);
+            return listItem;
         }
 
         public static SecsItem Create(SecsItem v0)
