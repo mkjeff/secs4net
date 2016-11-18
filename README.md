@@ -44,7 +44,7 @@ secsGem.PrimaryMessageReceived += (sender, messageWrapper) =>
 	   
 
         // reply secondary msg to device
-        messageWrapper.Reply( secondaryMsg ); 
+        messageWrapper.Reply( secondaryMsg /* , autoDispose: true */ ); 
     }
     catch (Exception ex) 
     {
@@ -79,6 +79,6 @@ var s16f15 =
                             L()))));
 ```
 
-4\. SecsMessage/Item is immutable(API level). 
+4\. SecsMessage/Item is immutable. 
 
-5\. Almost all of the object had to be allocated in shared pools.
+5\. Almost all of the object has to be allocated in shared pool.
