@@ -89,12 +89,11 @@ namespace Secs4Net.Json
 
         public static SecsMessage ToSecsMessage(this JObject json)
         {
-            var msg = default(SecsMessage);
-            var s = json.Value<byte>(nameof(msg.S));
-            var f = json.Value<byte>(nameof(msg.F));
-            var r = json.Value<bool>(nameof(msg.ReplyExpected));
-            var name = json.Value<string>(nameof(msg.Name));
-            var root = json.Value<JObject>(nameof(msg.SecsItem));
+            var s = json.Value<byte>(nameof(SecsMessage.S));
+            var f = json.Value<byte>(nameof(SecsMessage.F));
+            var r = json.Value<bool>(nameof(SecsMessage.ReplyExpected));
+            var name = json.Value<string>(nameof(SecsMessage.Name));
+            var root = json.Value<JObject>(nameof(SecsMessage.SecsItem));
             return (root == null)
                 ? new SecsMessage(s, f, r, name)
                 : new SecsMessage(s, f, r, name, root.ToItem());
@@ -112,21 +111,20 @@ namespace Secs4Net.Json
         // Define other methods and classes here
         public static SecsItem ToItem(this JObject json)
         {
-            var item = default(SecsItem);
-            var format = json.Value<JValue>(nameof(item.Format)).ToObject<SecsFormat>();
+            var format = json.Value<JValue>(nameof(SecsItem.Format)).ToObject<SecsFormat>();
             if (format == SecsFormat.List)
             {
-                return L(from a in json.Value<JArray>(nameof(item.Items)).Values<JObject>()
+                return L(from a in json.Value<JArray>(nameof(SecsItem.Items)).Values<JObject>()
                          select a.ToItem());
             }
 
             if (format == SecsFormat.ASCII || format == SecsFormat.JIS8)
             {
-                var str = json.Value<string>(nameof(item.Values));
+                var str = json.Value<string>(nameof(SecsItem.Values));
                 return format == SecsFormat.ASCII ? A(str) : J(str);
             }
 
-            var values = json.Value<JArray>(nameof(item.Values));
+            var values = json.Value<JArray>(nameof(SecsItem.Values));
             switch (format)
             {
                 case SecsFormat.Binary: return B(values.Values<byte>());

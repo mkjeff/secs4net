@@ -23,8 +23,13 @@ namespace SecsDevice
             numDeviceId.DataBindings.Add("Enabled", btnEnable, "Enabled");
             numBufferSize.DataBindings.Add("Enabled", btnEnable, "Enabled");
             recvMessageBindingSource.DataSource = recvBuffer;
-            Application.ThreadException += (sender, e) => MessageBox.Show(e.Exception.ToString());
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) => MessageBox.Show(e.ExceptionObject.ToString());
+
+            Application.ThreadException += (sender, e) =>
+                MessageBox.Show(e.Exception.ToString());
+
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+                MessageBox.Show(e.ExceptionObject.ToString());
+
             _logger = new SecsLogger(this);
         }
 
@@ -79,7 +84,7 @@ namespace SecsDevice
             try
             {
                 var reply = await _secsGem.SendAsync(txtSendPrimary.Text.ToSecsMessage());
-                txtRecvSecondary.Text = reply.ToSML();
+                txtRecvSecondary.Text = reply.ToSml();
             }
             catch (SecsException ex)
             {
@@ -89,7 +94,7 @@ namespace SecsDevice
 
         private void lstUnreplyMsg_SelectedIndexChanged(object sender, EventArgs e) {
             var receivedMessage = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
-            txtRecvPrimary.Text = receivedMessage?.Message.ToSML();
+            txtRecvPrimary.Text = receivedMessage?.Message.ToSml();
         }
 
         private void btnReplySecondary_Click(object sender, EventArgs e)
@@ -117,7 +122,7 @@ namespace SecsDevice
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Black;
-                    _form.richTextBox1.AppendText($"<-- [0x{systembyte:X8}] {msg.ToSML()}\n");
+                    _form.richTextBox1.AppendText($"<-- [0x{systembyte:X8}] {msg?.ToSml()??string.Empty}\n");
                 });
             }
 
@@ -125,7 +130,7 @@ namespace SecsDevice
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Black;
-                    _form.richTextBox1.AppendText($"--> [0x{systembyte:X8}] {msg.ToSML()}\n");
+                    _form.richTextBox1.AppendText($"--> [0x{systembyte:X8}] {msg?.ToSml()??string.Empty}\n");
                 });
             }
 
