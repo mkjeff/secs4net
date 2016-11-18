@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Secs4Net.Properties;
@@ -13,7 +14,7 @@ namespace Secs4Net
         public abstract int Count { get; }
         public abstract bool IsMatch(SecsItem target);
 
-        [Obsolete("This property only for debugging. Don't use in production.")]
+        [Browsable(false), Obsolete("This property only for debugging. Don't use in production.")]
         public IReadOnlyList<byte> RawBytes
         {
             get
@@ -150,9 +151,7 @@ namespace Secs4Net
             return new ArraySegment<byte>(arr, 0, 2);
         }
 
-        internal virtual void Release()
-        {
-        }
+        internal abstract void Release();
     }
 
     internal abstract class SecsItem<TFormat, TValue> : SecsItem

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Secs4Net.Properties;
@@ -49,7 +49,7 @@ namespace Secs4Net
 
         public string Name { get; set; }
 
-        [Obsolete("This property only for debugging. Don't use in production.")]
+        [Browsable(false),Obsolete("This property only for debugging. Don't use in production.")]
         public IList<ArraySegment<byte>> RawBytes =>
             this.EncodeTo(
                 new List<ArraySegment<byte>>(),
@@ -97,7 +97,7 @@ namespace Secs4Net
         {
             if (SecsItem == null)
             {
-                buffer.Add(SecsGem.GetEmptyDataMessageLengthBytes()); // total length = header
+                buffer.Add(GetEmptyDataMessageLengthBytes()); // total length = header
                 buffer.Add(header); // header
                 return buffer;
             }
@@ -117,6 +117,16 @@ namespace Secs4Net
             Array.Reverse(msgLengthByte, 0, 4);
             buffer[0] = new ArraySegment<byte>(msgLengthByte, 0, 4);
             return buffer;
+        }
+
+        private static ArraySegment<byte> GetEmptyDataMessageLengthBytes()
+        {
+            var lengthBytes = SecsGem.EncodedBytePool.Rent(4);
+            lengthBytes[0] = 0;
+            lengthBytes[1] = 0;
+            lengthBytes[2] = 0;
+            lengthBytes[3] = 10;
+            return new ArraySegment<byte>(lengthBytes, 0, 4);
         }
 
         #region ISerializable Members

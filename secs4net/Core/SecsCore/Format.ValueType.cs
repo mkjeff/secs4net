@@ -35,7 +35,7 @@ namespace Secs4Net
         /// <returns></returns>
         public static SecsItem Create(TValue[] value)
         {
-            var item = ValueItemPool.Acquire();
+            var item = ValueItemPool.Rent();
             item.SetValues(new ArraySegment<TValue>(value), fromPool: false);
             return item;
         }
@@ -47,7 +47,7 @@ namespace Secs4Net
         /// <returns></returns>
         internal static SecsItem Create(ArraySegment<TValue> value)
         {
-            var item = ValueItemPool.Acquire();
+            var item = ValueItemPool.Rent();
             item.SetValues(value, fromPool: true);
             return item;
         }

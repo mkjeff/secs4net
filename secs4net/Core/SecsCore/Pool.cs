@@ -5,12 +5,10 @@ namespace Secs4Net
 {
     internal enum PoolAccessMode { FIFO, LIFO };
 
-
     internal sealed class Pool<T> 
     {
         private readonly Func<Pool<T>, T> _factory;
         private readonly IItemStore _itemStore;
-        public bool IsDisposed { get; private set; }
 
         public Pool(Func<Pool<T>, T> factory, PoolAccessMode poolAccessMode = PoolAccessMode.FIFO)
         {
@@ -18,90 +16,53 @@ namespace Secs4Net
                 throw new ArgumentNullException(nameof(factory));
 
             _factory = factory;
-
             _itemStore = poolAccessMode == PoolAccessMode.FIFO
                              ? (IItemStore) new QueueStore()
                              : new StackStore();
         }
 
-        public T Acquire()
+        public T Rent()
         {
             T item;
-            if (_itemStore.Count > 0)
-            {
-                _itemStore.Fetch(out item);
-            }
-            else
-            {
+            if (_itemStore.Count <= 0 || !_itemStore.TryRent(out item))
                 item = _factory(this);
-            }
             return item;
         }
 
-        public void Release(T item)
+        public void Return(T item)
         {
-            _itemStore.Store(item);
+            _itemStore.Return(item);
         }
 
-        public void Dispose()
+        public void Reset()
         {
-            if (IsDisposed)
+            while (!_itemStore.IsEmpty)
             {
-                return;
-            }
-            IsDisposed = true;
-            if (typeof(IDisposable).IsAssignableFrom(typeof(T)))
-            {
-                while (_itemStore.Count > 0)
-                {
-                    T disposable;
-                    _itemStore.Fetch(out disposable);
-                    ((IDisposable) disposable).Dispose();
-                }
+                T item;
+                _itemStore.TryRent(out item);
             }
         }
-
-        #region Collection Wrappers
 
         private interface IItemStore
         {
-            void Fetch(out T item);
-            void Store(T item);
+            bool TryRent(out T item);
+            void Return(T item);
             int Count { get; }
-        }
-
-        private static IItemStore CreateItemStore(PoolAccessMode mode)
-        {
-            switch (mode)
-            {
-                case PoolAccessMode.FIFO:
-                    return new QueueStore();
-                //case PoolAccessMode.LIFO:
-                default:
-                    return new StackStore();
-            }
+            bool IsEmpty { get; }
         }
 
         private class QueueStore : ConcurrentQueue<T>, IItemStore
         {
-            public void Fetch(out T item) => TryDequeue(out item);
+            public bool TryRent(out T item) => TryDequeue(out item);
 
-            public void Store(T item)
-            {
-                Enqueue(item);
-            }
+            public void Return(T item) => Enqueue(item);
         }
 
         private class StackStore : ConcurrentStack<T>, IItemStore
         {
-            public void Fetch(out T item) => TryPop(out item);
+            public bool TryRent(out T item) => TryPop(out item);
 
-            public void Store(T item)
-            {
-                Push(item);
-            }
+            public void Return(T item) => Push(item);
         }
-
-        #endregion
     }
 }

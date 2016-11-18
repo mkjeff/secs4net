@@ -25,7 +25,7 @@ namespace Secs4Net
                 case MessageType.SeperateRequest:
                     return nameof(MessageType.SeperateRequest);
                 default:
-                    return string.Empty;
+                    throw new InvalidEnumArgumentException(nameof(msgType), (int)msgType, typeof(MessageType));
             }
         }
 
@@ -64,7 +64,7 @@ namespace Secs4Net
                 case SecsFormat.F8:
                     return nameof(SecsFormat.F8);
                 default:
-                    return string.Empty;
+                    throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(SecsFormat));
             }
         }
 

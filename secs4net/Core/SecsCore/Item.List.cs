@@ -8,11 +8,19 @@ namespace Secs4Net
     {
         private readonly Pool<ListItem> _pool;
         private ArraySegment<SecsItem> _items = new ArraySegment<SecsItem>(Array.Empty<SecsItem>());
-        private bool _isItemsPooled;
+        private bool _isItemsFromPool;
 
         internal ListItem(Pool<ListItem> pool = null)
         {
             _pool = pool;
+        }
+
+        internal void SetItems(ArraySegment<SecsItem> items, bool fromPool)
+        {
+            if (items.Count > byte.MaxValue)
+                throw new ArgumentOutOfRangeException($"List length out of range, max length: 255");
+            _items = items;
+            _isItemsFromPool = fromPool;
         }
 
         internal override void Release()
@@ -20,18 +28,20 @@ namespace Secs4Net
             foreach (var item in _items)
                 item.Release();
 
-            _pool?.Release(this);
+            _pool?.Return(this);
 
-            if(_isItemsPooled)
+            ReturnItemArray();
+        }
+
+        private void ReturnItemArray()
+        {
+            if (_isItemsFromPool)
                 SecsItemArrayPool.Pool.Return(_items.Array);
         }
 
-        internal void SetItems(ArraySegment<SecsItem> items,bool fromPool)
+        ~ListItem()
         {
-            if (items.Count > byte.MaxValue)
-                throw new ArgumentOutOfRangeException($"List length out of range, max length: 255");
-            _items = items;
-            _isItemsPooled = fromPool;
+            ReturnItemArray();
         }
 
         protected override ArraySegment<byte> GetEncodedData()

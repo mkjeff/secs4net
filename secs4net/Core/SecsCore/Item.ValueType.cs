@@ -11,7 +11,7 @@ namespace Secs4Net
     {
         private readonly Pool<ValueItem<TFormat, TValue>> _pool;
         private ArraySegment<TValue> _values = new ArraySegment<TValue>(Array.Empty<TValue>());
-        private bool _isValuesPooled;
+        private bool _isValuesFromPool;
 
         internal ValueItem(Pool<ValueItem<TFormat, TValue>> pool = null)
         {
@@ -21,15 +21,25 @@ namespace Secs4Net
         internal void SetValues(ArraySegment<TValue> itemValue, bool fromPool)
         {
             _values = itemValue;
-            _isValuesPooled = fromPool;
+            _isValuesFromPool = fromPool;
         }
 
         internal override void Release()
         {
-            _pool?.Release(this);
+            _pool?.Return(this);
 
-            if (_isValuesPooled)
+            ReturnValueArray();
+        }
+
+        private void ReturnValueArray()
+        {
+            if (_isValuesFromPool)
                 ValueTypeArrayPool<TValue>.Pool.Return(_values.Array);
+        }
+
+        ~ValueItem()
+        {
+            ReturnValueArray();
         }
 
         protected override ArraySegment<byte> GetEncodedData()

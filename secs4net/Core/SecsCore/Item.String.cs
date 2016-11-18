@@ -23,7 +23,7 @@ namespace Secs4Net
 
         internal override void Release()
         {
-            _pool?.Release(this);
+            _pool?.Return(this);
         }
 
         protected override ArraySegment<byte> GetEncodedData()
@@ -38,6 +38,7 @@ namespace Secs4Net
             encoder.GetBytes(_str, 0, _str.Length, result, headerLength);
             return new ArraySegment<byte>(result, 0, headerLength + bytelength);
         }
+
         public override int Count => _str.Length;
         public override IEnumerable Values => _str;
         public override string GetString() => _str;

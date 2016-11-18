@@ -17,7 +17,7 @@
             if (string.IsNullOrEmpty(str))
                 return Empty;
 
-            var item = StringItemPool.Acquire();
+            var item = StringItemPool.Rent();
             item.SetValue(str);
             return item;
         }

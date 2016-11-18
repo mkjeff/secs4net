@@ -2,7 +2,6 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -138,6 +137,8 @@ namespace Secs4Net
 
         internal int NewSystemId => _systemByte.New();
 
+        private readonly TaskScheduler _taskScheduler;
+
         /// <summary>
         /// constructor
         /// </summary>
@@ -145,7 +146,12 @@ namespace Secs4Net
         /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
         /// <param name="port">if active mode it should be remote device listener's port</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
+        /// <param name="taskScheduler"></param>
+        public SecsGem(bool isActive,
+                       IPAddress ip,
+                       int port,
+                       int receiveBufferSize = 0x4000,
+                       TaskScheduler taskScheduler = null)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
@@ -153,6 +159,7 @@ namespace Secs4Net
             if (port <= 0)
                 throw new ArgumentOutOfRangeException(nameof(port), port, Resources.SecsGemTcpPortMustGreaterThan0);
 
+            _taskScheduler = taskScheduler ?? TaskScheduler.FromCurrentSynchronizationContext();
             IpAddress = ip;
             Port = port;
             IsActive = isActive;
@@ -331,9 +338,6 @@ namespace Secs4Net
             {
                 _replyExpectedMsgs[systembyte] = token;
             }
-            var bufferList = EncodedBufferPool.Acquire();
-
-            bufferList.Add(GetEmptyDataMessageLengthBytes());
 
             var header = new MessageHeader
             {
@@ -342,26 +346,14 @@ namespace Secs4Net
                 SystemBytes = systembyte
             };
 
-            bufferList.Add(EncodeHeader(ref header));
-
             var eap = new SocketAsyncEventArgs
             {
-                BufferList = bufferList,
+                BufferList = ControlMessage.EncodeTo(EncodedBufferPool.Rent(), EncodeHeader(ref header)),
                 UserToken = token,
             };
             eap.Completed += _sendControlMessageCompleteHandler;
             if (!_socket.SendAsync(eap))
                 SendControlMessageCompleteHandler(_socket, eap);
-        }
-
-        internal static ArraySegment<byte> GetEmptyDataMessageLengthBytes()
-        {
-            var lengthBytes = EncodedBytePool.Rent(4);
-            lengthBytes[0] = 0;
-            lengthBytes[1] = 0;
-            lengthBytes[2] = 0;
-            lengthBytes[3] = 10;
-            return new ArraySegment<byte>(lengthBytes, 0, 4);
         }
 
         private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
@@ -394,7 +386,7 @@ namespace Secs4Net
                 EncodedBytePool.Return(b.Array);
 
             e.Clear();
-            EncodedBufferPool.Release(e);
+            EncodedBufferPool.Return(e);
         }
 
         private void HandleControlMessage(MessageHeader header)
@@ -470,7 +462,7 @@ namespace Secs4Net
 
             var eap = new SocketAsyncEventArgs
             {
-                BufferList = msg.EncodeTo(EncodedBufferPool.Acquire(), EncodeHeader(ref header)),
+                BufferList = msg.EncodeTo(EncodedBufferPool.Rent(), EncodeHeader(ref header)),
                 UserToken = token,
             };
             eap.Completed += _sendDataMessageCompleteHandler;
@@ -510,7 +502,7 @@ namespace Secs4Net
 
         }
 
-        private void HandleDataMessage(ref MessageHeader header, SecsMessage msg)
+        private void HandleDataMessage(MessageHeader header, SecsMessage msg)
         {
             var systembyte = header.SystemBytes;
 
@@ -520,7 +512,7 @@ namespace Secs4Net
                 _logger.Warning("Received Unrecognized Device Id Message");
                 msg.Dispose();
 
-                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", B(header.EncodeTo(new byte[10]))), NewSystemId);
+                SendDataMessageAsync(new SecsMessage(9, 1, false, "UnrecognizedDeviceId", B(header.EncodeTo(new byte[10]))), NewSystemId);
 
                 return;
             }
@@ -532,7 +524,6 @@ namespace Secs4Net
                     //Primary message
                     _logger.MessageIn(msg, systembyte);
                     PrimaryMessageReceived?.Invoke(this, new PrimaryMessageWrapper(this, header, msg));
-                    msg.Dispose();
                     return;
                 }
                 // Error message systembyte

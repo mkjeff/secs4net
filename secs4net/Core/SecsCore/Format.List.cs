@@ -31,7 +31,7 @@ namespace Secs4Net
         /// <returns></returns>
         public static SecsItem Create(SecsItem[] value)
         {
-            var listItem = ListItemPool.Acquire();
+            var listItem = ListItemPool.Rent();
             listItem.SetItems(new ArraySegment<SecsItem>(value), fromPool: false);
             return listItem;
         }
@@ -43,7 +43,7 @@ namespace Secs4Net
         /// <returns></returns>
         internal static SecsItem Create(ArraySegment<SecsItem> value)
         {
-            var listItem = ListItemPool.Acquire();
+            var listItem = ListItemPool.Rent();
             listItem.SetItems(value, fromPool: true);
             return listItem;
         }

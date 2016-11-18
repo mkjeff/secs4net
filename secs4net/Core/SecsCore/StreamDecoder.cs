@@ -6,8 +6,6 @@ using static System.Diagnostics.Debug;
 
 namespace Secs4Net
 {
-    internal delegate void DataMessageHandler(ref MessageHeader header, SecsMessage message);
-
     /// <summary>
     ///  Stream based HSMS/SECS-II message decoder
     /// </summary>
@@ -34,7 +32,7 @@ namespace Secs4Net
 
         private int _decoderStep;
 
-        private readonly DataMessageHandler _dataMsgHandler;
+        private readonly Action<MessageHeader,SecsMessage> _dataMsgHandler;
         private readonly Action<MessageHeader> _controlMsgHandler;
 
         /// <summary>
@@ -68,7 +66,7 @@ namespace Secs4Net
 
         internal StreamDecoder(int streamBufferSize,
                                Action<MessageHeader> controlMsgHandler,
-                               DataMessageHandler dataMsgHandler)
+                               Action<MessageHeader,SecsMessage> dataMsgHandler)
         {
             Buffer = new byte[streamBufferSize];
             BufferOffset = 0;
@@ -111,7 +109,7 @@ namespace Secs4Net
                                 if (_messageDataLength == 0)
                                 {
                                     if (_msgHeader.MessageType == MessageType.DataMessage)
-                                        _dataMsgHandler(ref _msgHeader,
+                                        _dataMsgHandler(_msgHeader,
                                             new SecsMessage(
                                                 _msgHeader.S,
                                                 _msgHeader.F,
@@ -125,7 +123,7 @@ namespace Secs4Net
                                 if (length >= _messageDataLength)
                                 {
                                     Trace.WriteLine("Get Complete Data Message with total data");
-                                    _dataMsgHandler(ref _msgHeader,
+                                    _dataMsgHandler(_msgHeader,
                                         new SecsMessage(_msgHeader.S,
                                             _msgHeader.F,
                                             _msgHeader.ReplyExpected,
@@ -210,7 +208,7 @@ namespace Secs4Net
                                 if (_stack.Count == 0)
                                 {
                                     Trace.WriteLine("Get Complete Data Message by stream decoded");
-                                    _dataMsgHandler(ref _msgHeader,
+                                    _dataMsgHandler(_msgHeader,
                                         new SecsMessage(
                                             _msgHeader.S,
                                             _msgHeader.F,
@@ -236,7 +234,7 @@ namespace Secs4Net
                                     else
                                     {
                                         Trace.WriteLine("Get Complete Data Message by stream decoded");
-                                        _dataMsgHandler(ref _msgHeader,
+                                        _dataMsgHandler(_msgHeader,
                                             new SecsMessage(
                                                 _msgHeader.S,
                                                 _msgHeader.F,
@@ -380,7 +378,7 @@ namespace Secs4Net
 
             internal static ItemListBuffer Create(int capacity)
             {
-                var result = Pool.Acquire();
+                var result = Pool.Rent();
                 result.Count = 0; // reset filled index
                 result.PooledItems = new ArraySegment<SecsItem>(SecsItemArrayPool.Pool.Rent(capacity), 0, capacity);
                 return result;
@@ -406,7 +404,7 @@ namespace Secs4Net
 
             public void Dispose()
             {
-                _pool.Release(this);
+                _pool.Return(this);
             }
         }
     }
