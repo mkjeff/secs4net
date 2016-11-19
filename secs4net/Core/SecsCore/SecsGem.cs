@@ -295,7 +295,7 @@ namespace Secs4Net
 
                 if (_secsDecoder.Decode(receivedCount))
                 {
-#if !DISABLE_TIMER
+#if !DISABLE_T8
                     _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
                     _timer8.Change(T8, Timeout.Infinite);
 #endif
@@ -363,21 +363,23 @@ namespace Secs4Net
                 return;
             }
 
-            ReleaseEncoderBuffer(e.BufferList);
+            ReleaseEncodedBuffer(e.BufferList);
 
             _logger.Info($"Sent Control Message: {completeToken.MsgType.GetName()}");
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
+#if !DISABLE_T6
                 if (!completeToken.Task.Wait(T6))
                 {
                     _logger.Error($"T6 Timeout: {T6 / 1000} sec.");
                     CommunicationStateChanging(ConnectionState.Retry);
                 }
+#endif
                 _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
             }
         }
 
-        private static void ReleaseEncoderBuffer(IList<ArraySegment<byte>> e)
+        private static void ReleaseEncodedBuffer(IList<ArraySegment<byte>> e)
         {
             foreach (var b in e)
                 EncodedBytePool.Return(b.Array);
@@ -446,15 +448,14 @@ namespace Secs4Net
             if (msg.ReplyExpected)
                 _replyExpectedMsgs[systembyte] = token;
 
-
             var header = new MessageHeader
-                         {
-                             S = msg.S,
-                             F = msg.F,
-                             ReplyExpected = msg.ReplyExpected,
-                             DeviceId = DeviceId,
-                             SystemBytes = systembyte
-                         };
+            {
+                S = msg.S,
+                F = msg.F,
+                ReplyExpected = msg.ReplyExpected,
+                DeviceId = DeviceId,
+                SystemBytes = systembyte
+            };
 
             var eap = new SocketAsyncEventArgs
             {
@@ -470,7 +471,7 @@ namespace Secs4Net
 
         private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
         {
-            ReleaseEncoderBuffer(e.BufferList);
+            ReleaseEncodedBuffer(e.BufferList);
 
             var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
@@ -487,11 +488,13 @@ namespace Secs4Net
 
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
+#if !DISABLE_T3
                 if (!completeToken.Task.Wait(T3))
                 {
                     _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
                     completeToken.SetException(new SecsException(completeToken.Id, Resources.T3Timeout));
                 }
+#endif
                 _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
             }
 
@@ -554,7 +557,7 @@ namespace Secs4Net
                     _logger.Info("Stop T7 Timer");
                     break;
                 case ConnectionState.Connected:
-#if !DISABLE_TIMER
+#if !DISABLE_T7
                     _logger.Info($"Start T7 Timer: {T7 / 1000} sec.");
                     _timer7.Change(T7, Timeout.Infinite);
 #endif
