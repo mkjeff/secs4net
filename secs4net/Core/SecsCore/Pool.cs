@@ -18,17 +18,13 @@ namespace Secs4Net
                              : new StackStore();
         }
 
-        public T Rent()
-        {
-            if (_itemStore.Count <= 0 || !_itemStore.TryRent(out var item))
-                item = _factory(this);
-            return item;
-        }
+        public T Rent() =>
+             (_itemStore.Count <= 0 || !_itemStore.TryRent(out var item))
+                ? _factory(this)
+                : item;
 
-        public void Return(T item)
-        {
-            _itemStore.Return(item);
-        }
+
+        public void Return(T item) => _itemStore.Return(item);
 
         public void Reset()
         {

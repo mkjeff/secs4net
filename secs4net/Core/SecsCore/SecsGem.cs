@@ -75,7 +75,7 @@ namespace Secs4Net
         /// </summary>
         public int LinkTestInterval
         {
-            get { return _linkTestInterval; }
+            get => _linkTestInterval;
             set
             {
                 if (_linkTestEnable)
@@ -92,7 +92,7 @@ namespace Secs4Net
         /// </summary>
         public bool LinkTestEnable
         {
-            get { return _linkTestEnable; }
+            get => _linkTestEnable;
             set
             {
                 if (_linkTestEnable == value)
