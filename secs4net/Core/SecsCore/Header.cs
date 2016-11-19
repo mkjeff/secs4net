@@ -17,39 +17,26 @@ namespace Secs4Net
 
             // DeviceId
             var values = (byte*)Unsafe.AsPointer(ref DeviceId);
+            Unsafe.Copy(target + 1, ref Unsafe.AsRef<byte>(values));
+            Unsafe.Copy(target + 0, ref Unsafe.AsRef<byte>(values + 1));
 
-            var
-            tmp = Unsafe.Read<byte>(values + 0);
-            Unsafe.Copy(target + 1, ref tmp);
-            tmp = Unsafe.Read<byte>(values + 1);
-            Unsafe.Copy(target + 0, ref tmp);
-
-            // ReplyExpected
-            buffer[2] = (byte)(S | (ReplyExpected ? 0x80 : 0));
-
-            // S
-            buffer[2] = (byte)(S | (ReplyExpected ? 0x80 : 0));
+            // S, ReplyExpected
+            Unsafe.Write(target + 2, (byte)(S | (ReplyExpected ? 0x80 : 0)));
 
             // F
-            buffer[3] = F;
+            Unsafe.Write(target + 3, F);
 
-            buffer[4] = 0;
+            Unsafe.Write(target + 4, 0);
 
             // MessageType
-            buffer[5] = (byte)MessageType;
+            Unsafe.Write(target + 5, (byte)MessageType);
 
             // SystemBytes
             values = (byte*)Unsafe.AsPointer(ref SystemBytes);
-
-            
-            tmp = Unsafe.Read<byte>(values + 0);
-            Unsafe.Copy(target + 9, ref tmp);
-            tmp = Unsafe.Read<byte>(values + 1);
-            Unsafe.Copy(target + 8, ref tmp);
-            tmp = Unsafe.Read<byte>(values + 2);
-            Unsafe.Copy(target + 7, ref tmp);
-            tmp = Unsafe.Read<byte>(values + 3);
-            Unsafe.Copy(target + 6, ref tmp);
+            Unsafe.Copy(target + 9, ref Unsafe.AsRef<byte>(values));
+            Unsafe.Copy(target + 8, ref Unsafe.AsRef<byte>(values + 1));
+            Unsafe.Copy(target + 7, ref Unsafe.AsRef<byte>(values + 2));
+            Unsafe.Copy(target + 6, ref Unsafe.AsRef<byte>(values + 3));
 
             return buffer;
         }
@@ -62,27 +49,16 @@ namespace Secs4Net
             ushort deviceId = 0;
 
             var ptr = (byte*) Unsafe.AsPointer(ref deviceId);
-            // tmp variable is redundant if use C# 7.0 ref return + Unsafe.AsRef
-            var
-                tmp = Unsafe.Read<byte>(src + 1);
-            Unsafe.Copy(ptr + 0, ref tmp);
-            tmp = Unsafe.Read<byte>(src + 0);
-            Unsafe.Copy(ptr + 1, ref tmp);
+            Unsafe.Copy(ptr + 0, ref Unsafe.AsRef<byte>(src + 1));
+            Unsafe.Copy(ptr + 1, ref Unsafe.AsRef<byte>(src));
 
             // SystemBytes
             int systemBytes = 0;
             ptr = (byte*) Unsafe.AsPointer(ref systemBytes);
-            // tmp variable is redundant if use C# 7.0 ref return + Unsafe.AsRef
-            // https://github.com/mkjeff/CS7Sample/blob/25f7d8719eb082e92055574e27d7dbf1e6731f27/Test/Program.cs#L77-L104
-
-            tmp = Unsafe.Read<byte>(src + 9);
-            Unsafe.Copy(ptr + 0, ref tmp);
-            tmp = Unsafe.Read<byte>(src + 8);
-            Unsafe.Copy(ptr + 1, ref tmp);
-            tmp = Unsafe.Read<byte>(src + 7);
-            Unsafe.Copy(ptr + 2, ref tmp);
-            tmp = Unsafe.Read<byte>(src + 6);
-            Unsafe.Copy(ptr + 3, ref tmp);
+            Unsafe.Copy(ptr + 0, ref Unsafe.AsRef<byte>(src + 9));
+            Unsafe.Copy(ptr + 1, ref Unsafe.AsRef<byte>(src + 8));
+            Unsafe.Copy(ptr + 2, ref Unsafe.AsRef<byte>(src + 7));
+            Unsafe.Copy(ptr + 3, ref Unsafe.AsRef<byte>(src + 6));
 
             return new MessageHeader
                    {

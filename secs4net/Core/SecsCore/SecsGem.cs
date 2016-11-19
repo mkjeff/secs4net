@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Secs4Net.Properties;
+using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,7 +8,6 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Secs4Net.Properties;
 using static Secs4Net.Item;
 
 namespace Secs4Net
@@ -30,8 +30,8 @@ namespace Secs4Net
         private ISecsGemLogger _logger = DefaultLogger;
         public ISecsGemLogger Logger
         {
-            get { return _logger; }
-            set { _logger = value ?? DefaultLogger; }
+            get => _logger;
+            set => _logger = value ?? DefaultLogger;
         }
 
         /// <summary>
@@ -150,14 +150,11 @@ namespace Secs4Net
                        int port,
                        int receiveBufferSize = 0x4000)
         {
-            if (ip == null)
-                throw new ArgumentNullException(nameof(ip));
-
             if (port <= 0)
                 throw new ArgumentOutOfRangeException(nameof(port), port, Resources.SecsGemTcpPortMustGreaterThan0);
 
             _taskFactory = new TaskFactory(TaskScheduler.Default);
-            IpAddress = ip;
+            IpAddress = ip ?? throw new ArgumentNullException(nameof(ip));
             Port = port;
             IsActive = isActive;
             DecoderBufferSize = receiveBufferSize;
@@ -392,8 +389,7 @@ namespace Secs4Net
         {
             if ((byte)header.MessageType % 2 == 0)
             {
-                TaskCompletionSourceToken ar;
-                if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out ar))
+                if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out var ar))
                 {
                     ar.SetResult(ControlMessage);
                 }
@@ -540,8 +536,7 @@ namespace Secs4Net
 
             // Secondary message
             _logger.MessageIn(msg, header.SystemBytes);
-            TaskCompletionSourceToken ar;
-            if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out ar))
+            if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out var ar))
                 ar.HandleReplyMessage(msg);
         }
 

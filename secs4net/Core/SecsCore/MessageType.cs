@@ -1,13 +1,15 @@
-﻿namespace Secs4Net {
-    enum MessageType : byte {
-        DataMessage = 0,	    // 00000000
-        SelectRequest = 1,		// 00000001	ReplyExpected
-        SelectResponse = 2,		// 00000010
-        //Deselect_req = 3,	    // 00000011	ReplyExpected
-        //Deselect_rsp = 4,	    // 00000100
-        LinkTestRequest = 5,	// 00000101	ReplyExpected
-        LinkTestResponse = 6,	// 00000110
-        //Reject_req = 7,	    // 00000111
-        SeperateRequest = 9	    // 00001001
+﻿namespace Secs4Net
+{
+    enum MessageType : byte
+    {
+        DataMessage        = 0b0000_0000,
+        SelectRequest      = 0b0000_0001,
+        SelectResponse     = 0b0000_0010,
+        //Deselect_req     = 0b0000_0011,
+        //Deselect_rsp     = 0b0000_0100,
+        LinkTestRequest    = 0b0000_0101,
+        LinkTestResponse   = 0b0000_0110,
+        //Reject_req       = 0b0000_0111,
+        SeperateRequest    = 0b0000_1001
     }
 }

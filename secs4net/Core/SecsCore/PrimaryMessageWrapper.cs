@@ -29,10 +29,9 @@ namespace Secs4Net
         /// <returns>ture, if reply message sent.</returns>
         public bool Reply(SecsMessage replyMessage, bool autoDispose = true)
         {
-            SecsGem secsGem;
             if (Interlocked.Exchange(ref _isReplied, 1) == 1
                 || !Message.ReplyExpected
-                || !_secsGem.TryGetTarget(out secsGem))
+                || !_secsGem.TryGetTarget(out var secsGem))
             {
                 if (autoDispose)
                     replyMessage.Dispose();

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Secs4Net.Properties;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
-using Secs4Net.Properties;
 
 namespace Secs4Net
 {
@@ -29,47 +30,32 @@ namespace Secs4Net
         /// <summary>
         /// Data item
         /// </summary>
-        public virtual IEnumerable Values
-        {
-            get { throw new NotSupportedException("This is not a value item"); }
-        }
+        public virtual IEnumerable Values => throw new NotSupportedException("This is not a value item");
 
         /// <summary>
         /// List item
         /// </summary>
-        public virtual IReadOnlyList<SecsItem> Items
-        {
-            get { throw new NotSupportedException("This is not a list Item"); }
-        }
+        public virtual IReadOnlyList<SecsItem> Items => throw new NotSupportedException("This is not a list Item");
 
         /// <summary>
         /// get first value by specific type
         /// </summary>
         /// <typeparam name="T">value type</typeparam>
         /// <returns></returns>
-        public virtual T GetValue<T>() where T : struct
-        {
-            throw new NotSupportedException("This is not a value Item");
-        }
+        public virtual T GetValue<T>() where T : struct => throw new NotSupportedException("This is not a value Item");
 
         /// <summary>
         /// get value array by specific type
         /// </summary>
         /// <typeparam name="T">value type</typeparam>
         /// <returns></returns>
-        public virtual T[] GetValues<T>() where T : struct
-        {
-            throw new NotSupportedException("This is not a value Item");
-        }
+        public virtual T[] GetValues<T>() where T : struct => throw new NotSupportedException("This is not a value Item");
 
         /// <summary>
         /// get string value
         /// </summary>
         /// <returns></returns>
-        public virtual string GetString()
-        {
-            throw new NotSupportedException("This is not a string value Item");
-        }
+        public virtual string GetString() => throw new NotSupportedException("This is not a string value Item");
 
         public static explicit operator string(SecsItem secsItem) => secsItem.GetString();
         public static explicit operator byte(SecsItem secsItem) => secsItem.GetValue<byte>();
@@ -112,32 +98,31 @@ namespace Secs4Net
         /// <returns>header bytes + initial bytes of value0 </returns>
         protected static unsafe byte[] EncodeValue(SecsFormat format, int valueCount, out int headerlength)
         {
+            var result = SecsGem.EncodedBytePool.Rent(valueCount + 4);
+            var target = (byte*)Unsafe.AsPointer(ref result[0]);
             var ptr = (byte*)Unsafe.AsPointer(ref valueCount);
             if (valueCount <= 0xff)
             {//	1 byte
                 headerlength = 2;
-                var result = SecsGem.EncodedBytePool.Rent(valueCount + 2);
-                result[0] = (byte)((byte)format | 1);
-                result[1] = ptr[0];
+                Unsafe.Write(target, (byte)((byte)format | 1));
+                Unsafe.Copy(target + 1, ref Unsafe.AsRef<byte>(ptr));
                 return result;
             }
             if (valueCount <= 0xffff)
             {//	2 byte
                 headerlength = 3;
-                var result = SecsGem.EncodedBytePool.Rent(valueCount + 3);
-                result[0] = (byte)((byte)format | 2);
-                result[1] = ptr[1];
-                result[2] = ptr[0];
+                Unsafe.Write(target, (byte)((byte)format | 2));
+                Unsafe.Copy(target + 1, ref Unsafe.AsRef<byte>(ptr + 1));
+                Unsafe.Copy(target + 2, ref Unsafe.AsRef<byte>(ptr));
                 return result;
             }
             if (valueCount <= 0xffffff)
             {//	3 byte
                 headerlength = 4;
-                var result = SecsGem.EncodedBytePool.Rent(valueCount + 4);
-                result[0] = (byte)((byte)format | 3);
-                result[1] = ptr[2];
-                result[2] = ptr[1];
-                result[3] = ptr[0];
+                Unsafe.Write(target, (byte)((byte)format | 3));
+                Unsafe.Copy(target + 1, ref Unsafe.AsRef<byte>(ptr + 2));
+                Unsafe.Copy(target + 2, ref Unsafe.AsRef<byte>(ptr + 1));
+                Unsafe.Copy(target + 3, ref Unsafe.AsRef<byte>(ptr));
                 return result;
             }
             throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, string.Format(Resources.ValueItemDataLength__0__Overflow, valueCount));
@@ -163,9 +148,10 @@ namespace Secs4Net
         {
             var format = typeof(TFormat)
                 .GetFields()
-                .First(f => f.IsLiteral && f.Name == "Format");
+                .First(IsFormatField);
             SecsFormat = (SecsFormat)format.GetValue(null);
         }
+        static bool IsFormatField(FieldInfo f) => f.IsLiteral && f.Name == "Format";
 
         public sealed override SecsFormat Format => SecsFormat;
     }

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Secs4Net.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Secs4Net.Properties;
 
 namespace Secs4Net
 {

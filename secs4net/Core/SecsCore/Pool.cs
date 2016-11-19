@@ -12,10 +12,7 @@ namespace Secs4Net
 
         public Pool(Func<Pool<T>, T> factory, PoolAccessMode poolAccessMode = PoolAccessMode.FIFO)
         {
-            if (factory == null)
-                throw new ArgumentNullException(nameof(factory));
-
-            _factory = factory;
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _itemStore = poolAccessMode == PoolAccessMode.FIFO
                              ? (IItemStore) new QueueStore()
                              : new StackStore();
@@ -23,8 +20,7 @@ namespace Secs4Net
 
         public T Rent()
         {
-            T item;
-            if (_itemStore.Count <= 0 || !_itemStore.TryRent(out item))
+            if (_itemStore.Count <= 0 || !_itemStore.TryRent(out var item))
                 item = _factory(this);
             return item;
         }
@@ -38,8 +34,7 @@ namespace Secs4Net
         {
             while (!_itemStore.IsEmpty)
             {
-                T item;
-                _itemStore.TryRent(out item);
+                _itemStore.TryRent(out var item);
             }
         }
 

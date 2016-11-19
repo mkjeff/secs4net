@@ -23,7 +23,7 @@ namespace Secs4Net
         /// <param name="length"></param>
         /// <param name="need"></param>
         /// <returns>pipeline decoder index</returns>
-        private delegate int Decoder(ref int length, out int need);
+        private delegate (int step, int need) Decoder(ref int length);
 
         /// <summary>
         /// decode pipelines
@@ -77,10 +77,11 @@ namespace Secs4Net
             _decoders = new Decoder[]
                         {
                             // 0: get total message length 4 bytes
-                            (ref int length, out int need) =>
+                            (ref int length) =>
                             {
-                                if (!CheckAvailable(ref length, 4, out need))
-                                    return 0;
+                                var check = CheckAvailable(ref length, 4);
+                                if (!check.available)
+                                    return (step:0,need:check.need);
 
                                 Array.Reverse(Buffer, _decodeIndex, 4);
                                 unsafe
@@ -94,13 +95,14 @@ namespace Secs4Net
                                 Trace.WriteLine($"Get Message Length: {_messageDataLength}");
                                 _decodeIndex += 4;
                                 length -= 4;
-                                return 1;
+                                return (step:1,need:0);
                             },
                             // 1: get message header 10 bytes
-                            (ref int length, out int need) =>
+                            (ref int length) =>
                             {
-                                if (!CheckAvailable(ref length, 10, out need))
-                                    return 1;
+                                var check =CheckAvailable(ref length, 10);
+                                if (!check.available)
+                                    return (step:1,need:check.need);
 
                                 _msgHeader = MessageHeader.Decode(Buffer, _decodeIndex);
                                 _decodeIndex += 10;
@@ -117,7 +119,7 @@ namespace Secs4Net
                                                 string.Empty));
                                     else
                                         _controlMsgHandler(_msgHeader);
-                                    return 0;
+                                    return (step:0,need:0);
                                 }
 
                                 if (length >= _messageDataLength)
@@ -131,28 +133,30 @@ namespace Secs4Net
                                             BufferedDecode(Buffer, ref _decodeIndex)));
                                     length -= (int) _messageDataLength;
                                     _messageDataLength = 0;
-                                    return 0; //completeWith message received
+                                    return (step:0,need:0); //completeWith message received
                                 }
-                                return 2;
+                                return (step:2,need:0);
                             },
                             // 2: get _format + lengthBits(2bit) 1 byte
-                            (ref int length, out int need) =>
+                            (ref int length) =>
                             {
-                                if (!CheckAvailable(ref length, 1, out need))
-                                    return 2;
+                                var check = CheckAvailable(ref length, 1);
+                                if (!check.available)
+                                    return (step:2, check.need);
 
                                 _format = (SecsFormat) (Buffer[_decodeIndex] & 0xFC);
                                 _lengthBits = (byte) (Buffer[_decodeIndex] & 3);
                                 _decodeIndex++;
                                 _messageDataLength--;
                                 length--;
-                                return 3;
+                                return (step:3,need:0);
                             },
                             // 3: get _itemLength _lengthBits bytes, at most 3 byte
-                            (ref int length, out int need) =>
+                            (ref int length) =>
                             {
-                                if (!CheckAvailable(ref length, _lengthBits, out need))
-                                    return 3;
+                                var check =CheckAvailable(ref length, _lengthBits);
+                                if (!check.available)
+                                    return (step:3,check.need);
 
                                 Array.Reverse(Buffer, _decodeIndex, _lengthBits);
                                 unsafe
@@ -171,12 +175,11 @@ namespace Secs4Net
                                 _decodeIndex += _lengthBits;
                                 _messageDataLength -= _lengthBits;
                                 length -= _lengthBits;
-                                return 4;
+                                return (step:4,need:0);
                             },
                             // 4: get item value
-                            (ref int length, out int need) =>
+                            (ref int length) =>
                             {
-                                need = 0;
                                 SecsItem item;
                                 if (_format == SecsFormat.List)
                                 {
@@ -187,13 +190,14 @@ namespace Secs4Net
                                     else
                                     {
                                         _stack.Push(ItemListBuffer.Create(_itemLength));
-                                        return 2;
+                                        return (step:2,need:0);
                                     }
                                 }
                                 else
                                 {
-                                    if (!CheckAvailable(ref length, _itemLength, out need))
-                                        return 4;
+                                    var check = CheckAvailable(ref length, _itemLength);
+                                    if (!check.available)
+                                        return (step:4,check.need);
 
                                     item = _itemLength == 0
                                                ? _format.BytesDecode()
@@ -215,7 +219,7 @@ namespace Secs4Net
                                             _msgHeader.ReplyExpected,
                                             string.Empty,
                                             item));
-                                    return 0;
+                                    return (step:0,need:0);
                                 }
 
                                 var list = _stack.Peek();
@@ -241,11 +245,11 @@ namespace Secs4Net
                                                 _msgHeader.ReplyExpected,
                                                 string.Empty,
                                                 item));
-                                        return 0;
+                                        return (step:0,need:0);
                                     }
                                 }
 
-                                return 2;
+                                return (step:2,need:0);
                             },
                         };
         }
@@ -287,14 +291,10 @@ namespace Secs4Net
         }
 
 
-        private static bool CheckAvailable(ref int length, int required, out int need)
-        {
-            if (length < required)
-                need = required - length;
-            else
-                need = 0;
-            return need == 0;
-        }
+        private static (bool available, int need) CheckAvailable(ref int length, int required)
+            => (length < required)
+                ? (false, required - length)
+                : (true, 0);        
 
         /// <summary>
         /// 
@@ -306,26 +306,25 @@ namespace Secs4Net
             Assert(length > 0, "decode data length is 0.");
             var currentLength = length;
             length += _previousRemainedCount; // total available length = current length + previous remained
-            int need;
-            var nexStep = _decoderStep;
+            (int nexStep,int need) step = (_decoderStep,0);
             do
             {
-                _decoderStep = nexStep;
-                nexStep = _decoders[_decoderStep](ref length, out need);
-            } while (nexStep != _decoderStep);
+                _decoderStep = step.nexStep;
+                step = _decoders[_decoderStep](ref length);
+            } while (step.nexStep != _decoderStep);
 
             Assert(_decodeIndex >= BufferOffset, "decode index should ahead of buffer index");
 
             var remainCount = length;
             Assert(remainCount >= 0, "remain count is only possible grater and equal zero");
             Trace.WriteLine($"remain data length: {remainCount}");
-            Trace.WriteLineIf(_messageDataLength > 0, $"need data count: {need}");
+            Trace.WriteLineIf(_messageDataLength > 0, $"need data count: {step.need}");
 
             if (remainCount == 0)
             {
-                if (need > Buffer.Length)
+                if (step.need > Buffer.Length)
                 {
-                    var newSize = need*2;
+                    var newSize = step.need * 2;
                     Trace.WriteLine($@"<<buffer resizing>>: current size = {Buffer.Length}, new size = {newSize}");
 
                     // increase buffer size
@@ -338,7 +337,7 @@ namespace Secs4Net
             else
             {
                 BufferOffset += currentLength; // move next receive index
-                var nextStepReqiredCount = remainCount + need;
+                var nextStepReqiredCount = remainCount + step.need;
                 if (nextStepReqiredCount > BufferCount)
                 {
                     if (nextStepReqiredCount > Buffer.Length)
@@ -374,7 +373,9 @@ namespace Secs4Net
         private sealed class ItemListBuffer : IDisposable
         {
             private static readonly Pool<ItemListBuffer> Pool
-                = new Pool<ItemListBuffer>(p => new ItemListBuffer(p), poolAccessMode: PoolAccessMode.LIFO);
+                = new Pool<ItemListBuffer>(Create, poolAccessMode: PoolAccessMode.LIFO);
+
+            private static ItemListBuffer Create(Pool<ItemListBuffer> p) => new ItemListBuffer(p);
 
             internal static ItemListBuffer Create(int capacity)
             {
