@@ -14,8 +14,8 @@ namespace Secs4Net
 {
     public sealed class SecsGem : IDisposable
     {
-        internal const int EncodeBytePoolMaxArrayLength = 1024*1024;
-        internal const int EncodeBytePoolMaxArrayPerBucket = 500;
+        const int EncodeBytePoolMaxArrayLength = 1024*1024;
+        const int EncodeBytePoolMaxArrayPerBucket = 500;
 
         /// <summary>
         /// HSMS connection state changed event
@@ -25,7 +25,7 @@ namespace Secs4Net
         /// <summary>
         /// Primary message received event
         /// </summary>
-        public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived;
+        public event Action<PrimaryMessageWrapper> PrimaryMessageReceived;
 
         private ISecsGemLogger _logger = DefaultLogger;
         public ISecsGemLogger Logger
@@ -137,8 +137,7 @@ namespace Secs4Net
 
         internal int NewSystemId => _systemByte.New();
 
-        private readonly TaskScheduler _taskScheduler;
-
+        private readonly TaskFactory _taskFactory;
         /// <summary>
         /// constructor
         /// </summary>
@@ -146,12 +145,10 @@ namespace Secs4Net
         /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
         /// <param name="port">if active mode it should be remote device listener's port</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        /// <param name="taskScheduler"></param>
         public SecsGem(bool isActive,
                        IPAddress ip,
                        int port,
-                       int receiveBufferSize = 0x4000,
-                       TaskScheduler taskScheduler = null)
+                       int receiveBufferSize = 0x4000)
         {
             if (ip == null)
                 throw new ArgumentNullException(nameof(ip));
@@ -159,7 +156,7 @@ namespace Secs4Net
             if (port <= 0)
                 throw new ArgumentOutOfRangeException(nameof(port), port, Resources.SecsGemTcpPortMustGreaterThan0);
 
-            _taskScheduler = taskScheduler ?? TaskScheduler.FromCurrentSynchronizationContext();
+            _taskFactory = new TaskFactory(TaskScheduler.Default);
             IpAddress = ip;
             Port = port;
             IsActive = isActive;
@@ -391,11 +388,10 @@ namespace Secs4Net
 
         private void HandleControlMessage(MessageHeader header)
         {
-            int systembyte = header.SystemBytes;
             if ((byte)header.MessageType % 2 == 0)
             {
                 TaskCompletionSourceToken ar;
-                if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
+                if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out ar))
                 {
                     ar.SetResult(ControlMessage);
                 }
@@ -409,7 +405,7 @@ namespace Secs4Net
             switch (header.MessageType)
             {
                 case MessageType.SelectRequest:
-                    SendControlMessage(MessageType.SelectResponse, systembyte);
+                    SendControlMessage(MessageType.SelectResponse, header.SystemBytes);
                     CommunicationStateChanging(ConnectionState.Selected);
                     break;
                 case MessageType.SelectResponse:
@@ -433,7 +429,7 @@ namespace Secs4Net
                     }
                     break;
                 case MessageType.LinkTestRequest:
-                    SendControlMessage(MessageType.LinkTestResponse, systembyte);
+                    SendControlMessage(MessageType.LinkTestResponse, header.SystemBytes);
                     break;
                 case MessageType.SeperateRequest:
                     CommunicationStateChanging(ConnectionState.Retry);
@@ -504,11 +500,9 @@ namespace Secs4Net
 
         private void HandleDataMessage(MessageHeader header, SecsMessage msg)
         {
-            var systembyte = header.SystemBytes;
-
             if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
             {
-                _logger.MessageIn(msg, systembyte);
+                _logger.MessageIn(msg, header.SystemBytes);
                 _logger.Warning("Received Unrecognized Device Id Message");
                 msg.Dispose();
 
@@ -522,8 +516,11 @@ namespace Secs4Net
                 if (msg.S != 9)
                 {
                     //Primary message
-                    _logger.MessageIn(msg, systembyte);
-                    PrimaryMessageReceived?.Invoke(this, new PrimaryMessageWrapper(this, header, msg));
+                    _logger.MessageIn(msg, header.SystemBytes);
+                    _taskFactory.StartNew(
+                        wrapper => PrimaryMessageReceived?.Invoke((PrimaryMessageWrapper) wrapper),
+                        new PrimaryMessageWrapper(this, header, msg));
+
                     return;
                 }
                 // Error message systembyte
@@ -532,16 +529,16 @@ namespace Secs4Net
                     var headerBytes = msg.SecsItem.GetValues<byte>();
                     Array.Reverse(headerBytes, 0, 10);
                     Unsafe.CopyBlock(
-                        destination: Unsafe.AsPointer(ref systembyte),
+                        destination: Unsafe.AsPointer(ref header.SystemBytes),
                         source: Unsafe.AsPointer(ref headerBytes[0]),
                         byteCount: 4);
                 }
             }
 
             // Secondary message
-            _logger.MessageIn(msg, systembyte);
+            _logger.MessageIn(msg, header.SystemBytes);
             TaskCompletionSourceToken ar;
-            if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
+            if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out ar))
                 ar.HandleReplyMessage(msg);
         }
 
@@ -597,7 +594,7 @@ namespace Secs4Net
             _socket.Dispose();
             _socket = null;
         }
-        public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
+        public void Start() => _taskFactory.StartNew(_startImpl);
 
         /// <summary>
         /// Asynchronously send message to device .

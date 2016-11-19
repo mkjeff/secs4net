@@ -160,7 +160,7 @@ namespace Cim.Eap
             menuItemGemEnable.Enabled = false;
         }
 
-        private void PrimaryMsgHandler(object sender, PrimaryMessageWrapper e)
+        private void PrimaryMsgHandler(PrimaryMessageWrapper e)
         {
             try
             {

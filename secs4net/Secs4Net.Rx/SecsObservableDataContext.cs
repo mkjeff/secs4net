@@ -16,7 +16,7 @@ namespace Secs4Net.Rx
         public SecsObservableDataContext(SecsGem secsGem)
         {
             _secsGem = secsGem;
-            MessageEvents = Observable.FromEvent<EventHandler<PrimaryMessageWrapper>, PrimaryMessageWrapper>(
+            MessageEvents = Observable.FromEvent<Action<PrimaryMessageWrapper>, PrimaryMessageWrapper>(
                 h => _secsGem.PrimaryMessageReceived += h,
                 h => _secsGem.PrimaryMessageReceived -= h);
         }

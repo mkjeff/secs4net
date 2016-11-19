@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Secs4Net;
 using System.Net;
 using System.Drawing;
+using System.Threading.Tasks;
 using Secs4Net.Sml;
 
 namespace SecsDevice
@@ -58,7 +59,7 @@ namespace SecsDevice
             btnDisable.Enabled = true;
         }
 
-        private void PrimaryMessageReceived(object sender, PrimaryMessageWrapper e)
+        private void PrimaryMessageReceived(PrimaryMessageWrapper e)
         {
             this.Invoke(new Action<PrimaryMessageWrapper>(evt => recvBuffer.Add(evt)), e);
         }
