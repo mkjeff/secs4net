@@ -90,40 +90,37 @@ namespace Secs4Net
         protected abstract ArraySegment<byte> GetEncodedData();
 
         /// <summary>
-        /// Encode Item header + value0 (initial array only)
+        /// Encode Item header + value (initial)
         /// </summary>
         /// <param name="format"></param>
         /// <param name="valueCount">Item value0 bytes length</param>
         /// <param name="headerlength">return header bytes length</param>
         /// <returns>header bytes + initial bytes of value0 </returns>
-        protected static unsafe byte[] EncodeValue(SecsFormat format, int valueCount, out int headerlength)
+        protected static unsafe (byte[] buffer,int headerlength) EncodeValue(SecsFormat format, int valueCount)
         {
             var result = SecsGem.EncodedBytePool.Rent(valueCount + 4);
             var target = (byte*)Unsafe.AsPointer(ref result[0]);
             var ptr = (byte*)Unsafe.AsPointer(ref valueCount);
             if (valueCount <= 0xff)
             {//	1 byte
-                headerlength = 2;
                 Unsafe.Write(target, (byte)((byte)format | 1));
                 Unsafe.Copy(target + 1, ref Unsafe.AsRef<byte>(ptr));
-                return result;
+                return (result,2);
             }
             if (valueCount <= 0xffff)
             {//	2 byte
-                headerlength = 3;
                 Unsafe.Write(target, (byte)((byte)format | 2));
                 Unsafe.Copy(target + 1, ref Unsafe.AsRef<byte>(ptr + 1));
                 Unsafe.Copy(target + 2, ref Unsafe.AsRef<byte>(ptr));
-                return result;
+                return (result,3);
             }
             if (valueCount <= 0xffffff)
             {//	3 byte
-                headerlength = 4;
                 Unsafe.Write(target, (byte)((byte)format | 3));
                 Unsafe.Copy(target + 1, ref Unsafe.AsRef<byte>(ptr + 2));
                 Unsafe.Copy(target + 2, ref Unsafe.AsRef<byte>(ptr + 1));
                 Unsafe.Copy(target + 3, ref Unsafe.AsRef<byte>(ptr));
-                return result;
+                return (result,4);
             }
             throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, string.Format(Resources.ValueItemDataLength__0__Overflow, valueCount));
         }

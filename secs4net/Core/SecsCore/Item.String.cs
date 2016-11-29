@@ -32,7 +32,7 @@ namespace Secs4Net
                 return EncodEmpty(Format);
 
             var bytelength = _str.Length;
-            var result = EncodeValue(Format, bytelength, out int headerLength);
+            var (result, headerLength) = EncodeValue(Format, bytelength);
             var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : SecsExtension.JIS8Encoding;
             encoder.GetBytes(_str, 0, _str.Length, result, headerLength);
             return new ArraySegment<byte>(result, 0, headerLength + bytelength);

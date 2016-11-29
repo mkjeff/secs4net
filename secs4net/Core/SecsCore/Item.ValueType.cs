@@ -49,7 +49,7 @@ namespace Secs4Net
 
             var sizeOf = Unsafe.SizeOf<TValue>();
             var bytelength = _values.Count * sizeOf;
-            var result = EncodeValue(Format, bytelength, out int headerLength);
+            var (result, headerLength) = EncodeValue(Format, bytelength);
             Buffer.BlockCopy(_values.Array, 0, result, headerLength, bytelength);
             result.Reverse(headerLength, headerLength + bytelength, sizeOf);
             return new ArraySegment<byte>(result, 0, headerLength + bytelength);

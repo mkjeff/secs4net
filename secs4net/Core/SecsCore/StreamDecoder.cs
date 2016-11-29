@@ -111,14 +111,17 @@ namespace Secs4Net
                                 if (_messageDataLength == 0)
                                 {
                                     if (_msgHeader.MessageType == MessageType.DataMessage)
-                                        _dataMsgHandler(_msgHeader,
+                                    {    _dataMsgHandler(_msgHeader,
                                             new SecsMessage(
                                                 _msgHeader.S,
                                                 _msgHeader.F,
                                                 _msgHeader.ReplyExpected,
                                                 string.Empty));
+                                    }
                                     else
+                                    {
                                         _controlMsgHandler(_msgHeader);
+                                    }
                                     return (step:0,need:0);
                                 }
 
