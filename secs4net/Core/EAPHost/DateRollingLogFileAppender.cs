@@ -4,7 +4,7 @@ using System.IO;
 using Cim.Eap;
 using log4net.Appender;
 using log4net.Core;
-using Online.Eap.Properties;
+using Cim.Eap.Properties;
 
 namespace Cim.Eap {
 	sealed class RollingLogFileAppender : FileAppender {

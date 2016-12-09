@@ -11,7 +11,7 @@
     </ApplicationIcon>
     <AssemblyKeyContainerName>
     </AssemblyKeyContainerName>
-    <AssemblyName>EAPDriver</AssemblyName>
+    <AssemblyName>Eap.Driver.MWN</AssemblyName>
     <AssemblyOriginatorKeyFile>
     </AssemblyOriginatorKeyFile>
     <DefaultClientScript>JScript</DefaultClientScript>
@@ -19,7 +19,7 @@
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>false</DelaySign>
     <OutputType>Library</OutputType>
-    <RootNamespace>EAP</RootNamespace>
+    <RootNamespace>Eap.Driver.MWN</RootNamespace>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <StartupObject>
     </StartupObject>
@@ -146,7 +146,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bin\config\gem.xml" />
+    <None Include="config\gem.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Content Include="ReadMe.txt" />
     <Compile Include="DefineLink.cs" />
     <Compile Include="EQP.CarrierIdRead.cs" />
@@ -177,7 +179,9 @@
     <Compile Include="TCS.ToolModeChange.cs" />
     <Content Include="App.config">
     </Content>
-    <None Include="bin\config\secs.sml" />
+    <None Include="config\secs.sml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Emulator\test.smd" />
   </ItemGroup>
   <ItemGroup>
@@ -212,18 +216,21 @@
       <Project>{51cbed10-a51e-43a7-8370-81de490be207}</Project>
       <Name>CIM.Eap</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\EAPHost\EAP Host.csproj">
-      <Project>{391f9889-812d-4c32-975e-2cf9f5b456ff}</Project>
-      <Name>EAP Host</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Core\CIM.Management\CIM.Management.csproj">
       <Project>{3eedddf5-284e-4c9e-87af-4fff72c480d4}</Project>
       <Name>CIM.Management</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\EAPHost\EAP Host.csproj">
+      <Project>{391f9889-812d-4c32-975e-2cf9f5b456ff}</Project>
+      <Name>EAP Host</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\SecsCore\SecsCore.csproj">
       <Project>{3c8c67b8-3746-4d26-b3a8-dcb01b5aa66b}</Project>
       <Name>SecsCore</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

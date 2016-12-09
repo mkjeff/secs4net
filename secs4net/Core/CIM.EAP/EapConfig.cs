@@ -17,12 +17,12 @@ namespace Cim.Eap {
         public string TcsId => string.IsNullOrEmpty((string)this["tcs"]) ? this.ToolId : (string)this["tcs"];
 
         [Description(@"預先定義好的SECS message清單")]
-        [ConfigurationProperty("sml", DefaultValue = @"..\config\secs.sml")]
+        [ConfigurationProperty("sml", IsRequired = true)]
         [CallbackValidator(Type = typeof(EAPConfig), CallbackMethodName = "CheckFileExist")]
         public string SmlFile => (string)this["sml"];
 
         [Description(@"GEM event report define link config file")]
-        [ConfigurationProperty("gem", DefaultValue = @"..\config\gem.xml")]
+        [ConfigurationProperty("gem", IsRequired = true)]
         [CallbackValidator(Type = typeof(EAPConfig), CallbackMethodName = "CheckFileExist")]
         public string GemXml => (string)this["gem"];
 
@@ -85,7 +85,9 @@ namespace Cim.Eap {
         public int T8 => (int)this["t8"];
 
         public static void CheckFileExist(object value) {
-            if (!File.Exists(value as string)) throw new FileNotFoundException("相關組態檔找不到", value as string);
+            var filePath = value as string;        
+            if (!string.IsNullOrWhiteSpace(filePath) && !File.Exists(filePath))
+                throw new FileNotFoundException("相關組態檔找不到", value as string);
         }
         public static void IPAddressCheck(object value) {
             IPAddress.Parse(value as string);

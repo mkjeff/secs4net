@@ -1,6 +1,6 @@
 ﻿using Cim.Eap.Tx;
 using Secs4Net;
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
         void EQP_ControlJobStart(SecsMessage msg) {
             EAP.Report(new ControlJobStartReport {

@@ -1,7 +1,8 @@
-﻿using Cim.Eap.Tx;
+﻿using Cim.Eap;
+using Cim.Eap.Tx;
 using Secs4Net;
 
-namespace Cim.Eap
+namespace Eap.Driver.MWN
 {
     sealed partial class Driver : EapDriver
     {

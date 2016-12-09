@@ -1,8 +1,9 @@
 ﻿using Cim.Eap.Tx;
 using Secs4Net;
 using System.Threading.Tasks;
+using Cim.Eap;
 
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
         async Task TCS_CancelCarrier(CancelCarrierRequest tx) {
             bool isUnknown = tx.Carrier.Id == "(Unknown)";

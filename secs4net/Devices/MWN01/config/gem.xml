@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<GEM>
+  <DataFormats>
+    <CEID Type="U2" />
+    <VID Type="U2" />
+    <ReportID Type="U2" />
+    <DataID Type="U4" />
+  </DataFormats>
+  <!--<VIDs>
+    <VID ID="18201" Name="ControlJob ID" />
+    <VID ID="18202" Name="ControlJob State" />
+    <VID ID="18203" Name="ProcessJob ID" />
+    <VID ID="18206" Name="Recipe ID" />
+    <VID ID="18208" Name="PortID" />
+    <VID ID="18209" Name="CarrierID" />
+    <VID ID="18211" Name="SlotMap" />
+    <VID ID="18214" Name="Port Transfer State" />
+    <VID ID="19006" Name="WaferProcessingDataLLH" />
+    <VID ID="19008" Name="WaferProcessingDataETCH" />
+    <VID ID="19009" Name="WaferProcessingDataPVD" />
+  </VIDs>-->
+  <Reports>
+    <Report ID="300" Name="Process Job State">
+      <VID ID="18203" />
+      <VID ID="18206" />
+    </Report>
+    <Report ID="500" Name="Loadport Transfer State">
+      <VID ID="18208" />
+    </Report>
+    <Report ID="501" Name="Carrier Data">
+      <VID ID="18208" />
+      <VID ID="18209" />
+    </Report>
+    <Report ID="502" Name="Slotmap Data">
+      <VID ID="18208" />
+      <VID ID="18209" />
+      <VID ID="18211" />
+    </Report>
+    <Report ID="600" Name="Control Job State">
+      <VID ID="18202" />
+      <VID ID="18201" />
+    </Report>
+    <Report ID="705" Name="LLH Chamber Wafer History">
+      <VID ID="19006" />
+    </Report>
+    <Report ID="708" Name="PVD Chamber Wafer History">
+      <VID ID="19009" />
+    </Report>
+    <Report ID="722">
+      <VID ID="11" />
+      <VID ID="18243" />
+      <VID ID="18240" />
+      <VID ID="18241" />
+      <VID ID="19021" />
+      <VID ID="19022" />
+      <VID ID="19023" />
+      <VID ID="19024" />
+      <VID ID="19025" />
+    </Report>
+    <Report ID="723">
+      <VID ID="11" />
+      <VID ID="18243" />
+      <VID ID="18241" />
+      <VID ID="19023" />
+      <VID ID="19024" />
+      <VID ID="19025" />
+      <VID ID="19026" />
+    </Report>
+  </Reports>
+  <Events>
+    <Event ID="101" Name="LoadComplete">
+      <Report ID="500" />
+    </Event>
+    <Event ID="102" Name="UnloadComplete">
+      <Report ID="500" />
+    </Event>
+    <Event ID="114" Name="ReadyToLoad">
+      <Report ID="500" />
+    </Event>
+    <Event ID="115" Name="ReadyToUnload">
+      <Report ID="500" />
+    </Event>
+    <Event ID="128" Name="CarrierIDRead">
+      <Report ID="501" />
+    </Event>
+    <Event ID="133" Name="SlotMapReport">
+      <Report ID="502" />
+    </Event>
+    <Event ID="134" Name="SlotMapVerifyAck">
+      <Report ID="502" />
+    </Event>
+    <Event ID="146" Name="CarrierIDReadFail">
+      <Report ID="500" />
+    </Event>
+    <Event ID="201" Name="ProcessJobQueued">
+      <Report ID="300" />
+    </Event>
+    <Event ID="204" Name="ProcessJobStart">
+      <Report ID="300" />
+    </Event>
+    <Event ID="206" Name="ProcessJobEnd">
+      <Report ID="300" />
+    </Event>
+    <Event ID="218" Name="WaferProcessData_LLH">
+      <Report ID="705" />
+    </Event>
+    <Event ID="221" Name="WaferProcessData_PVD">
+      <Report ID="708" />
+    </Event>
+    <Event ID="304" Name="ControlJobStart">
+      <Report ID="600" />
+    </Event>
+    <Event ID="307" Name="ControlJobEnd">
+      <Report ID="600" />
+    </Event>
+    <Event ID="311" Name="CJStopComplete">
+      <Report ID="600" />
+    </Event>
+    <Event ID="312" Name="CJAbortComplete">
+      <Report ID="600" />
+    </Event>
+    <Event ID="422" Name="NeedsProcessingToInProcess">
+      <Report ID="722" />
+    </Event>
+    <Event ID="427" Name="InProcessToNeedProcession">
+      <Report ID="722" />
+    </Event>
+    <Event ID="434" Name="Step Start">
+      <Report ID="723" />
+    </Event>
+  </Events>
+</GEM>

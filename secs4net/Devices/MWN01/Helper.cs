@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Cim.Eap.Data;
 using System;
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
         readonly IDictionary<string, ProcessJob> _ProcessingJobs = new Dictionary<string, ProcessJob>(StringComparer.Ordinal);
 

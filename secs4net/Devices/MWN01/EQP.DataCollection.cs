@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Cim.Eap.Tx;
 using Secs4Net;
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
         void EQP_WaferProcessData_LLH_LHC(SecsMessage msg) {
             Item tempList = msg.SecsItem.Items[2].Items[0].Items[1].Items[0];

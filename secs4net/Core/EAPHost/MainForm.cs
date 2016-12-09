@@ -21,7 +21,7 @@ using log4net;
 using log4net.Layout;
 using log4net.Repository.Hierarchy;
 using Secs4Net;
-using Secs4Net.Json;
+using Secs4Net.Sml;
 
 namespace Cim.Eap
 {
@@ -237,7 +237,7 @@ namespace Cim.Eap
         void listBoxSecsMessageList_SelectedIndexChanged(object sender, EventArgs e)
         {
             SecsMessage secsMsg = SecsMessages[listBoxSecsMessages.SelectedIndex];
-            txtMsg.Text = secsMsg.ToJson();
+            txtMsg.Text = secsMsg.ToSML();
        }
 
         void enableTraceLogToolStripMenuItem_Click(object sender, EventArgs e)

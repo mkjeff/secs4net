@@ -2,8 +2,9 @@
 using Cim.Eap.Data;
 using Cim.Eap.Tx;
 using System.Threading.Tasks;
+using Cim.Eap;
 
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
 
         async Task TCS_AskLoadtStatus(AskLoadStatusRequest tx) {

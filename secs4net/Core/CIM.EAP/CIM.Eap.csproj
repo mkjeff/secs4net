@@ -8,8 +8,8 @@
     <ProjectGuid>{51CBED10-A51E-43A7-8370-81DE490BE207}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Online.Eap</RootNamespace>
-    <AssemblyName>Online.Eap</AssemblyName>
+    <RootNamespace>Cim.Eap</RootNamespace>
+    <AssemblyName>Cim.Eap</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
@@ -97,10 +97,6 @@
       <HintPath>..\..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -171,9 +167,9 @@
     <Compile Include="TxReport\WaferStartReport.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Extension\Serialization.Json\Serialization.Json.csproj">
-      <Project>{60938345-e9cf-41f0-a588-505b05e5e544}</Project>
-      <Name>Serialization.Json</Name>
+    <ProjectReference Include="..\..\Extension\Serialization.Sml\Serialization.Sml.csproj">
+      <Project>{f7c036db-d4c9-4326-a17b-713cb00f313c}</Project>
+      <Name>Serialization.Sml</Name>
     </ProjectReference>
     <ProjectReference Include="..\CIM.Management\CIM.Management.csproj">
       <Project>{3EEDDDF5-284E-4C9E-87AF-4FFF72C480D4}</Project>

@@ -1,6 +1,6 @@
 ﻿using Secs4Net;
 
-namespace Cim.Eap
+namespace Eap.Driver.MWN
 {
     partial class Driver
     {

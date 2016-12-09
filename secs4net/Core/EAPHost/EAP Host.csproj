@@ -19,7 +19,7 @@
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>false</DelaySign>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Online.Eap</RootNamespace>
+    <RootNamespace>Cim.Eap</RootNamespace>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <StartupObject>Cim.Eap.Program</StartupObject>
     <FileUpgradeFlags>
@@ -237,9 +237,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Extension\Serialization.Json\Serialization.Json.csproj">
-      <Project>{60938345-e9cf-41f0-a588-505b05e5e544}</Project>
-      <Name>Serialization.Json</Name>
+    <ProjectReference Include="..\..\Extension\Serialization.Sml\Serialization.Sml.csproj">
+      <Project>{f7c036db-d4c9-4326-a17b-713cb00f313c}</Project>
+      <Name>Serialization.Sml</Name>
     </ProjectReference>
     <ProjectReference Include="..\CIM.EAP\CIM.Eap.csproj">
       <Project>{51cbed10-a51e-43a7-8370-81de490be207}</Project>

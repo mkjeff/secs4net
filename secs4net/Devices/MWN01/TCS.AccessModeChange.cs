@@ -3,8 +3,9 @@ using Cim.Eap.Data;
 using Cim.Eap.Tx;
 using Secs4Net;
 using System.Threading.Tasks;
+using Cim.Eap;
 
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
         Task TCS_AccessModeChange(AccessModeChangeRequest tx)
         {

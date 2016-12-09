@@ -3,8 +3,9 @@ using System.Linq;
 using Cim.Eap.Tx;
 using Secs4Net;
 using System.Threading.Tasks;
+using Cim.Eap;
 
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
         async Task TCS_CreateControlJob(CreateControlJobRequest tx) {
             var s14f10 = await EAP.SendAsync(new SecsMessage(14, 9, "CreateControlJob",

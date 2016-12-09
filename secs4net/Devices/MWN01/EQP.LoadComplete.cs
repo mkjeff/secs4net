@@ -2,7 +2,7 @@
 using Secs4Net;
 using System.Threading;
 using System;
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
         async void EQP_LoadComplete(SecsMessage msg) {
             byte portNo = (byte)msg.SecsItem.Items[2].Items[0].Items[1].Items[0];

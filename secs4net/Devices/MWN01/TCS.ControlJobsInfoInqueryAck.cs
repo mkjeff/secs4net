@@ -1,7 +1,7 @@
 ﻿using Cim.Eap.Tx;
 using System.Threading.Tasks;
 
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
         Task TCS_ControlJobsInfoInqueryAck(ControlJobsInfoInqueryAck tx) {
             foreach (var controlJob in tx.ControlJobs)

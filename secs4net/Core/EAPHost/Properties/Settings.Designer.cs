@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Online.Eap.Properties {
+namespace Cim.Eap.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -20,15 +20,6 @@ namespace Online.Eap.Properties {
         public static Settings Default {
             get {
                 return defaultInstance;
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("FormatName:DIRECT=TCP:172.22.6.153\\TEMP")]
-        public string EDA_Path {
-            get {
-                return ((string)(this["EDA_Path"]));
             }
         }
         

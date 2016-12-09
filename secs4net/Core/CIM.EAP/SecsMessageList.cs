@@ -3,12 +3,12 @@ using System.IO;
 using System.Linq;
 using Secs4Net;
 using System.Collections.ObjectModel;
-using Secs4Net.Json;
+using Secs4Net.Sml;
 
 namespace Cim.Eap
 {
     public sealed class SecsMessageList : ReadOnlyCollection<SecsMessage> {
-        public SecsMessageList(string jsonFile) : base(File.OpenText(jsonFile).ToSecsMessages()) { }
+        public SecsMessageList(string jsonFile) : base(File.OpenText(jsonFile).ToSecsMessages().ToList()) { }
 
         public SecsMessage this[byte s, byte f, string name] => this[s, f].First(m => m.Name == name);
 

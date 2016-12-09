@@ -3,8 +3,9 @@ using Cim.Eap.Data;
 using Cim.Eap.Tx;
 using Secs4Net;
 using System.Threading.Tasks;
+using Cim.Eap;
 
-namespace Cim.Eap {
+namespace Eap.Driver.MWN {
     partial class Driver {
         async Task TCS_CreateProcessJob(CreateProcessJobRequest tx) {
             var s16f16 = await EAP.SendAsync(new SecsMessage(16, 15, "CreateProcessJob",

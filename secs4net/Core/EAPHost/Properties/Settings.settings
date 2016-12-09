@@ -1,10 +1,7 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Online.Eap.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Cim.Eap.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="EDA_Path" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">FormatName:DIRECT=TCP:172.22.6.153\TEMP</Value>
-    </Setting>
     <Setting Name="ZUrl" Type="System.String" Scope="Application">
       <Value Profile="(Default)">tcp://127.0.0.1:9999/manager</Value>
     </Setting>
