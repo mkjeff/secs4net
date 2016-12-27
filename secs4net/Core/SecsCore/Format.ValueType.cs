@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Secs4Net
 {
-    public abstract class ValueTypeFormat<TFormat, TValue> : IFormat<TValue>
+    abstract class ValueTypeFormat<TFormat, TValue> : IFormat<TValue>
        where TFormat : IFormat<TValue>
        where TValue : struct
     {
@@ -170,62 +170,62 @@ namespace Secs4Net
         }
     }
 
-    public sealed class BooleanFormat : ValueTypeFormat<BooleanFormat, bool>
+    sealed class BooleanFormat : ValueTypeFormat<BooleanFormat, bool>
     {
         public const SecsFormat Format = SecsFormat.Boolean;
     }
 
-    public sealed class BinaryFormat : ValueTypeFormat<BinaryFormat, byte>
+    sealed class BinaryFormat : ValueTypeFormat<BinaryFormat, byte>
     {
         public const SecsFormat Format = SecsFormat.Binary;
     }
 
-    public sealed class F4Format : ValueTypeFormat<F4Format, float>
+    sealed class F4Format : ValueTypeFormat<F4Format, float>
     {
         public const SecsFormat Format = SecsFormat.F4;
     }
 
-    public sealed class F8Format : ValueTypeFormat<F8Format, double>
+    sealed class F8Format : ValueTypeFormat<F8Format, double>
     {
         public const SecsFormat Format = SecsFormat.F8;
     }
 
-    public sealed class I1Format : ValueTypeFormat<I1Format, sbyte>
+    sealed class I1Format : ValueTypeFormat<I1Format, sbyte>
     {
         public const SecsFormat Format = SecsFormat.I1;
     }
 
-    public sealed class I2Format : ValueTypeFormat<I2Format, short>
+    sealed class I2Format : ValueTypeFormat<I2Format, short>
     {
         public const SecsFormat Format = SecsFormat.I2;
     }
 
-    public sealed class I4Format : ValueTypeFormat<I4Format, int>
+    sealed class I4Format : ValueTypeFormat<I4Format, int>
     {
         public const SecsFormat Format = SecsFormat.I4;
     }
 
-    public sealed class I8Format : ValueTypeFormat<I8Format, long>
+    sealed class I8Format : ValueTypeFormat<I8Format, long>
     {
         public const SecsFormat Format = SecsFormat.I8;
     }
 
-    public sealed class U1Format : ValueTypeFormat<U1Format, byte>
+    sealed class U1Format : ValueTypeFormat<U1Format, byte>
     {
         public const SecsFormat Format = SecsFormat.U1;
     }
 
-    public sealed class U2Format : ValueTypeFormat<U2Format, ushort>
+    sealed class U2Format : ValueTypeFormat<U2Format, ushort>
     {
         public const SecsFormat Format = SecsFormat.U2;
     }
 
-    public sealed class U4Format : ValueTypeFormat<U4Format, uint>
+    sealed class U4Format : ValueTypeFormat<U4Format, uint>
     {
         public const SecsFormat Format = SecsFormat.U4;
     }
 
-    public sealed class U8Format : ValueTypeFormat<U8Format, ulong>
+    sealed class U8Format : ValueTypeFormat<U8Format, ulong>
     {
         public const SecsFormat Format = SecsFormat.U8;
     }

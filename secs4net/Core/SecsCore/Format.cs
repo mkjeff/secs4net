@@ -1,6 +1,6 @@
 ﻿namespace Secs4Net
 {
-    public interface IFormat<T>
+    interface IFormat<T>
     {
     }
 }

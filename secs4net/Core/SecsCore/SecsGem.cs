@@ -25,7 +25,7 @@ namespace Secs4Net
         /// <summary>
         /// Primary message received event
         /// </summary>
-        public event Action<PrimaryMessageWrapper> PrimaryMessageReceived;
+        public event Action<PrimaryMessageWrapper> PrimaryMessageReceived = delegate { };
 
         private ISecsGemLogger _logger = DefaultLogger;
         public ISecsGemLogger Logger
@@ -517,7 +517,7 @@ namespace Secs4Net
                     //Primary message
                     _logger.MessageIn(msg, header.SystemBytes);
                     _taskFactory.StartNew(
-                        wrapper => PrimaryMessageReceived?.Invoke((PrimaryMessageWrapper) wrapper),
+                        wrapper => PrimaryMessageReceived(Unsafe.As<PrimaryMessageWrapper>(wrapper)),
                         new PrimaryMessageWrapper(this, header, msg));
 
                     return;

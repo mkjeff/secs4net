@@ -147,8 +147,9 @@ namespace Secs4Net
                 .GetFields()
                 .First(IsFormatField);
             SecsFormat = (SecsFormat)format.GetValue(null);
-        }
-        static bool IsFormatField(FieldInfo f) => f.IsLiteral && f.Name == "Format";
+
+            bool IsFormatField(FieldInfo f) => f.IsLiteral && f.Name == "Format";
+        }        
 
         public sealed override SecsFormat Format => SecsFormat;
     }

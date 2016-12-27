@@ -1,6 +1,6 @@
 ﻿namespace Secs4Net
 {
-    public abstract class StringFormat<TFormat> : IFormat<string> where TFormat : IFormat<string>
+    abstract class StringFormat<TFormat> : IFormat<string> where TFormat : IFormat<string>
     {
         public static readonly SecsItem Empty = new StringItem<TFormat>();
 
@@ -29,12 +29,12 @@
         }
     }
 
-    public sealed class ASCIIFormat : StringFormat<ASCIIFormat>
+    sealed class ASCIIFormat : StringFormat<ASCIIFormat>
     {
         public const SecsFormat Format = SecsFormat.ASCII;
     }
 
-    public sealed class JIS8Format : StringFormat<JIS8Format>
+    sealed class JIS8Format : StringFormat<JIS8Format>
     {
         public const SecsFormat Format = SecsFormat.JIS8;
     }
