@@ -18,10 +18,11 @@ namespace Secs4Net
             _pool = pool;
         }
 
-        internal void SetValues(ArraySegment<TValue> itemValue, bool fromPool)
+        internal ValueItem<TFormat, TValue> SetValues(ArraySegment<TValue> itemValue, bool fromPool)
         {
             _values = itemValue;
             _isValuesFromPool = fromPool;
+            return this;
         }
 
         internal override void Release()

@@ -14,15 +14,8 @@
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static SecsItem Create(string str)
-        {
-            if (string.IsNullOrEmpty(str))
-                return Empty;
-
-            var item = StringItemPool.Rent();
-            item.SetValue(str);
-            return item;
-        }
+        public static SecsItem Create(string str) =>
+             string.IsNullOrEmpty(str) ? Empty : StringItemPool.Rent().SetValue(str);
 
         internal StringFormat()
         {

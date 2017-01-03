@@ -35,24 +35,16 @@ namespace Secs4Net
         /// </summary>
         /// <param name="value">dynamic allocated <typeparamref name="TValue"/> array</param>
         /// <returns></returns>
-        public static SecsItem Create(TValue[] value)
-        {
-            var item = ValueItemPool.Rent();
-            item.SetValues(new ArraySegment<TValue>(value), fromPool: false);
-            return item;
-        }
+        public static SecsItem Create(TValue[] value) =>
+            ValueItemPool.Rent().SetValues(new ArraySegment<TValue>(value), fromPool: false);
 
         /// <summary>
         /// Create <typeparamref name="TValue"/> item
         /// </summary>
         /// <param name="value"><typeparamref name="TValue"/> item from pool</param>
         /// <returns></returns>
-        internal static SecsItem Create(ArraySegment<TValue> value)
-        {
-            var item = ValueItemPool.Rent();
-            item.SetValues(value, fromPool: true);
-            return item;
-        }
+        internal static SecsItem Create(ArraySegment<TValue> value) =>
+            ValueItemPool.Rent().SetValues(value, fromPool: true);
 
         public static SecsItem Create(TValue v0)
         {

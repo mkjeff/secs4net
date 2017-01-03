@@ -15,12 +15,13 @@ namespace Secs4Net
             _pool = pool;
         }
 
-        internal void SetItems(ArraySegment<SecsItem> items, bool fromPool)
+        internal ListItem SetItems(ArraySegment<SecsItem> items, bool fromPool)
         {
             if (items.Count > byte.MaxValue)
                 throw new ArgumentOutOfRangeException($"List length out of range, max length: 255");
             _items = items;
             _isItemsFromPool = fromPool;
+            return this;
         }
 
         internal override void Release()

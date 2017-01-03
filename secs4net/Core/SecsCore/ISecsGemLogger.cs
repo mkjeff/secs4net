@@ -17,7 +17,7 @@ namespace Secs4Net
     /// <summary>
     /// SECS Connector Logger
     /// </summary>
-    public sealed class DefaultSecsGemLogger : ISecsGemLogger
+    sealed class DefaultSecsGemLogger : ISecsGemLogger
     {
         public void MessageIn(SecsMessage msg, int systembyte) {
             Trace.WriteLine($"<-- [0x{systembyte:X8}] {msg}");

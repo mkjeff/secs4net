@@ -29,24 +29,16 @@ namespace Secs4Net
         /// </summary>
         /// <param name="value">dynamic allocated item array</param>
         /// <returns></returns>
-        public static SecsItem Create(SecsItem[] value)
-        {
-            var listItem = ListItemPool.Rent();
-            listItem.SetItems(new ArraySegment<SecsItem>(value), fromPool: false);
-            return listItem;
-        }
+        public static SecsItem Create(SecsItem[] value) => 
+            ListItemPool.Rent().SetItems(new ArraySegment<SecsItem>(value), fromPool: false);
 
         /// <summary>
         /// Create PooledListItem
         /// </summary>
         /// <param name="value">item list from pool</param>
         /// <returns></returns>
-        internal static SecsItem Create(ArraySegment<SecsItem> value)
-        {
-            var listItem = ListItemPool.Rent();
-            listItem.SetItems(value, fromPool: true);
-            return listItem;
-        }
+        internal static SecsItem Create(ArraySegment<SecsItem> value) =>
+            ListItemPool.Rent().SetItems(value, fromPool: true);
 
         public static SecsItem Create(SecsItem v0)
         {

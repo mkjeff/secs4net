@@ -16,9 +16,10 @@ namespace Secs4Net
             _pool = pool;
         }
 
-        internal void SetValue(string itemValue)
+        internal StringItem<TFormat> SetValue(string itemValue)
         {
             _str = itemValue;
+            return this;
         }
 
         internal override void Release()
