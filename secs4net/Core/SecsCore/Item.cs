@@ -28,11 +28,6 @@ namespace Secs4Net
         }
 
         /// <summary>
-        /// Data item
-        /// </summary>
-        public virtual IEnumerable Values => throw new NotSupportedException("This is not a value item");
-
-        /// <summary>
         /// List item
         /// </summary>
         public virtual IReadOnlyList<SecsItem> Items => throw new NotSupportedException("This is not a list Item");

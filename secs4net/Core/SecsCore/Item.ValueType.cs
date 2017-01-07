@@ -58,8 +58,6 @@ namespace Secs4Net
 
         public override int Count => _values.Count;
 
-        public override IEnumerable Values => _values;
-
         public override unsafe T GetValue<T>() => Unsafe.Read<T>(Unsafe.AsPointer(ref _values.Array[0]));
 
         public override T[] GetValues<T>() => Unsafe.As<T[]>(_values.ToArray());

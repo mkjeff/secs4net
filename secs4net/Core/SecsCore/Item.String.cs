@@ -40,7 +40,6 @@ namespace Secs4Net
         }
 
         public override int Count => _str.Length;
-        public override IEnumerable Values => _str;
         public override string GetString() => _str;
 
         public override bool IsMatch(SecsItem target)

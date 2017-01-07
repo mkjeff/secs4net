@@ -51,6 +51,8 @@ namespace Secs4Net.Json
             jwtr.Flush();
         }
 
+        const string ItemValuesName = "Values";
+
         public static void WriteTo(this SecsItem item, JsonTextWriter writer)
         {
             writer.WriteStartObject();
@@ -67,7 +69,7 @@ namespace Secs4Net.Json
             }
             else
             {
-                writer.WritePropertyName(nameof(item.Values));
+                writer.WritePropertyName(ItemValuesName);
 
                 if (item.Format == SecsFormat.ASCII || item.Format == SecsFormat.JIS8)
                 {
@@ -75,13 +77,57 @@ namespace Secs4Net.Json
                 }
                 else
                 {
-                    writer.WriteStartArray();
-                    foreach (var value in item.Values)
-                        writer.WriteValue(value);
-                    writer.WriteEndArray();
+                    switch (item.Format)
+                    {
+                        case SecsFormat.Binary:
+                            WriteValue<byte>();
+                            break;
+                        case SecsFormat.Boolean:
+                            WriteValue<bool>();
+                            break;
+                        case SecsFormat.I8:
+                            WriteValue<long>();
+                            break;
+                        case SecsFormat.I1:
+                            WriteValue<sbyte>();
+                            break;
+                        case SecsFormat.I2:
+                            WriteValue<short>();
+                            break;
+                        case SecsFormat.I4:
+                            WriteValue<int>();
+                            break;
+                        case SecsFormat.F4:
+                            WriteValue<float>();
+                            break;
+                        case SecsFormat.F8:
+                            WriteValue<double>();
+                            break;                       
+                        case SecsFormat.U8:
+                            WriteValue<ulong>();
+                            break;
+                        case SecsFormat.U1:
+                            WriteValue<byte>();
+                            break;
+                        case SecsFormat.U2:
+                            WriteValue<ushort>();
+                            break;
+                        case SecsFormat.U4:
+                            WriteValue<uint>();
+                            break;
+                    }
                 }
             }
             writer.WriteEndObject();
+
+            void WriteValue<T>() where T:struct
+            {
+                writer.WriteStartArray();
+
+                foreach (var v in item.GetValues<T>())
+                    writer.WriteValue(v);
+                writer.WriteEndArray();
+            }
         }
 
         public static SecsMessage ToSecsMessage(this string jsonString)
@@ -120,11 +166,11 @@ namespace Secs4Net.Json
 
             if (format == SecsFormat.ASCII || format == SecsFormat.JIS8)
             {
-                var str = json.Value<string>(nameof(SecsItem.Values));
+                var str = json.Value<string>(ItemValuesName);
                 return format == SecsFormat.ASCII ? A(str) : J(str);
             }
 
-            var values = json.Value<JArray>(nameof(SecsItem.Values));
+            var values = json.Value<JArray>(ItemValuesName);
             switch (format)
             {
                 case SecsFormat.Binary: return B(values.Values<byte>());

@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using LINQPad.Extensibility.DataContext;
 using Newtonsoft.Json;
 using Secs4Net.Json;
@@ -97,19 +93,41 @@ namespace Secs4Net.LinqPad.Deriver
                                     where ei != null
                                     select ei).ToList()
                     };
-
                 case SecsFormat.ASCII:
                     return CreateExplorerItem(item.GetString(), "A", item.Count);
-
                 case SecsFormat.JIS8:
                     return CreateExplorerItem(item.GetString(), "J", item.Count);
+                case SecsFormat.Binary:
+                    return CreateExplorerItem<byte>(item);
+                case SecsFormat.Boolean:
+                    return CreateExplorerItem<bool>(item);
+                case SecsFormat.I8:
+                    return CreateExplorerItem<long>(item);
+                case SecsFormat.I1:
+                    return CreateExplorerItem<sbyte>(item);
+                case SecsFormat.I2:
+                    return CreateExplorerItem<short>(item);
+                case SecsFormat.I4:
+                    return CreateExplorerItem<int>(item);
+                case SecsFormat.F8:
+                    return CreateExplorerItem<double>(item);
+                case SecsFormat.F4:
+                    return CreateExplorerItem<float>(item);
+                case SecsFormat.U8:
+                    return CreateExplorerItem<ulong>(item);
+                case SecsFormat.U1:
+                    return CreateExplorerItem<byte>(item);
+                case SecsFormat.U2:
+                    return CreateExplorerItem<ushort>(item);
+                case SecsFormat.U4:
+                    return CreateExplorerItem<uint>(item);
                 default:
-                    return CreateExplorerItem(item);
+                    return CreateExplorerItem<int>(item);
             }
         }
 
-        static ExplorerItem CreateExplorerItem(SecsItem secsItem)
-            => new ExplorerItem($"{secsItem.Format} [{secsItem.Count}] {string.Join(" ", Unsafe.As<byte[]>(secsItem.Values))}"
+        static ExplorerItem CreateExplorerItem<T>(SecsItem secsItem) where T : struct
+            => new ExplorerItem($"{secsItem.Format} [{secsItem.Count}] {string.Join(" ", secsItem.GetValue<T>())}"
                 , ExplorerItemKind.Property, ExplorerIcon.Column);
 
         static ExplorerItem CreateExplorerItem(string value, string format,int count)
