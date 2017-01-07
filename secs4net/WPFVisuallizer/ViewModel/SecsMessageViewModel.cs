@@ -20,7 +20,7 @@ namespace SecsMessageVisuallizer.ViewModel
         public byte FunctionNumber => _secsMsg.F;
         public string Name
         {
-            get { return _secsMsg.Name; }
+            get => _secsMsg.Name;
             set
             {
                 if (value != null && value != _secsMsg.Name)

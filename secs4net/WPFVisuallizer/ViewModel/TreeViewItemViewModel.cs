@@ -42,7 +42,7 @@ namespace SecsMessageVisuallizer.ViewModel
         /// associated with this object is expanded.
         /// </summary>
         public bool IsExpanded {
-            get { return _isExpanded; }
+            get => _isExpanded;
             set {
                 if (value != _isExpanded) {
                     _isExpanded = value;
@@ -66,8 +66,8 @@ namespace SecsMessageVisuallizer.ViewModel
         /// associated with this object is selected.
         /// </summary>
         public bool IsSelected {
-            get { return _isSelected; }
-            set { SetField(ref _isSelected, value); }
+            get => _isSelected;
+            set => SetField(ref _isSelected, value);
         }
 
         /// <summary>

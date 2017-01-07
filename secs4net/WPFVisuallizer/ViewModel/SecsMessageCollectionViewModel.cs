@@ -1,6 +1,7 @@
 ﻿
 using Secs4Net;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SecsMessageVisuallizer.ViewModel {
     public class SecsMessageCollectionViewModel {
@@ -11,13 +12,7 @@ namespace SecsMessageVisuallizer.ViewModel {
             _msgList = secsMsgList;
         }
 
-        public IEnumerable<SecsMessageViewModel> SecsMessages
-        {
-            get
-            {
-                foreach (SecsMessage msg in _msgList)
-                    yield return new SecsMessageViewModel(msg);
-            }
-        }
+        public IEnumerable<SecsMessageViewModel> SecsMessages =>
+                _msgList.Select(msg => new SecsMessageViewModel(msg));
     }
 }
