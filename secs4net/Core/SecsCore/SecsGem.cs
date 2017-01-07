@@ -435,7 +435,7 @@ namespace Secs4Net
             }
         }
 
-        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, bool autoDispose = true)
+        internal ValueTask<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, bool autoDispose = true)
         {
             if (State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
@@ -462,7 +462,7 @@ namespace Secs4Net
             if (!_socket.SendAsync(eap))
                 SendDataMessageCompleteHandler(_socket, eap);
 
-            return token.Task;
+            return new ValueTask<SecsMessage>(token.Task);
         }
 
         private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
@@ -600,7 +600,7 @@ namespace Secs4Net
         /// <param name="msg">primary message</param>
         /// <param name="autoDispose">auto dispose message after message sent.</param>
         /// <returns>secondary message</returns>
-        public Task<SecsMessage> SendAsync(SecsMessage msg, bool autoDispose = true)
+        public ValueTask<SecsMessage> SendAsync(SecsMessage msg, bool autoDispose = true)
             => SendDataMessageAsync(msg, NewSystemId, autoDispose);
 
         private const int DisposalNotStarted = 0;

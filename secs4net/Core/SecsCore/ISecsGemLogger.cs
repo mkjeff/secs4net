@@ -19,28 +19,22 @@ namespace Secs4Net
     /// </summary>
     sealed class DefaultSecsGemLogger : ISecsGemLogger
     {
-        public void MessageIn(SecsMessage msg, int systembyte) {
+        public void MessageIn(SecsMessage msg, int systembyte) =>
             Trace.WriteLine($"<-- [0x{systembyte:X8}] {msg}");
-        }
 
-        public void MessageOut(SecsMessage msg, int systembyte) {
+        public void MessageOut(SecsMessage msg, int systembyte) =>
             Trace.WriteLine($"--> [0x{systembyte:X8}] {msg}");
-        }
 
-        public void Debug(string msg) {
+        public void Debug(string msg) =>
             Trace.WriteLine(msg);
-        }
 
-        public void Info(string msg) {
+        public void Info(string msg) =>
             Trace.TraceInformation(msg);
-        }
 
-        public void Warning(string msg) {
+        public void Warning(string msg) =>
             Trace.TraceWarning(msg);
-        }
 
-        public void Error(string msg, Exception ex = null) {
+        public void Error(string msg, Exception ex = null) =>
             Trace.TraceError($"{msg}\n {ex}");
-        }
     }
 }

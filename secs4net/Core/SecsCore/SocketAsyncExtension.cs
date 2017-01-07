@@ -7,16 +7,14 @@ namespace Secs4Net
 {
     internal static class SocketAsyncExtension
     {
-        private static readonly Task<bool> ConnectAsyncResultCache = Task.FromResult(true);
-
-        internal static Task<bool> ConnectAsync(this Socket socket, IPAddress target, int port)
+        internal static ValueTask<bool> ConnectAsync(this Socket socket, IPAddress target, int port)
         {
             var tcs = new TaskCompletionSource<bool>();
             var ce = new SocketAsyncEventArgs { RemoteEndPoint = new IPEndPoint(target, port), UserToken = tcs };
             ce.Completed += ConnectCompleted;
             if (socket.ConnectAsync(ce))
-                return tcs.Task;
-            return ConnectAsyncResultCache;
+                return new ValueTask<bool>(tcs.Task);
+            return new ValueTask<bool>(true);
         }
 
         private static void ConnectCompleted(object sender, SocketAsyncEventArgs e)
@@ -32,14 +30,14 @@ namespace Secs4Net
             }
         }
 
-        internal static Task<Socket> AcceptAsync(this Socket socket)
+        internal static ValueTask<Socket> AcceptAsync(this Socket socket)
         {
             var tcs = new TaskCompletionSource<Socket>();
             var ce = new SocketAsyncEventArgs { UserToken = tcs };
             ce.Completed += AcceptCompleted;
             if (socket.AcceptAsync(ce))
-                return tcs.Task;
-            return Task.FromResult(ce.AcceptSocket);
+                return new ValueTask<Socket>(tcs.Task);
+            return new ValueTask<Socket>(ce.AcceptSocket);
         }
 
         private static void AcceptCompleted(object sender, SocketAsyncEventArgs e)

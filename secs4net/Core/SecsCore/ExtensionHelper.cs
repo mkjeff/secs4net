@@ -141,33 +141,33 @@ namespace Secs4Net
             switch (format)
             {
                 case SecsFormat.ASCII:
-                    return A(Encoding.ASCII.GetString(data, index, length));
+                    return ASCIIFormat.Create(Encoding.ASCII.GetString(data, index, length));
                 case SecsFormat.JIS8:
-                    return J(JIS8Encoding.GetString(data, index, length));
+                    return JIS8Format.Create(JIS8Encoding.GetString(data, index, length));
                 case SecsFormat.Boolean:
-                    return Boolean(Decode<bool>(data, ref index, ref length));
+                    return BooleanFormat.Create(Decode<bool>(data, ref index, ref length));
                 case SecsFormat.Binary:
-                    return B(Decode<byte>(data, ref index, ref length));
+                    return BinaryFormat.Create(Decode<byte>(data, ref index, ref length));
                 case SecsFormat.U1:
-                    return U1(Decode<byte>(data, ref index, ref length));
+                    return U1Format.Create(Decode<byte>(data, ref index, ref length));
                 case SecsFormat.U2:
-                    return U2(Decode<ushort>(data, ref index, ref length));
+                    return U2Format.Create(Decode<ushort>(data, ref index, ref length));
                 case SecsFormat.U4:
-                    return U4(Decode<uint>(data, ref index, ref length));
+                    return U4Format.Create(Decode<uint>(data, ref index, ref length));
                 case SecsFormat.U8:
-                    return U8(Decode<ulong>(data, ref index, ref length));
+                    return U8Format.Create(Decode<ulong>(data, ref index, ref length));
                 case SecsFormat.I1:
-                    return I1(Decode<sbyte>(data, ref index, ref length));
+                    return I1Format.Create(Decode<sbyte>(data, ref index, ref length));
                 case SecsFormat.I2:
-                    return I2(Decode<short>(data, ref index, ref length));
+                    return I2Format.Create(Decode<short>(data, ref index, ref length));
                 case SecsFormat.I4:
-                    return I4(Decode<int>(data, ref index, ref length));
+                    return I4Format.Create(Decode<int>(data, ref index, ref length));
                 case SecsFormat.I8:
-                    return I8(Decode<long>(data, ref index, ref length));
+                    return I8Format.Create(Decode<long>(data, ref index, ref length));
                 case SecsFormat.F4:
-                    return F4(Decode<float>(data, ref index, ref length));
+                    return F4Format.Create(Decode<float>(data, ref index, ref length));
                 case SecsFormat.F8:
-                    return F8(Decode<double>(data, ref index, ref length));
+                    return F8Format.Create(Decode<double>(data, ref index, ref length));
             }
             throw new InvalidEnumArgumentException(nameof(format), (int)format, typeof(SecsFormat));
         }

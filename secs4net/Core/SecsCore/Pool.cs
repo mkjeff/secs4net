@@ -19,7 +19,7 @@ namespace Secs4Net
         }
 
         public T Rent() =>
-             (_itemStore.Count <= 0 || !_itemStore.TryRent(out var item))
+             _itemStore.Count <= 0 || !_itemStore.TryRent(out var item)
                 ? _factory(this)
                 : item;
 
@@ -29,9 +29,7 @@ namespace Secs4Net
         public void Reset()
         {
             while (!_itemStore.IsEmpty)
-            {
                 _itemStore.TryRent(out var item);
-            }
         }
 
         private interface IItemStore

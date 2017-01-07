@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using static Secs4Net.Item;
 
 namespace Secs4Net
@@ -27,7 +28,7 @@ namespace Secs4Net
         /// <param name="replyMessage"></param>
         /// <param name="autoDispose">auto disposes <paramref name="replyMessage"/></param>
         /// <returns>ture, if reply message sent.</returns>
-        public bool Reply(SecsMessage replyMessage, bool autoDispose = true)
+        public async ValueTask<bool> ReplyAsync(SecsMessage replyMessage, bool autoDispose = true)
         {
             if (Interlocked.Exchange(ref _isReplied, 1) == 1
                 || !Message.ReplyExpected
@@ -48,7 +49,7 @@ namespace Secs4Net
                 replyMessage.ReplyExpected = false;
             }
 
-            secsGem.SendDataMessageAsync(replyMessage,
+            await secsGem.SendDataMessageAsync(replyMessage,
                 replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes, autoDispose);
 
             return true;
