@@ -14,7 +14,7 @@ namespace Secs4Net
 {
     public sealed class SecsGem : IDisposable
     {
-        const int EncodeBytePoolMaxArrayLength = 1024*1024;
+        const int EncodeBytePoolMaxArrayLength = 1024 * 1024;
         const int EncodeBytePoolMaxArrayPerBucket = 500;
 
         /// <summary>
@@ -25,7 +25,8 @@ namespace Secs4Net
         /// <summary>
         /// Primary message received event
         /// </summary>
-        public event Action<PrimaryMessageWrapper> PrimaryMessageReceived = delegate { };
+        public event Action<PrimaryMessageWrapper> PrimaryMessageReceived = DefaultPrimaryMessageReceived;
+        private static void DefaultPrimaryMessageReceived(PrimaryMessageWrapper _) { }
 
         private ISecsGemLogger _logger = DefaultLogger;
         public ISecsGemLogger Logger
@@ -119,13 +120,13 @@ namespace Secs4Net
         private readonly Timer _timer8;
         private readonly Timer _timerLinkTest;
 
-        private readonly Func<Task> _startImpl;
+        private readonly Func<ValueTask<VoidStruct>> _startImpl;
         private readonly Action _stopImpl;
 
         private static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
         private static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
-        private static readonly Pool<IList<ArraySegment<byte>>> EncodedBufferPool
-            = new Pool<IList<ArraySegment<byte>>>(p => new List<ArraySegment<byte>>());
+        private static readonly Pool<IList<ArraySegment<byte>>> EncodedBufferPool = new Pool<IList<ArraySegment<byte>>>(EncodedBufferPoolFactory);
+        private static List<ArraySegment<byte>> EncodedBufferPoolFactory(Pool<IList<ArraySegment<byte>>> _) => new List<ArraySegment<byte>>();
 
         internal static readonly ArrayPool<byte> EncodedBytePool
             = ArrayPool<byte>.Create(EncodeBytePoolMaxArrayLength, EncodeBytePoolMaxArrayPerBucket);
@@ -145,10 +146,7 @@ namespace Secs4Net
         /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
         /// <param name="port">if active mode it should be remote device listener's port</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        public SecsGem(bool isActive,
-                       IPAddress ip,
-                       int port,
-                       int receiveBufferSize = 0x4000)
+        public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
         {
             if (port <= 0)
                 throw new ArgumentOutOfRangeException(nameof(port), port, Resources.SecsGemTcpPortMustGreaterThan0);
@@ -193,12 +191,12 @@ namespace Secs4Net
                     do
                     {
                         if (IsDisposed)
-                            return;
+                            return default(VoidStruct);
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
                             if (IsDisposed)
-                                return;
+                                return default(VoidStruct);
                             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                             await _socket.ConnectAsync(IpAddress, Port).ConfigureAwait(false);
                             connected = true;
@@ -206,7 +204,7 @@ namespace Secs4Net
                         catch (Exception ex)
                         {
                             if (IsDisposed)
-                                return;
+                                return default(VoidStruct);
                             _logger.Error(ex.Message);
                             _logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
                             await Task.Delay(T5);
@@ -220,6 +218,7 @@ namespace Secs4Net
                         SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
 
                     SendControlMessage(MessageType.SelectRequest, NewSystemId);
+                    return default(VoidStruct);
                 };
 
                 //_stopImpl = delegate { };
@@ -236,19 +235,19 @@ namespace Secs4Net
                     do
                     {
                         if (IsDisposed)
-                            return;
+                            return default(VoidStruct);
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
                             if (IsDisposed)
-                                return;
+                                return default(VoidStruct);
                             _socket = await server.AcceptAsync().ConfigureAwait(false);
                             connected = true;
                         }
                         catch (Exception ex)
                         {
                             if (IsDisposed)
-                                return;
+                                return default(VoidStruct);
                             _logger.Error(ex.Message);
                             await Task.Delay(2000);
                         }
@@ -257,6 +256,8 @@ namespace Secs4Net
                     CommunicationStateChanging(ConnectionState.Connected);
                     if (!_socket.ReceiveAsync(receiveCompleteEvent))
                         SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
+
+                    return default(VoidStruct);
                 };
 
                 _stopImpl = delegate
@@ -575,7 +576,7 @@ namespace Secs4Net
 
             foreach (var taskCompletionSourceToken in _replyExpectedMsgs.Values)
             {
-                if(taskCompletionSourceToken.AutoDispose)
+                if (taskCompletionSourceToken.AutoDispose)
                     taskCompletionSourceToken.MessageSent.Dispose();
             }
 
@@ -690,6 +691,10 @@ namespace Secs4Net
 
                 SetResult(replyMsg);
             }
+        }
+
+        private struct VoidStruct
+        {
         }
     }
 }
