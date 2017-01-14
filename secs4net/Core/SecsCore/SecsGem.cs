@@ -207,7 +207,7 @@ namespace Secs4Net
                                 return default(VoidStruct);
                             _logger.Error(ex.Message);
                             _logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
-                            await Task.Delay(T5);
+                            await Task.Delay(T5).ConfigureAwait(false);
                         }
                     } while (!connected);
 
@@ -249,7 +249,7 @@ namespace Secs4Net
                             if (IsDisposed)
                                 return default(VoidStruct);
                             _logger.Error(ex.Message);
-                            await Task.Delay(2000);
+                            await Task.Delay(2000).ConfigureAwait(false);
                         }
                     } while (!connected);
 
@@ -494,8 +494,10 @@ namespace Secs4Net
 #endif
                 _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
             }
-
-
+            else if (!completeToken.MessageSent.ReplyExpected)
+            {
+                completeToken.SetResult(null);
+            }
         }
 
         private void HandleDataMessage(MessageHeader header, SecsMessage msg)

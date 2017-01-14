@@ -50,7 +50,7 @@ namespace Secs4Net
             }
 
             await secsGem.SendDataMessageAsync(replyMessage,
-                replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes, autoDispose);
+                replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes, autoDispose).ConfigureAwait(false);
 
             return true;
         }
