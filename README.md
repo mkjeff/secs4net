@@ -35,7 +35,7 @@ catch(SecsException)
 ```
 2\. Handle primary message from device
 ```cs
-secsGem.PrimaryMessageReceived += (sender, messageWrapper) => 
+secsGem.PrimaryMessageReceived += async (messageWrapper) => 
 {
     try 
     {
@@ -44,7 +44,7 @@ secsGem.PrimaryMessageReceived += (sender, messageWrapper) =>
 	   
 
         // reply secondary msg to device
-        messageWrapper.Reply( secondaryMsg /* , autoDispose: true */ ); 
+        await messageWrapper.ReplyAsync( secondaryMsg /* , autoDispose: true */ ); 
     }
     catch (Exception ex) 
     {
