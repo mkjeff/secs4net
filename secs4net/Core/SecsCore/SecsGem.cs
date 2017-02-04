@@ -525,7 +525,7 @@ namespace Secs4Net
 
                     return;
                 }
-                // Error message systembyte
+                // Error message system byte
                 unsafe
                 {
                     var headerBytes = msg.SecsItem.GetValues<byte>();

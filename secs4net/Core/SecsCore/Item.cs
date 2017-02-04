@@ -1,6 +1,5 @@
 ﻿using Secs4Net.Properties;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -28,28 +27,32 @@ namespace Secs4Net
         }
 
         /// <summary>
-        /// List item
+        /// Get sub-list item
         /// </summary>
+        /// <exception cref="NotSupportedException">this item is not a list</exception>
         public virtual IReadOnlyList<SecsItem> Items => throw new NotSupportedException("This is not a list Item");
 
         /// <summary>
         /// get first value by specific type
         /// </summary>
         /// <typeparam name="T">value type</typeparam>
-        /// <returns></returns>
+        /// <returns>first value of this item</returns>
+        /// <exception cref="NotSupportedException">this item is not a value</exception>
         public virtual T GetValue<T>() where T : struct => throw new NotSupportedException("This is not a value Item");
 
         /// <summary>
         /// get value array by specific type
         /// </summary>
         /// <typeparam name="T">value type</typeparam>
-        /// <returns></returns>
+        /// <returns>value array</returns>
+        /// <exception cref="NotSupportedException">this item is not a value</exception>
         public virtual T[] GetValues<T>() where T : struct => throw new NotSupportedException("This is not a value Item");
 
         /// <summary>
         /// get string value
         /// </summary>
-        /// <returns></returns>
+        /// <returns>string</returns>
+        /// <exception cref="NotSupportedException">this item is not a string item</exception>
         public virtual string GetString() => throw new NotSupportedException("This is not a string value Item");
 
         public static explicit operator string(SecsItem secsItem) => secsItem.GetString();
@@ -69,7 +72,7 @@ namespace Secs4Net
         /// Encode item to raw data buffer
         /// </summary>
         /// <param name="buffer"></param>
-        /// <returns></returns>
+        /// <returns>total bytes length of buffer</returns>
         internal uint EncodeTo(IList<ArraySegment<byte>> buffer)
         {
             var bytes = GetEncodedData();
@@ -85,12 +88,11 @@ namespace Secs4Net
         protected abstract ArraySegment<byte> GetEncodedData();
 
         /// <summary>
-        /// Encode Item header + value (initial)
+        /// Get encoded array for header and value(reserved) 
         /// </summary>
         /// <param name="format"></param>
         /// <param name="valueCount">Item value0 bytes length</param>
-        /// <param name="headerlength">return header bytes length</param>
-        /// <returns>header bytes + initial bytes of value0 </returns>
+        /// <returns>(header bytes and reserved bytes of value, length of header bytes) </returns>
         protected static unsafe (byte[] buffer,int headerlength) EncodeValue(SecsFormat format, int valueCount)
         {
             var result = SecsGem.EncodedBytePool.Rent(valueCount + 4);

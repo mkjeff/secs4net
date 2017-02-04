@@ -11,6 +11,10 @@ namespace Secs4Net
         private int _isReplied = 0;
         private readonly WeakReference<SecsGem> _secsGem;
         private MessageHeader _header;
+        /// <summary>
+        /// Received message, noted: the message will be recycled when wrapper be finalized. 
+        /// So, don't try to keep the reference of the property, just handle the message content.
+        /// </summary>
         public SecsMessage Message { get; }
         public int MessageId => _header.SystemBytes;
 
@@ -22,12 +26,12 @@ namespace Secs4Net
         }
 
         /// <summary>
-        /// Each PrimaryMessageWrapper can invoke Reply method once.
+        /// Each PrimaryMessageWrapper can invoke ReplyAsync method once.
         /// Since message replied, method return false.
         /// </summary>
         /// <param name="replyMessage"></param>
         /// <param name="autoDispose">auto disposes <paramref name="replyMessage"/></param>
-        /// <returns>ture, if reply message sent.</returns>
+        /// <returns>true, if reply message sent.</returns>
         public async ValueTask<bool> ReplyAsync(SecsMessage replyMessage, bool autoDispose = true)
         {
             if (Interlocked.Exchange(ref _isReplied, 1) == 1

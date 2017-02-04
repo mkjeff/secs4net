@@ -21,7 +21,7 @@ namespace Secs4Net
             Unsafe.Copy(target + 0, ref Unsafe.AsRef<byte>(values + 1));
 
             // S, ReplyExpected
-            Unsafe.Write(target + 2, (byte)(S | (ReplyExpected ? 0x80 : 0)));
+            Unsafe.Write(target + 2, (byte)(S | (ReplyExpected ? 0b1000_0000 : 0)));
 
             // F
             Unsafe.Write(target + 3, F);
@@ -61,14 +61,14 @@ namespace Secs4Net
             Unsafe.Copy(ptr + 3, ref Unsafe.AsRef<byte>(src + 6));
 
             return new MessageHeader
-                   {
-                       DeviceId = deviceId,
-                       ReplyExpected = (buffer[startIndex + 2] & 0x80) == 0x80,
-                       S = (byte) (buffer[startIndex + 2] & 0x7F),
-                       F = buffer[startIndex + 3],
-                       MessageType = (MessageType) buffer[startIndex + 5],
-                       SystemBytes = systemBytes
-                   };
+            {
+                DeviceId = deviceId,
+                ReplyExpected = (buffer[startIndex + 2] & 0b1000_0000) != 0,
+                S = (byte)(buffer[startIndex + 2] & 0b0111_111),
+                F = buffer[startIndex + 3],
+                MessageType = (MessageType)buffer[startIndex + 5],
+                SystemBytes = systemBytes
+            };
         }
     }
 }

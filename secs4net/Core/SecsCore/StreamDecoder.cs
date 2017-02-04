@@ -21,8 +21,7 @@ namespace Secs4Net
         /// decoder step
         /// </summary>
         /// <param name="length"></param>
-        /// <param name="need"></param>
-        /// <returns>pipeline decoder index</returns>
+        /// <returns>(next decoder index, need byte length)</returns>
         private delegate (int step, int need) Decoder(ref int length);
 
         /// <summary>
@@ -359,7 +358,7 @@ namespace Secs4Net
                     else
                     {
                         Trace.WriteLine(
-                                        $@"<<buffer recyling>>: avalible = {BufferCount}, need = {nextStepReqiredCount}, remained = {remainCount}");
+                                        $@"<<buffer recyling>>: available = {BufferCount}, need = {nextStepReqiredCount}, remained = {remainCount}");
 
                         // move remained data to buffer's head
                         Array.Copy(Buffer, BufferOffset - remainCount, Buffer, 0, remainCount);
