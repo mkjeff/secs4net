@@ -34,6 +34,9 @@
             System.Windows.Forms.GroupBox groupBox3;
             System.Windows.Forms.Button btnSendPrimary;
             System.Windows.Forms.Button btnReplySecondary;
+            System.Windows.Forms.Button btnReplyS9F1;
+            this.label4 = new System.Windows.Forms.Label();
+            this.numBufferSize = new System.Windows.Forms.NumericUpDown();
             this.numDeviceId = new System.Windows.Forms.NumericUpDown();
             this.lbStatus = new System.Windows.Forms.Label();
             this.btnDisable = new System.Windows.Forms.Button();
@@ -51,8 +54,6 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.numBufferSize = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
             groupBox1 = new System.Windows.Forms.GroupBox();
             label3 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
@@ -63,7 +64,9 @@
             groupBox3 = new System.Windows.Forms.GroupBox();
             btnSendPrimary = new System.Windows.Forms.Button();
             btnReplySecondary = new System.Windows.Forms.Button();
+            btnReplyS9F1 = new System.Windows.Forms.Button();
             groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numBufferSize)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numDeviceId)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPort)).BeginInit();
             groupBox4.SuspendLayout();
@@ -79,7 +82,6 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numBufferSize)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -104,6 +106,32 @@
             groupBox1.TabIndex = 1;
             groupBox1.TabStop = false;
             groupBox1.Text = "Config";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(471, 35);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(58, 12);
+            this.label4.TabIndex = 12;
+            this.label4.Text = "Buffer Size";
+            // 
+            // numBufferSize
+            // 
+            this.numBufferSize.Location = new System.Drawing.Point(535, 30);
+            this.numBufferSize.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.numBufferSize.Name = "numBufferSize";
+            this.numBufferSize.Size = new System.Drawing.Size(77, 22);
+            this.numBufferSize.TabIndex = 11;
+            this.numBufferSize.Value = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
             // 
             // numDeviceId
             // 
@@ -358,6 +386,17 @@
             btnReplySecondary.UseVisualStyleBackColor = true;
             btnReplySecondary.Click += new System.EventHandler(this.btnReplySecondary_Click);
             // 
+            // btnReplyS9F1
+            // 
+            btnReplyS9F1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            btnReplyS9F1.Location = new System.Drawing.Point(0, 531);
+            btnReplyS9F1.Name = "btnReplyS9F1";
+            btnReplyS9F1.Size = new System.Drawing.Size(492, 23);
+            btnReplyS9F1.TabIndex = 3;
+            btnReplyS9F1.Text = "Reply S9F7";
+            btnReplyS9F1.UseVisualStyleBackColor = true;
+            btnReplyS9F1.Click += new System.EventHandler(this.btnReplyS9F7_Click);
+            // 
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -372,6 +411,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(btnReplyS9F1);
             this.splitContainer1.Panel2.Controls.Add(groupBox5);
             this.splitContainer1.Panel2.Controls.Add(btnReplySecondary);
             this.splitContainer1.Panel2.Controls.Add(groupBox3);
@@ -407,32 +447,6 @@
             this.richTextBox1.Text = "";
             this.richTextBox1.WordWrap = false;
             // 
-            // numBufferSize
-            // 
-            this.numBufferSize.Location = new System.Drawing.Point(535, 30);
-            this.numBufferSize.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-            this.numBufferSize.Name = "numBufferSize";
-            this.numBufferSize.Size = new System.Drawing.Size(77, 22);
-            this.numBufferSize.TabIndex = 11;
-            this.numBufferSize.Value = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(471, 35);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(58, 12);
-            this.label4.TabIndex = 12;
-            this.label4.Text = "Buffer Size";
-            // 
             // Form1
             // 
             this.AcceptButton = this.btnEnable;
@@ -447,6 +461,7 @@
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numBufferSize)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numDeviceId)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPort)).EndInit();
             groupBox4.ResumeLayout(false);
@@ -466,7 +481,6 @@
             this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.numBufferSize)).EndInit();
             this.ResumeLayout(false);
 
         }

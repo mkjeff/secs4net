@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Secs4Net
 {
@@ -23,8 +24,8 @@ namespace Secs4Net
         /// Since message replied, method return false.
         /// </summary>
         /// <param name="replyMessage"></param>
-        /// <returns>ture, if reply message sent.</returns>
-        public bool Reply(SecsMessage replyMessage)
+        /// <returns>true, if reply message sent.</returns>
+        public async Task<bool> ReplyAsync(SecsMessage replyMessage)
         {
             if (Interlocked.Exchange(ref _isReplied, 1) == 1)
                 return false;
@@ -35,7 +36,7 @@ namespace Secs4Net
             replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(_header.Bytes));
             replyMessage.ReplyExpected = false;
 
-            _secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes);
+            await _secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes);
 
             return true;
         }

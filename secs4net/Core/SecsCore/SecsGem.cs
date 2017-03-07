@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Secs4Net.Properties;
@@ -128,21 +129,20 @@ namespace Secs4Net
 
         internal int NewSystemId => _systemByte.New();
 
+        private readonly TaskFactory _taskFactory;
         /// <summary>
         /// constructor
         /// </summary>
         /// <param name="isActive">passive or active mode</param>
         /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
-        /// <param name="port">if active mode it should be remote deivice listener's port</param>
+        /// <param name="port">if active mode it should be remote device listener's port</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
         public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
         {
-            if (ip == null)
-                throw new ArgumentNullException(nameof(ip));
-
             if (port <= 0)
                 throw new ArgumentOutOfRangeException(nameof(port), port, $"port number must greater than 0");
 
+            _taskFactory = new TaskFactory(TaskScheduler.Default);
             _ip = ip;
             _port = port;
             _isActive = isActive;
@@ -461,13 +461,24 @@ namespace Secs4Net
             }
 
             _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
-            if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
+
+            if (!_replyExpectedMsgs.ContainsKey(completeToken.Id))
+            {
+                completeToken.SetResult(null);
+                return;
+            }
+
+            try
             {
                 if (!completeToken.Task.Wait(T3))
                 {
                     _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
                     completeToken.SetException(new SecsException(completeToken.MessageSent, Resources.T3Timeout));
                 }
+            }
+            catch (AggregateException) { }
+            finally
+            {
                 _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
             }
         }
@@ -490,7 +501,10 @@ namespace Secs4Net
                 {
                     //Primary message
                     _logger.MessageIn(msg, systembyte);
-                    PrimaryMessageReceived?.Invoke(this, new PrimaryMessageWrapper(this, header, msg));
+                    _taskFactory.StartNew(
+                        wrapper => PrimaryMessageReceived(this, Unsafe.As<PrimaryMessageWrapper>(wrapper)),
+                        new PrimaryMessageWrapper(this, header, msg));
+
                     return;
                 }
                 // Error message

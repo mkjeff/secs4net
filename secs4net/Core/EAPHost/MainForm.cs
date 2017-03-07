@@ -159,11 +159,11 @@ namespace Cim.Eap
             menuItemGemEnable.Enabled = false;
         }
 
-        private void PrimaryMsgHandler(object sender, PrimaryMessageWrapper e)
+        private async void PrimaryMsgHandler(object sender, PrimaryMessageWrapper e)
         {
             try
             {
-                e.Reply(SecsMessages[e.Message.S, (byte)(e.Message.F + 1)].FirstOrDefault());
+                await e.ReplyAsync(SecsMessages[e.Message.S, (byte)(e.Message.F + 1)].FirstOrDefault());
                 Action<SecsMessage> handler = null;
                 if (_eventHandlers.TryGetValue(e.Message.GetKey(), out handler))
                     Parallel.ForEach(handler.GetInvocationList().Cast<Action<SecsMessage>>(), h => h(e.Message));

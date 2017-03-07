@@ -92,7 +92,7 @@ namespace SecsDevice
             txtRecvPrimary.Text = receivedMessage?.Message.ToSML();
         }
 
-        private void btnReplySecondary_Click(object sender, EventArgs e)
+        private async void btnReplySecondary_Click(object sender, EventArgs e)
         {
             var recv = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
             if (recv == null)
@@ -101,7 +101,19 @@ namespace SecsDevice
             if (string.IsNullOrWhiteSpace(txtReplySeconary.Text))
                 return;
 
-            recv.Reply(txtReplySeconary.Text.ToSecsMessage());
+            await recv.ReplyAsync(txtReplySeconary.Text.ToSecsMessage());
+            recvBuffer.Remove(recv);
+            txtRecvPrimary.Clear();
+        }
+
+        private async void btnReplyS9F7_Click(object sender, EventArgs e)
+        {
+            var recv = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
+            if (recv == null)
+                return;
+
+            await recv.ReplyAsync(null);
+
             recvBuffer.Remove(recv);
             txtRecvPrimary.Clear();
         }
