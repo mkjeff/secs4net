@@ -4,7 +4,6 @@ using System.Windows.Forms;
 using Secs4Net;
 using System.Net;
 using System.Drawing;
-using System.Threading.Tasks;
 using Secs4Net.Sml;
 
 namespace SecsDevice
@@ -110,6 +109,18 @@ namespace SecsDevice
             await recv.ReplyAsync(txtReplySeconary.Text.ToSecsMessage());
             recvBuffer.Remove(recv);
             txtRecvPrimary.Clear();
+        }
+
+        private async void btnReplyS9F7_Click(object sender, EventArgs e)
+        {
+            var recv = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
+            if (recv == null)
+                return;
+
+            await recv.ReplyAsync(null);
+
+            recvBuffer.Remove(recv); recvBuffer.Remove(recv);
+            txtRecvPrimary.Clear(); txtRecvPrimary.Clear();
         }
 
         class SecsLogger : ISecsGemLogger

@@ -483,20 +483,25 @@ namespace Secs4Net
             if (completeToken.AutoDispose)
                 completeToken.MessageSent.Dispose();
 
-            if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
+            if (!completeToken.MessageSent.ReplyExpected || !_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
-#if !DISABLE_T3
+                completeToken.SetResult(null);
+                return;
+            }
+
+
+            try
+            {
                 if (!completeToken.Task.Wait(T3))
                 {
                     _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
                     completeToken.SetException(new SecsException(completeToken.Id, Resources.T3Timeout));
                 }
-#endif
-                _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
             }
-            else if (!completeToken.MessageSent.ReplyExpected)
+            catch (AggregateException) { }
+            finally
             {
-                completeToken.SetResult(null);
+                _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
             }
         }
 
