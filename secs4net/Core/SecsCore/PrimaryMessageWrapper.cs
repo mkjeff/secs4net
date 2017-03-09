@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using static Secs4Net.Item;
@@ -10,7 +9,7 @@ namespace Secs4Net
     {
         private int _isReplied = 0;
         private readonly WeakReference<SecsGem> _secsGem;
-        private MessageHeader _header;
+        private readonly MessageHeader _header;
         /// <summary>
         /// Received message, noted: the message will be recycled when wrapper be finalized. 
         /// So, don't try to keep the reference of the property, just handle the message content.
