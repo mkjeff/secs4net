@@ -22,7 +22,7 @@ namespace CentralMonitor {
         void IServiceManager<ISecsDevice>.Publish(string serviceId,string serviceUrl) {
             _UIDispatcher.Invoke((Action)delegate {
                 var tool = Tools.FirstOrDefault(t => t.Id == serviceId);
-                if (tool == null)
+                if (tool is null)
                     Tools.Add(new Tool(serviceId) {
                         Url = serviceUrl,
                         RegisiterTime = DateTime.Now
@@ -35,7 +35,7 @@ namespace CentralMonitor {
         ISecsDevice ICentralService<ISecsDevice>.GetService(string serviceId) {
             Tool tool = Tools.FirstOrDefault(t => t.Id == serviceId);
 
-            if (tool == null) 
+            if (tool is null) 
                 throw new Exception("Service not exist!");
 
             var device = (ISecsDevice)RemotingServices.Connect(typeof(ISecsDevice), tool.Url);

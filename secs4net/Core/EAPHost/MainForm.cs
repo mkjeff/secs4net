@@ -165,8 +165,7 @@ namespace Cim.Eap
             try
             {
                 await e.ReplyAsync(SecsMessages[e.Message.S, (byte) (e.Message.F + 1)].FirstOrDefault(), false);
-                Action<SecsMessage> handler = null;
-                if (_eventHandlers.TryGetValue(e.Message.GetKey(), out handler))
+                if (_eventHandlers.TryGetValue(e.Message.GetKey(), out var handler))
                     Parallel.ForEach(handler.GetInvocationList().Cast<Action<SecsMessage>>(), h => h(e.Message));
             }
             catch (Exception ex)
@@ -219,7 +218,7 @@ namespace Cim.Eap
 
         async void btnSend_Click(object sender, EventArgs e)
         {
-            if (_secsGem == null)
+            if (_secsGem is null)
             {
                 MessageBox.Show("SECS/GEM not enable!");
                 return;
@@ -309,7 +308,7 @@ namespace Cim.Eap
 
         ValueTask<SecsMessage> ISecsDevice.SendAsync(SecsMessage msg, bool autoDispose)
         {
-            if (_secsGem == null)
+            if (_secsGem is null)
                 throw new Exception("SECS/GEM not enable!");
             if (RemotingServices.IsTransparentProxy(msg) && InvalidRemoteMessage.Contains(msg.GetKey()))
                 throw new ArgumentException("This message is not remotable!");
@@ -381,8 +380,7 @@ namespace Cim.Eap
                             _eventHandlers.AddHandler(key, handler);
                             EapLogger.Notice("Z subscribe event " + description);
 
-                            Action<SecsMessage> recover = null;
-                            if (_recoverEventHandlers.TryRemove(recoverQueuePath, out recover))
+                            if (_recoverEventHandlers.TryRemove(recoverQueuePath, out var recover))
                             {
                                 _eventHandlers.RemoveHandler(key, recover);
                                 EapLogger.Notice($"Z recover completely event[{description}]");

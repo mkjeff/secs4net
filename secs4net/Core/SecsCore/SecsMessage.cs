@@ -95,7 +95,7 @@ namespace Secs4Net
 
         internal IList<ArraySegment<byte>> EncodeTo(IList<ArraySegment<byte>> buffer, ArraySegment<byte> header)
         {
-            if (SecsItem == null)
+            if (SecsItem is null)
             {
                 buffer.Add(GetEmptyDataMessageLengthBytes()); // total length = header
                 buffer.Add(header); // header

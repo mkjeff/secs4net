@@ -99,8 +99,7 @@ namespace SecsDevice
 
         private async void btnReplySecondary_Click(object sender, EventArgs e)
         {
-            var recv = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
-            if (recv == null)
+            if (!(lstUnreplyMsg.SelectedItem is PrimaryMessageWrapper recv))
                 return;
 
             if (string.IsNullOrWhiteSpace(txtReplySeconary.Text))
@@ -113,8 +112,7 @@ namespace SecsDevice
 
         private async void btnReplyS9F7_Click(object sender, EventArgs e)
         {
-            var recv = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
-            if (recv == null)
+            if (!(lstUnreplyMsg.SelectedItem is PrimaryMessageWrapper recv))
                 return;
 
             await recv.ReplyAsync(null);

@@ -310,7 +310,7 @@ namespace Secs4Net
                     e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
                 }
 
-                if (_socket == null || IsDisposed)
+                if (_socket is null || IsDisposed)
                     return;
 
                 if (!_socket.ReceiveAsync(e))
@@ -591,7 +591,7 @@ namespace Secs4Net
 
             _stopImpl?.Invoke();
 
-            if (_socket == null)
+            if (_socket is null)
                 return;
 
             if (_socket.Connected)

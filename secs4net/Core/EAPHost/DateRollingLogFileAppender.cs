@@ -26,11 +26,9 @@ namespace Cim.Eap {
             File = CurrnetFileName;
         }
 
-        static int GetLastRollCount() {
-            Func<string, int> parser = str => {
-                int result;
-                return int.TryParse(str, out result) ? result : 0;
-            };
+        static int GetLastRollCount()
+        {
+            int parser(string str) => int.TryParse(str, out var result) ? result : 0;
             var c = from fi in new DirectoryInfo(LOG_DIR).GetFiles(string.Format("*_{0:yyyyMMdd}_*.log", DateTime.Now))
                     let _i = fi.FullName.LastIndexOf('_')
                     let dot = fi.FullName.LastIndexOf('.')

@@ -43,7 +43,7 @@ namespace Secs4Net
                 return false;
             }
 
-            if (replyMessage == null)
+            if (replyMessage is null)
             {
                 replyMessage = new SecsMessage(9, 7, false, "Unknown Message", B(_header.EncodeTo(new byte[10])));
             }

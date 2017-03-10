@@ -80,7 +80,7 @@ namespace Secs4Net.LinqPad.Deriver
     {
         public static ExplorerItem ToExplorerItem(this SecsItem item)
         {
-            if (item == null || item.Count == 0)
+            if (item is null || item.Count == 0)
                 return null;
 
             switch (item.Format)

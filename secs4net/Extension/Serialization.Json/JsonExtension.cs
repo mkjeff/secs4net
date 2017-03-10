@@ -140,7 +140,7 @@ namespace Secs4Net.Json
             var r = json.Value<bool>(nameof(SecsMessage.ReplyExpected));
             var name = json.Value<string>(nameof(SecsMessage.Name));
             var root = json.Value<JObject>(nameof(SecsMessage.SecsItem));
-            return (root == null)
+            return (root is null)
                 ? new SecsMessage(s, f, r, name)
                 : new SecsMessage(s, f, r, name, root.ToItem());
         }

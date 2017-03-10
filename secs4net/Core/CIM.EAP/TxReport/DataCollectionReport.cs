@@ -32,11 +32,11 @@ namespace Cim.Eap.Tx {
         static IDictionary<string, DataItem> DictionaryFactory() => new Dictionary<string, DataItem>(StringComparer.Ordinal);
 
         byte GetWaferSlotNo(byte slot) {
-            if (ProcessJob == null)
+            if (ProcessJob is null)
                 return slot;
 
             var measurementSlots = ProcessJob.Carriers.First()._MeasurementSlots;
-            if (measurementSlots == null)
+            if (measurementSlots is null)
                 return slot;
             return measurementSlots[slot];
         }
@@ -101,7 +101,7 @@ namespace Cim.Eap.Tx {
             AddSiteData<T>(name, slot, site, value, DefaultValueFormater);
         }
 
-        static string DefaultValueFormater<T>(T value) => value == null ? string.Empty : value.ToString();
+        static string DefaultValueFormater<T>(T value) => EqualityComparer<T>.Default.Equals(value, default(T)) ? string.Empty : value.ToString();
 
         static string ValueToXmlStr(string value) {
             if (value.Length == 0)

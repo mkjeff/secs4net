@@ -9,13 +9,13 @@ using System.Diagnostics;
 
 namespace Secs4Net.Sml
 {
-    public static class SmlExtenstion
+    public static class SmlExtension
     {
         private const int SmlIndent = 2;
 
         public static string ToSml(this SecsMessage msg)
         {
-            if (msg == null)
+            if (msg is null)
                 return null;
 
             using (var sw = new StringWriter())
@@ -27,7 +27,7 @@ namespace Secs4Net.Sml
 
         public static void WriteTo(this SecsMessage msg, TextWriter writer)
         {
-            if (msg == null)
+            if (msg is null)
                 return;
 
             writer.WriteLine(msg.ToString());

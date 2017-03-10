@@ -10,8 +10,7 @@ namespace Cim.Eap {
         public static byte GetPortNo(string portId) => byte.Parse(portId.Substring(2));
 
         public ProcessJob GetProcessJob(string key) {
-            ProcessJob pj;
-            if (!_ProcessingJobs.TryGetValue(key, out pj))
+            if (!_ProcessingJobs.TryGetValue(key, out var pj))
                 pj = ProcessJob.DummyProcessJob;
             return pj;
         }

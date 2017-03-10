@@ -73,8 +73,8 @@ namespace Cim.Eap.Tx {
             string loadPurposeType = carrierElm.Attribute("LoadPurposeType").Value;
             string loadPortId = carrierElm.Attribute("LoadPortID").Value;
 
-            XElement mSlotsElm = carrierElm.Element("MeasurementSlots");
-            if (mSlotsElm == null) {
+            var mSlotsElm = carrierElm.Element("MeasurementSlots");
+            if (mSlotsElm is null) {
                 return new Carrier {
                     Id = carrierId,
                     LoadPurposeType = loadPurposeType,

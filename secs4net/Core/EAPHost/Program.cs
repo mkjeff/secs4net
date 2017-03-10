@@ -71,8 +71,7 @@ namespace Cim.Eap
                     new BinaryServerFormatterSinkProvider { TypeFilterLevel = TypeFilterLevel.Full }),
                 false);
 
-            bool newMutexCreated;
-            using (new Mutex(true, "EAP" + EAPConfig.Instance.ToolId, out newMutexCreated))
+            using (new Mutex(true, "EAP" + EAPConfig.Instance.ToolId, out var newMutexCreated))
             {
                 if (!newMutexCreated)
                 {

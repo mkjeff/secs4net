@@ -93,7 +93,7 @@ namespace Secs4Net
                 return false;
             if (src.F != target.F)
                 return false;
-            if (target.SecsItem == null)
+            if (target.SecsItem is null)
                 return true;
             return src.SecsItem.IsMatch(target.SecsItem);
         }
