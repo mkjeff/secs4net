@@ -40,14 +40,14 @@ namespace Secs4Net
             bool IsEmpty { get; }
         }
 
-        private class QueueStore : ConcurrentQueue<T>, IItemStore
+        private sealed class QueueStore : ConcurrentQueue<T>, IItemStore
         {
             public bool TryRent(out T item) => TryDequeue(out item);
 
             public void Return(T item) => Enqueue(item);
         }
 
-        private class StackStore : ConcurrentStack<T>, IItemStore
+        private sealed class StackStore : ConcurrentStack<T>, IItemStore
         {
             public bool TryRent(out T item) => TryPop(out item);
 

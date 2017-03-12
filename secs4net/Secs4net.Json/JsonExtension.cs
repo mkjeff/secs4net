@@ -70,52 +70,48 @@ namespace Secs4Net.Json
             else
             {
                 writer.WritePropertyName(ItemValuesName);
-
-                if (item.Format == SecsFormat.ASCII || item.Format == SecsFormat.JIS8)
+                switch (item.Format)
                 {
-                    writer.WriteValue(item.GetString());
-                }
-                else
-                {
-                    switch (item.Format)
-                    {
-                        case SecsFormat.Binary:
-                            WriteValue<byte>();
-                            break;
-                        case SecsFormat.Boolean:
-                            WriteValue<bool>();
-                            break;
-                        case SecsFormat.I8:
-                            WriteValue<long>();
-                            break;
-                        case SecsFormat.I1:
-                            WriteValue<sbyte>();
-                            break;
-                        case SecsFormat.I2:
-                            WriteValue<short>();
-                            break;
-                        case SecsFormat.I4:
-                            WriteValue<int>();
-                            break;
-                        case SecsFormat.F4:
-                            WriteValue<float>();
-                            break;
-                        case SecsFormat.F8:
-                            WriteValue<double>();
-                            break;                       
-                        case SecsFormat.U8:
-                            WriteValue<ulong>();
-                            break;
-                        case SecsFormat.U1:
-                            WriteValue<byte>();
-                            break;
-                        case SecsFormat.U2:
-                            WriteValue<ushort>();
-                            break;
-                        case SecsFormat.U4:
-                            WriteValue<uint>();
-                            break;
-                    }
+                    case SecsFormat.ASCII:
+                    case SecsFormat.JIS8:
+                        writer.WriteValue(item.GetString());
+                        break;
+                    case SecsFormat.Binary:
+                        WriteValue<byte>();
+                        break;
+                    case SecsFormat.Boolean:
+                        WriteValue<bool>();
+                        break;
+                    case SecsFormat.I8:
+                        WriteValue<long>();
+                        break;
+                    case SecsFormat.I1:
+                        WriteValue<sbyte>();
+                        break;
+                    case SecsFormat.I2:
+                        WriteValue<short>();
+                        break;
+                    case SecsFormat.I4:
+                        WriteValue<int>();
+                        break;
+                    case SecsFormat.F4:
+                        WriteValue<float>();
+                        break;
+                    case SecsFormat.F8:
+                        WriteValue<double>();
+                        break;
+                    case SecsFormat.U8:
+                        WriteValue<ulong>();
+                        break;
+                    case SecsFormat.U1:
+                        WriteValue<byte>();
+                        break;
+                    case SecsFormat.U2:
+                        WriteValue<ushort>();
+                        break;
+                    case SecsFormat.U4:
+                        WriteValue<uint>();
+                        break;
                 }
             }
             writer.WriteEndObject();

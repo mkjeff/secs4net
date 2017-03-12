@@ -78,9 +78,9 @@ namespace Secs4Net
                             // 0: get total message length 4 bytes
                             (ref int length) =>
                             {
-                                var check = CheckAvailable(ref length, 4);
-                                if (!check.available)
-                                    return (step:0,need:check.need);
+                                var (available,need) = CheckAvailable(ref length, 4);
+                                if (!available)
+                                    return (step:0,need);
 
                                 Array.Reverse(Buffer, _decodeIndex, 4);
                                 unsafe
@@ -99,9 +99,9 @@ namespace Secs4Net
                             // 1: get message header 10 bytes
                             (ref int length) =>
                             {
-                                var check =CheckAvailable(ref length, 10);
-                                if (!check.available)
-                                    return (step:1,need:check.need);
+                                var (available,need) =CheckAvailable(ref length, 10);
+                                if (!available)
+                                    return (step:1,need);
 
                                 _msgHeader = MessageHeader.Decode(Buffer, _decodeIndex);
                                 _decodeIndex += 10;
@@ -142,9 +142,9 @@ namespace Secs4Net
                             // 2: get _format + lengthBits(2bit) 1 byte
                             (ref int length) =>
                             {
-                                var check = CheckAvailable(ref length, 1);
-                                if (!check.available)
-                                    return (step:2, check.need);
+                                var (available,need) = CheckAvailable(ref length, 1);
+                                if (!available)
+                                    return (step:2, need);
 
                                 _format = (SecsFormat) (Buffer[_decodeIndex] & 0xFC);
                                 _lengthBits = (byte) (Buffer[_decodeIndex] & 3);
@@ -156,9 +156,9 @@ namespace Secs4Net
                             // 3: get _itemLength _lengthBits bytes, at most 3 byte
                             (ref int length) =>
                             {
-                                var check =CheckAvailable(ref length, _lengthBits);
-                                if (!check.available)
-                                    return (step:3,check.need);
+                                var (available,need) =CheckAvailable(ref length, _lengthBits);
+                                if (!available)
+                                    return (step:3,need);
 
                                 Array.Reverse(Buffer, _decodeIndex, _lengthBits);
                                 unsafe
@@ -197,9 +197,9 @@ namespace Secs4Net
                                 }
                                 else
                                 {
-                                    var check = CheckAvailable(ref length, _itemLength);
-                                    if (!check.available)
-                                        return (step:4,check.need);
+                                    var (available,need) = CheckAvailable(ref length, _itemLength);
+                                    if (!available)
+                                        return (step:4,need);
 
                                     item = _itemLength == 0
                                                ? _format.BytesDecode()
@@ -308,25 +308,25 @@ namespace Secs4Net
             Assert(length > 0, "decode data length is 0.");
             var currentLength = length;
             length += _previousRemainedCount; // total available length = current length + previous remained
-            (int nexStep,int need) step = (_decoderStep,0);
+            var (nexStep, need) = (_decoderStep,0);
             do
             {
-                _decoderStep = step.nexStep;
-                step = _decoders[_decoderStep](ref length);
-            } while (step.nexStep != _decoderStep);
+                _decoderStep = nexStep;
+                (nexStep, need) = _decoders[_decoderStep](ref length);
+            } while (nexStep != _decoderStep);
 
             Assert(_decodeIndex >= BufferOffset, "decode index should ahead of buffer index");
 
             var remainCount = length;
             Assert(remainCount >= 0, "remain count is only possible grater and equal zero");
             Trace.WriteLine($"remain data length: {remainCount}");
-            Trace.WriteLineIf(_messageDataLength > 0, $"need data count: {step.need}");
+            Trace.WriteLineIf(_messageDataLength > 0, $"need data count: {need}");
 
             if (remainCount == 0)
             {
-                if (step.need > Buffer.Length)
+                if (need > Buffer.Length)
                 {
-                    var newSize = step.need * 2;
+                    var newSize = need * 2;
                     Trace.WriteLine($@"<<buffer resizing>>: current size = {Buffer.Length}, new size = {newSize}");
 
                     // increase buffer size
@@ -339,7 +339,7 @@ namespace Secs4Net
             else
             {
                 BufferOffset += currentLength; // move next receive index
-                var nextStepReqiredCount = remainCount + step.need;
+                var nextStepReqiredCount = remainCount + need;
                 if (nextStepReqiredCount > BufferCount)
                 {
                     if (nextStepReqiredCount > Buffer.Length)
@@ -396,19 +396,13 @@ namespace Secs4Net
 
             internal ArraySegment<SecsItem> PooledItems { get; private set; }
 
-            internal void Add(SecsItem secsItem)
-            {
-                PooledItems.Array[Count++] = secsItem;
-            }
+            internal void Add(SecsItem secsItem) => PooledItems.Array[Count++] = secsItem;
 
             internal int Capacity => PooledItems.Count;
 
             internal int Count { get; private set; }
 
-            public void Dispose()
-            {
-                _pool.Return(this);
-            }
+            public void Dispose() => _pool.Return(this);
         }
     }
 }
