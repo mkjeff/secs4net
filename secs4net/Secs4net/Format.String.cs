@@ -16,10 +16,6 @@
         /// <returns></returns>
         public static SecsItem Create(string str) =>
              string.IsNullOrEmpty(str) ? Empty : StringItemPool.Rent().SetValue(str);
-
-        internal StringFormat()
-        {
-        }
     }
 
     sealed class ASCIIFormat : StringFormat<ASCIIFormat>

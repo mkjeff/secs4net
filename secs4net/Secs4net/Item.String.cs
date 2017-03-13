@@ -52,10 +52,7 @@ namespace Secs4Net
             if (target.Count == 0)
                 return true;
 
-            if (Count != target.Count)
-                return false;
-
-            return _str == Unsafe.As<StringItem<TFormat>>(target)._str;
+            return string.Equals(_str, Unsafe.As<StringItem<TFormat>>(target)._str, StringComparison.OrdinalIgnoreCase);
         }
 
         public override string ToString()

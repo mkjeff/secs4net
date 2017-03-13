@@ -15,10 +15,6 @@ namespace Secs4Net
 
         public static readonly SecsItem Empty = new ValueItem<TFormat, TValue>();
 
-        internal ValueTypeFormat()
-        {
-        }
-
         /// <summary>
         /// Create <typeparamref name="TValue"/> item
         /// </summary>

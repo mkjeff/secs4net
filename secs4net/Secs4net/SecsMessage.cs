@@ -15,7 +15,7 @@ namespace Secs4Net
                 throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
         }
 
-        public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
+        public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name}";
 
         private int _isDisposed;
 
