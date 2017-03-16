@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
-    <Version>2.0.0</Version>
+    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <Version>2.0.1</Version>
     <Description>Secs4net SML format serialization helper</Description>
     <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
     <PackageProjectUrl>https://github.com/mkjeff/secs4net</PackageProjectUrl>
@@ -10,6 +10,8 @@
     <Company />
     <Authors>Hsin</Authors>
     <PackageLicenseUrl>https://secs4net.codeplex.com/license</PackageLicenseUrl>
+    <AssemblyVersion>2.0.1.0</AssemblyVersion>
+    <FileVersion>2.0.1.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
