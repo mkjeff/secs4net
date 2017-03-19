@@ -2,7 +2,7 @@
 
 namespace Secs4Net
 {
-    internal struct MessageHeader
+    public struct MessageHeader
     {
         public ushort DeviceId;
         public bool ReplyExpected;

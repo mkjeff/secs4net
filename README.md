@@ -59,8 +59,8 @@ secsGem.PrimaryMessageReceived += async (messageWrapper) =>
 using static Secs4Net.Item;
 
 var s16f15 = 
-    new SecsMessage(16, 15, "CreateProcessJob"            
-        L(
+    new SecsMessage(s: 16, f: 15, name: "CreateProcessJob", item:
+	L(
             U4(0),
             L(from pj in tx.ProcessJobs select
                 L(
@@ -79,6 +79,6 @@ var s16f15 =
                             L()))));
 ```
 
-4\. SecsMessage/Item is immutable. 
+4\. SecsItem is immutable. 
 
-5\. Almost all of the object has to be allocated in shared pool.
+5\. Shared object pool memory allocation.

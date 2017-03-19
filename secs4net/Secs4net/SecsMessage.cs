@@ -63,34 +63,34 @@ namespace Secs4Net
         /// <summary>
         /// constructor of SecsMessage
         /// </summary>
-        /// <param name="stream">message stream number</param>
-        /// <param name="function">message function number</param>
+        /// <param name="s">message stream number</param>
+        /// <param name="f">message function number</param>
         /// <param name="replyExpected">expect reply message</param>
         /// <param name="name"></param>
-        /// <param name="secsItem">root item</param>
-        public SecsMessage(byte stream, byte function, bool replyExpected = true, string name = null, SecsItem secsItem = null)
+        /// <param name="item">root item</param>
+        public SecsMessage(byte s, byte f, bool replyExpected = true, string name = null, SecsItem item = null)
         {
-            if (stream > 0b0111_111)
-                throw new ArgumentOutOfRangeException(nameof(stream),
-                                                      stream,
+            if (s > 0b0111_111)
+                throw new ArgumentOutOfRangeException(nameof(s),
+                                                      s,
                                                       Resources.SecsMessageStreamNumberMustLessThan127);
 
-            S = stream;
-            F = function;
+            S = s;
+            F = f;
             Name = name;
             ReplyExpected = replyExpected;
-            SecsItem = secsItem;
+            SecsItem = item;
         }
 
         /// <summary>
         /// constructor of SecsMessage
         /// </summary>
-        /// <param name="stream">message stream number</param>
-        /// <param name="function">message function number</param>
+        /// <param name="s">message stream number</param>
+        /// <param name="f">message function number</param>
         /// <param name="name"></param>
-        /// <param name="secsItem">root item</param>
-        public SecsMessage(byte stream, byte function, string name = null, SecsItem secsItem = null)
-            : this(stream, function, true, name, secsItem)
+        /// <param name="item">root item</param>
+        public SecsMessage(byte s, byte f, string name = null, SecsItem item = null)
+            : this(s, f, true, name, item)
         { }
 
         internal IList<ArraySegment<byte>> EncodeTo(IList<ArraySegment<byte>> buffer, ArraySegment<byte> header)

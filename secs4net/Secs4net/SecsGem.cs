@@ -12,7 +12,7 @@ using static Secs4Net.Item;
 
 namespace Secs4Net
 {
-    public sealed class SecsGem : IDisposable
+    public sealed class SecsGem : IDisposable, ISecsGem
     {
         const int EncodeBytePoolMaxArrayLength = 1024 * 1024;
         const int EncodeBytePoolMaxArrayPerBucket = 500;
@@ -142,11 +142,11 @@ namespace Secs4Net
         /// <summary>
         /// constructor
         /// </summary>
-        /// <param name="isActive">passive or active mode</param>
+        /// <param name="isActiveMode">passive or active mode</param>
         /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
         /// <param name="port">if active mode it should be remote device listener's port</param>
         /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
+        public SecsGem(bool isActiveMode, IPAddress ip, int port, int receiveBufferSize = 0x4000)
         {
             if (port <= 0)
                 throw new ArgumentOutOfRangeException(nameof(port), port, Resources.SecsGemTcpPortMustGreaterThan0);
@@ -154,7 +154,7 @@ namespace Secs4Net
             _taskFactory = new TaskFactory(TaskScheduler.Default);
             IpAddress = ip ?? throw new ArgumentNullException(nameof(ip));
             Port = port;
-            IsActive = isActive;
+            IsActive = isActiveMode;
             DecoderBufferSize = receiveBufferSize;
 
             _secsDecoder = new StreamDecoder(receiveBufferSize, HandleControlMessage, HandleDataMessage);
@@ -605,11 +605,11 @@ namespace Secs4Net
         /// <summary>
         /// Asynchronously send message to device .
         /// </summary>
-        /// <param name="msg">primary message</param>
+        /// <param name="message">primary message</param>
         /// <param name="autoDispose">auto dispose message after message sent.</param>
         /// <returns>secondary message</returns>
-        public ValueTask<SecsMessage> SendAsync(SecsMessage msg, bool autoDispose = true)
-            => SendDataMessageAsync(msg, NewSystemId, autoDispose);
+        public ValueTask<SecsMessage> SendAsync(SecsMessage message, bool autoDispose = true)
+            => SendDataMessageAsync(message, NewSystemId, autoDispose);
 
         private const int DisposalNotStarted = 0;
         private const int DisposalComplete = 1;
@@ -634,7 +634,7 @@ namespace Secs4Net
         /// <summary>
         /// remote device endpoint address
         /// </summary>
-        public string DeviceAddress => IsActive
+        public string DeviceIpAddress => IsActive
             ? IpAddress.ToString()
             : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
 

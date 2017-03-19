@@ -1,6 +1,7 @@
 ﻿using System;
 
-namespace Secs4Net {
+namespace Secs4Net
+{
     public class SecsException : Exception
     {
         public int? MessageId { get; }

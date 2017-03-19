@@ -7,9 +7,9 @@ using static System.Diagnostics.Debug;
 namespace Secs4Net
 {
     /// <summary>
-    ///  Stream based HSMS/SECS-II message decoder
+    ///  Stream based decoder for SECS-II message 
     /// </summary>
-    internal sealed class StreamDecoder
+    public sealed class StreamDecoder
     {
         public byte[] Buffer { get; private set; }
 
@@ -256,7 +256,7 @@ namespace Secs4Net
                         };
         }
 
-        private static SecsItem BufferedDecode(byte[] bytes, ref int index)
+        public static SecsItem BufferedDecode(byte[] bytes, ref int index)
         {
             var format = (SecsFormat)(bytes[index] & 0xFC);
             var lengthBits = (byte)(bytes[index] & 3);
