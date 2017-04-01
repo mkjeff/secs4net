@@ -80,11 +80,10 @@ namespace Secs4Net
                 chs[ci + 1] = GetHexValue(num % 0x10);
                 chs[ci + 2] = ' ';
             }
-            var result = new string(chs, 0, length - 1);
-            return result;
-        }
+            return new string(chs, 0, length - 1);
 
-        static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
+            char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
+        }
 
         public static bool IsMatch(this SecsMessage src, SecsMessage target)
         {
