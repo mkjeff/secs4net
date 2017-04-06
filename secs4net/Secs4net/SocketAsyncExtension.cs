@@ -12,9 +12,7 @@ namespace Secs4Net
             var tcs = new TaskCompletionSource<bool>();
             var ce = new SocketAsyncEventArgs { RemoteEndPoint = new IPEndPoint(target, port), UserToken = tcs };
             ce.Completed += ConnectCompleted;
-            if (socket.ConnectAsync(ce))
-                return new ValueTask<bool>(tcs.Task);
-            return new ValueTask<bool>(true);
+            return socket.ConnectAsync(ce) ? new ValueTask<bool>(tcs.Task) : new ValueTask<bool>(true);
         }
 
         private static void ConnectCompleted(object sender, SocketAsyncEventArgs e)
@@ -35,9 +33,7 @@ namespace Secs4Net
             var tcs = new TaskCompletionSource<Socket>();
             var ce = new SocketAsyncEventArgs { UserToken = tcs };
             ce.Completed += AcceptCompleted;
-            if (socket.AcceptAsync(ce))
-                return new ValueTask<Socket>(tcs.Task);
-            return new ValueTask<Socket>(ce.AcceptSocket);
+            return socket.AcceptAsync(ce) ? new ValueTask<Socket>(tcs.Task) : new ValueTask<Socket>(ce.AcceptSocket);
         }
 
         private static void AcceptCompleted(object sender, SocketAsyncEventArgs e)

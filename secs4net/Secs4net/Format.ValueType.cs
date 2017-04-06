@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Secs4Net
 {
-    abstract class ValueTypeFormat<TFormat, TValue> : IFormat<TValue>
+    internal abstract class ValueTypeFormat<TFormat, TValue> : IFormat<TValue>
        where TFormat : IFormat<TValue>
        where TValue : struct
     {

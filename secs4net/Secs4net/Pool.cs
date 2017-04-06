@@ -29,7 +29,7 @@ namespace Secs4Net
         public void Reset()
         {
             while (!_itemStore.IsEmpty)
-                _itemStore.TryRent(out var item);
+                _itemStore.TryRent(out _);
         }
 
         private interface IItemStore

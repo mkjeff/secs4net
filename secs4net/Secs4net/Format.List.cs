@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Secs4Net
 {
-    sealed class ListFormat : IFormat<SecsItem>
+    internal sealed class ListFormat : IFormat<SecsItem>
     {
         public const SecsFormat Format = SecsFormat.List;
 

@@ -71,11 +71,11 @@ namespace Secs4Net
         {
             if (value.Length == 0)
                 return string.Empty;
-            int length = value.Length * 3;
+            var length = value.Length * 3;
             var chs = new char[length];
             for (int ci = 0, i = 0; ci < length; ci += 3)
             {
-                byte num = value[i++];
+                var num = value[i++];
                 chs[ci] = GetHexValue(num / 0x10);
                 chs[ci + 1] = GetHexValue(num % 0x10);
                 chs[ci + 2] = ' ';
@@ -172,7 +172,7 @@ namespace Secs4Net
 
         private static ArraySegment<T> Decode<T>(byte[] data, ref int index, ref int length) where T : struct
         {
-            int elmSize = Unsafe.SizeOf<T>();
+            var elmSize = Unsafe.SizeOf<T>();
             data.Reverse(index, index + length, elmSize);
             var arrLength = length / elmSize;
             var values = ValueTypeArrayPool<T>.Pool.Rent(arrLength);

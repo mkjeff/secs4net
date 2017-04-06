@@ -1,5 +1,4 @@
-﻿using Secs4net;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -51,7 +50,7 @@ namespace Secs4Net
 
         [Browsable(false),Obsolete("This property only for debugging. Don't use in production.")]
         public IList<ArraySegment<byte>> RawBytes =>
-            this.EncodeTo(
+            EncodeTo(
                 new List<ArraySegment<byte>>(),
                 new ArraySegment<byte>(new MessageHeader
                                        {

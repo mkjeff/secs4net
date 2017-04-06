@@ -7,7 +7,7 @@ namespace Secs4Net
 {
     public sealed class PrimaryMessageWrapper
     {
-        private int _isReplied = 0;
+        private int _isReplied;
         private readonly WeakReference<SecsGem> _secsGem;
         private readonly MessageHeader _header;
         /// <summary>
