@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static Secs4Net.Item;
+using System.Threading.Tasks;
 
 namespace Secs4Net.Json
 {
@@ -22,6 +23,12 @@ namespace Secs4Net.Json
         {
             using (var jwtr = new JsonTextWriter(writer))
                 msg.WriteTo(jwtr);
+        }
+
+        public static async Task WriteToAsync(this SecsMessage msg, TextWriter writer)
+        {
+            using (var jwtr = new JsonTextWriter(writer))
+                await msg.WriteToAsync(jwtr);
         }
 
         public static void WriteTo(this SecsMessage msg, JsonTextWriter jwtr)
@@ -49,6 +56,33 @@ namespace Secs4Net.Json
             jwtr.WriteEndObject();
 
             jwtr.Flush();
+        }
+
+        public static async Task WriteToAsync(this SecsMessage msg, JsonTextWriter jwtr)
+        {
+            await jwtr.WriteStartObjectAsync();
+
+            await jwtr.WritePropertyNameAsync(nameof(msg.S));
+            await jwtr.WriteValueAsync(msg.S);
+
+            await jwtr.WritePropertyNameAsync(nameof(msg.F));
+            await jwtr.WriteValueAsync(msg.S);
+
+            await jwtr.WritePropertyNameAsync(nameof(msg.ReplyExpected));
+            await jwtr.WriteValueAsync(msg.ReplyExpected);
+
+            await jwtr.WritePropertyNameAsync(nameof(msg.Name));
+            await jwtr.WriteValueAsync(msg.Name);
+
+            if (msg.SecsItem != null)
+            {
+                await jwtr.WritePropertyNameAsync(nameof(msg.SecsItem));
+                await msg.SecsItem.WriteToAsync(jwtr);
+            }
+
+            await jwtr.WriteEndObjectAsync();
+
+            await jwtr.FlushAsync();
         }
 
         const string ItemValuesName = "Values";
@@ -126,6 +160,81 @@ namespace Secs4Net.Json
             }
         }
 
+        public static async Task WriteToAsync(this SecsItem item, JsonTextWriter writer)
+        {
+            await writer.WriteStartObjectAsync();
+
+            await writer.WritePropertyNameAsync(nameof(item.Format));
+            await writer.WriteValueAsync(item.Format.GetName());
+
+            if (item.Format == SecsFormat.List)
+            {
+                await WriteListAsync();
+            }
+            else
+            {
+                await writer.WritePropertyNameAsync(ItemValuesName);
+                await WriteItemValueAsync();
+            }
+
+            await writer.WriteEndObjectAsync();
+
+            async Task WriteListAsync()
+            {
+                await writer.WritePropertyNameAsync(nameof(item.Items));
+                await writer.WriteStartArrayAsync();
+                foreach (var subitem in item.Items)
+                    await subitem.WriteToAsync(writer);
+                await writer.WriteEndArrayAsync();
+            }
+
+            Task WriteItemValueAsync()
+            {
+                switch (item.Format)
+                {
+                    case SecsFormat.ASCII:
+                    case SecsFormat.JIS8:
+                        return writer.WriteValueAsync(item.GetString());
+                    case SecsFormat.Binary:
+                        return WriteValueAsync<byte>(writer,item);
+                    case SecsFormat.Boolean:
+                        return WriteValueAsync<bool>(writer, item);
+                    case SecsFormat.I8:
+                        return WriteValueAsync<long>(writer, item);
+                    case SecsFormat.I1:
+                        return WriteValueAsync<sbyte>(writer, item);
+                    case SecsFormat.I2:
+                        return WriteValueAsync<short>(writer, item);
+                    case SecsFormat.I4:
+                        return WriteValueAsync<int>(writer, item);
+                    case SecsFormat.F4:
+                        return WriteValueAsync<float>(writer, item);
+                    case SecsFormat.F8:
+                        return WriteValueAsync<double>(writer, item);
+                    case SecsFormat.U8:
+                        return WriteValueAsync<ulong>(writer, item);
+                    case SecsFormat.U1:
+                        return WriteValueAsync<byte>(writer, item);
+                    case SecsFormat.U2:
+                        return WriteValueAsync<ushort>(writer, item);
+                    default:
+                        // case SecsFormat.U4:
+                        return WriteValueAsync<uint>(writer, item);
+                }
+
+                async Task WriteValueAsync<T>(JsonWriter w,SecsItem i)
+                    where T : struct
+                {
+                    await w.WriteStartArrayAsync();
+
+                    foreach (var v in i.GetValues<T>())
+                        await w.WriteValueAsync(v);
+
+                    await w.WriteEndArrayAsync();
+                }
+            }
+        }
+
         public static SecsMessage ToSecsMessage(this string jsonString)
             => JObject.Parse(jsonString).ToSecsMessage();
 
@@ -143,9 +252,9 @@ namespace Secs4Net.Json
 
         public static SecsMessage[] ToSecsMessages(this TextReader reader)
         {
-            var arr = JToken.ReadFrom(new JsonTextReader(reader));
+            var arr = JArray.Load(new JsonTextReader(reader));
             var query =
-                from a in arr.Value<JArray>().Values<JObject>()
+                from a in arr.Values<JObject>()
                 select a.ToSecsMessage();
             return query.ToArray();
         }
