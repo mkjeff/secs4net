@@ -9,11 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Secs4net.Sml", "Secs4net.Sm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Secs4net.Json", "Secs4net.Json\Secs4net.Json.csproj", "{4216D7F8-49ED-41CE-97A1-C25C0C746744}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LINQPad", "LINQPad", "{101532A6-C74A-46E7-8BDF-352D6FBD0347}"
-	ProjectSection(SolutionItems) = preProject
-		LINQPad\MyExtensions.FW46.linq = LINQPad\MyExtensions.FW46.linq
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DB53CB27-2023-49A6-A075-0BDE24320033}"
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
