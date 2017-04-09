@@ -261,44 +261,6 @@ namespace Secs4Net
                 };
             }
 
-            void StartSocketReceive()
-            {
-                CommunicationStateChanging(ConnectionState.Connected);
-
-                var receiveCompleteEvent = new SocketAsyncEventArgs();
-                receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-                receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
-
-                if (!_socket.ReceiveAsync(receiveCompleteEvent))
-                    SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
-            }
-
-            void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
-            {
-                var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
-
-                if (e.SocketError != SocketError.Success)
-                {
-                    completeToken.SetException(new SocketException((int)e.SocketError));
-                    return;
-                }
-
-                ReleaseEncodedBuffer(e.BufferList);
-
-                _logger.Info($"Sent Control Message: {completeToken.MsgType.GetName()}");
-                if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
-                {
-#if !DISABLE_T6
-                    if (!completeToken.Task.Wait(T6))
-                    {
-                        _logger.Error($"T6 Timeout: {T6 / 1000} sec.");
-                        CommunicationStateChanging(ConnectionState.Retry);
-                    }
-#endif
-                    _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
-                }
-            }
-
             void HandleControlMessage(MessageHeader header)
             {
                 if ((byte)header.MessageType % 2 == 0)
@@ -349,45 +311,6 @@ namespace Secs4Net
                 }
             }
 
-            void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
-            {
-                ReleaseEncodedBuffer(e.BufferList);
-
-                var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
-
-                if (e.SocketError != SocketError.Success)
-                {
-                    completeToken.SetException(new SocketException((int)e.SocketError));
-                    CommunicationStateChanging(ConnectionState.Retry);
-                    return;
-                }
-
-                _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
-                if (completeToken.AutoDispose)
-                    completeToken.MessageSent.Dispose();
-
-                if (!completeToken.MessageSent.ReplyExpected || !_replyExpectedMsgs.ContainsKey(completeToken.Id))
-                {
-                    completeToken.SetResult(null);
-                    return;
-                }
-
-
-                try
-                {
-                    if (!completeToken.Task.Wait(T3))
-                    {
-                        _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
-                        completeToken.SetException(new SecsException(completeToken.Id, Resources.T3Timeout));
-                    }
-                }
-                catch (AggregateException) { }
-                finally
-                {
-                    _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
-                }
-            }
-
             void HandleDataMessage(MessageHeader header, SecsMessage msg)
             {
                 if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
@@ -432,56 +355,68 @@ namespace Secs4Net
             }
         }
 
-        private void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
+        private void StartSocketReceive()
         {
-            if (e.SocketError != SocketError.Success)
-            {
-                var ex = new SocketException((int)e.SocketError);
-                _logger.Error($"RecieveComplete socket error:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
-                CommunicationStateChanging(ConnectionState.Retry);
-                return;
-            }
+            CommunicationStateChanging(ConnectionState.Connected);
 
-            try
+            var receiveCompleteEvent = new SocketAsyncEventArgs();
+            receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+            receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
+
+            if (!_socket.ReceiveAsync(receiveCompleteEvent))
+                SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
+
+            void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
             {
-                _timer8.Change(Timeout.Infinite, Timeout.Infinite);
-                var receivedCount = e.BytesTransferred;
-                if (receivedCount == 0)
+                if (e.SocketError != SocketError.Success)
                 {
-                    _logger.Error("Received 0 byte.");
+                    var ex = new SocketException((int) e.SocketError);
+                    _logger.Error($"RecieveComplete socket error:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
                     CommunicationStateChanging(ConnectionState.Retry);
                     return;
                 }
 
-                if (_secsDecoder.Decode(receivedCount))
+                try
                 {
+                    _timer8.Change(Timeout.Infinite, Timeout.Infinite);
+                    var receivedCount = e.BytesTransferred;
+                    if (receivedCount == 0)
+                    {
+                        _logger.Error("Received 0 byte.");
+                        CommunicationStateChanging(ConnectionState.Retry);
+                        return;
+                    }
+
+                    if (_secsDecoder.Decode(receivedCount))
+                    {
 #if !DISABLE_T8
-                    _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
-                    _timer8.Change(T8, Timeout.Infinite);
+                        _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
+                        _timer8.Change(T8, Timeout.Infinite);
 #endif
-                }
+                    }
 
-                if (_secsDecoder.Buffer.Length != DecoderBufferSize)
+                    if (_secsDecoder.Buffer.Length != DecoderBufferSize)
+                    {
+                        // buffer size changed
+                        e.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+                        DecoderBufferSize = _secsDecoder.Buffer.Length;
+                    }
+                    else
+                    {
+                        e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+                    }
+
+                    if (_socket is null || IsDisposed)
+                        return;
+
+                    if (!_socket.ReceiveAsync(e))
+                        SocketReceiveEventCompleted(sender, e);
+                }
+                catch (Exception ex)
                 {
-                    // buffer size changed
-                    e.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-                    DecoderBufferSize = _secsDecoder.Buffer.Length;
+                    _logger.Error("Unexpected exception", ex);
+                    CommunicationStateChanging(ConnectionState.Retry);
                 }
-                else
-                {
-                    e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-                }
-
-                if (_socket is null || IsDisposed)
-                    return;
-
-                if (!_socket.ReceiveAsync(e))
-                    SocketReceiveEventCompleted(sender, e);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error("Unexpected exception", ex);
-                CommunicationStateChanging(ConnectionState.Retry);
             }
         }
 
@@ -510,7 +445,33 @@ namespace Secs4Net
             };
             eap.Completed += _sendControlMessageCompleteHandler;
             if (!_socket.SendAsync(eap))
-                _sendControlMessageCompleteHandler(_socket, eap);
+                SendControlMessageCompleteHandler(_socket, eap);
+        }
+
+        private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
+        {
+            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
+
+            if (e.SocketError != SocketError.Success)
+            {
+                completeToken.SetException(new SocketException((int)e.SocketError));
+                return;
+            }
+
+            ReleaseEncodedBuffer(e.BufferList);
+
+            _logger.Info($"Sent Control Message: {completeToken.MsgType.GetName()}");
+            if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
+            {
+#if !DISABLE_T6
+                if (!completeToken.Task.Wait(T6))
+                {
+                    _logger.Error($"T6 Timeout: {T6 / 1000} sec.");
+                    CommunicationStateChanging(ConnectionState.Retry);
+                }
+#endif
+                _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
+            }
         }
 
         private static void ReleaseEncodedBuffer(IList<ArraySegment<byte>> e)
@@ -547,9 +508,49 @@ namespace Secs4Net
             };
             eap.Completed += _sendDataMessageCompleteHandler;
             if (!_socket.SendAsync(eap))
-                _sendDataMessageCompleteHandler(_socket, eap);
+                SendDataMessageCompleteHandler(_socket, eap);
 
             return token.Task;
+        }
+
+        private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
+        {
+            ReleaseEncodedBuffer(e.BufferList);
+
+            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
+
+            if (e.SocketError != SocketError.Success)
+            {
+                completeToken.SetException(new SocketException((int)e.SocketError));
+                CommunicationStateChanging(ConnectionState.Retry);
+                return;
+            }
+
+            _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
+            if (completeToken.AutoDispose)
+                completeToken.MessageSent.Dispose();
+
+            if (!completeToken.MessageSent.ReplyExpected || !_replyExpectedMsgs.ContainsKey(completeToken.Id))
+            {
+                completeToken.SetResult(null);
+                return;
+            }
+
+            try
+            {
+                if (!completeToken.Task.Wait(T3))
+                {
+                    _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
+                    completeToken.SetException(new SecsException(completeToken.Id, Resources.T3Timeout));
+                }
+            }
+            catch (AggregateException)
+            {
+            }
+            finally
+            {
+                _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
+            }
         }
 
         private void CommunicationStateChanging(ConnectionState newState)
@@ -604,6 +605,7 @@ namespace Secs4Net
             _socket.Dispose();
             _socket = null;
         }
+
         public void Start() => _taskFactory.StartNew(_startImpl);
 
         /// <summary>
