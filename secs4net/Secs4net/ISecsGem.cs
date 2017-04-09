@@ -30,7 +30,7 @@ namespace Secs4Net
         event Action<PrimaryMessageWrapper> PrimaryMessageReceived;
 
         void Dispose();
-        ValueTask<SecsMessage> SendAsync(SecsMessage message, bool autoDispose = true);
+        Task<SecsMessage> SendAsync(SecsMessage message, bool autoDispose = true);
         void Start();
     }
 }

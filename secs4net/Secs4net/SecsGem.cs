@@ -119,7 +119,7 @@ namespace Secs4Net
         private readonly Timer _timer8;
         private readonly Timer _timerLinkTest;
 
-        private readonly Func<ValueTask<VoidStruct>> _startImpl;
+        private readonly Func<Task> _startImpl;
         private readonly Action _stopImpl;
 
         private static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
@@ -190,12 +190,14 @@ namespace Secs4Net
                     do
                     {
                         if (IsDisposed)
-                            return default(VoidStruct);
+                            return;
+
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
                             if (IsDisposed)
-                                return default(VoidStruct);
+                                return;
+
                             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                             await _socket.ConnectAsync(IpAddress, Port).ConfigureAwait(false);
                             connected = true;
@@ -203,7 +205,8 @@ namespace Secs4Net
                         catch (Exception ex)
                         {
                             if (IsDisposed)
-                                return default(VoidStruct);
+                                return;
+
                             _logger.Error(ex.Message);
                             _logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
                             await Task.Delay(T5).ConfigureAwait(false);
@@ -217,7 +220,6 @@ namespace Secs4Net
                         SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
 
                     SendControlMessage(MessageType.SelectRequest, NewSystemId);
-                    return default(VoidStruct);
                 };
 
                 //_stopImpl = delegate { };
@@ -234,19 +236,22 @@ namespace Secs4Net
                     do
                     {
                         if (IsDisposed)
-                            return default(VoidStruct);
+                            return;
+
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
                             if (IsDisposed)
-                                return default(VoidStruct);
+                                return;
+
                             _socket = await server.AcceptAsync().ConfigureAwait(false);
                             connected = true;
                         }
                         catch (Exception ex)
                         {
                             if (IsDisposed)
-                                return default(VoidStruct);
+                                return;
+
                             _logger.Error(ex.Message);
                             await Task.Delay(2000).ConfigureAwait(false);
                         }
@@ -255,8 +260,6 @@ namespace Secs4Net
                     CommunicationStateChanging(ConnectionState.Connected);
                     if (!_socket.ReceiveAsync(receiveCompleteEvent))
                         SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
-
-                    return default(VoidStruct);
                 };
 
                 _stopImpl = delegate
@@ -435,7 +438,7 @@ namespace Secs4Net
             }
         }
 
-        internal ValueTask<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, bool autoDispose = true)
+        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, bool autoDispose = true)
         {
             if (State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
@@ -462,7 +465,7 @@ namespace Secs4Net
             if (!_socket.SendAsync(eap))
                 SendDataMessageCompleteHandler(_socket, eap);
 
-            return new ValueTask<SecsMessage>(token.Task);
+            return token.Task;
         }
 
         private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
@@ -607,7 +610,7 @@ namespace Secs4Net
         /// <param name="message">primary message</param>
         /// <param name="autoDispose">auto dispose message after message sent.</param>
         /// <returns>secondary message</returns>
-        public ValueTask<SecsMessage> SendAsync(SecsMessage message, bool autoDispose = true)
+        public Task<SecsMessage> SendAsync(SecsMessage message, bool autoDispose = true)
             => SendDataMessageAsync(message, NewSystemId, autoDispose);
 
         private const int DisposalNotStarted = 0;
@@ -697,10 +700,6 @@ namespace Secs4Net
 
                 SetResult(replyMsg);
             }
-        }
-
-        private struct VoidStruct
-        {
         }
     }
 }
