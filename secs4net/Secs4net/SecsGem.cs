@@ -138,6 +138,7 @@ namespace Secs4Net
         internal int NewSystemId => _systemByte.New();
 
         private readonly TaskFactory _taskFactory;
+
         /// <summary>
         /// constructor
         /// </summary>
@@ -148,14 +149,15 @@ namespace Secs4Net
         public SecsGem(bool isActiveMode, IPAddress ip, int port, int receiveBufferSize = 0x4000)
         {
             if (port <= 0)
-                throw new ArgumentOutOfRangeException(nameof(port), port, Resources.SecsGemTcpPortMustGreaterThan0);
+                port = 0;
 
-            _taskFactory = new TaskFactory(TaskScheduler.Default);
             IpAddress = ip ?? throw new ArgumentNullException(nameof(ip));
             Port = port;
             IsActive = isActiveMode;
             DecoderBufferSize = receiveBufferSize;
-
+            _taskFactory = new TaskFactory(TaskScheduler.Default);
+            _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
+            _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
             _secsDecoder = new StreamDecoder(receiveBufferSize, HandleControlMessage, HandleDataMessage);
 
             _timer7 = new Timer(delegate
@@ -175,9 +177,6 @@ namespace Secs4Net
                 if (State == ConnectionState.Selected)
                     SendControlMessage(MessageType.LinkTestRequest, NewSystemId);
             }, null, Timeout.Infinite, Timeout.Infinite);
-
-            _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
-            _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
 
             if (IsActive)
             {
@@ -273,6 +272,164 @@ namespace Secs4Net
                 if (!_socket.ReceiveAsync(receiveCompleteEvent))
                     SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
             }
+
+            void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
+            {
+                var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
+
+                if (e.SocketError != SocketError.Success)
+                {
+                    completeToken.SetException(new SocketException((int)e.SocketError));
+                    return;
+                }
+
+                ReleaseEncodedBuffer(e.BufferList);
+
+                _logger.Info($"Sent Control Message: {completeToken.MsgType.GetName()}");
+                if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
+                {
+#if !DISABLE_T6
+                    if (!completeToken.Task.Wait(T6))
+                    {
+                        _logger.Error($"T6 Timeout: {T6 / 1000} sec.");
+                        CommunicationStateChanging(ConnectionState.Retry);
+                    }
+#endif
+                    _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
+                }
+            }
+
+            void HandleControlMessage(MessageHeader header)
+            {
+                if ((byte)header.MessageType % 2 == 0)
+                {
+                    if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out var ar))
+                    {
+                        ar.SetResult(ControlMessage);
+                    }
+                    else
+                    {
+                        _logger.Warning($"Received Unexpected Control Message: {header.MessageType.GetName()}");
+                        return;
+                    }
+                }
+                _logger.Info($"Receive Control message: {header.MessageType.GetName()}");
+                switch (header.MessageType)
+                {
+                    case MessageType.SelectRequest:
+                        SendControlMessage(MessageType.SelectResponse, header.SystemBytes);
+                        CommunicationStateChanging(ConnectionState.Selected);
+                        break;
+                    case MessageType.SelectResponse:
+                        switch (header.F)
+                        {
+                            case 0:
+                                CommunicationStateChanging(ConnectionState.Selected);
+                                break;
+                            case 1:
+                                _logger.Error("Communication Already Active.");
+                                break;
+                            case 2:
+                                _logger.Error("Connection Not Ready.");
+                                break;
+                            case 3:
+                                _logger.Error("Connection Exhaust.");
+                                break;
+                            default:
+                                _logger.Error("Connection Status Is Unknown.");
+                                break;
+                        }
+                        break;
+                    case MessageType.LinkTestRequest:
+                        SendControlMessage(MessageType.LinkTestResponse, header.SystemBytes);
+                        break;
+                    case MessageType.SeperateRequest:
+                        CommunicationStateChanging(ConnectionState.Retry);
+                        break;
+                }
+            }
+
+            void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
+            {
+                ReleaseEncodedBuffer(e.BufferList);
+
+                var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
+
+                if (e.SocketError != SocketError.Success)
+                {
+                    completeToken.SetException(new SocketException((int)e.SocketError));
+                    CommunicationStateChanging(ConnectionState.Retry);
+                    return;
+                }
+
+                _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
+                if (completeToken.AutoDispose)
+                    completeToken.MessageSent.Dispose();
+
+                if (!completeToken.MessageSent.ReplyExpected || !_replyExpectedMsgs.ContainsKey(completeToken.Id))
+                {
+                    completeToken.SetResult(null);
+                    return;
+                }
+
+
+                try
+                {
+                    if (!completeToken.Task.Wait(T3))
+                    {
+                        _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
+                        completeToken.SetException(new SecsException(completeToken.Id, Resources.T3Timeout));
+                    }
+                }
+                catch (AggregateException) { }
+                finally
+                {
+                    _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
+                }
+            }
+
+            void HandleDataMessage(MessageHeader header, SecsMessage msg)
+            {
+                if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
+                {
+                    _logger.MessageIn(msg, header.SystemBytes);
+                    _logger.Warning("Received Unrecognized Device Id Message");
+                    msg.Dispose();
+
+                    SendDataMessageAsync(new SecsMessage(9, 1, false, "UnrecognizedDeviceId", B(header.EncodeTo(new byte[10]))), NewSystemId);
+
+                    return;
+                }
+
+                if (msg.F % 2 != 0)
+                {
+                    if (msg.S != 9)
+                    {
+                        //Primary message
+                        _logger.MessageIn(msg, header.SystemBytes);
+                        _taskFactory.StartNew(
+                            wrapper => PrimaryMessageReceived(Unsafe.As<PrimaryMessageWrapper>(wrapper)),
+                            new PrimaryMessageWrapper(this, header, msg));
+
+                        return;
+                    }
+                    // Error message system byte
+                    unsafe
+                    {
+                        var headerBytes = msg.SecsItem.GetValues<byte>();
+                        Array.Reverse(headerBytes, 0, 10);
+                        Unsafe.CopyBlock(
+                            destination: Unsafe.AsPointer(ref header.SystemBytes),
+                            source: Unsafe.AsPointer(ref headerBytes[0]),
+                            byteCount: 4);
+                    }
+                }
+
+                // Secondary message
+                _logger.MessageIn(msg, header.SystemBytes);
+                if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out var ar))
+                    ar.HandleReplyMessage(msg);
+            }
         }
 
         private void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
@@ -353,33 +510,7 @@ namespace Secs4Net
             };
             eap.Completed += _sendControlMessageCompleteHandler;
             if (!_socket.SendAsync(eap))
-                SendControlMessageCompleteHandler(_socket, eap);
-        }
-
-        private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
-        {
-            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
-
-            if (e.SocketError != SocketError.Success)
-            {
-                completeToken.SetException(new SocketException((int)e.SocketError));
-                return;
-            }
-
-            ReleaseEncodedBuffer(e.BufferList);
-
-            _logger.Info($"Sent Control Message: {completeToken.MsgType.GetName()}");
-            if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
-            {
-#if !DISABLE_T6
-                if (!completeToken.Task.Wait(T6))
-                {
-                    _logger.Error($"T6 Timeout: {T6 / 1000} sec.");
-                    CommunicationStateChanging(ConnectionState.Retry);
-                }
-#endif
-                _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
-            }
+                _sendControlMessageCompleteHandler(_socket, eap);
         }
 
         private static void ReleaseEncodedBuffer(IList<ArraySegment<byte>> e)
@@ -389,56 +520,6 @@ namespace Secs4Net
 
             e.Clear();
             EncodedBufferPool.Return(e);
-        }
-
-        private void HandleControlMessage(MessageHeader header)
-        {
-            if ((byte)header.MessageType % 2 == 0)
-            {
-                if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out var ar))
-                {
-                    ar.SetResult(ControlMessage);
-                }
-                else
-                {
-                    _logger.Warning($"Received Unexpected Control Message: {header.MessageType.GetName()}");
-                    return;
-                }
-            }
-            _logger.Info($"Receive Control message: {header.MessageType.GetName()}");
-            switch (header.MessageType)
-            {
-                case MessageType.SelectRequest:
-                    SendControlMessage(MessageType.SelectResponse, header.SystemBytes);
-                    CommunicationStateChanging(ConnectionState.Selected);
-                    break;
-                case MessageType.SelectResponse:
-                    switch (header.F)
-                    {
-                        case 0:
-                            CommunicationStateChanging(ConnectionState.Selected);
-                            break;
-                        case 1:
-                            _logger.Error("Communication Already Active.");
-                            break;
-                        case 2:
-                            _logger.Error("Connection Not Ready.");
-                            break;
-                        case 3:
-                            _logger.Error("Connection Exhaust.");
-                            break;
-                        default:
-                            _logger.Error("Connection Status Is Unknown.");
-                            break;
-                    }
-                    break;
-                case MessageType.LinkTestRequest:
-                    SendControlMessage(MessageType.LinkTestResponse, header.SystemBytes);
-                    break;
-                case MessageType.SeperateRequest:
-                    CommunicationStateChanging(ConnectionState.Retry);
-                    break;
-            }
         }
 
         internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, bool autoDispose = true)
@@ -466,91 +547,9 @@ namespace Secs4Net
             };
             eap.Completed += _sendDataMessageCompleteHandler;
             if (!_socket.SendAsync(eap))
-                SendDataMessageCompleteHandler(_socket, eap);
+                _sendDataMessageCompleteHandler(_socket, eap);
 
             return token.Task;
-        }
-
-        private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
-        {
-            ReleaseEncodedBuffer(e.BufferList);
-
-            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
-
-            if (e.SocketError != SocketError.Success)
-            {
-                completeToken.SetException(new SocketException((int)e.SocketError));
-                CommunicationStateChanging(ConnectionState.Retry);
-                return;
-            }
-
-            _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
-            if (completeToken.AutoDispose)
-                completeToken.MessageSent.Dispose();
-
-            if (!completeToken.MessageSent.ReplyExpected || !_replyExpectedMsgs.ContainsKey(completeToken.Id))
-            {
-                completeToken.SetResult(null);
-                return;
-            }
-
-
-            try
-            {
-                if (!completeToken.Task.Wait(T3))
-                {
-                    _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
-                    completeToken.SetException(new SecsException(completeToken.Id, Resources.T3Timeout));
-                }
-            }
-            catch (AggregateException) { }
-            finally
-            {
-                _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
-            }
-        }
-
-        private void HandleDataMessage(MessageHeader header, SecsMessage msg)
-        {
-            if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
-            {
-                _logger.MessageIn(msg, header.SystemBytes);
-                _logger.Warning("Received Unrecognized Device Id Message");
-                msg.Dispose();
-
-                SendDataMessageAsync(new SecsMessage(9, 1, false, "UnrecognizedDeviceId", B(header.EncodeTo(new byte[10]))), NewSystemId);
-
-                return;
-            }
-
-            if (msg.F % 2 != 0)
-            {
-                if (msg.S != 9)
-                {
-                    //Primary message
-                    _logger.MessageIn(msg, header.SystemBytes);
-                    _taskFactory.StartNew(
-                        wrapper => PrimaryMessageReceived(Unsafe.As<PrimaryMessageWrapper>(wrapper)),
-                        new PrimaryMessageWrapper(this, header, msg));
-
-                    return;
-                }
-                // Error message system byte
-                unsafe
-                {
-                    var headerBytes = msg.SecsItem.GetValues<byte>();
-                    Array.Reverse(headerBytes, 0, 10);
-                    Unsafe.CopyBlock(
-                        destination: Unsafe.AsPointer(ref header.SystemBytes),
-                        source: Unsafe.AsPointer(ref headerBytes[0]),
-                        byteCount: 4);
-                }
-            }
-
-            // Secondary message
-            _logger.MessageIn(msg, header.SystemBytes);
-            if (_replyExpectedMsgs.TryGetValue(header.SystemBytes, out var ar))
-                ar.HandleReplyMessage(msg);
         }
 
         private void CommunicationStateChanging(ConnectionState newState)
