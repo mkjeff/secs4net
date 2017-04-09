@@ -298,8 +298,12 @@ namespace Secs4Net.Sml
             return true;
         }
 
+        private static byte HexByteParser(string str) => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+            ? Convert.ToByte(str, 16)
+            : byte.Parse(str);
+
         private static readonly (Func<SecsItem> ,Func<byte[], SecsItem> , Func<string, byte>)  
-            BinaryParser = (B, B, str => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? Convert.ToByte(str, 16) : byte.Parse(str));
+            BinaryParser = (B, B, HexByteParser);
         private static readonly (Func<SecsItem>, Func<sbyte[], SecsItem>, Func<string, sbyte>) 
             I1Parser = (I1, I1, sbyte.Parse);
         private static readonly (Func<SecsItem>, Func<short[], SecsItem>, Func<string, short>) 
