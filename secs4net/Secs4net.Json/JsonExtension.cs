@@ -20,26 +20,20 @@ namespace Secs4Net.Json
         }
 
         public static void WriteTo(this SecsMessage msg, TextWriter writer, Formatting formatting = Formatting.Indented)
-        {
-            var jwtr = new JsonTextWriter(writer)
+            => msg.WriteTo(new JsonTextWriter(writer)
             {
                 QuoteName = false,
                 QuoteChar = '\'',
                 Formatting = Formatting.Indented
-            };
-            msg.WriteTo(jwtr);
-        }
+            });
 
-        public static async Task WriteToAsync(this SecsMessage msg, TextWriter writer, Formatting formatting = Formatting.Indented)
-        {
-            var jwtr = new JsonTextWriter(writer)
+        public static Task WriteToAsync(this SecsMessage msg, TextWriter writer, Formatting formatting = Formatting.Indented)
+            => msg.WriteToAsync(new JsonTextWriter(writer)
             {
                 QuoteName = false,
                 QuoteChar = '\'',
                 Formatting = Formatting.Indented
-            };
-            await msg.WriteToAsync(jwtr);
-        }
+            });
 
         public static void WriteTo(this SecsMessage msg, JsonTextWriter jwtr)
         {
@@ -110,51 +104,50 @@ namespace Secs4Net.Json
                     writer.WriteValue(item.GetString());
                     break;
                 case SecsFormat.Binary:
-                    WriteValue<byte>();
+                    WriteValue<byte>(writer, item);
                     break;
                 case SecsFormat.Boolean:
-                    WriteValue<bool>();
+                    WriteValue<bool>(writer, item);
                     break;
                 case SecsFormat.I8:
-                    WriteValue<long>();
+                    WriteValue<long>(writer, item);
                     break;
                 case SecsFormat.I1:
-                    WriteValue<sbyte>();
+                    WriteValue<sbyte>(writer, item);
                     break;
                 case SecsFormat.I2:
-                    WriteValue<short>();
+                    WriteValue<short>(writer, item);
                     break;
                 case SecsFormat.I4:
-                    WriteValue<int>();
+                    WriteValue<int>(writer, item);
                     break;
                 case SecsFormat.F4:
-                    WriteValue<float>();
+                    WriteValue<float>(writer, item);
                     break;
                 case SecsFormat.F8:
-                    WriteValue<double>();
+                    WriteValue<double>(writer, item);
                     break;
                 case SecsFormat.U8:
-                    WriteValue<ulong>();
+                    WriteValue<ulong>(writer, item);
                     break;
                 case SecsFormat.U1:
-                    WriteValue<byte>();
+                    WriteValue<byte>(writer, item);
                     break;
                 case SecsFormat.U2:
-                    WriteValue<ushort>();
+                    WriteValue<ushort>(writer, item);
                     break;
                 case SecsFormat.U4:
-                    WriteValue<uint>();
+                    WriteValue<uint>(writer, item);
                     break;
             }
             writer.WriteEndObject();
 
-            void WriteValue<T>() where T:struct
+            void WriteValue<T>(JsonTextWriter w, SecsItem i) where T:struct
             {
-                writer.WriteStartArray();
-
-                foreach (var v in item.GetValues<T>())
-                    writer.WriteValue(v);
-                writer.WriteEndArray();
+                w.WriteStartArray();
+                foreach (var v in i.GetValues<T>())
+                    w.WriteValue(v);
+                w.WriteEndArray();
             }
         }
 
@@ -162,71 +155,51 @@ namespace Secs4Net.Json
         {
             await writer.WriteStartObjectAsync();
 
-            writer.WritePropertyName(item.Format.GetName());
+            await writer.WritePropertyNameAsync(item.Format.GetName());
 
-            if (item.Format == SecsFormat.List)
-            {
-                await WriteListAsync();
-            }
-            else
-            {
-                await WriteItemValueAsync();
-            }
+            await (item.Format == SecsFormat.List ? WriteListAsync(writer, item) : WriteItemValueAsync(writer, item));
 
             await writer.WriteEndObjectAsync();
 
-            async Task WriteListAsync()
+            async Task WriteListAsync(JsonTextWriter w, SecsItem i)
             {
-                await writer.WriteStartArrayAsync();
-                foreach (var subitem in item.Items)
-                    await subitem.WriteToAsync(writer);
-                await writer.WriteEndArrayAsync();
+                await w.WriteStartArrayAsync();
+                foreach (var subitem in i.Items)
+                    await subitem.WriteToAsync(w);
+                await w.WriteEndArrayAsync();
             }
 
-            Task WriteItemValueAsync()
+            Task WriteItemValueAsync(JsonTextWriter w, SecsItem i)
             {
-                switch (item.Format)
+                switch (i.Format)
                 {
                     case SecsFormat.ASCII:
-                    case SecsFormat.JIS8:
-                        return writer.WriteValueAsync(item.GetString());
-                    case SecsFormat.Binary:
-                        return WriteValueAsync<byte>(writer,item);
-                    case SecsFormat.Boolean:
-                        return WriteValueAsync<bool>(writer, item);
-                    case SecsFormat.I8:
-                        return WriteValueAsync<long>(writer, item);
-                    case SecsFormat.I1:
-                        return WriteValueAsync<sbyte>(writer, item);
-                    case SecsFormat.I2:
-                        return WriteValueAsync<short>(writer, item);
-                    case SecsFormat.I4:
-                        return WriteValueAsync<int>(writer, item);
-                    case SecsFormat.F4:
-                        return WriteValueAsync<float>(writer, item);
-                    case SecsFormat.F8:
-                        return WriteValueAsync<double>(writer, item);
-                    case SecsFormat.U8:
-                        return WriteValueAsync<ulong>(writer, item);
-                    case SecsFormat.U1:
-                        return WriteValueAsync<byte>(writer, item);
-                    case SecsFormat.U2:
-                        return WriteValueAsync<ushort>(writer, item);
-                    default:
-                        // case SecsFormat.U4:
-                        return WriteValueAsync<uint>(writer, item);
-                }
+                    case SecsFormat.JIS8: return w.WriteValueAsync(i.GetString());
+                    case SecsFormat.Binary: return WriteValueAsync<byte>(w, i);
+                    case SecsFormat.Boolean: return WriteValueAsync<bool>(w, i);
+                    case SecsFormat.I8: return WriteValueAsync<long>(w, i);
+                    case SecsFormat.I1: return WriteValueAsync<sbyte>(w, i);
+                    case SecsFormat.I2: return WriteValueAsync<short>(w, i);
+                    case SecsFormat.I4: return WriteValueAsync<int>(w, i);
+                    case SecsFormat.F4: return WriteValueAsync<float>(w, i);
+                    case SecsFormat.F8: return WriteValueAsync<double>(w, i);
+                    case SecsFormat.U8: return WriteValueAsync<ulong>(w, i);
+                    case SecsFormat.U1: return WriteValueAsync<byte>(w, i);
+                    case SecsFormat.U2: return WriteValueAsync<ushort>(w, i);
+                    case SecsFormat.U4: return WriteValueAsync<uint>(w, i);
+                    default: throw new ArgumentOutOfRangeException($"Invalid SecsItem Format: {i.Format}");
+                }   
+            }
 
-                async Task WriteValueAsync<T>(JsonWriter w,SecsItem i)
-                    where T : struct
-                {
-                    await w.WriteStartArrayAsync();
+            async Task WriteValueAsync<T>(JsonWriter w, SecsItem i)
+                where T : struct
+            {
+                await w.WriteStartArrayAsync();
 
-                    foreach (var v in i.GetValues<T>())
-                        await w.WriteValueAsync(v);
+                foreach (var v in i.GetValues<T>())
+                    await w.WriteValueAsync(v);
 
-                    await w.WriteEndArrayAsync();
-                }
+                await w.WriteEndArrayAsync();
             }
         }
 
@@ -245,14 +218,10 @@ namespace Secs4Net.Json
                 : new SecsMessage(s, f, r, name, root.ToItem());
         }
 
-        public static SecsMessage[] ToSecsMessages(this TextReader reader)
-        {
-            var arr = JArray.Load(new JsonTextReader(reader));
-            var query =
-                from a in arr.Values<JObject>()
-                select a.ToSecsMessage();
-            return query.ToArray();
-        }
+        public static SecsMessage[] ToSecsMessages(this TextReader reader) => JArray.Load(new JsonTextReader(reader))
+                                                                                    .Values<JObject>()
+                                                                                    .Select(ToSecsMessage)
+                                                                                    .ToArray();
 
         // Define other methods and classes here
         public static SecsItem ToItem(this JObject jobject)
@@ -261,7 +230,7 @@ namespace Secs4Net.Json
 
             switch (json.Name)
             {
-                case nameof(SecsFormat.List): return L(json.Value.Value<JArray>().Values<JObject>().Select(o => o.ToItem()));
+                case nameof(SecsFormat.List): return L(json.Value.Value<JArray>().Values<JObject>().Select(ToItem));
                 case nameof(SecsFormat.ASCII): return A(json.Value.Value<string>());
                 case nameof(SecsFormat.JIS8): return J(json.Value.Value<string>());
                 case nameof(SecsFormat.Binary): return B(json.Value.Values<byte>());
