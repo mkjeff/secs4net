@@ -179,9 +179,6 @@ namespace Secs4Net
             _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
             _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
 
-            var receiveCompleteEvent = new SocketAsyncEventArgs();
-            receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-            receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
             if (IsActive)
             {
                 _startImpl = async () =>
@@ -213,11 +210,7 @@ namespace Secs4Net
                         }
                     } while (!connected);
 
-                    CommunicationStateChanging(ConnectionState.Connected);
-
-                    // hook receive event first, because no message will received before 'SelectRequest' send to device
-                    if (!_socket.ReceiveAsync(receiveCompleteEvent))
-                        SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
+                    StartSocketReceive();
 
                     SendControlMessage(MessageType.SelectRequest, NewSystemId);
                 };
@@ -257,9 +250,7 @@ namespace Secs4Net
                         }
                     } while (!connected);
 
-                    CommunicationStateChanging(ConnectionState.Connected);
-                    if (!_socket.ReceiveAsync(receiveCompleteEvent))
-                        SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
+                    StartSocketReceive();
                 };
 
                 _stopImpl = delegate
@@ -269,6 +260,18 @@ namespace Secs4Net
                         server.Dispose();
                     }
                 };
+            }
+
+            void StartSocketReceive()
+            {
+                CommunicationStateChanging(ConnectionState.Connected);
+
+                var receiveCompleteEvent = new SocketAsyncEventArgs();
+                receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+                receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
+
+                if (!_socket.ReceiveAsync(receiveCompleteEvent))
+                    SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
             }
         }
 
