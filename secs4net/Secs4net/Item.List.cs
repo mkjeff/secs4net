@@ -10,10 +10,7 @@ namespace Secs4Net
         private ArraySegment<SecsItem> _items = new ArraySegment<SecsItem>(Array.Empty<SecsItem>());
         private bool _isItemsFromPool;
 
-        internal ListItem(Pool<ListItem> pool = null)
-        {
-            _pool = pool;
-        }
+        internal ListItem(Pool<ListItem> pool = null) => _pool = pool;
 
         internal ListItem SetItems(ArraySegment<SecsItem> items, bool fromPool)
         {
@@ -40,10 +37,7 @@ namespace Secs4Net
                 SecsItemArrayPool.Pool.Return(_items.Array);
         }
 
-        ~ListItem()
-        {
-            ReturnItemArray();
-        }
+        ~ListItem() => ReturnItemArray();
 
         protected override ArraySegment<byte> GetEncodedData()
         {
@@ -58,23 +52,14 @@ namespace Secs4Net
         public override string ToString() => $"<List [{_items.Count}] >";
 
         public override bool IsMatch(SecsItem target)
-        {
-            if (ReferenceEquals(this, target))
-                return true;
-
-            if (Format != target.Format)
-                return false;
-
-            if (target.Count == 0)
-                return true;
-
-            if (Count != target.Count)
-                return false;
-
-            return IsMatch(_items.Array,
-                           Unsafe.As<ListItem>(target)._items.Array,
-                           Count);
-        }
+            => ReferenceEquals(this, target)
+               || Format == target.Format
+               && (target.Count == 0
+                   || Count == target.Count
+                   && IsMatch(_items.Array,
+                       Unsafe.As<ListItem>(target)
+                             ._items.Array,
+                       Count));
 
         private static bool IsMatch(SecsItem[] a, SecsItem[] b, int count)
         {

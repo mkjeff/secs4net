@@ -10,10 +10,7 @@ namespace Secs4Net
         private readonly Pool<StringItem<TFormat>> _pool;
         private string _str = string.Empty;
 
-        internal StringItem(Pool<StringItem<TFormat>> pool = null)
-        {
-            _pool = pool;
-        }
+        internal StringItem(Pool<StringItem<TFormat>> pool = null) => _pool = pool;
 
         internal StringItem<TFormat> SetValue(string itemValue)
         {
@@ -21,10 +18,7 @@ namespace Secs4Net
             return this;
         }
 
-        internal override void Release()
-        {
-            _pool?.Return(this);
-        }
+        internal override void Release() => _pool?.Return(this);
 
         protected override ArraySegment<byte> GetEncodedData()
         {
@@ -43,16 +37,11 @@ namespace Secs4Net
 
         public override bool IsMatch(SecsItem target)
         {
-            if (ReferenceEquals(this, target))
-                return true;
-
-            if (Format != target.Format)
-                return false;
-
-            if (target.Count == 0)
-                return true;
-
-            return string.Equals(_str, Unsafe.As<StringItem<TFormat>>(target)._str, StringComparison.OrdinalIgnoreCase);
+            return ReferenceEquals(this, target)
+                   || Format == target.Format
+                   && (target.Count == 0
+                       || string.Equals(_str, Unsafe.As<StringItem<TFormat>>(target)
+                                                    ._str, StringComparison.OrdinalIgnoreCase));
         }
 
         public override string ToString()

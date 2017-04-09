@@ -58,10 +58,7 @@ namespace Secs4Net
             return true;
         }
 
-        ~PrimaryMessageWrapper()
-        {
-            Message.Dispose();
-        }
+        ~PrimaryMessageWrapper() => Message.Dispose();
 
         public override string ToString() => Message.ToString();
     }

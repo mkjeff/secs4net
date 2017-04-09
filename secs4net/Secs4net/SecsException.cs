@@ -6,10 +6,7 @@ namespace Secs4Net
     {
         public int? MessageId { get; }
 
-        public SecsException(int messageId, string description) : base(description)
-        {
-            MessageId = messageId;
-        }
+        public SecsException(int messageId, string description) : base(description) => MessageId = messageId;
 
         public SecsException(string msg) : base(msg) { }
     }

@@ -192,9 +192,7 @@ namespace Secs4Net
                     if (!CheckAvailable(ref length, _itemLength, out need))
                         return 4;
 
-                    item = _itemLength == 0
-                        ? _format.BytesDecode()
-                        : _format.BytesDecode(Buffer, ref _decodeIndex, ref _itemLength);
+                    item = _format.BytesDecode(Buffer, ref _decodeIndex, ref _itemLength);
                     Trace.WriteLine($"Complete Item: {_format}");
 
                     _decodeIndex += _itemLength;
@@ -280,7 +278,7 @@ namespace Secs4Net
                     return Item.L(buffer.PooledItems);
                 }
             }
-            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, ref index, ref length);
+            var item = format.BytesDecode(bytes, ref index, ref length);
             index += length;
             return item;
         }

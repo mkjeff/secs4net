@@ -11,20 +11,13 @@ namespace Secs4Net
         {
             switch (msgType)
             {
-                case MessageType.DataMessage:
-                    return nameof(MessageType.DataMessage);
-                case MessageType.LinkTestRequest:
-                    return nameof(MessageType.LinkTestRequest);
-                case MessageType.LinkTestResponse:
-                    return nameof(MessageType.LinkTestResponse);
-                case MessageType.SelectRequest:
-                    return nameof(MessageType.SelectRequest);
-                case MessageType.SelectResponse:
-                    return nameof(MessageType.SelectResponse);
-                case MessageType.SeperateRequest:
-                    return nameof(MessageType.SeperateRequest);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(msgType), msgType, "Invalid enum value");
+                case MessageType.DataMessage: return nameof(MessageType.DataMessage);
+                case MessageType.LinkTestRequest: return nameof(MessageType.LinkTestRequest);
+                case MessageType.LinkTestResponse: return nameof(MessageType.LinkTestResponse);
+                case MessageType.SelectRequest: return nameof(MessageType.SelectRequest);
+                case MessageType.SelectResponse: return nameof(MessageType.SelectResponse);
+                case MessageType.SeperateRequest: return nameof(MessageType.SeperateRequest);
+                default: throw new ArgumentOutOfRangeException(nameof(msgType), msgType, "Invalid enum value");
             }
         }
 
@@ -32,38 +25,22 @@ namespace Secs4Net
         {
             switch (format)
             {
-                case SecsFormat.List:
-                    return nameof(SecsFormat.List);
-                case SecsFormat.ASCII:
-                    return nameof(SecsFormat.ASCII);
-                case SecsFormat.JIS8:
-                    return nameof(SecsFormat.JIS8);
-                case SecsFormat.Boolean:
-                    return nameof(SecsFormat.Boolean);
-                case SecsFormat.Binary:
-                    return nameof(SecsFormat.Binary);
-                case SecsFormat.U1:
-                    return nameof(SecsFormat.U1);
-                case SecsFormat.U2:
-                    return nameof(SecsFormat.U2);
-                case SecsFormat.U4:
-                    return nameof(SecsFormat.U4);
-                case SecsFormat.U8:
-                    return nameof(SecsFormat.U8);
-                case SecsFormat.I1:
-                    return nameof(SecsFormat.I1);
-                case SecsFormat.I2:
-                    return nameof(SecsFormat.I2);
-                case SecsFormat.I4:
-                    return nameof(SecsFormat.I4);
-                case SecsFormat.I8:
-                    return nameof(SecsFormat.I8);
-                case SecsFormat.F4:
-                    return nameof(SecsFormat.F4);
-                case SecsFormat.F8:
-                    return nameof(SecsFormat.F8);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value");
+                case SecsFormat.List: return nameof(SecsFormat.List);
+                case SecsFormat.ASCII: return nameof(SecsFormat.ASCII);
+                case SecsFormat.JIS8: return nameof(SecsFormat.JIS8);
+                case SecsFormat.Boolean: return nameof(SecsFormat.Boolean);
+                case SecsFormat.Binary: return nameof(SecsFormat.Binary);
+                case SecsFormat.U1: return nameof(SecsFormat.U1);
+                case SecsFormat.U2: return nameof(SecsFormat.U2);
+                case SecsFormat.U4: return nameof(SecsFormat.U4);
+                case SecsFormat.U8: return nameof(SecsFormat.U8);
+                case SecsFormat.I1: return nameof(SecsFormat.I1);
+                case SecsFormat.I2: return nameof(SecsFormat.I2);
+                case SecsFormat.I4: return nameof(SecsFormat.I4);
+                case SecsFormat.I8: return nameof(SecsFormat.I8);
+                case SecsFormat.F4: return nameof(SecsFormat.F4);
+                case SecsFormat.F8: return nameof(SecsFormat.F8);
+                default: throw new ArgumentOutOfRangeException(nameof(format), (int) format, "Invalid enum value");
             }
         }
 
@@ -85,87 +62,30 @@ namespace Secs4Net
             char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
         }
 
-        public static bool IsMatch(this SecsMessage src, SecsMessage target)
-        {
-            if (src.S != target.S)
-                return false;
-            if (src.F != target.F)
-                return false;
-            if (target.SecsItem is null)
-                return true;
-            return src.SecsItem.IsMatch(target.SecsItem);
-        }
-
-        internal static SecsItem BytesDecode(this SecsFormat format)
-        {
-            switch (format)
-            {
-                case SecsFormat.ASCII:
-                    return A();
-                case SecsFormat.JIS8:
-                    return J();
-                case SecsFormat.Boolean:
-                    return Boolean();
-                case SecsFormat.Binary:
-                    return B();
-                case SecsFormat.U1:
-                    return U1();
-                case SecsFormat.U2:
-                    return U2();
-                case SecsFormat.U4:
-                    return U4();
-                case SecsFormat.U8:
-                    return U8();
-                case SecsFormat.I1:
-                    return I1();
-                case SecsFormat.I2:
-                    return I2();
-                case SecsFormat.I4:
-                    return I4();
-                case SecsFormat.I8:
-                    return I8();
-                case SecsFormat.F4:
-                    return F4();
-                case SecsFormat.F8:
-                    return F8();
-            }
-            throw new ArgumentOutOfRangeException(nameof(format), format, "Invalid enum value");
-        }
+        public static bool IsMatch(this SecsMessage src, SecsMessage target) 
+            => src.S == target.S && src.F == target.F && (target.SecsItem is null || src.SecsItem.IsMatch(target.SecsItem));
 
         internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
 
         internal static SecsItem BytesDecode(this SecsFormat format, byte[] data, ref int index, ref int length)
         {
+            var isEmptyItem = length == 0;
             switch (format)
             {
-                case SecsFormat.ASCII:
-                    return ASCIIFormat.Create(Encoding.ASCII.GetString(data, index, length));
-                case SecsFormat.JIS8:
-                    return JIS8Format.Create(JIS8Encoding.GetString(data, index, length));
-                case SecsFormat.Boolean:
-                    return BooleanFormat.Create(Decode<bool>(data, ref index, ref length));
-                case SecsFormat.Binary:
-                    return BinaryFormat.Create(Decode<byte>(data, ref index, ref length));
-                case SecsFormat.U1:
-                    return U1Format.Create(Decode<byte>(data, ref index, ref length));
-                case SecsFormat.U2:
-                    return U2Format.Create(Decode<ushort>(data, ref index, ref length));
-                case SecsFormat.U4:
-                    return U4Format.Create(Decode<uint>(data, ref index, ref length));
-                case SecsFormat.U8:
-                    return U8Format.Create(Decode<ulong>(data, ref index, ref length));
-                case SecsFormat.I1:
-                    return I1Format.Create(Decode<sbyte>(data, ref index, ref length));
-                case SecsFormat.I2:
-                    return I2Format.Create(Decode<short>(data, ref index, ref length));
-                case SecsFormat.I4:
-                    return I4Format.Create(Decode<int>(data, ref index, ref length));
-                case SecsFormat.I8:
-                    return I8Format.Create(Decode<long>(data, ref index, ref length));
-                case SecsFormat.F4:
-                    return F4Format.Create(Decode<float>(data, ref index, ref length));
-                case SecsFormat.F8:
-                    return F8Format.Create(Decode<double>(data, ref index, ref length));
+                case SecsFormat.ASCII:   return isEmptyItem ? A() : A(Encoding.ASCII.GetString(data, index, length));
+                case SecsFormat.JIS8:    return isEmptyItem ? J() : J(JIS8Encoding.GetString(data, index, length));
+                case SecsFormat.Boolean: return isEmptyItem ? Boolean() : Boolean(Decode<bool>(data, ref index, ref length));
+                case SecsFormat.Binary:  return isEmptyItem ? B() : B(Decode<byte>(data, ref index, ref length));
+                case SecsFormat.U1:      return isEmptyItem ? U1() : U1(Decode<byte>(data, ref index, ref length));
+                case SecsFormat.U2:      return isEmptyItem ? U2() : U2(Decode<ushort>(data, ref index, ref length));
+                case SecsFormat.U4:      return isEmptyItem ? U4() : U4(Decode<uint>(data, ref index, ref length));
+                case SecsFormat.U8:      return isEmptyItem ? U8() : U8(Decode<ulong>(data, ref index, ref length));
+                case SecsFormat.I1:      return isEmptyItem ? I1() : I1(Decode<sbyte>(data, ref index, ref length));
+                case SecsFormat.I2:      return isEmptyItem ? I2() : I2(Decode<short>(data, ref index, ref length));
+                case SecsFormat.I4:      return isEmptyItem ? I4() : I4(Decode<int>(data, ref index, ref length));
+                case SecsFormat.I8:      return isEmptyItem ? I8() : I8(Decode<long>(data, ref index, ref length));
+                case SecsFormat.F4:      return isEmptyItem ? F4() : F4(Decode<float>(data, ref index, ref length));
+                case SecsFormat.F8:      return isEmptyItem ? F8() : F8(Decode<double>(data, ref index, ref length));
             }
             throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value");
         }

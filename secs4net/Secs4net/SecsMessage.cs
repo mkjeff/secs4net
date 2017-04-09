@@ -69,7 +69,7 @@ namespace Secs4Net
         /// <param name="item">root item</param>
         public SecsMessage(byte s, byte f, bool replyExpected = true, string name = null, SecsItem item = null)
         {
-            if (s > 0b0111_111)
+            if (s > 0b0111_1111)
                 throw new ArgumentOutOfRangeException(nameof(s),
                                                       s,
                                                       Resources.SecsMessageStreamNumberMustLessThan127);
