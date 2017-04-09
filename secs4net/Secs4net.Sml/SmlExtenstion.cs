@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using static Secs4Net.Item;
 using System.Threading.Tasks;
-using System.Diagnostics;
+using static Secs4Net.Item;
 
 namespace Secs4Net.Sml
 {
     public static class SmlExtension
     {
-        private const int SmlIndent = 2;
-
         public static string ToSml(this SecsMessage msg)
         {
             if (msg is null)
@@ -24,18 +22,29 @@ namespace Secs4Net.Sml
             }
         }
 
-        public static void WriteTo(this SecsMessage msg, TextWriter writer)
+        public static void WriteTo(this SecsMessage msg, TextWriter writer,int indent = 4)
         {
             if (msg is null)
                 return;
 
             writer.WriteLine(msg.ToString());
             if (msg.SecsItem != null)
-                Write(writer, msg.SecsItem, SmlIndent);
+                Write(writer, msg.SecsItem, indent);
             writer.Write('.');
         }
 
-        private static void Write(TextWriter writer, SecsItem item, int indent)
+        public static async Task WriteToAsync(this SecsMessage msg, TextWriter writer, int indent = 4)
+        {
+            if (msg is null)
+                return;
+
+            await writer.WriteLineAsync(msg.ToString());
+            if (msg.SecsItem != null)
+                await WriteAsync(writer, msg.SecsItem, indent);
+            await writer.WriteAsync('.');
+        }
+
+        public static void Write(TextWriter writer, SecsItem item, int indent = 4)
         {
             var indentStr = new string(' ', indent);
             writer.Write(indentStr);
@@ -49,9 +58,8 @@ namespace Secs4Net.Sml
                 case SecsFormat.List:
                     writer.WriteLine();
                     var items = item.Items;
-                    int count = items.Count;
-                    for (int i = 0; i < count; i++)
-                        Write(writer, items[i], indent + SmlIndent);
+                    for (int i = 0, count = items.Count; i < count; i++)
+                        Write(writer, items[i], indent << 1);
                     writer.Write(indentStr);
                     break;
                 case SecsFormat.ASCII:
@@ -103,6 +111,73 @@ namespace Secs4Net.Sml
             writer.WriteLine('>');
         }
 
+        public static async Task WriteAsync(TextWriter writer, SecsItem item, int indent = 4)
+        {
+            var indentStr = new string(' ', indent);
+            await writer.WriteAsync(indentStr);
+            await writer.WriteAsync('<');
+            await writer.WriteAsync(item.Format.ToSml());
+            await writer.WriteAsync(" [");
+            await writer.WriteAsync(item.Count.ToString());
+            await writer.WriteAsync("] ");
+            switch (item.Format)
+            {
+                case SecsFormat.List:
+                    await writer.WriteLineAsync();
+                    var items = item.Items;
+                    for (int i = 0, count = items.Count; i < count; i++)
+                        await WriteAsync(writer, items[i], indent << 1);
+                    await writer.WriteAsync(indentStr);
+                    break;
+                case SecsFormat.ASCII:
+                case SecsFormat.JIS8:
+                    await writer.WriteAsync('\'');
+                    await writer.WriteAsync(item.GetString());
+                    await writer.WriteAsync('\'');
+                    break;
+                case SecsFormat.Binary:
+                    await writer.WriteAsync(item.GetValues<byte>().ToHexString());
+                    break;
+                case SecsFormat.F4:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<float>()));
+                    break;
+                case SecsFormat.F8:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<double>()));
+                    break;
+                case SecsFormat.I1:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<sbyte>()));
+                    break;
+                case SecsFormat.I2:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<short>()));
+                    break;
+                case SecsFormat.I4:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<int>()));
+                    break;
+                case SecsFormat.I8:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<long>()));
+                    break;
+                case SecsFormat.U1:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<byte>()));
+                    break;
+                case SecsFormat.U2:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<ushort>()));
+                    break;
+                case SecsFormat.U4:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<uint>()));
+                    break;
+                case SecsFormat.U8:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<ulong>()));
+                    break;
+                case SecsFormat.Boolean:
+                    await writer.WriteAsync(string.Join(" ", item.GetValues<bool>()));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(item) + "." + nameof(item.Format), item.Format,
+                        "Invalid enum value");
+            }
+            await writer.WriteLineAsync('>');
+        }
+
         public static string ToSml(this SecsFormat format)
         {
             switch (format)
@@ -131,7 +206,7 @@ namespace Secs4Net.Sml
         {
             while (reader.Peek() != -1)
             {
-                SecsMessage secsMsg = null;
+                SecsMessage secsMsg;
                 try
                 {
                     secsMsg = reader.ToSecsMessage();
@@ -161,7 +236,7 @@ namespace Secs4Net.Sml
 
                 var name = line.Substring(0, i);
 
-                i = line.IndexOf("'S", i + 1) + 2;
+                i = line.IndexOf("'S", i + 1, StringComparison.Ordinal) + 2;
                 int j = line.IndexOf('F', i);
                 var s = byte.Parse(line.Substring(i, j - i));
 
@@ -287,65 +362,52 @@ namespace Secs4Net.Sml
             }
         }
 
-        private static readonly Func<string, SecsItem> SmlParserA = CreateSmlParser(A, A);
-        private static readonly Func<string, SecsItem> SmlParserJ = CreateSmlParser(J, J);
-        private static readonly Func<string, SecsItem> SmlParserBoolean = CreateSmlParser(Boolean, Boolean, bool.Parse);
-        private static readonly Func<string, SecsItem> SmlParserB = CreateSmlParser(B, B, HexStringToByte);
-        private static readonly Func<string, SecsItem> SmlParserI1 = CreateSmlParser(I1, I1, sbyte.Parse);
-        private static readonly Func<string, SecsItem> SmlParserI2 = CreateSmlParser(I2, I2, short.Parse);
-        private static readonly Func<string, SecsItem> SmlParserI4 = CreateSmlParser(I4, I4, int.Parse);
-        private static readonly Func<string, SecsItem> SmlParserI8 = CreateSmlParser(I8, I8, long.Parse);
-        private static readonly Func<string, SecsItem> SmlParserU1 = CreateSmlParser(U1, U1, byte.Parse);
-        private static readonly Func<string, SecsItem> SmlParserU2 = CreateSmlParser(U2, U2, ushort.Parse);
-        private static readonly Func<string, SecsItem> SmlParserU4 = CreateSmlParser(U4, U4, uint.Parse);
-        private static readonly Func<string, SecsItem> SmlParserU8 = CreateSmlParser(U8, U8, ulong.Parse);
-        private static readonly Func<string, SecsItem> SmlParserF4 = CreateSmlParser(F4, F4, float.Parse);
-        private static readonly Func<string, SecsItem> SmlParserF8 = CreateSmlParser(F8, F8, double.Parse);
+        private static readonly Func<string, byte> HexStringToByte =
+            (string str) => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                ? Convert.ToByte(str, 16)
+                : byte.Parse(str);
 
-        private static byte HexStringToByte(string str) => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? Convert.ToByte(str, 16) : byte.Parse(str);
-
-        private static Func<string, SecsItem> CreateSmlParser(Func<string, SecsItem> itemCreator, Func<SecsItem> emptyCreator)
-            => str =>
-            {
-                str = str.TrimStart(' ', '\'', '"')
-                         .TrimEnd(' ', '\'', '"');
-                return string.IsNullOrEmpty(str)
-                    ? emptyCreator()
-                    : itemCreator(str);
-            };
-
-        private static Func<string, SecsItem> CreateSmlParser<T>(Func<T[], SecsItem> creator, Func<SecsItem> emptyCreator, Func<string, T> converter) where T : struct
-            => str =>
-            {
-                var valueStrs = str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                return (valueStrs.Length == 0)
-                    ? emptyCreator()
-                    : creator(valueStrs.Select(converter).ToArray());
-            };
+        private static readonly char[] Separator = { ' ' };
 
         public static SecsItem Create(this string format, string smlValue)
         {
             switch (format)
             {
-                case "A": return SmlParserA(smlValue);
+                case "A": return ParseStringItem(smlValue, A, A);
                 case "JIS8":
-                case "J": return SmlParserJ(smlValue);
+                case "J": return ParseStringItem(smlValue, J, J);
                 case "Bool":
-                case "Boolean": return SmlParserBoolean(smlValue);
+                case "Boolean": return ParseValueItem(smlValue, Boolean, Boolean, bool.Parse);
                 case "Binary":
-                case "B": return SmlParserB(smlValue);
-                case "I1": return SmlParserI1(smlValue);
-                case "I2": return SmlParserI2(smlValue);
-                case "I4": return SmlParserI4(smlValue);
-                case "I8": return SmlParserI8(smlValue);
-                case "U1": return SmlParserU1(smlValue);
-                case "U2": return SmlParserU2(smlValue);
-                case "U4": return SmlParserU4(smlValue);
-                case "U8": return SmlParserU8(smlValue);
-                case "F4": return SmlParserF4(smlValue);
-                case "F8": return SmlParserF8(smlValue);
+                case "B": return ParseValueItem(smlValue, B, B, HexStringToByte);
+                case "I1": return ParseValueItem(smlValue, I1, I1, sbyte.Parse);
+                case "I2": return ParseValueItem(smlValue, I2, I2, short.Parse);
+                case "I4": return ParseValueItem(smlValue, I4, I4, int.Parse);
+                case "I8": return ParseValueItem(smlValue, I8, I8, long.Parse);
+                case "U1": return ParseValueItem(smlValue, U1, U1, byte.Parse);
+                case "U2": return ParseValueItem(smlValue, U2, U2, ushort.Parse);
+                case "U4": return ParseValueItem(smlValue, U4, U4, uint.Parse);
+                case "U8": return ParseValueItem(smlValue, U8, U8, ulong.Parse);
+                case "F4": return ParseValueItem(smlValue, F4, F4, float.Parse);
+                case "F8": return ParseValueItem(smlValue, F8, F8, double.Parse);
                 case "L": throw new SecsException("Please use Item.L(...) to create list item.");
                 default: throw new SecsException("Unknown SML format :" + format);
+            }
+
+            SecsItem ParseValueItem<T>(string str, Func<SecsItem> emptyCreator, Func<T[], SecsItem> creator, Func<string, T> converter)
+            {
+                var valueStrs = str.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+                return (valueStrs.Length == 0)
+                    ? emptyCreator()
+                    : creator(valueStrs.Select(converter).ToArray());
+            }
+
+            SecsItem ParseStringItem(string str, Func<SecsItem> emptyCreator, Func<string, SecsItem> creator)
+            {
+                str = str.TrimStart(' ', '\'', '"').TrimEnd(' ', '\'', '"');
+                return string.IsNullOrEmpty(str)
+                    ? emptyCreator()
+                    : creator(str);
             }
         }
 
