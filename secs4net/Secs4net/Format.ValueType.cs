@@ -39,7 +39,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="value"><typeparamref name="TValue"/> item from pool</param>
         /// <returns></returns>
-        internal static SecsItem Create(ArraySegment<TValue> value) =>
+        private static SecsItem Create(ArraySegment<TValue> value) =>
             ValueItemPool.Rent().SetValues(value, fromPool: true);
 
         public static SecsItem Create(TValue v0)
