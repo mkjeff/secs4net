@@ -36,13 +36,11 @@ namespace Secs4Net
         public override string GetString() => _str;
 
         public override bool IsMatch(SecsItem target)
-        {
-            return ReferenceEquals(this, target)
-                   || Format == target.Format
-                   && (target.Count == 0
-                       || string.Equals(_str, Unsafe.As<StringItem<TFormat>>(target)
-                                                    ._str, StringComparison.OrdinalIgnoreCase));
-        }
+            => ReferenceEquals(this, target)
+               || Format == target.Format
+               && (target.Count == 0
+                   || string.Equals(_str, Unsafe.As<StringItem<TFormat>>(target)
+                                                ._str, StringComparison.OrdinalIgnoreCase));
 
         public override string ToString()
             => $"<{(Format == SecsFormat.ASCII ? "A" : "J")} [{_str.Length}] {_str} >";
