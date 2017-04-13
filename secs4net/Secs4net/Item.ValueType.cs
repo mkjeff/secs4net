@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Secs4Net
 {
@@ -8,6 +9,7 @@ namespace Secs4Net
      where TFormat : IFormat<TValue>
      where TValue : struct
     {
+        private int _isReleased;
         private readonly Pool<ValueItem<TFormat, TValue>> _pool;
         private ArraySegment<TValue> _values = new ArraySegment<TValue>(Array.Empty<TValue>());
         private bool _isValuesFromPool;
@@ -23,6 +25,9 @@ namespace Secs4Net
 
         internal override void Release()
         {
+            if (Interlocked.Exchange(ref _isReleased, 1) == 1)
+                return;
+
             _pool?.Return(this);
 
             ReturnValueArray();

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Secs4Net
 {
     internal sealed class ListItem : SecsItem<ListFormat, SecsItem>
     {
+        private int _isReleased;
         private readonly Pool<ListItem> _pool;
         private ArraySegment<SecsItem> _items = new ArraySegment<SecsItem>(Array.Empty<SecsItem>());
         private bool _isItemsFromPool;
@@ -23,6 +25,9 @@ namespace Secs4Net
 
         internal override void Release()
         {
+            if (Interlocked.Exchange(ref _isReleased, 1) == 1)
+                return;
+
             foreach (var item in _items)
                 item.Release();
 

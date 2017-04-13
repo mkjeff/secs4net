@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 
 namespace Secs4Net
 {
     internal sealed class StringItem<TFormat> : SecsItem<TFormat, string>
          where TFormat : IFormat<string>
     {
+        private int _isReleased;
         private readonly Pool<StringItem<TFormat>> _pool;
         private string _str = string.Empty;
 
@@ -15,10 +17,17 @@ namespace Secs4Net
         internal StringItem<TFormat> SetValue(string itemValue)
         {
             _str = itemValue;
+            _isReleased = -1;
             return this;
         }
 
-        internal override void Release() => _pool?.Return(this);
+        internal override void Release()
+        {
+            if (Interlocked.Exchange(ref _isReleased, 1) == 1)
+                return;
+
+            _pool?.Return(this);
+        }
 
         protected override ArraySegment<byte> GetEncodedData()
         {
