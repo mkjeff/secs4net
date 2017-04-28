@@ -133,6 +133,15 @@ namespace Secs4Net.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Stream number must be less than 127.
+        /// </summary>
+        internal static string SecsMessageStreamNumberMustLessThan127 {
+            get {
+                return ResourceManager.GetString("SecsMessageStreamNumberMustLessThan127", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Equipment is not online mode.
         /// </summary>
         internal static string SxF0 {

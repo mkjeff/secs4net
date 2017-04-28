@@ -4,7 +4,7 @@ namespace Secs4Net
 {
     unsafe struct MessageHeader
     {
-        fixed byte _bytes[10];
+        private fixed byte _bytes[10];
 
         internal MessageHeader(byte[] data, int startIndex)
         {

@@ -157,4 +157,7 @@
     <value>S9Fy message reply.</value>
     <comment>S9Fy description</comment>
   </data>
+  <data name="SecsMessageStreamNumberMustLessThan127" xml:space="preserve">
+    <value>Stream number must be less than 127</value>
+  </data>
 </root>

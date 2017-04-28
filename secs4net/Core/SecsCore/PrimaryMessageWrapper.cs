@@ -6,15 +6,15 @@ namespace Secs4Net
 {
     public sealed class PrimaryMessageWrapper
     {
-        int _isReplied = 0;
-        readonly SecsGem _secsGem;
-        readonly MessageHeader _header;
+        private int _isReplied = 0;
+        private readonly WeakReference<SecsGem> _secsGem;
+        private readonly MessageHeader _header;
         public SecsMessage Message { get; }
         public int MessageId => _header.SystemBytes;
 
         internal PrimaryMessageWrapper(SecsGem secsGem, MessageHeader header, SecsMessage msg)
         {
-            _secsGem = secsGem;
+            _secsGem = new WeakReference<SecsGem>(secsGem);
             _header = header;
             Message = msg;
         }
@@ -30,13 +30,13 @@ namespace Secs4Net
             if (Interlocked.Exchange(ref _isReplied, 1) == 1)
                 return false;
 
-            if (!Message.ReplyExpected)
+            if (!Message.ReplyExpected || !_secsGem.TryGetTarget(out var secsGem))
                 return true;
 
             replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(_header.Bytes));
             replyMessage.ReplyExpected = false;
 
-            await _secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? _secsGem.NewSystemId : _header.SystemBytes);
+            await secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes);
 
             return true;
         }

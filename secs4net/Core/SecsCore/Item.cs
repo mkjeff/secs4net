@@ -15,14 +15,14 @@ namespace Secs4Net
         /// if Format is List RawData is only header bytes.
         /// otherwise include header and value bytes.
         /// </summary>
-        readonly Lazy<byte[]> RawData;
+        private readonly Lazy<byte[]> RawData;
 
-        readonly IEnumerable _values;
+        private readonly IEnumerable _values;
 
         /// <summary>
         /// List
         /// </summary>
-        Item(IReadOnlyList<Item> items)
+        private Item(IReadOnlyList<Item> items)
         {
             Debug.Assert(items.Count <= byte.MaxValue, $"List length out of range, max length: 255");
 
@@ -41,7 +41,7 @@ namespace Secs4Net
         /// F4,F8
         /// Boolean
         /// </summary>
-        Item(SecsFormat format, Array value)
+        private Item(SecsFormat format, Array value)
         {
             Format = format;
             _values = value;
@@ -60,7 +60,7 @@ namespace Secs4Net
         /// <summary>
         /// A,J
         /// </summary>
-        Item(SecsFormat format, string value)
+        private Item(SecsFormat format, string value)
         {
             Format = format;
             _values = value;
@@ -81,7 +81,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="format"></param>
         /// <param name="value"></param>
-        Item(SecsFormat format, IEnumerable value)
+        private Item(SecsFormat format, IEnumerable value)
         {
             Format = format;
             _values = value;
@@ -131,11 +131,11 @@ namespace Secs4Net
             if (Format == SecsFormat.List)
                 throw new InvalidOperationException("Item is list");
 
-            if (_values is T)
-                return (T)_values;
+            if (_values is T v)
+                return v;
 
-            if (_values is IEnumerable<T>)
-                return ((IEnumerable<T>)_values).First();
+            if (_values is IEnumerable<T> arr)
+                return arr.First();
 
             throw new InvalidOperationException("Item value type is incompatible");
         }
@@ -204,9 +204,8 @@ namespace Secs4Net
             }
             sb.Append('>');
             return sb.ToString();
+            string JoinAsString<T>(IEnumerable src) where T : struct => string.Join(" ", Unsafe.As<T[]>(src));
         }
-
-        static string JoinAsString<T>(IEnumerable src) where T : struct => string.Join(" ", Unsafe.As<T[]>(src));
 
         #region Type Casting Operator
         public static implicit operator string(Item item) => item.GetValue<string>();
@@ -507,7 +506,7 @@ namespace Secs4Net
         /// <param name="valueCount">Item value bytes length</param>
         /// <param name="headerlength">return header bytes length</param>
         /// <returns>header bytes + initial bytes of value </returns>
-        unsafe byte[] EncodeItem(int valueCount, out int headerlength)
+        private unsafe byte[] EncodeItem(int valueCount, out int headerlength)
         {
             var ptr = (byte*)Unsafe.AsPointer(ref valueCount);
             if (valueCount <= 0xff)

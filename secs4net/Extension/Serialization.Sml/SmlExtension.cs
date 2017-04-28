@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace Secs4Net.Sml
 {
-    public static class SmlExtenstion
+    public static class SmlExtension
     {
         const int SmlIndent = 2;
 

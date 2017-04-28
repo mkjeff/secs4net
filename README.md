@@ -1,6 +1,6 @@
 # secs4net
 
-[![secs4net MyGet Build Status](https://www.myget.org/BuildSource/Badge/secs4net?identifier=e89708e1-b9cc-4c55-973c-f8b6473650b4)](https://www.myget.org/)
+[![NuGet](https://img.shields.io/nuget/v/secs4net.svg)](https://www.nuget.org/packages/secs4net/)
 
 **Project Description**  
 SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to communicate with SEMI standard compatible device.  

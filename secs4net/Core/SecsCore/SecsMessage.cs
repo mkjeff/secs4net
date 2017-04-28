@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using Secs4Net.Properties;
 
 namespace Secs4Net
 {
@@ -20,7 +20,7 @@ namespace Secs4Net
         public byte S { get; }
 
         /// <summary>
-        /// messge function number
+        /// message function number
         /// </summary>
         public byte F { get; }
 
@@ -40,7 +40,7 @@ namespace Secs4Net
 
         public IReadOnlyList<ArraySegment<byte>> RawBytes => RawDatas.Value.AsReadOnly();
 
-        static readonly List<ArraySegment<byte>> emptyMsgDatas =
+        private static readonly List<ArraySegment<byte>> EmptyMsgDatas =
             new List<ArraySegment<byte>>
             {
                 new ArraySegment<byte>(new byte[]{ 0, 0, 0, 10 }), // total length = header
@@ -50,25 +50,25 @@ namespace Secs4Net
         /// <summary>
         /// constructor of SecsMessage
         /// </summary>
-        /// <param name="stream">message stream number</param>
-        /// <param name="function">message function number</param>
+        /// <param name="s">message stream number</param>
+        /// <param name="f">message function number</param>
         /// <param name="replyExpected">expect reply message</param>
         /// <param name="name"></param>
         /// <param name="item">root item</param>
-        public SecsMessage(byte stream, byte function, bool replyExpected = true, string name = null, Item item = null)
+        public SecsMessage(byte s, byte f, bool replyExpected = true, string name = null, Item item = null)
         {
-            if (stream > 0x7F)
-                throw new ArgumentOutOfRangeException(nameof(stream), stream, "Stream number must be less than 127");
+            if (s > 0b0111_1111)
+                throw new ArgumentOutOfRangeException(nameof(s), s, Resources.SecsMessageStreamNumberMustLessThan127);
 
-            S = stream;
-            F = function;
+            S = s;
+            F = f;
             Name = name;
             ReplyExpected = replyExpected;
             SecsItem = item;
             RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
             {
-                if (SecsItem == null)
-                    return emptyMsgDatas;
+                if (SecsItem is null)
+                    return EmptyMsgDatas;
 
                 var result = new List<ArraySegment<byte>> {
                     default(ArraySegment<byte>),    // total length
@@ -76,9 +76,9 @@ namespace Secs4Net
                     // item
                 };
 
-                uint length = 10 + SecsItem.EncodeTo(result); // total length = item + header
+                var length = 10 + SecsItem.EncodeTo(result); // total length = item + header
 
-                byte[] msgLengthByte = BitConverter.GetBytes(length);
+                var msgLengthByte = BitConverter.GetBytes(length);
                 Array.Reverse(msgLengthByte);
                 result[0] = new ArraySegment<byte>(msgLengthByte);
 
@@ -89,20 +89,19 @@ namespace Secs4Net
         /// <summary>
         /// constructor of SecsMessage
         /// </summary>
-        /// <param name="stream">message stream number</param>
-        /// <param name="function">message function number</param>
+        /// <param name="s">message stream number</param>
+        /// <param name="f">message function number</param>
         /// <param name="name"></param>
         /// <param name="item">root item</param>
-        public SecsMessage(byte stream, byte function, string name, Item item = null)
-            : this(stream, function, true, name, item)
+        public SecsMessage(byte s, byte f, string name, Item item = null)
+            : this(s, f, true, name, item)
         { }
 
-        internal SecsMessage(byte stream, byte function, bool replyExpected, byte[] itemBytes, ref int index)
-            : this(stream, function, replyExpected, string.Empty, Decode(itemBytes, ref index))
+        internal SecsMessage(byte s, byte f, bool replyExpected, byte[] itemBytes, ref int index)
+            : this(s, f, replyExpected, string.Empty, Decode(itemBytes, ref index))
         { }
 
-
-        static Item Decode(byte[] bytes, ref int index)
+        private static Item Decode(byte[] bytes, ref int index)
         {
             var format = (SecsFormat)(bytes[index] & 0xFC);
             var lengthBits = (byte)(bytes[index] & 3);
@@ -120,7 +119,7 @@ namespace Secs4Net
                     return Item.L();
 
                 var list = new List<Item>(length);
-                for (int i = 0; i < length; i++)
+                for (var i = 0; i < length; i++)
                     list.Add(Decode(bytes, ref index));
                 return Item.L(list);
             }
