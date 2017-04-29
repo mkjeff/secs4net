@@ -181,21 +181,21 @@ namespace Secs4Net
 
         public override string ToString()
         {
-            var sb = new StringBuilder("<").Append(Format).Append(" [");
+            var sb = new StringBuilder(Format.GetName()).Append("[");
             switch (Format)
             {
                 case SecsFormat.List:
-                    sb.Append(Unsafe.As<IReadOnlyList<Item>>(_values).Count).Append("] ");
+                    sb.Append(Unsafe.As<IReadOnlyList<Item>>(_values).Count).Append("]");
                     break;
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
-                    sb.Append(Unsafe.As<string>(_values).Length).Append("] ").Append(Unsafe.As<string>(_values));
+                    sb.Append(Unsafe.As<string>(_values).Length).Append("]: ").Append(Unsafe.As<string>(_values));
                     break;
                 case SecsFormat.Binary:
-                    sb.Append(Unsafe.As<byte[]>(_values).Length).Append("] ").Append(Unsafe.As<byte[]>(_values).ToHexString());
+                    sb.Append(Unsafe.As<byte[]>(_values).Length).Append("]: ").Append(Unsafe.As<byte[]>(_values).ToHexString());
                     break;
                 default:
-                    sb.Append(Unsafe.As<Array>(_values).Length).Append("] ");
+                    sb.Append(Unsafe.As<Array>(_values).Length).Append("]: ");
                     switch (Format)
                     {
                         case SecsFormat.Boolean: sb.Append(JoinAsString<bool>(_values)); break;
@@ -210,12 +210,13 @@ namespace Secs4Net
                         case SecsFormat.F4: sb.Append(JoinAsString<float>(_values)); break;
                         case SecsFormat.F8: sb.Append(JoinAsString<double>(_values)); break;
                     }
+                    sb.Append(" ...");
                     break;
             }
-            sb.Append('>');
             return sb.ToString();
 
-            string JoinAsString<T>(IEnumerable src) where T : struct => string.Join(" ", Unsafe.As<T[]>(src));
+            string JoinAsString<T>(IEnumerable src)
+                where T : struct => string.Join(" ", Unsafe.As<T[]>(src).Take(10));
         }
 
         #region Type Casting Operator
