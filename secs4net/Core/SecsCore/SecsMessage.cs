@@ -123,7 +123,7 @@ namespace Secs4Net
                     list.Add(Decode(bytes, ref index));
                 return Item.L(list);
             }
-            var item = length == 0 ? format.BytesDecode() : format.BytesDecode(bytes, ref index, ref length);
+            var item = Item.BytesDecode(ref format, bytes, ref index, ref length);
             index += length;
             return item;
         }

@@ -187,7 +187,7 @@ namespace Secs4Net
                     if (!CheckAvailable(ref length, _itemLength, out need))
                         return 4;
 
-                    item = _itemLength == 0 ? _format.BytesDecode() : _format.BytesDecode(_buffer, ref _decodeIndex, ref _itemLength);
+                    item = Item.BytesDecode(ref _format, _buffer, ref _decodeIndex, ref _itemLength);
                     Trace.WriteLine($"Complete Item: {_format}");
 
                     _decodeIndex += _itemLength;

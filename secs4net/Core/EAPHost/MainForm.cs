@@ -147,7 +147,7 @@ namespace Cim.Eap
                 {
                     EapLogger.Info("SECS/GEM " + _secsGem.State);
                     gemStatusLabel.Text = _secsGem.State.ToString();
-                    eqpAddressStatusLabel.Text = "Device IP: " + _secsGem.DeviceAddress;
+                    eqpAddressStatusLabel.Text = "Device IP: " + _secsGem.DeviceIpAddress;
                     if (_secsGem.State == ConnectionState.Selected)
                         _secsGem.SendAsync(new SecsMessage(1, 13, "TestCommunicationsRequest", Item.L()));
                 });
