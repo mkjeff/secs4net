@@ -20,16 +20,15 @@ namespace Secs4Net
                 chs[ci + 2] = ' ';
             }
             return new string(chs, 0, length - 1);
+
+            char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
         }
 
-        static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
 
         public static bool IsMatch(this SecsMessage src, SecsMessage target)
         {
-            if (src.S != target.S) return false;
-            if (src.F != target.F) return false;
-            if (target.SecsItem == null) return true;
-            return src.SecsItem.IsMatch(target.SecsItem);
+            return src.S == target.S && src.F == target.F &&
+                   (target.SecsItem == null || src.SecsItem.IsMatch(target.SecsItem));
         }
 
         internal static Item BytesDecode(this SecsFormat format)

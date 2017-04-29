@@ -20,13 +20,14 @@ namespace Secs4Net
         /// <summary>
         /// Primary message received event
         /// </summary>
-        public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived;
+        public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived = DefaultPrimaryMessageReceived;
+        private static void DefaultPrimaryMessageReceived(object sender, PrimaryMessageWrapper _) { }
 
-
+        private ISecsGemLogger _logger = DefaultLogger;
         public ISecsGemLogger Logger
         {
-            get { return _logger; }
-            set { _logger = value ?? DefaultLogger; }
+            get => _logger;
+            set => _logger = value ?? DefaultLogger;
         }
 
         /// <summary>
@@ -70,7 +71,7 @@ namespace Secs4Net
         /// </summary>
         public int LinkTestInterval
         {
-            get { return _linkTestInterval; }
+            get => _linkTestInterval;
             set
             {
                 if (_linkTestEnable)
@@ -89,7 +90,7 @@ namespace Secs4Net
         /// </summary>
         public bool LinkTestEnable
         {
-            get { return _linkTestEnable; }
+            get => _linkTestEnable;
             set
             {
                 if (_linkTestEnable == value)
@@ -103,33 +104,34 @@ namespace Secs4Net
             }
         }
 
-        readonly bool _isActive;
-        readonly IPAddress _ip;
-        readonly int _port;
-        Socket _socket;
+        public bool IsActive { get; }
+        public IPAddress IpAddress { get; }
+        public int Port { get; }
+        public int DecoderBufferSize { get; private set; }
 
-        readonly StreamDecoder _secsDecoder;
-        int _decoderBufferSize;
-        readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
-        ISecsGemLogger _logger = DefaultLogger;
-        readonly Timer _timer7;	// between socket connected and received Select.req timer
-        readonly Timer _timer8;
-        readonly Timer _timerLinkTest;
+        private Socket _socket;
 
-        readonly Func<Task> _startImpl;
-        readonly Action _stopImpl;
+        private readonly StreamDecoder _secsDecoder;
+        private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
+        private readonly Timer _timer7;	// between socket connected and received Select.req timer
+        private readonly Timer _timer8;
+        private readonly Timer _timerLinkTest;
 
-        static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
-        static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
-        static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
-        readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
+        private readonly Func<Task> _startImpl;
+        private readonly Action _stopImpl;
 
-        readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
-        readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
+        private static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
+        private static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
+        private static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
+        private readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
+
+        private readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
+        private readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
 
         internal int NewSystemId => _systemByte.New();
 
         private readonly TaskFactory _taskFactory;
+
         /// <summary>
         /// constructor
         /// </summary>
@@ -140,14 +142,18 @@ namespace Secs4Net
         public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
         {
             if (port <= 0)
-                throw new ArgumentOutOfRangeException(nameof(port), port, $"port number must greater than 0");
+                port = 0;
 
             _taskFactory = new TaskFactory(TaskScheduler.Default);
-            _ip = ip;
-            _port = port;
-            _isActive = isActive;
+            _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
+            _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
             _secsDecoder = new StreamDecoder(receiveBufferSize, HandleControlMessage, HandleDataMessage);
-            _decoderBufferSize = receiveBufferSize;
+
+            IpAddress = ip;
+            Port = port;
+            IsActive = isActive;
+            DecoderBufferSize = receiveBufferSize;
+
             #region Timer Action
             _timer7 = new Timer(delegate
             {
@@ -167,10 +173,8 @@ namespace Secs4Net
                     SendControlMessage(MessageType.LinkTestRequest, NewSystemId);
             }, null, Timeout.Infinite, Timeout.Infinite);
             #endregion
-            var receiveCompleteEvent = new SocketAsyncEventArgs();
-            receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-            receiveCompleteEvent.Completed += ReceiveEventCompleted;
-            if (_isActive)
+
+            if (IsActive)
             {
                 _startImpl = async () =>
                 {
@@ -179,31 +183,30 @@ namespace Secs4Net
                     {
                         if (IsDisposed)
                             return;
+
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
                             if (IsDisposed)
                                 return;
+
                             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                            await _socket.ConnectAsync(_ip, _port).ConfigureAwait(false);
+                            await _socket.ConnectAsync(IpAddress, Port).ConfigureAwait(false);
                             connected = true;
                         }
                         catch (Exception ex)
                         {
                             if (IsDisposed)
                                 return;
+
                             _logger.Error(ex.Message);
                             _logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
                             await Task.Delay(T5);
                         }
                     } while (!connected);
 
-                    CommunicationStateChanging(ConnectionState.Connected);
-
                     // hook receive event first, because no message will received before 'SelectRequest' send to device
-                    if (!_socket.ReceiveAsync(receiveCompleteEvent))
-                        ReceiveEventCompleted(_socket, receiveCompleteEvent);
-
+                    StartSocketReceive();
                     SendControlMessage(MessageType.SelectRequest, NewSystemId);
                 };
 
@@ -212,7 +215,7 @@ namespace Secs4Net
             else
             {
                 var server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                server.Bind(new IPEndPoint(_ip, _port));
+                server.Bind(new IPEndPoint(IpAddress, Port));
                 server.Listen(0);
 
                 _startImpl = async () =>
@@ -222,11 +225,13 @@ namespace Secs4Net
                     {
                         if (IsDisposed)
                             return;
+
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
                             if (IsDisposed)
                                 return;
+
                             _socket = await server.AcceptAsync().ConfigureAwait(false);
                             connected = true;
                         }
@@ -234,14 +239,13 @@ namespace Secs4Net
                         {
                             if (IsDisposed)
                                 return;
+
                             _logger.Error(ex.Message);
                             await Task.Delay(2000);
                         }
                     } while (!connected);
 
-                    CommunicationStateChanging(ConnectionState.Connected);
-                    if (!_socket.ReceiveAsync(receiveCompleteEvent))
-                        ReceiveEventCompleted(_socket, receiveCompleteEvent);
+                    StartSocketReceive();
                 };
 
                 _stopImpl = delegate
@@ -253,68 +257,161 @@ namespace Secs4Net
                 };
             }
 
-            _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
-            _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
+            void HandleControlMessage(MessageHeader header)
+            {
+                int systembyte = header.SystemBytes;
+                if ((byte)header.MessageType % 2 == 0)
+                {
+                    TaskCompletionSourceToken ar;
+                    if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
+                    {
+                        ar.SetResult(ControlMessage);
+                    }
+                    else
+                    {
+                        _logger.Warning("Received Unexpected Control Message: " + header.MessageType);
+                        return;
+                    }
+                }
+                _logger.Info("Receive Control message: " + header.MessageType);
+                switch (header.MessageType)
+                {
+                    case MessageType.SelectRequest:
+                        SendControlMessage(MessageType.SelectResponse, systembyte);
+                        CommunicationStateChanging(ConnectionState.Selected);
+                        break;
+                    case MessageType.SelectResponse:
+                        switch (header.F)
+                        {
+                            case 0:
+                                CommunicationStateChanging(ConnectionState.Selected);
+                                break;
+                            case 1:
+                                _logger.Error("Communication Already Active.");
+                                break;
+                            case 2:
+                                _logger.Error("Connection Not Ready.");
+                                break;
+                            case 3:
+                                _logger.Error("Connection Exhaust.");
+                                break;
+                            default:
+                                _logger.Error("Connection Status Is Unknown.");
+                                break;
+                        }
+                        break;
+                    case MessageType.LinkTestRequest:
+                        SendControlMessage(MessageType.LinkTestResponse, systembyte);
+                        break;
+                    case MessageType.SeperateRequest:
+                        CommunicationStateChanging(ConnectionState.Retry);
+                        break;
+                }
+            }
+            
+            void HandleDataMessage(MessageHeader header, SecsMessage msg)
+            {
+                int systembyte = header.SystemBytes;
+
+                if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
+                {
+                    _logger.MessageIn(msg, systembyte);
+                    _logger.Warning("Received Unrecognized Device Id Message");
+                    SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10]))), NewSystemId);
+                    return;
+                }
+
+                if (msg.F % 2 != 0)
+                {
+                    if (msg.S != 9)
+                    {
+                        //Primary message
+                        _logger.MessageIn(msg, systembyte);
+                        _taskFactory.StartNew(
+                            wrapper => PrimaryMessageReceived(this, Unsafe.As<PrimaryMessageWrapper>(wrapper)),
+                            new PrimaryMessageWrapper(this, header, msg));
+
+                        return;
+                    }
+                    // Error message
+                    var headerBytes = (byte[])msg.SecsItem.Values;
+                    systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
+                }
+
+                // Secondary message
+                _logger.MessageIn(msg, systembyte);
+                TaskCompletionSourceToken ar;
+                if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
+                    ar.HandleReplyMessage(msg);
+            }
         }
 
-        void ReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
+        private void StartSocketReceive()
         {
-            if (e.SocketError != SocketError.Success)
-            {
-                var ex = new SocketException((int)e.SocketError);
-                _logger.Error($"RecieveComplete socket error:{ex.Message + ex}, ErrorCode:{ex.SocketErrorCode}", ex);
-                CommunicationStateChanging(ConnectionState.Retry);
-                return;
-            }
+            CommunicationStateChanging(ConnectionState.Connected);
 
-            try
+            var receiveCompleteEvent = new SocketAsyncEventArgs();
+            receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+            receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
+
+            if (!_socket.ReceiveAsync(receiveCompleteEvent))
+                SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
+
+            void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
             {
-                _timer8.Change(Timeout.Infinite, Timeout.Infinite);
-                var receivedCount = e.BytesTransferred;
-                if (receivedCount == 0)
+                if (e.SocketError != SocketError.Success)
                 {
-                    _logger.Error("Received 0 byte.");
+                    var ex = new SocketException((int)e.SocketError);
+                    _logger.Error($"RecieveComplete socket error:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
                     CommunicationStateChanging(ConnectionState.Retry);
                     return;
                 }
 
-                if (_secsDecoder.Decode(receivedCount))
+                try
                 {
-#if !DISABLE_TIMER
-                    _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
-                    _timer8.Change(T8, Timeout.Infinite);
+                    _timer8.Change(Timeout.Infinite, Timeout.Infinite);
+                    var receivedCount = e.BytesTransferred;
+                    if (receivedCount == 0)
+                    {
+                        _logger.Error("Received 0 byte.");
+                        CommunicationStateChanging(ConnectionState.Retry);
+                        return;
+                    }
+
+                    if (_secsDecoder.Decode(receivedCount))
+                    {
+#if !DISABLE_T8
+                        _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
+                        _timer8.Change(T8, Timeout.Infinite);
 #endif
-                }
+                    }
 
-                if (_secsDecoder.Buffer.Length != _decoderBufferSize)
+                    if (_secsDecoder.Buffer.Length != DecoderBufferSize)
+                    {
+                        // buffer size changed
+                        e.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+                        DecoderBufferSize = _secsDecoder.Buffer.Length;
+                    }
+                    else
+                    {
+                        e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+                    }
+
+                    if (_socket is null || IsDisposed)
+                        return;
+
+                    if (!_socket.ReceiveAsync(e))
+                        SocketReceiveEventCompleted(sender, e);
+                }
+                catch (Exception ex)
                 {
-                    // buffer size changed
-                    e.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-                    _decoderBufferSize = _secsDecoder.Buffer.Length;
+                    _logger.Error("Unexpected exception", ex);
+                    CommunicationStateChanging(ConnectionState.Retry);
                 }
-                else
-                {
-                    e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-                }
-
-                if (_socket == null || IsDisposed)
-                    return;
-
-                if (!_socket.ReceiveAsync(e))
-                    ReceiveEventCompleted(sender, e);
-            }
-            catch (NullReferenceException ex)
-            {
-                _logger.Warning("unexpected NullReferenceException:" + ex);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error("unexpected exception", ex);
-                CommunicationStateChanging(ConnectionState.Retry);
             }
         }
 
-        void SendControlMessage(MessageType msgType, int systembyte)
+        private void SendControlMessage(MessageType msgType, int systembyte)
         {
             var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
@@ -330,7 +427,7 @@ namespace Secs4Net
                         DeviceId = 0xFFFF,
                         MessageType = msgType,
                         SystemBytes = systembyte
-                    }.Bytes)
+                    }.EncodeTo(new byte[10]))
                 },
                 UserToken = token,
             };
@@ -339,7 +436,7 @@ namespace Secs4Net
                 SendControlMessageCompleteHandler(_socket, eap);
         }
 
-        void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
+        private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
         {
             var completeToken = e.UserToken as TaskCompletionSourceToken;
             if (completeToken == null)
@@ -363,58 +460,6 @@ namespace Secs4Net
             }
         }
 
-        void HandleControlMessage(MessageHeader header)
-        {
-            int systembyte = header.SystemBytes;
-            if ((byte)header.MessageType % 2 == 0)
-            {
-                TaskCompletionSourceToken ar;
-                if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
-                {
-                    ar.SetResult(ControlMessage);
-                }
-                else
-                {
-                    _logger.Warning("Received Unexpected Control Message: " + header.MessageType);
-                    return;
-                }
-            }
-            _logger.Info("Receive Control message: " + header.MessageType);
-            switch (header.MessageType)
-            {
-                case MessageType.SelectRequest:
-                    SendControlMessage(MessageType.SelectResponse, systembyte);
-                    CommunicationStateChanging(ConnectionState.Selected);
-                    break;
-                case MessageType.SelectResponse:
-                    switch (header.F)
-                    {
-                        case 0:
-                            CommunicationStateChanging(ConnectionState.Selected);
-                            break;
-                        case 1:
-                            _logger.Error("Communication Already Active.");
-                            break;
-                        case 2:
-                            _logger.Error("Connection Not Ready.");
-                            break;
-                        case 3:
-                            _logger.Error("Connection Exhaust.");
-                            break;
-                        default:
-                            _logger.Error("Connection Status Is Unknown.");
-                            break;
-                    }
-                    break;
-                case MessageType.LinkTestRequest:
-                    SendControlMessage(MessageType.LinkTestResponse, systembyte);
-                    break;
-                case MessageType.SeperateRequest:
-                    CommunicationStateChanging(ConnectionState.Retry);
-                    break;
-            }
-        }
-
         internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
         {
             if (State != ConnectionState.Selected)
@@ -434,7 +479,7 @@ namespace Secs4Net
             };
 
             var bufferList = msg.RawDatas.Value;
-            bufferList[1] = new ArraySegment<byte>(header.Bytes);
+            bufferList[1] = new ArraySegment<byte>(header.EncodeTo(new byte[10]));
             var eap = new SocketAsyncEventArgs
             {
                 BufferList = bufferList,
@@ -447,7 +492,7 @@ namespace Secs4Net
             return token.Task;
         }
 
-        void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
+        private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
         {
             var completeToken = e.UserToken as TaskCompletionSourceToken;
             if (completeToken == null)
@@ -483,43 +528,7 @@ namespace Secs4Net
             }
         }
 
-        void HandleDataMessage(MessageHeader header, SecsMessage msg)
-        {
-            int systembyte = header.SystemBytes;
-
-            if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
-            {
-                _logger.MessageIn(msg, systembyte);
-                _logger.Warning("Received Unrecognized Device Id Message");
-                SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.Bytes)), NewSystemId);
-                return;
-            }
-
-            if (msg.F % 2 != 0)
-            {
-                if (msg.S != 9)
-                {
-                    //Primary message
-                    _logger.MessageIn(msg, systembyte);
-                    _taskFactory.StartNew(
-                        wrapper => PrimaryMessageReceived(this, Unsafe.As<PrimaryMessageWrapper>(wrapper)),
-                        new PrimaryMessageWrapper(this, header, msg));
-
-                    return;
-                }
-                // Error message
-                var headerBytes = (byte[])msg.SecsItem.Values;
-                systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
-            }
-
-            // Secondary message
-            _logger.MessageIn(msg, systembyte);
-            TaskCompletionSourceToken ar;
-            if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
-                ar.HandleReplyMessage(msg);
-        }
-
-        void CommunicationStateChanging(ConnectionState newState)
+        private void CommunicationStateChanging(ConnectionState newState)
         {
             State = newState;
             ConnectionChanged?.Invoke(this, State);
@@ -545,7 +554,7 @@ namespace Secs4Net
             }
         }
 
-        void Reset()
+        private void Reset()
         {
             _timer7.Change(Timeout.Infinite, Timeout.Infinite);
             _timer8.Change(Timeout.Infinite, Timeout.Infinite);
@@ -554,14 +563,14 @@ namespace Secs4Net
             _replyExpectedMsgs.Clear();
             _stopImpl?.Invoke();
 
-            if (_socket != null)
-            {
-                if (_socket.Connected)
-                    _socket.Shutdown(SocketShutdown.Both);
+            if (_socket is null)
+                return;
 
-                _socket.Dispose();
-                _socket = null;
-            }          
+            if (_socket.Connected)
+                _socket.Shutdown(SocketShutdown.Both);
+
+            _socket.Dispose();
+            _socket = null;
         }
         public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
 
@@ -572,9 +581,9 @@ namespace Secs4Net
         /// <returns>secondary message</returns>
         public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessageAsync(msg, NewSystemId);
 
-        const int DisposalNotStarted = 0;
-        const int DisposalComplete = 1;
-        int _disposeStage;
+        private const int DisposalNotStarted = 0;
+        private const int DisposalComplete = 1;
+        private int _disposeStage;
 
         public bool IsDisposed => Interlocked.CompareExchange(ref _disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
 
@@ -595,11 +604,11 @@ namespace Secs4Net
         /// <summary>
         /// remote device endpoint address
         /// </summary>
-        public string DeviceAddress => _isActive
-            ? _ip.ToString()
+        public string DeviceIpAddress => IsActive
+            ? IpAddress.ToString()
             : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
 
-        sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
+        private sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {
             internal readonly SecsMessage MessageSent;
             internal readonly int Id;

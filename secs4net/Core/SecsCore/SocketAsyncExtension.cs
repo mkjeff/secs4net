@@ -50,7 +50,5 @@ namespace Secs4Net
                 }
             }
         }
-
-        
     }
 }
