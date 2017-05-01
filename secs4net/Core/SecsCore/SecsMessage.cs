@@ -97,37 +97,6 @@ namespace Secs4Net
             : this(s, f, true, name, item)
         { }
 
-        internal SecsMessage(byte s, byte f, bool replyExpected, byte[] itemBytes, ref int index)
-            : this(s, f, replyExpected, string.Empty, Decode(itemBytes, ref index))
-        { }
-
-        private static Item Decode(byte[] bytes, ref int index)
-        {
-            var format = (SecsFormat)(bytes[index] & 0xFC);
-            var lengthBits = (byte)(bytes[index] & 3);
-            index++;
-
-            var itemLengthBytes = new byte[4];
-            Array.Copy(bytes, index, itemLengthBytes, 0, lengthBits);
-            Array.Reverse(itemLengthBytes, 0, lengthBits);
-            int length = BitConverter.ToInt32(itemLengthBytes, 0);  // max to 3 byte length
-            index += lengthBits;
-
-            if (format == SecsFormat.List)
-            {
-                if (length == 0)
-                    return Item.L();
-
-                var list = new List<Item>(length);
-                for (var i = 0; i < length; i++)
-                    list.Add(Decode(bytes, ref index));
-                return Item.L(list);
-            }
-            var item = Item.BytesDecode(ref format, bytes, ref index, ref length);
-            index += length;
-            return item;
-        }
-
         #region ISerializable Members
         ////Binary Serialization
         //SecsMessage(SerializationInfo info, StreamingContext context)

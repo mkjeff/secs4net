@@ -124,7 +124,7 @@ namespace Secs4Net
                 if (length >= _messageDataLength)
                 {
                     Trace.WriteLine("Get Complete Data Message with total data");
-                    _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected, _buffer, ref _decodeIndex));
+                    _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected, string.Empty, BufferedDecodeItem(_buffer, ref _decodeIndex)));
                     length -= (int)_messageDataLength;
                     _messageDataLength = 0;
                     return 0; //completeWith message received
@@ -233,6 +233,33 @@ namespace Secs4Net
                 }
                 need = 0;
                 return true;
+            }
+
+            Item BufferedDecodeItem(byte[] bytes, ref int index)
+            {
+                var format = (SecsFormat)(bytes[index] & 0xFC);
+                var lengthBits = (byte)(bytes[index] & 3);
+                index++;
+
+                var itemLengthBytes = new byte[4];
+                Array.Copy(bytes, index, itemLengthBytes, 0, lengthBits);
+                Array.Reverse(itemLengthBytes, 0, lengthBits);
+                int dataLength = BitConverter.ToInt32(itemLengthBytes, 0); // max to 3 byte dataLength
+                index += lengthBits;
+
+                if (format == SecsFormat.List)
+                {
+                    if (dataLength == 0)
+                        return Item.L();
+
+                    var list = new List<Item>(dataLength);
+                    for (var i = 0; i < dataLength; i++)
+                        list.Add(BufferedDecodeItem(bytes, ref index));
+                    return Item.L(list);
+                }
+                var item = Item.BytesDecode(ref format, bytes, ref index, ref dataLength);
+                index += dataLength;
+                return item;
             }
         }
 

@@ -50,8 +50,7 @@ namespace Secs4Net
             {
                 var arr = Unsafe.As<Array>(_values);
                 int bytelength = Buffer.ByteLength(arr);
-                int headerLength;
-                byte[] result = EncodeItem(bytelength, out headerLength);
+                byte[] result = EncodeItem(bytelength, out int headerLength);
                 Buffer.BlockCopy(arr, 0, result, headerLength, bytelength);
                 result.Reverse(headerLength, headerLength + bytelength, bytelength / arr.Length);
                 return result;
@@ -69,8 +68,7 @@ namespace Secs4Net
             {
                 var str = Unsafe.As<string>(_values);
                 int bytelength = str.Length;
-                int headerLength;
-                byte[] result = EncodeItem(bytelength, out headerLength);
+                byte[] result = EncodeItem(bytelength, out int headerLength);
                 var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : JIS8Encoding;
                 encoder.GetBytes(str, 0, str.Length, result, headerLength);
                 return result;

@@ -109,6 +109,18 @@ namespace Secs4Net
         public int Port { get; }
         public int DecoderBufferSize { get; private set; }
 
+        private const int DisposalNotStarted = 0;
+        private const int DisposalComplete = 1;
+        private int _disposeStage;
+
+        public bool IsDisposed => Interlocked.CompareExchange(ref _disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
+        /// <summary>
+        /// remote device endpoint address
+        /// </summary>
+        public string DeviceIpAddress => IsActive
+            ? IpAddress.ToString()
+            : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
+
         private Socket _socket;
 
         private readonly StreamDecoder _secsDecoder;
@@ -178,7 +190,7 @@ namespace Secs4Net
             {
                 _startImpl = async () =>
                 {
-                    bool connected = false;
+                    var connected = false;
                     do
                     {
                         if (IsDisposed)
@@ -220,7 +232,7 @@ namespace Secs4Net
 
                 _startImpl = async () =>
                 {
-                    bool connected = false;
+                    var connected = false;
                     do
                     {
                         if (IsDisposed)
@@ -255,6 +267,71 @@ namespace Secs4Net
                         server.Dispose();
                     }
                 };
+            }
+
+            void StartSocketReceive()
+            {
+                CommunicationStateChanging(ConnectionState.Connected);
+
+                var receiveCompleteEvent = new SocketAsyncEventArgs();
+                receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+                receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
+
+                if (!_socket.ReceiveAsync(receiveCompleteEvent))
+                    SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
+
+                void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
+                {
+                    if (e.SocketError != SocketError.Success)
+                    {
+                        var ex = new SocketException((int)e.SocketError);
+                        _logger.Error($"RecieveComplete socket error:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
+                        CommunicationStateChanging(ConnectionState.Retry);
+                        return;
+                    }
+
+                    try
+                    {
+                        _timer8.Change(Timeout.Infinite, Timeout.Infinite);
+                        var receivedCount = e.BytesTransferred;
+                        if (receivedCount == 0)
+                        {
+                            _logger.Error("Received 0 byte.");
+                            CommunicationStateChanging(ConnectionState.Retry);
+                            return;
+                        }
+
+                        if (_secsDecoder.Decode(receivedCount))
+                        {
+#if !DISABLE_T8
+                            _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
+                            _timer8.Change(T8, Timeout.Infinite);
+#endif
+                        }
+
+                        if (_secsDecoder.Buffer.Length != DecoderBufferSize)
+                        {
+                            // buffer size changed
+                            e.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+                            DecoderBufferSize = _secsDecoder.Buffer.Length;
+                        }
+                        else
+                        {
+                            e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+                        }
+
+                        if (_socket is null || IsDisposed)
+                            return;
+
+                        if (!_socket.ReceiveAsync(e))
+                            SocketReceiveEventCompleted(sender, e);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error("Unexpected exception", ex);
+                        CommunicationStateChanging(ConnectionState.Retry);
+                    }
+                }
             }
 
             void HandleControlMessage(MessageHeader header)
@@ -311,7 +388,7 @@ namespace Secs4Net
             
             void HandleDataMessage(MessageHeader header, SecsMessage msg)
             {
-                int systembyte = header.SystemBytes;
+                var systembyte = header.SystemBytes;
 
                 if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
                 {
@@ -340,74 +417,8 @@ namespace Secs4Net
 
                 // Secondary message
                 _logger.MessageIn(msg, systembyte);
-                TaskCompletionSourceToken ar;
-                if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
+                if (_replyExpectedMsgs.TryGetValue(systembyte, out var ar))
                     ar.HandleReplyMessage(msg);
-            }
-        }
-
-        private void StartSocketReceive()
-        {
-            CommunicationStateChanging(ConnectionState.Connected);
-
-            var receiveCompleteEvent = new SocketAsyncEventArgs();
-            receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-            receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
-
-            if (!_socket.ReceiveAsync(receiveCompleteEvent))
-                SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
-
-            void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
-            {
-                if (e.SocketError != SocketError.Success)
-                {
-                    var ex = new SocketException((int)e.SocketError);
-                    _logger.Error($"RecieveComplete socket error:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
-                    CommunicationStateChanging(ConnectionState.Retry);
-                    return;
-                }
-
-                try
-                {
-                    _timer8.Change(Timeout.Infinite, Timeout.Infinite);
-                    var receivedCount = e.BytesTransferred;
-                    if (receivedCount == 0)
-                    {
-                        _logger.Error("Received 0 byte.");
-                        CommunicationStateChanging(ConnectionState.Retry);
-                        return;
-                    }
-
-                    if (_secsDecoder.Decode(receivedCount))
-                    {
-#if !DISABLE_T8
-                        _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
-                        _timer8.Change(T8, Timeout.Infinite);
-#endif
-                    }
-
-                    if (_secsDecoder.Buffer.Length != DecoderBufferSize)
-                    {
-                        // buffer size changed
-                        e.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-                        DecoderBufferSize = _secsDecoder.Buffer.Length;
-                    }
-                    else
-                    {
-                        e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-                    }
-
-                    if (_socket is null || IsDisposed)
-                        return;
-
-                    if (!_socket.ReceiveAsync(e))
-                        SocketReceiveEventCompleted(sender, e);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error("Unexpected exception", ex);
-                    CommunicationStateChanging(ConnectionState.Retry);
-                }
             }
         }
 
@@ -438,9 +449,7 @@ namespace Secs4Net
 
         private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
         {
-            var completeToken = e.UserToken as TaskCompletionSourceToken;
-            if (completeToken == null)
-                throw new InvalidOperationException("SocketAsyncEventArgs.UserToken is not TaskCompletionSourceToken.");
+            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
             if (e.SocketError != SocketError.Success)
             {
@@ -456,7 +465,7 @@ namespace Secs4Net
                     _logger.Error($"T6 Timeout: {T6 / 1000} sec.");
                     CommunicationStateChanging(ConnectionState.Retry);
                 }
-                _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
+                _replyExpectedMsgs.TryRemove(completeToken.Id, out _);
             }
         }
 
@@ -494,9 +503,7 @@ namespace Secs4Net
 
         private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
         {
-            var completeToken = e.UserToken as TaskCompletionSourceToken;
-            if (completeToken == null)
-                return;
+            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
             if (e.SocketError != SocketError.Success)
             {
@@ -524,7 +531,7 @@ namespace Secs4Net
             catch (AggregateException) { }
             finally
             {
-                _replyExpectedMsgs.TryRemove(completeToken.Id, out completeToken);
+                _replyExpectedMsgs.TryRemove(completeToken.Id, out _);
             }
         }
 
@@ -572,6 +579,7 @@ namespace Secs4Net
             _socket.Dispose();
             _socket = null;
         }
+
         public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
 
         /// <summary>
@@ -580,12 +588,6 @@ namespace Secs4Net
         /// <param name="msg">primary message</param>
         /// <returns>secondary message</returns>
         public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessageAsync(msg, NewSystemId);
-
-        private const int DisposalNotStarted = 0;
-        private const int DisposalComplete = 1;
-        private int _disposeStage;
-
-        public bool IsDisposed => Interlocked.CompareExchange(ref _disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
 
         public void Dispose()
         {
@@ -601,12 +603,7 @@ namespace Secs4Net
             _timerLinkTest.Dispose();
         }
 
-        /// <summary>
-        /// remote device endpoint address
-        /// </summary>
-        public string DeviceIpAddress => IsActive
-            ? IpAddress.ToString()
-            : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
+
 
         private sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {

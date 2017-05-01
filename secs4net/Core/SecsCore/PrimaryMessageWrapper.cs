@@ -6,6 +6,9 @@ namespace Secs4Net
 {
     public sealed class PrimaryMessageWrapper
     {
+        private static readonly Task<bool> ReplyAsyncTrueCache = Task.FromResult(true);
+        private static readonly Task<bool> ReplyAsyncFalseCache = Task.FromResult(false);
+
         private int _isReplied = 0;
         private readonly WeakReference<SecsGem> _secsGem;
         private readonly MessageHeader _header;
@@ -19,26 +22,27 @@ namespace Secs4Net
             Message = msg;
         }
 
+
+
         /// <summary>
         /// Each PrimaryMessageWrapper can invoke Reply method once.
         /// Since message replied, method return false.
         /// </summary>
         /// <param name="replyMessage"></param>
         /// <returns>true, if reply message sent.</returns>
-        public async Task<bool> ReplyAsync(SecsMessage replyMessage)
+        public Task<bool> ReplyAsync(SecsMessage replyMessage)
         {
             if (Interlocked.Exchange(ref _isReplied, 1) == 1)
-                return false;
+                return ReplyAsyncFalseCache;
 
             if (!Message.ReplyExpected || !_secsGem.TryGetTarget(out var secsGem))
-                return true;
+                return ReplyAsyncTrueCache;
 
             replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(_header.EncodeTo(new byte[10])));
             replyMessage.ReplyExpected = false;
 
-            await secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes);
-
-            return true;
+            return secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes)
+                .ContinueWith(_=> true);
         }
 
         public override string ToString() => Message.ToString();
