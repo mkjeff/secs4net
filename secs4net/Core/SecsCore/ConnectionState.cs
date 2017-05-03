@@ -1,5 +1,7 @@
-namespace Secs4Net {
-    public enum ConnectionState {
+namespace Secs4Net
+{
+    public enum ConnectionState
+    {
         Connecting,
         Connected,
         Selected,

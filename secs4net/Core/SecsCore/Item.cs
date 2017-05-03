@@ -24,7 +24,8 @@ namespace Secs4Net
         private Item(IReadOnlyList<Item> items)
         {
             if (items.Count > byte.MaxValue)
-                throw new ArgumentOutOfRangeException("List length out of range, max length: 255");
+                throw new ArgumentOutOfRangeException(nameof(items) + "." + nameof(items.Count), items.Count,
+                    @"List items length out of range, max length: 255");
 
             Format = SecsFormat.List;
             _values = items;
@@ -69,7 +70,7 @@ namespace Secs4Net
                 var str = Unsafe.As<string>(_values);
                 int bytelength = str.Length;
                 byte[] result = EncodeItem(bytelength, out int headerLength);
-                var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : JIS8Encoding;
+                var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
                 encoder.GetBytes(str, 0, str.Length, result, headerLength);
                 return result;
             });
@@ -163,7 +164,7 @@ namespace Secs4Net
                         if (*((long*)x1) != *((long*)x2)) return false;
                     if ((l & 4) != 0) { if (*((int*)x1) != *((int*)x2)) return false; x1 += 4; x2 += 4; }
                     if ((l & 2) != 0) { if (*((short*)x1) != *((short*)x2)) return false; x1 += 2; x2 += 2; }
-                    if ((l & 1) != 0) if (*((byte*)x1) != *((byte*)x2)) return false;
+                    if ((l & 1) != 0) if (*x1 != *x2) return false;
                     return true;
                 }
             }
@@ -234,201 +235,49 @@ namespace Secs4Net
         #endregion
 
         #region Factory Methods
-        internal static Item L(IList<Item> items) => new Item(new ReadOnlyCollection<Item>(items));
-        /// <summary>
-        /// Create list
-        /// </summary>
-        /// <param name="items">sub item</param>
-        /// <returns></returns>
-        public static Item L(IEnumerable<Item> items) => items.Any() ? L(items.ToList()) : L();
 
-        /// <summary>
-        /// Create list
-        /// </summary>
-        /// <param name="items">sub item</param>
-        /// <returns></returns>
-        public static Item L(params Item[] items) => L((IList<Item>)items);
+        internal static Item L(IList<Item> items) => items.Count > 0 ? new Item(new ReadOnlyCollection<Item>(items)) : L();
+        public static Item L(IEnumerable<Item> items) => L(items.ToList());
+        public static Item L(params Item[] items) => L((IList<Item>) items);
 
-        /// <summary>
-        /// Create binary item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item B(params byte[] value) => new Item(SecsFormat.Binary, value);
+        public static Item B(params byte[] value) => value.Length > 0 ? new Item(SecsFormat.Binary, value) : B();
+        public static Item B(IEnumerable<byte> value) => B(value.ToArray());
 
-        /// <summary>
-        /// Create binary item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item B(IEnumerable<byte> value) => value.Any() ? B(value.ToArray()) : B();
+        public static Item U1(params byte[] value) => value.Length > 0 ? new Item(SecsFormat.U1, value) : U1();
+        public static Item U1(IEnumerable<byte> value) => U1(value.ToArray());
 
-        /// <summary>
-        /// Create unsigned integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item U1(params byte[] value) => new Item(SecsFormat.U1, value);
+        public static Item U2(params ushort[] value) => value.Length > 0 ? new Item(SecsFormat.U2, value) : U2();
+        public static Item U2(IEnumerable<ushort> value) => U2(value.ToArray());
 
-        /// <summary>
-        /// Create unsigned integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item U1(IEnumerable<byte> value) => value.Any() ? U1(value.ToArray()) : U1();
+        public static Item U4(params uint[] value) => value.Length > 0 ? new Item(SecsFormat.U4, value) : U4();
+        public static Item U4(IEnumerable<uint> value) => U4(value.ToArray());
 
-        /// <summary>
-        /// Create unsigned integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item U2(params ushort[] value) => new Item(SecsFormat.U2, value);
+        public static Item U8(params ulong[] value) => value.Length > 0 ? new Item(SecsFormat.U8, value) : U8();
+        public static Item U8(IEnumerable<ulong> value) => U8(value.ToArray());
 
-        /// <summary>
-        /// Create unsigned integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item U2(IEnumerable<ushort> value) => value.Any() ? U2(value.ToArray()) : U2();
+        public static Item I1(params sbyte[] value) => value.Length > 0 ? new Item(SecsFormat.I1, value) : I1();
+        public static Item I1(IEnumerable<sbyte> value) => I1(value.ToArray());
 
-        /// <summary>
-        /// Create unsigned integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item U4(params uint[] value) => new Item(SecsFormat.U4, value);
+        public static Item I2(params short[] value) => value.Length > 0 ? new Item(SecsFormat.I2, value) : I2();
+        public static Item I2(IEnumerable<short> value) => I2(value.ToArray());
 
-        /// <summary>
-        /// Create unsigned integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item U4(IEnumerable<uint> value) => value.Any() ? U4(value.ToArray()) : U4();
+        public static Item I4(params int[] value) => value.Length > 0 ? new Item(SecsFormat.I4, value) : I4();
+        public static Item I4(IEnumerable<int> value) => I4(value.ToArray());
 
-        /// <summary>
-        /// Create unsigned integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item U8(params ulong[] value) => new Item(SecsFormat.U8, value);
+        public static Item I8(params long[] value) => value.Length > 0 ? new Item(SecsFormat.I8, value) : I8();
+        public static Item I8(IEnumerable<long> value) => I8(value.ToArray());
 
-        /// <summary>
-        /// Create unsigned integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item U8(IEnumerable<ulong> value) => value.Any() ? U8(value.ToArray()) : U8();
+        public static Item F4(params float[] value) => value.Length > 0 ? new Item(SecsFormat.F4, value) : F4();
+        public static Item F4(IEnumerable<float> value) => F4(value.ToArray());
 
-        /// <summary>
-        /// Create signed integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item I1(params sbyte[] value) => new Item(SecsFormat.I1, value);
+        public static Item F8(params double[] value) => value.Length > 0 ? new Item(SecsFormat.F8, value) : F8();
+        public static Item F8(IEnumerable<double> value) => F8(value.ToArray());
 
-        /// <summary>
-        /// Create signed integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item I1(IEnumerable<sbyte> value) => value.Any() ? I1(value.ToArray()) : I1();
+        public static Item Boolean(params bool[] value) => value.Length > 0 ? new Item(SecsFormat.Boolean, value) : Boolean();
+        public static Item Boolean(IEnumerable<bool> value) => Boolean(value.ToArray());
 
-        /// <summary>
-        /// Create signed integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item I2(params short[] value) => new Item(SecsFormat.I2, value);
-
-        /// <summary>
-        /// Create signed integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item I2(IEnumerable<short> value) => value.Any() ? I2(value.ToArray()) : I2();
-
-        /// <summary>
-        /// Create signed integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item I4(params int[] value) => new Item(SecsFormat.I4, value);
-
-        /// <summary>
-        /// Create signed integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item I4(IEnumerable<int> value) => value.Any() ? I4(value.ToArray()) : I4();
-
-        /// <summary>
-        /// Create signed integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item I8(params long[] value) => new Item(SecsFormat.I8, value);
-
-        /// <summary>
-        /// Create signed integer item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item I8(IEnumerable<long> value) => value.Any() ? I8(value.ToArray()) : I8();
-
-        /// <summary>
-        /// Create floating point number item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item F4(params float[] value) => new Item(SecsFormat.F4, value);
-
-        /// <summary>
-        /// Create floating point number item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item F4(IEnumerable<float> value) => value.Any() ? F4(value.ToArray()) : F4();
-
-        /// <summary>
-        /// Create floating point number item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item F8(params double[] value) => new Item(SecsFormat.F8, value);
-
-        /// <summary>
-        /// Create floating point number item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item F8(IEnumerable<double> value) => value.Any() ? F8(value.ToArray()) : F8();
-
-        /// <summary>
-        /// Create boolean item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item Boolean(params bool[] value) => new Item(SecsFormat.Boolean, value);
-
-        /// <summary>
-        /// Create boolean item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Item Boolean(IEnumerable<bool> value) => value.Any() ? Boolean(value.ToArray()) : Boolean();
-
-        /// <summary>
-        /// Create string item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
         public static Item A(string value) => value != string.Empty ? new Item(SecsFormat.ASCII, value) : A();
 
-        /// <summary>
-        /// Create JIS encoded string item
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
         public static Item J(string value) => value != string.Empty ? new Item(SecsFormat.JIS8, value) : J();
         #endregion
 
@@ -450,23 +299,23 @@ namespace Secs4Net
         public static Item A() => EmptyA;
         public static Item J() => EmptyJ;
 
-        static readonly Item EmptyL = new Item(SecsFormat.List, Enumerable.Empty<Item>());
-        static readonly Item EmptyA = new Item(SecsFormat.ASCII, string.Empty);
-        static readonly Item EmptyJ = new Item(SecsFormat.JIS8, string.Empty);
-        static readonly Item EmptyBoolean = new Item(SecsFormat.Boolean, Enumerable.Empty<bool>());
-        static readonly Item EmptyBinary = new Item(SecsFormat.Binary, Enumerable.Empty<byte>());
-        static readonly Item EmptyU1 = new Item(SecsFormat.U1, Enumerable.Empty<byte>());
-        static readonly Item EmptyU2 = new Item(SecsFormat.U2, Enumerable.Empty<ushort>());
-        static readonly Item EmptyU4 = new Item(SecsFormat.U4, Enumerable.Empty<uint>());
-        static readonly Item EmptyU8 = new Item(SecsFormat.U8, Enumerable.Empty<ulong>());
-        static readonly Item EmptyI1 = new Item(SecsFormat.I1, Enumerable.Empty<sbyte>());
-        static readonly Item EmptyI2 = new Item(SecsFormat.I2, Enumerable.Empty<short>());
-        static readonly Item EmptyI4 = new Item(SecsFormat.I4, Enumerable.Empty<int>());
-        static readonly Item EmptyI8 = new Item(SecsFormat.I8, Enumerable.Empty<long>());
-        static readonly Item EmptyF4 = new Item(SecsFormat.F4, Enumerable.Empty<float>());
-        static readonly Item EmptyF8 = new Item(SecsFormat.F8, Enumerable.Empty<double>());
+        private static readonly Item EmptyL = new Item(SecsFormat.List, Enumerable.Empty<Item>());
+        private static readonly Item EmptyA = new Item(SecsFormat.ASCII, string.Empty);
+        private static readonly Item EmptyJ = new Item(SecsFormat.JIS8, string.Empty);
+        private static readonly Item EmptyBoolean = new Item(SecsFormat.Boolean, Enumerable.Empty<bool>());
+        private static readonly Item EmptyBinary = new Item(SecsFormat.Binary, Enumerable.Empty<byte>());
+        private static readonly Item EmptyU1 = new Item(SecsFormat.U1, Enumerable.Empty<byte>());
+        private static readonly Item EmptyU2 = new Item(SecsFormat.U2, Enumerable.Empty<ushort>());
+        private static readonly Item EmptyU4 = new Item(SecsFormat.U4, Enumerable.Empty<uint>());
+        private static readonly Item EmptyU8 = new Item(SecsFormat.U8, Enumerable.Empty<ulong>());
+        private static readonly Item EmptyI1 = new Item(SecsFormat.I1, Enumerable.Empty<sbyte>());
+        private static readonly Item EmptyI2 = new Item(SecsFormat.I2, Enumerable.Empty<short>());
+        private static readonly Item EmptyI4 = new Item(SecsFormat.I4, Enumerable.Empty<int>());
+        private static readonly Item EmptyI8 = new Item(SecsFormat.I8, Enumerable.Empty<long>());
+        private static readonly Item EmptyF4 = new Item(SecsFormat.F4, Enumerable.Empty<float>());
+        private static readonly Item EmptyF8 = new Item(SecsFormat.F8, Enumerable.Empty<double>());
 
-        internal static readonly Encoding JIS8Encoding = Encoding.GetEncoding(50222);
+        private static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
         #endregion
 
         /// <summary>
@@ -521,7 +370,7 @@ namespace Secs4Net
                 result[3] = ptr[0];
                 return result;
             }
-            throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $"Item data length({valueCount}) is overflow");
+            throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $@"Item data length:{valueCount} is overflow");
         }
 
         internal static Item BytesDecode(ref SecsFormat format, byte[] data, ref int index, ref int length)
@@ -529,7 +378,7 @@ namespace Secs4Net
             switch (format)
             {
                 case SecsFormat.ASCII: return length == 0 ? A() : A(Encoding.ASCII.GetString(data, index, length));
-                case SecsFormat.JIS8: return length == 0 ? J() : J(JIS8Encoding.GetString(data, index, length));
+                case SecsFormat.JIS8: return length == 0 ? J() : J(Jis8Encoding.GetString(data, index, length));
                 case SecsFormat.Boolean: return length == 0 ? Boolean() : Boolean(Decode<bool>(data, ref index, ref length));
                 case SecsFormat.Binary: return length == 0 ? B() : B(Decode<byte>(data, ref index, ref length));
                 case SecsFormat.U1: return length == 0 ? U1() : U1(Decode<byte>(data, ref index, ref length));

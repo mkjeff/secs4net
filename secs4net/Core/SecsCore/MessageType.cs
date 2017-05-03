@@ -1,5 +1,7 @@
-﻿namespace Secs4Net {
-    public enum MessageType : byte {
+﻿namespace Secs4Net
+{
+    public enum MessageType : byte
+    {
         DataMessage       = 0b0000_0000,
         SelectRequest     = 0b0000_0001,
         SelectResponse    = 0b0000_0010,

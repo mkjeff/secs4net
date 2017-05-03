@@ -142,7 +142,7 @@ namespace Secs4Net
 
         internal int NewSystemId => _systemByte.New();
 
-        private readonly TaskFactory _taskFactory;
+        private readonly TaskFactory _taskFactory = new TaskFactory(TaskScheduler.Default);
 
         /// <summary>
         /// constructor
@@ -156,7 +156,6 @@ namespace Secs4Net
             if (port <= 0)
                 port = 0;
 
-            _taskFactory = new TaskFactory(TaskScheduler.Default);
             _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
             _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
             _secsDecoder = new StreamDecoder(receiveBufferSize, HandleControlMessage, HandleDataMessage);

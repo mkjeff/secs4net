@@ -23,7 +23,7 @@ namespace Secs4Net
                 case SecsFormat.I8: return nameof(SecsFormat.I8);
                 case SecsFormat.F4: return nameof(SecsFormat.F4);
                 case SecsFormat.F8: return nameof(SecsFormat.F8);
-                default: throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value");
+                default: throw new ArgumentOutOfRangeException(nameof(format), (int)format, @"Invalid enum value");
             }
         }
 
