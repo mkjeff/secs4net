@@ -8,6 +8,8 @@ namespace Secs4Net
     {
         private static readonly Task<bool> ReplyAsyncTrueCache = Task.FromResult(true);
         private static readonly Task<bool> ReplyAsyncFalseCache = Task.FromResult(false);
+        private static readonly Func<Task<SecsMessage>, bool> ContinueWithFunc = ContinueWithSuccess;
+        private static bool ContinueWithSuccess(Task<SecsMessage> _) => true;
 
         private int _isReplied = 0;
         private readonly WeakReference<SecsGem> _secsGem;
@@ -22,11 +24,9 @@ namespace Secs4Net
             Message = msg;
         }
 
-
-
         /// <summary>
         /// Each PrimaryMessageWrapper can invoke Reply method once.
-        /// Since message replied, method return false.
+        /// If the message already replied, will return false.
         /// </summary>
         /// <param name="replyMessage"></param>
         /// <returns>true, if reply message sent.</returns>
@@ -42,7 +42,7 @@ namespace Secs4Net
             replyMessage.ReplyExpected = false;
 
             return secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes)
-                .ContinueWith(_=> true);
+                .ContinueWith(ContinueWithFunc);
         }
 
         public override string ToString() => Message.ToString();
