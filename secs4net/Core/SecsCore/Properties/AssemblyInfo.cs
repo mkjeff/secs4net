@@ -9,9 +9,9 @@ using System;
 [assembly: AssemblyTitle("Secs4Net")]
 [assembly: AssemblyDescription("SECSII connector on HSMS Implement for .NET ,LittleEndian")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("DogMouse")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Secs4Net")]
-[assembly: AssemblyCopyright("Copyright © DogMouse 2016")]
+[assembly: AssemblyCopyright("Copyright © secs4net 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
