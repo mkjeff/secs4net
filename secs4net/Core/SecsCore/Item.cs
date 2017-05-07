@@ -50,8 +50,8 @@ namespace Secs4Net
             _rawData = new Lazy<byte[]>(() =>
             {
                 var arr = Unsafe.As<Array>(_values);
-                int bytelength = Buffer.ByteLength(arr);
-                byte[] result = EncodeItem(bytelength, out int headerLength);
+                var bytelength = Buffer.ByteLength(arr);
+                var (result, headerLength) = EncodeItem(bytelength);
                 Buffer.BlockCopy(arr, 0, result, headerLength, bytelength);
                 result.Reverse(headerLength, headerLength + bytelength, bytelength / arr.Length);
                 return result;
@@ -68,8 +68,8 @@ namespace Secs4Net
             _rawData = new Lazy<byte[]>(() =>
             {
                 var str = Unsafe.As<string>(_values);
-                int bytelength = str.Length;
-                byte[] result = EncodeItem(bytelength, out int headerLength);
+                var bytelength = str.Length;
+                var (result, headerLength) = EncodeItem(bytelength);
                 var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
                 encoder.GetBytes(str, 0, str.Length, result, headerLength);
                 return result;
@@ -171,7 +171,7 @@ namespace Secs4Net
 
             bool IsMatch(IReadOnlyList<Item> a, IReadOnlyList<Item> b)
             {
-                for (var i = 0; i < a.Count; i++)
+                for (int i = 0, count = a.Count; i < count; i++)
                     if (!a[i].IsMatch(b[i]))
                         return false;
                 return true;
@@ -184,7 +184,7 @@ namespace Secs4Net
             switch (Format)
             {
                 case SecsFormat.List:
-                    sb.Append(Unsafe.As<IReadOnlyList<Item>>(_values).Count).Append("]");
+                    sb.Append(Unsafe.As<IReadOnlyList<Item>>(_values).Count).Append("]: ...");
                     break;
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
@@ -209,13 +209,12 @@ namespace Secs4Net
                         case SecsFormat.F4: sb.Append(JoinAsString<float>(_values)); break;
                         case SecsFormat.F8: sb.Append(JoinAsString<double>(_values)); break;
                     }
-                    sb.Append(" ...");
                     break;
             }
             return sb.ToString();
 
             string JoinAsString<T>(IEnumerable src)
-                where T : struct => string.Join(" ", Unsafe.As<T[]>(src).Take(10));
+                where T : struct => string.Join(" ", Unsafe.As<T[]>(src));
         }
 
         #region Type Casting Operator
@@ -338,37 +337,33 @@ namespace Secs4Net
         /// Encode Item header + value (initial array only)
         /// </summary>
         /// <param name="valueCount">Item value bytes length</param>
-        /// <param name="headerlength">return header bytes length</param>
         /// <returns>header bytes + initial bytes of value </returns>
-        private unsafe byte[] EncodeItem(int valueCount, out int headerlength)
+        private unsafe (byte[] buffer, int headerlength) EncodeItem(int valueCount)
         {
             var ptr = (byte*)Unsafe.AsPointer(ref valueCount);
             if (valueCount <= 0xff)
             {//	1 byte
-                headerlength = 2;
                 var result = new byte[valueCount + 2];
                 result[0] = (byte)((byte)Format | 1);
                 result[1] = ptr[0];
-                return result;
+                return (result, 2);
             }
             if (valueCount <= 0xffff)
             {//	2 byte
-                headerlength = 3;
                 var result = new byte[valueCount + 3];
                 result[0] = (byte)((byte)Format | 2);
                 result[1] = ptr[1];
                 result[2] = ptr[0];
-                return result;
+                return (result, 3);
             }
             if (valueCount <= 0xffffff)
             {//	3 byte
-                headerlength = 4;
                 var result = new byte[valueCount + 4];
                 result[0] = (byte)((byte)Format | 3);
                 result[1] = ptr[2];
                 result[2] = ptr[1];
                 result[3] = ptr[0];
-                return result;
+                return (result, 4);
             }
             throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $@"Item data length:{valueCount} is overflow");
         }
@@ -396,7 +391,7 @@ namespace Secs4Net
 
             T[] Decode<T>(byte[] data2, ref int index2, ref int length2) where T : struct
             {
-                int elmSize = Unsafe.SizeOf<T>();
+                var elmSize = Unsafe.SizeOf<T>();
                 data2.Reverse(index2, index2 + length2, elmSize);
                 var values = new T[length2 / elmSize];
                 Buffer.BlockCopy(data2, index2, values, 0, length2);
