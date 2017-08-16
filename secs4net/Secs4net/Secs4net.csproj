@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
     <Version>2.0.1</Version>
     <Description>SECSII connector on HSMS Implement for .NET ,LittleEndian</Description>
     <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
@@ -17,26 +19,29 @@
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <RootNamespace>Secs4Net</RootNamespace>
     <AssemblyName>Secs4Net</AssemblyName>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <DefineConstants>RELEASE;NETSTANDARD1_6</DefineConstants>
+    <DefineConstants>RELEASE;</DefineConstants>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Buffers" Version="4.3.0" />
+    <PackageReference Include="System.Buffers" Version="4.4.0" />
     <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.3.0" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.3.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.4.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup>

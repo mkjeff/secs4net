@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.26730.3
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Secs4net", "Secs4net\Secs4net.csproj", "{AEF82888-6FE7-47DA-8F56-5B5D7A198C3D}"
 EndProject
@@ -51,5 +51,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {14DD4F8E-C15D-4D22-9D46-EE87A197EA40}
 	EndGlobalSection
 EndGlobal

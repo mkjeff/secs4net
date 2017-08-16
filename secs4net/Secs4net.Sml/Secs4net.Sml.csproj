@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
     <Version>2.0.1</Version>
     <Description>Secs4net SML format serialization helper</Description>
     <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
