@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <PackageId>Secs4Net</PackageId>
+    <Product>Secs4Net</Product>
+    <Copyright>Copyright © secs4net 2017</Copyright>
+    <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <Company />
+    <Authors>mkjeff</Authors>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/mkjeff/secs4net</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/mkjeff/secs4net/blob/master/LICENSE</PackageLicenseUrl>
+    <RootNamespace>Secs4Net</RootNamespace>
+    <AssemblyName>Secs4Net</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Secs4Net</CustomToolNamespace>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
