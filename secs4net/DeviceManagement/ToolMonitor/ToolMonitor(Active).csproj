@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LoadPortMonitor</RootNamespace>
     <AssemblyName>LoadPortMonitor</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -104,9 +104,9 @@
       <Project>{a39e7563-c6ce-4b46-bdcb-ff61f3f7a4bc}</Project>
       <Name>CIM.Services</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\SecsCore\SecsCore.csproj">
+    <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj">
       <Project>{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}</Project>
-      <Name>SecsCore</Name>
+      <Name>Secs4Net</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

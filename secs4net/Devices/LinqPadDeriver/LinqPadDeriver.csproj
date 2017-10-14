@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Secs4Net.LinqPadDriver</RootNamespace>
     <AssemblyName>Secs4Net.LinqPadDriver</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -92,13 +92,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\SecsCore\SecsCore.csproj">
+    <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj">
       <Project>{3c8c67b8-3746-4d26-b3a8-dcb01b5aa66b}</Project>
-      <Name>SecsCore</Name>
+      <Name>Secs4Net</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Extension\Serialization.Json\Serialization.Json.csproj">
+    <ProjectReference Include="..\..\Extension\Serialization.Json\Secs4Net.Json.csproj">
       <Project>{60938345-e9cf-41f0-a588-505b05e5e544}</Project>
-      <Name>Serialization.Json</Name>
+      <Name>Secs4Net.Json</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Secs4Net.Rx\Secs4Net.Rx.csproj">
       <Project>{1f7e1172-8c7e-4411-852a-fa44125d6cca}</Project>

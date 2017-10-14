@@ -79,7 +79,7 @@ namespace SecsDevice
             try
             {
                 var reply = await _secsGem.SendAsync(txtSendPrimary.Text.ToSecsMessage());
-                txtRecvSecondary.Text = reply.ToSML();
+                txtRecvSecondary.Text = reply.ToSml();
             }
             catch (SecsException ex)
             {
@@ -89,13 +89,12 @@ namespace SecsDevice
 
         private void lstUnreplyMsg_SelectedIndexChanged(object sender, EventArgs e) {
             var receivedMessage = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
-            txtRecvPrimary.Text = receivedMessage?.Message.ToSML();
+            txtRecvPrimary.Text = receivedMessage?.Message.ToSml();
         }
 
         private async void btnReplySecondary_Click(object sender, EventArgs e)
         {
-            var recv = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
-            if (recv == null)
+            if (!(lstUnreplyMsg.SelectedItem is PrimaryMessageWrapper recv))
                 return;
 
             if (string.IsNullOrWhiteSpace(txtReplySeconary.Text))
@@ -129,7 +128,7 @@ namespace SecsDevice
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Black;
-                    _form.richTextBox1.AppendText($"<-- [0x{systembyte:X8}] {msg.ToSML()}\n");
+                    _form.richTextBox1.AppendText($"<-- [0x{systembyte:X8}] {msg.ToSml()}\n");
                 });
             }
 
@@ -137,7 +136,7 @@ namespace SecsDevice
             {
                 _form.Invoke((MethodInvoker)delegate {
                     _form.richTextBox1.SelectionColor = Color.Black;
-                    _form.richTextBox1.AppendText($"--> [0x{systembyte:X8}] {msg.ToSML()}\n");
+                    _form.richTextBox1.AppendText($"--> [0x{systembyte:X8}] {msg.ToSml()}\n");
                 });
             }
 
@@ -163,7 +162,7 @@ namespace SecsDevice
                     _form.richTextBox1.SelectionColor = Color.Red;
                     _form.richTextBox1.AppendText($"{msg}\n");
                     _form.richTextBox1.SelectionColor = Color.Gray;
-                    _form.richTextBox1.AppendText($"{ex?.ToString()}\n");
+                    _form.richTextBox1.AppendText($"{ex}\n");
                 });
             }
 

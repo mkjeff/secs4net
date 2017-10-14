@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <PackageId>Secs4Net.Json</PackageId>
+    <Product>Secs4Net.Json</Product>
+    <Company />
+    <Authors>mkjeff</Authors>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <AssemblyName>Secs4Net.Json</AssemblyName>
+    <RootNamespace>Secs4Net.Json</RootNamespace>
+    <Version>2.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj" />
+    <ProjectReference Include="..\..\Core\SecsCore\Secs4Net.csproj" />
+  </ItemGroup>
+
+</Project>

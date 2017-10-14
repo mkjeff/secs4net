@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Devices", "Devices", "{A2129504-BE77-47D7-BFB0-D8C333EA3CA4}"
 EndProject
@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MWN01", "Devices\MWN01\MWN0
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{47372419-BB0F-4D47-A9A9-F93EE7551CB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecsCore", "Core\SecsCore\SecsCore.csproj", "{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Secs4Net", "Core\Secs4Net\Secs4Net.csproj", "{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CIM.Management", "Core\CIM.Management\CIM.Management.csproj", "{3EEDDDF5-284E-4C9E-87AF-4FFF72C480D4}"
 EndProject
@@ -33,11 +33,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CIM.Eap", "Core\CIM.EAP\CIM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CIM.Services", "Core\CIM.Services\CIM.Services.csproj", "{A39E7563-C6CE-4B46-BDCB-FF61F3F7A4BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serialization.Sml", "Extension\Serialization.Sml\Serialization.Sml.csproj", "{F7C036DB-D4C9-4326-A17B-713CB00F313C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Secs4Net.Sml", "Extension\Serialization.Sml\Secs4Net.Sml.csproj", "{F7C036DB-D4C9-4326-A17B-713CB00F313C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{35657E73-7929-41AB-9415-BD463CD4DB76}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serialization.Json", "Extension\Serialization.Json\Serialization.Json.csproj", "{60938345-E9CF-41F0-A588-505B05E5E544}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Secs4Net.Json", "Extension\Serialization.Json\Secs4Net.Json.csproj", "{60938345-E9CF-41F0-A588-505B05E5E544}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{7CB55EBC-3CD9-4ECD-831F-2FEA9B4D822A}"
 	ProjectSection(SolutionItems) = preProject
@@ -88,12 +88,12 @@ Global
 		{7DADFA3A-BF39-4109-AD02-6EE7F94BEA30}.Release|x86.Build.0 = Release|x86
 		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Debug|x86.ActiveCfg = Debug|x86
-		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Debug|x86.Build.0 = Debug|x86
+		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Debug|x86.Build.0 = Debug|Any CPU
 		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Release|x86.ActiveCfg = Release|x86
-		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Release|x86.Build.0 = Release|x86
+		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Release|x86.ActiveCfg = Release|Any CPU
+		{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}.Release|x86.Build.0 = Release|Any CPU
 		{3EEDDDF5-284E-4C9E-87AF-4FFF72C480D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3EEDDDF5-284E-4C9E-87AF-4FFF72C480D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EEDDDF5-284E-4C9E-87AF-4FFF72C480D4}.Debug|x86.ActiveCfg = Debug|x86
@@ -210,5 +210,8 @@ Global
 		{60938345-E9CF-41F0-A588-505B05E5E544} = {35657E73-7929-41AB-9415-BD463CD4DB76}
 		{B05ED3B8-AB3F-44D5-ABA7-E6AA4A924FDB} = {35657E73-7929-41AB-9415-BD463CD4DB76}
 		{1F7E1172-8C7E-4411-852A-FA44125D6CCA} = {35657E73-7929-41AB-9415-BD463CD4DB76}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6D65953E-CAC2-4CC3-AD7F-1385F33D7C21}
 	EndGlobalSection
 EndGlobal

@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Eap</RootNamespace>
     <AssemblyName>EAPDriver</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <FileUpgradeFlags>
@@ -103,9 +103,9 @@
       <Project>{3eedddf5-284e-4c9e-87af-4fff72c480d4}</Project>
       <Name>CIM.Management</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\SecsCore\SecsCore.csproj">
+    <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj">
       <Project>{3c8c67b8-3746-4d26-b3a8-dcb01b5aa66b}</Project>
-      <Name>SecsCore</Name>
+      <Name>Secs4Net</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Core\EAPHost\EAP Host.csproj">
       <Project>{391F9889-812D-4C32-975E-2CF9F5B456FF}</Project>

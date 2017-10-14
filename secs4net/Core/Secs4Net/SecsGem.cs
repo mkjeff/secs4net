@@ -6,7 +6,6 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Secs4Net.Properties;
 
 namespace Secs4Net
 {
@@ -335,11 +334,10 @@ namespace Secs4Net
 
             void HandleControlMessage(MessageHeader header)
             {
-                int systembyte = header.SystemBytes;
+                var systembyte = header.SystemBytes;
                 if ((byte)header.MessageType % 2 == 0)
                 {
-                    TaskCompletionSourceToken ar;
-                    if (_replyExpectedMsgs.TryGetValue(systembyte, out ar))
+                    if (_replyExpectedMsgs.TryGetValue(systembyte, out var ar))
                     {
                         ar.SetResult(ControlMessage);
                     }

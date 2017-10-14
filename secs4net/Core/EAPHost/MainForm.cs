@@ -77,19 +77,19 @@ namespace Cim.Eap
         {
             InitializeComponent();
 
-            this.Text = ToolId + " EAP";
-            this.eapDriverLabel.Text = EAPConfig.Instance.Driver.GetType().AssemblyQualifiedName;
-            this.SecsMessages = new SecsMessageList(EAPConfig.Instance.SmlFile);
-            this.EventReportLink = new DefineLinkConfig(EAPConfig.Instance.GemXml);
+            Text = ToolId + " EAP";
+            eapDriverLabel.Text = EAPConfig.Instance.Driver.GetType().AssemblyQualifiedName;
+            SecsMessages = new SecsMessageList(EAPConfig.Instance.SmlFile);
+            EventReportLink = new DefineLinkConfig(EAPConfig.Instance.GemXml);
 
             listBoxSecsMessages.BeginUpdate();
-            foreach (var msg in this.SecsMessages)
+            foreach (var msg in SecsMessages)
                 listBoxSecsMessages.Items.Add($"S{msg.S,-3}F{msg.F,3} : {msg.Name}");
             listBoxSecsMessages.EndUpdate();
 
             var l = (Logger)LogManager.GetLogger("EAP").Logger;
             l.AddAppender(
-                _screenLoger = new TextBoxAppender(this.rtxtScreen)
+                _screenLoger = new TextBoxAppender(rtxtScreen)
                 {
                     Layout = new PatternLayout("%date{MM/dd HH:mm:ss} %message%newline")
                 });
@@ -143,7 +143,7 @@ namespace Cim.Eap
             };
             _secsGem.ConnectionChanged += delegate
             {
-                this.Invoke((MethodInvoker)delegate
+                Invoke((MethodInvoker)delegate
                 {
                     EapLogger.Info("SECS/GEM " + _secsGem.State);
                     gemStatusLabel.Text = _secsGem.State.ToString();
@@ -164,8 +164,7 @@ namespace Cim.Eap
             try
             {
                 await e.ReplyAsync(SecsMessages[e.Message.S, (byte)(e.Message.F + 1)].FirstOrDefault());
-                Action<SecsMessage> handler = null;
-                if (_eventHandlers.TryGetValue(e.Message.GetKey(), out handler))
+                if (_eventHandlers.TryGetValue(e.Message.GetKey(), out var handler))
                     Parallel.ForEach(handler.GetInvocationList().Cast<Action<SecsMessage>>(), h => h(e.Message));
             }
             catch (Exception ex)
@@ -189,7 +188,7 @@ namespace Cim.Eap
 
         void menuItemSecsMessagestList_Click(object sender, EventArgs e)
         {
-            bool showMsgList = ((ToolStripMenuItem)sender).Checked;
+            var showMsgList = ((ToolStripMenuItem)sender).Checked;
             splitContainer1.Panel1Collapsed = !showMsgList;
             _screenLoger.DisplaySecsMesssage = menuItemSecsTrace.Checked = showMsgList;
         }
@@ -206,7 +205,7 @@ namespace Cim.Eap
 
         void menuItemExit_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -237,19 +236,19 @@ namespace Cim.Eap
         void listBoxSecsMessageList_SelectedIndexChanged(object sender, EventArgs e)
         {
             SecsMessage secsMsg = SecsMessages[listBoxSecsMessages.SelectedIndex];
-            txtMsg.Text = secsMsg.ToSML();
+            txtMsg.Text = secsMsg.ToSml();
        }
 
         void enableTraceLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this._secsGem.LinkTestEnable = ((ToolStripMenuItem)sender).Checked;
+            _secsGem.LinkTestEnable = ((ToolStripMenuItem)sender).Checked;
         }
 
         void menuItemReloadGemXml_Click(object sender, EventArgs e)
         {
             try
             {
-                this.EventReportLink = new DefineLinkConfig(EAPConfig.Instance.GemXml);
+                EventReportLink = new DefineLinkConfig(EAPConfig.Instance.GemXml);
             }
             catch (Exception ex)
             {
@@ -259,7 +258,7 @@ namespace Cim.Eap
 
         void menuItemSecsTrace_Click(object sender, EventArgs e)
         {
-            this._screenLoger.DisplaySecsMesssage = ((ToolStripMenuItem)sender).Checked;
+            _screenLoger.DisplaySecsMesssage = ((ToolStripMenuItem)sender).Checked;
         }
 
         async void defineLinkToolStripMenuItem_Click(object sender, EventArgs e)
@@ -282,7 +281,7 @@ namespace Cim.Eap
 
         void menuItemClearScreen_Click(object sender, EventArgs e)
         {
-            this.rtxtScreen.Clear();
+            rtxtScreen.Clear();
         }
 
         void enableLoggingToolStripMenuItem_Click(object sender, EventArgs e)
@@ -453,10 +452,10 @@ namespace Cim.Eap
             }
             void IDisposable.Dispose()
             {
-                if (!this._isDisposed)
+                if (!_isDisposed)
                 {
-                    this._disposeAction();
-                    this._isDisposed = true;
+                    _disposeAction();
+                    _isDisposed = true;
                 }
             }
         }
@@ -469,9 +468,9 @@ namespace Cim.Eap
             readonly Action _disposeAction;
             internal RemoteDisposable(SecsEventSubscription subscription, Action subscribeAction, Action disposeAction)
             {
-                this._subscribeAction = subscribeAction;
-                this._disposeAction = disposeAction;
-                this._subscription = subscription;
+                _subscribeAction = subscribeAction;
+                _disposeAction = disposeAction;
+                _subscription = subscription;
                 var lease = (ILease)subscription.GetLifetimeService();
                 if (lease != null)
                     lease.Register(sponsor);
@@ -500,12 +499,12 @@ namespace Cim.Eap
             [OneWay]
             public void Dispose()
             {
-                if (!this._isDisposed)
+                if (!_isDisposed)
                 {
                     try
                     {
-                        this._disposeAction();
-                        this._isDisposed = true;
+                        _disposeAction();
+                        _isDisposed = true;
                         var lease = (ILease)_subscription.GetLifetimeService();
                         if (lease != null)
                         {
@@ -533,7 +532,7 @@ namespace Cim.Eap
         #region IEAP Members
         readonly IDictionary<string, Func<XElement, Task>> _txHandlers = new Dictionary<string, Func<XElement, Task>>(StringComparer.Ordinal);
 
-        static readonly string AreYouThereAck = new XDocument(
+        private static readonly string AreYouThereAck = new XDocument(
             new XElement("Transaction",
                 new XAttribute("TxName", "AreYouThere"),
                 new XAttribute("Type", "Ack"),
@@ -570,7 +569,7 @@ namespace Cim.Eap
         void Report(XElement txElm)
         {
             txElm.SetAttributeValue("MessageKey", NewMessageKey());
-            txElm.Element("Tool").SetAttributeValue("ToolID", this.ToolId);
+            txElm.Element("Tool").SetAttributeValue("ToolID", ToolId);
             Send2TCS(new XDocument(txElm), true);
         }
 
@@ -581,7 +580,7 @@ namespace Cim.Eap
 
         void IEAP.Report(DataCollectionCompleteReport report)
         {
-            this.Report<DataCollectionCompleteReport>(report);
+            Report<DataCollectionCompleteReport>(report);
             //DummyProcessJob or OCS job
             if (report.ProcessJob == ProcessJob.DummyProcessJob || report.ProcessJob.Id.Length > 10)
                 return;

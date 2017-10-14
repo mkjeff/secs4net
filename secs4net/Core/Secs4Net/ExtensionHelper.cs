@@ -53,9 +53,9 @@ namespace Secs4Net
 
         internal static void Reverse(this byte[] bytes, int begin, int end, int offSet)
         {
-            if (offSet > 1)
-                for (int i = begin; i < end; i += offSet)
-                    Array.Reverse(bytes, i, offSet);
+            if (offSet <= 1) return;
+            for (var i = begin; i < end; i += offSet)
+                Array.Reverse(bytes, i, offSet);
         }
     }
 }

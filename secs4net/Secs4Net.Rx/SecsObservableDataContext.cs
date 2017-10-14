@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Secs4Net.Rx
 {
     public class SecsObservableDataContext
     {
-        readonly SecsGem _secsGem;
+        private readonly SecsGem _secsGem;
         protected readonly IObservable<PrimaryMessageWrapper> MessageEvents;
 
         public SecsObservableDataContext(SecsGem secsGem)

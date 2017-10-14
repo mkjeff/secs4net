@@ -29,7 +29,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <IsWebBootstrapper>true</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <PublishUrl>http://localhost/EAP/</PublishUrl>
@@ -224,9 +224,9 @@
       <Project>{391f9889-812d-4c32-975e-2cf9f5b456ff}</Project>
       <Name>EAP Host</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Core\SecsCore\SecsCore.csproj">
+    <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj">
       <Project>{3c8c67b8-3746-4d26-b3a8-dcb01b5aa66b}</Project>
-      <Name>SecsCore</Name>
+      <Name>Secs4Net</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

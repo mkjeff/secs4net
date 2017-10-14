@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SecsDevice</RootNamespace>
     <AssemblyName>SecsDevice</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -109,13 +109,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\SecsCore\SecsCore.csproj">
+    <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj">
       <Project>{3c8c67b8-3746-4d26-b3a8-dcb01b5aa66b}</Project>
-      <Name>SecsCore</Name>
+      <Name>Secs4Net</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Extension\Serialization.Sml\Serialization.Sml.csproj">
+    <ProjectReference Include="..\..\Extension\Serialization.Sml\Secs4Net.Sml.csproj">
       <Project>{f7c036db-d4c9-4326-a17b-713cb00f313c}</Project>
-      <Name>Serialization.Sml</Name>
+      <Name>Secs4Net.Sml</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

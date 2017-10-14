@@ -121,11 +121,13 @@ namespace Secs4Net
             if (Format == SecsFormat.List)
                 throw new InvalidOperationException("Item is list");
 
-            if (_values is T v)
-                return v;
-
-            if (_values is IEnumerable<T> arr)
-                return arr.First();
+            switch (_values)
+            {
+                case T v:
+                    return v;
+                case IEnumerable<T> arr:
+                    return arr.First();
+            }
 
             throw new InvalidOperationException("Item value type is incompatible");
         }

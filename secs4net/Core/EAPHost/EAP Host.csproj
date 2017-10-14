@@ -28,7 +28,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <IsWebBootstrapper>true</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <SignAssembly>false</SignAssembly>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -237,9 +237,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Extension\Serialization.Sml\Serialization.Sml.csproj">
+    <ProjectReference Include="..\..\Extension\Serialization.Sml\Secs4Net.Sml.csproj">
       <Project>{f7c036db-d4c9-4326-a17b-713cb00f313c}</Project>
-      <Name>Serialization.Sml</Name>
+      <Name>Secs4Net.Sml</Name>
     </ProjectReference>
     <ProjectReference Include="..\CIM.EAP\CIM.Eap.csproj">
       <Project>{51cbed10-a51e-43a7-8370-81de490be207}</Project>
@@ -253,9 +253,9 @@
       <Project>{3eedddf5-284e-4c9e-87af-4fff72c480d4}</Project>
       <Name>CIM.Management</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SecsCore\SecsCore.csproj">
+    <ProjectReference Include="..\Secs4Net\Secs4Net.csproj">
       <Project>{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}</Project>
-      <Name>SecsCore</Name>
+      <Name>Secs4Net</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

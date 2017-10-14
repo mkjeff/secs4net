@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Secs4Net.Properties;
 
 namespace Secs4Net
 {
