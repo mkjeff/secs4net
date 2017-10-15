@@ -65,44 +65,44 @@ namespace Secs4Net.Sml
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
                     writer.Write('\'');
-                    writer.Write(item.GetValue<string>());
+                    writer.Write(item.GetString());
                     writer.Write('\'');
                     break;
                 case SecsFormat.Binary:
-                    writer.Write(item.GetValue<byte[]>().ToHexString());
+                    writer.Write(item.GetValues<byte>().ToHexString());
                     break;
                 case SecsFormat.F4:
-                    writer.Write(string.Join(" ", item.Values.Cast<float>()));
+                    writer.Write(string.Join(" ", item.GetValues<float>()));
                     break;
                 case SecsFormat.F8:
-                    writer.Write(string.Join(" ", item.Values.Cast<double>()));
+                    writer.Write(string.Join(" ", item.GetValues<double>()));
                     break;
                 case SecsFormat.I1:
-                    writer.Write(string.Join(" ", item.Values.Cast<sbyte>()));
+                    writer.Write(string.Join(" ", item.GetValues<sbyte>()));
                     break;
                 case SecsFormat.I2:
-                    writer.Write(string.Join(" ", item.Values.Cast<short>()));
+                    writer.Write(string.Join(" ", item.GetValues<short>()));
                     break;
                 case SecsFormat.I4:
-                    writer.Write(string.Join(" ", item.Values.Cast<int>()));
+                    writer.Write(string.Join(" ", item.GetValues<int>()));
                     break;
                 case SecsFormat.I8:
-                    writer.Write(string.Join(" ", item.Values.Cast<long>()));
+                    writer.Write(string.Join(" ", item.GetValues<long>()));
                     break;
                 case SecsFormat.U1:
-                    writer.Write(string.Join(" ", item.Values.Cast<byte>()));
+                    writer.Write(string.Join(" ", item.GetValues<byte>()));
                     break;
                 case SecsFormat.U2:
-                    writer.Write(string.Join(" ", item.Values.Cast<ushort>()));
+                    writer.Write(string.Join(" ", item.GetValues<ushort>()));
                     break;
                 case SecsFormat.U4:
-                    writer.Write(string.Join(" ", item.Values.Cast<uint>()));
+                    writer.Write(string.Join(" ", item.GetValues<uint>()));
                     break;
                 case SecsFormat.U8:
-                    writer.Write(string.Join(" ", item.Values.Cast<ulong>()));
+                    writer.Write(string.Join(" ", item.GetValues<ulong>()));
                     break;
                 case SecsFormat.Boolean:
-                    writer.Write(string.Join(" ", item.Values.Cast<bool>()));
+                    writer.Write(string.Join(" ", item.GetValues<bool>()));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(item.Format), item.Format, "invalid SecsFormat value");
@@ -124,19 +124,19 @@ namespace Secs4Net.Sml
                 {
                     case SecsFormat.List: return WriteListAsnc(writer, item, indent, indentStr);
                     case SecsFormat.ASCII:
-                    case SecsFormat.JIS8: return writer.WriteAsync($"'{item.GetValue<string>()}'");
-                    case SecsFormat.Binary: return writer.WriteAsync(item.GetValue<byte[]>().ToHexString());
-                    case SecsFormat.F4: return writer.WriteAsync(string.Join(" ", item.Values.Cast<float>()));
-                    case SecsFormat.F8: return writer.WriteAsync(string.Join(" ", item.Values.Cast<double>()));
-                    case SecsFormat.I1: return writer.WriteAsync(string.Join(" ", item.Values.Cast<sbyte>()));
-                    case SecsFormat.I2: return writer.WriteAsync(string.Join(" ", item.Values.Cast<short>()));
-                    case SecsFormat.I4: return writer.WriteAsync(string.Join(" ", item.Values.Cast<int>()));
-                    case SecsFormat.I8: return writer.WriteAsync(string.Join(" ", item.Values.Cast<long>()));
-                    case SecsFormat.U1: return writer.WriteAsync(string.Join(" ", item.Values.Cast<byte>()));
-                    case SecsFormat.U2: return writer.WriteAsync(string.Join(" ", item.Values.Cast<ushort>()));
-                    case SecsFormat.U4: return writer.WriteAsync(string.Join(" ", item.Values.Cast<uint>()));
-                    case SecsFormat.U8: return writer.WriteAsync(string.Join(" ", item.Values.Cast<ulong>()));
-                    case SecsFormat.Boolean: return writer.WriteAsync(string.Join(" ", item.Values.Cast<bool>()));
+                    case SecsFormat.JIS8: return writer.WriteAsync($"'{item.GetString()}'");
+                    case SecsFormat.Binary: return writer.WriteAsync(item.GetValues<byte>().ToHexString());
+                    case SecsFormat.F4: return writer.WriteAsync(string.Join(" ", item.GetValues<float>()));
+                    case SecsFormat.F8: return writer.WriteAsync(string.Join(" ", item.GetValues<double>()));
+                    case SecsFormat.I1: return writer.WriteAsync(string.Join(" ", item.GetValues<sbyte>()));
+                    case SecsFormat.I2: return writer.WriteAsync(string.Join(" ", item.GetValues<short>()));
+                    case SecsFormat.I4: return writer.WriteAsync(string.Join(" ", item.GetValues<int>()));
+                    case SecsFormat.I8: return writer.WriteAsync(string.Join(" ", item.GetValues<long>()));
+                    case SecsFormat.U1: return writer.WriteAsync(string.Join(" ", item.GetValues<byte>()));
+                    case SecsFormat.U2: return writer.WriteAsync(string.Join(" ", item.GetValues<ushort>()));
+                    case SecsFormat.U4: return writer.WriteAsync(string.Join(" ", item.GetValues<uint>()));
+                    case SecsFormat.U8: return writer.WriteAsync(string.Join(" ", item.GetValues<ulong>()));
+                    case SecsFormat.Boolean: return writer.WriteAsync(string.Join(" ", item.GetValues<bool>()));
                     default: throw new ArgumentOutOfRangeException($"{nameof(item)}.{nameof(item.Format)}", item.Format, "Invalid enum value");
                 }
 

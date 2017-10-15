@@ -13,10 +13,10 @@ namespace Cim.Eap {
         async Task QueryAndChangeAccessMode(IEnumerable<LoadPort> requestLoadPorts) {
             var s1f4 = await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryLoadPortAccessMode"]);
             foreach (var port in requestLoadPorts) {
-                byte portNo = GetPortNo(port.Id);
+                var portNo = GetPortNo(port.Id);
                 // 0: Manual
                 // 1: Auto
-                byte portAccessMode = (byte)s1f4.SecsItem.Items[portNo - 1];
+                var portAccessMode = (byte)s1f4.SecsItem.Items[portNo - 1];
                 if (portAccessMode != (byte)port.AccessMode)
                     ChangeAccessMode(port.AccessMode, portNo);
             }
@@ -31,9 +31,9 @@ namespace Cim.Eap {
                         Item.U1(portNo))));
 
             var S3F24 = await EAP.SendAsync(S3F23);
-            byte returnCode = (byte)S3F24.SecsItem.Items[0];
+            var returnCode = (byte)S3F24.SecsItem.Items[0];
             if (returnCode != 0 && returnCode != 4)
-                throw new ScenarioException("Change Loadport[" + portNo + "] access mode fial. " + S3F24.SecsItem.Items[1].Items[1].GetValue<string>());
+                throw new ScenarioException("Change Loadport[" + portNo + "] access mode fial. " + S3F24.SecsItem.Items[1].Items[1].GetString());
         }
     }
 }

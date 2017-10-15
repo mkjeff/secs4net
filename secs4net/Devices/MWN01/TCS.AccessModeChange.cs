@@ -34,7 +34,7 @@ namespace Eap.Driver.MWN {
                             Item.B((byte)changeAccessMode))))));
             byte returnCode = (byte)s3f24.SecsItem.Items[0];
             if (returnCode != 0 && returnCode != 4)
-                throw new ScenarioException("Change Loadport[" + portNo + "] access mode fial: " + s3f24.SecsItem.Items[1].Items[0].Items[1].GetValue<string>());
+                throw new ScenarioException("Change Loadport[" + portNo + "] access mode fial: " + s3f24.SecsItem.Items[1].Items[0].Items[1].GetString());
         }
     }
 }

@@ -90,30 +90,16 @@ namespace Secs4Net.LinqPad.Deriver
             switch (item.Format)
             {
                 case SecsFormat.List:
-                    return new ExplorerItem($"L[{item.Count}]", ExplorerItemKind.Property, ExplorerIcon.OneToMany)
+                    return new ExplorerItem(item, ExplorerItemKind.Property, ExplorerIcon.OneToMany)
                     {
                         Children = (from a in item.Items
                                     let ei = a.ToExplorerItem()
                                     where ei != null
                                     select ei).ToList()
                     };
-
-                case SecsFormat.ASCII:
-                    return CreateExplorerItem(item.GetValue<string>(), "A", item.Count);
-
-                case SecsFormat.JIS8:
-                    return CreateExplorerItem(item.GetValue<string>(), "J", item.Count);
                 default:
-                    return CreateExplorerItem(item);
+                    return new ExplorerItem(item, ExplorerItemKind.Property, ExplorerIcon.Column);
             }
         }
-
-        static ExplorerItem CreateExplorerItem(Item item)
-            => new ExplorerItem($"{item.Format} [{item.Count}] {string.Join(" ", Unsafe.As<byte[]>(item.Values))}"
-                , ExplorerItemKind.Property, ExplorerIcon.Column);
-
-        static ExplorerItem CreateExplorerItem(string value, string format,int count)
-            => new ExplorerItem($"{format} [{count}] {value}"
-                , ExplorerItemKind.Property, ExplorerIcon.Column);
     }
 }

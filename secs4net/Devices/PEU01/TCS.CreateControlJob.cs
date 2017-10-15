@@ -31,7 +31,7 @@ namespace Cim.Eap {
                         Item.L(
                             Item.A("StartMethod"),
                             Item.Boolean(true))))));
-            byte returnCode = (byte)s14f10.SecsItem.Items[2].Items[0];
+            var returnCode = (byte)s14f10.SecsItem.Items[2].Items[0];
             if (returnCode != 0 && returnCode != 4) {
                 throw new ScenarioException("CreateControlJob fail. ");
             }

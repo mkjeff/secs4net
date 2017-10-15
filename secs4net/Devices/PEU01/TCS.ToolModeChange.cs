@@ -33,21 +33,21 @@ namespace Cim.Eap {
 
         async Task RequestOnline() {
             var s1f18 = await EAP.SendAsync(EAP.SecsMessages[1, 17, "RequestOnLine"]);
-            byte returnCode = (byte)s1f18.SecsItem;
+            var returnCode = (byte)s1f18.SecsItem;
             if (returnCode != 0 && returnCode != 2)
                 throw new ScenarioException("S1F18 return code is " + returnCode);
         }
 
         async Task QueryControlState() {
             var s1f4 = await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryOnlineSubStatus"]);
-            byte returnCode = (byte)s1f4.SecsItem.Items[0];
+            var returnCode = (byte)s1f4.SecsItem.Items[0];
             if (returnCode != 5)
                 throw new ScenarioException("S1F4_ControlState return code is " + returnCode + ", not Online/Remote mode");
         }
 
         async Task QueryPortState() {
             var s1f4 = await EAP.SendAsync(EAP.SecsMessages[1, 3, "QueryPortStatus"]);
-            for (int i = 0; i < s1f4.SecsItem.Items.Count; i++) {
+            for (var i = 0; i < s1f4.SecsItem.Items.Count; i++) {
                 switch ((byte)s1f4.SecsItem.Items[i]) {
                     case 1:
                         EAP.Report(new ReadyToLoadReport { PortID = GetPortID(i + 1) });

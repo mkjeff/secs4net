@@ -13,7 +13,7 @@ namespace Cim.Eap {
                     Item.U1(GetPortNo(tx.Carrier.LoadPortId)),
                     Item.L())));
 
-            byte returnCode = (byte)s3f18.SecsItem.Items[0];
+            var returnCode = (byte)s3f18.SecsItem.Items[0];
             if (returnCode != 0 && returnCode != 4)
                 throw new ScenarioException("ProceedWithCarrier failed. ");
         }

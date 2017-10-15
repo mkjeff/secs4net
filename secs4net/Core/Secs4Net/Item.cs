@@ -98,45 +98,60 @@ namespace Secs4Net
         public IReadOnlyList<byte> RawBytes => _rawData.Value;
 
         /// <summary>
-        /// Non-list item values
-        /// </summary>
-        public IEnumerable Values => Format == SecsFormat.List
-            ? throw new InvalidOperationException("Item is a list")
-            : _values;
-
-        /// <summary>
         /// List items
         /// </summary>
         public IReadOnlyList<Item> Items => Format != SecsFormat.List
-            ? throw new InvalidOperationException("Item is not a list")
+            ? throw new InvalidOperationException("The item is not a list")
             : Unsafe.As<IReadOnlyList<Item>>(_values);
 
         /// <summary>
         /// get value by specific type
         /// </summary>
-        /// <typeparam name="T">return value type</typeparam>
-        /// <returns></returns>
-        public T GetValue<T>()
+        public T GetValue<T>() where T : struct
         {
             if (Format == SecsFormat.List)
-                throw new InvalidOperationException("Item is list");
+                throw new InvalidOperationException("The item is a list");
 
-            switch (_values)
-            {
-                case T v:
-                    return v;
-                case IEnumerable<T> arr:
-                    return arr.First();
-            }
+            if (Format == SecsFormat.ASCII || Format == SecsFormat.JIS8)
+                throw new InvalidOperationException("The item is a string");
 
-            throw new InvalidOperationException("Item value type is incompatible");
+            if (_values is T[] arr)
+                return arr[0];
+
+            throw new InvalidOperationException("The type is incompatible");
+        }
+
+        public string GetString() => Format != SecsFormat.ASCII && Format != SecsFormat.JIS8
+            ? throw new InvalidOperationException("The type is incompatible")
+            : Unsafe.As<string>(_values);
+
+        /// <summary>
+        /// get value array by specific type
+        /// </summary>
+        public T[] GetValues<T>() where T : struct
+        {
+            if (Format == SecsFormat.List)
+                throw new InvalidOperationException("The item is list");
+
+            if (Format == SecsFormat.ASCII || Format == SecsFormat.JIS8)
+                throw new InvalidOperationException("The item is a string");
+
+            if (_values is T[] arr)
+                return arr;
+
+            throw new InvalidOperationException("The type is incompatible");
         }
 
         public bool IsMatch(Item target)
         {
-            if (Format != target.Format) return false;
-            if (target.Count == 0) return true;
-            if (Count != target.Count) return false;
+            if (Format != target.Format)
+                return false;
+
+            if (Count != target.Count)
+                return target.Count == 0;
+
+            if (Count == 0)
+                return true;
 
             switch (target.Format)
             {
@@ -220,7 +235,7 @@ namespace Secs4Net
         }
 
         #region Type Casting Operator
-        public static implicit operator string(Item item) => item.GetValue<string>();
+        public static implicit operator string(Item item) => item.GetString();
         public static implicit operator byte(Item item) => item.GetValue<byte>();
         public static implicit operator sbyte(Item item) => item.GetValue<sbyte>();
         public static implicit operator ushort(Item item) => item.GetValue<ushort>();

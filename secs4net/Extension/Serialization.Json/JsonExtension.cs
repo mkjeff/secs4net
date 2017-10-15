@@ -101,7 +101,7 @@ namespace Secs4Net.Json
                     break;
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
-                    writer.WriteValue(item.GetValue<string>());
+                    writer.WriteValue(item.GetString());
                     break;
                 case SecsFormat.Binary:
                     WriteValue<byte>(writer, item);
@@ -145,7 +145,7 @@ namespace Secs4Net.Json
             void WriteValue<T>(JsonTextWriter w, Item i) where T : struct
             {
                 w.WriteStartArray();
-                foreach (var v in i.GetValue<T[]>())
+                foreach (var v in i.GetValues<T>())
                     w.WriteValue(v);
                 w.WriteEndArray();
             }
@@ -174,7 +174,7 @@ namespace Secs4Net.Json
                 switch (i.Format)
                 {
                     case SecsFormat.ASCII:
-                    case SecsFormat.JIS8: return w.WriteValueAsync(i.GetValue<string>());
+                    case SecsFormat.JIS8: return w.WriteValueAsync(i.GetString());
                     case SecsFormat.Binary: return WriteValueAsync<byte>(w, i);
                     case SecsFormat.Boolean: return WriteValueAsync<bool>(w, i);
                     case SecsFormat.I8: return WriteValueAsync<long>(w, i);
@@ -196,7 +196,7 @@ namespace Secs4Net.Json
             {
                 await w.WriteStartArrayAsync();
 
-                foreach (var v in i.GetValue<T[]>())
+                foreach (var v in i.GetValues<T>())
                     await w.WriteValueAsync(v);
 
                 await w.WriteEndArrayAsync();
