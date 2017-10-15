@@ -251,7 +251,7 @@ namespace Secs4Net
                                 return;
 
                             _logger.Error(ex.Message);
-                            await Task.Delay(2000);
+                            await Task.Delay(2000).ConfigureAwait(false);
                         }
                     } while (!connected);
 
@@ -408,7 +408,7 @@ namespace Secs4Net
                         return;
                     }
                     // Error message
-                    var headerBytes = (byte[])msg.SecsItem.Values;
+                    var headerBytes = msg.SecsItem.GetValues<byte>();
                     systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
                 }
 
@@ -471,7 +471,7 @@ namespace Secs4Net
             if (State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
 
-            var token = new TaskCompletionSourceToken(msg, systembyte);
+            var token = new TaskCompletionSourceToken(msg, systembyte, MessageType.DataMessage);
             if (msg.ReplyExpected)
                 _replyExpectedMsgs[systembyte] = token;
 
@@ -608,7 +608,7 @@ namespace Secs4Net
             internal readonly int Id;
             internal readonly MessageType MsgType;
 
-            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType = MessageType.DataMessage)
+            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType)
             {
                 MessageSent = primaryMessageMsg;
                 Id = id;
