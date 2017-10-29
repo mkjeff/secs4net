@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj" />
-    <ProjectReference Include="..\..\Core\SecsCore\Secs4Net.csproj" />
   </ItemGroup>
 
 </Project>
