@@ -8,7 +8,7 @@ namespace Cim.Eap {
             try {
                 var ceid = eap.EventReportLink.Events.FirstOrDefault(id => id.Name == eventName);
                 return eap.Subscribe(
-                    new SecsMessage(16, 11, true, eventName,
+                    new SecsMessage(16, 11, eventName,
                         Item.L(
                             eap.Driver.LinkDataIdCreator(string.Empty),
                             eap.Driver.CeidLinkCreator(ceid.Id),

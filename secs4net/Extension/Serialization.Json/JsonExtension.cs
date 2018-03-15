@@ -24,7 +24,7 @@ namespace Secs4Net.Json
             {
                 QuoteName = false,
                 QuoteChar = '\'',
-                Formatting = Formatting.Indented
+                Formatting = formatting
             });
 
         public static Task WriteToAsync(this SecsMessage msg, TextWriter writer, Formatting formatting = Formatting.Indented)
@@ -32,7 +32,7 @@ namespace Secs4Net.Json
             {
                 QuoteName = false,
                 QuoteChar = '\'',
-                Formatting = Formatting.Indented
+                Formatting = formatting
             });
 
         public static void WriteTo(this SecsMessage msg, JsonTextWriter jwtr)
@@ -214,8 +214,8 @@ namespace Secs4Net.Json
             var name = json.Value<string>(nameof(SecsMessage.Name));
             var root = json.Value<JObject>(nameof(SecsMessage.SecsItem));
             return (root is null)
-                ? new SecsMessage(s, f, r, name)
-                : new SecsMessage(s, f, r, name, root.ToItem());
+                ? new SecsMessage(s, f, name, replyExpected: r)
+                : new SecsMessage(s, f, name, root.ToItem(), replyExpected: r);
         }
 
         public static SecsMessage[] ToSecsMessages(this TextReader reader) => JArray.Load(new JsonTextReader(reader))

@@ -45,13 +45,13 @@ namespace Secs4Net
         }
 
 
-        public static bool IsMatch(this SecsMessage src, SecsMessage target)
+        public static bool IsMatch(this SecsMessage src, in SecsMessage target)
         {
             return src.S == target.S && src.F == target.F &&
                    (target.SecsItem == null || src.SecsItem.IsMatch(target.SecsItem));
         }
 
-        internal static void Reverse(this byte[] bytes, int begin, int end, int offSet)
+        internal static void Reverse(this byte[] bytes, in int begin, in int end, in int offSet)
         {
             if (offSet <= 1) return;
             for (var i = begin; i < end; i += offSet)

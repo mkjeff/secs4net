@@ -15,9 +15,9 @@ namespace Secs4Net
         private readonly WeakReference<SecsGem> _secsGem;
         private readonly MessageHeader _header;
         public SecsMessage Message { get; }
-        public int MessageId => _header.SystemBytes;
+        public ref readonly int MessageId => ref _header.SystemBytes;
 
-        internal PrimaryMessageWrapper(SecsGem secsGem, MessageHeader header, SecsMessage msg)
+        internal PrimaryMessageWrapper(in SecsGem secsGem, in MessageHeader header, in SecsMessage msg)
         {
             _secsGem = new WeakReference<SecsGem>(secsGem);
             _header = header;
@@ -38,7 +38,7 @@ namespace Secs4Net
             if (!Message.ReplyExpected || !_secsGem.TryGetTarget(out var secsGem))
                 return ReplyAsyncTrueCache;
 
-            replyMessage = replyMessage ?? new SecsMessage(9, 7, false, "Unknown Message", Item.B(_header.EncodeTo(new byte[10])));
+            replyMessage = replyMessage ?? new SecsMessage(9, 7, "Unknown Message", Item.B(_header.EncodeTo(new byte[10])), replyExpected: false);
             replyMessage.ReplyExpected = false;
 
             return secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes)

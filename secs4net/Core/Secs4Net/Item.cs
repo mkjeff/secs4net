@@ -61,7 +61,7 @@ namespace Secs4Net
         /// <summary>
         /// A,J
         /// </summary>
-        private Item(SecsFormat format, string value)
+        private Item(in SecsFormat format, string value)
         {
             Format = format;
             _values = value;
@@ -81,7 +81,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="format"></param>
         /// <param name="value"></param>
-        private Item(SecsFormat format, IEnumerable value)
+        private Item(in SecsFormat format, IEnumerable value)
         {
             Format = format;
             _values = value;
@@ -385,28 +385,28 @@ namespace Secs4Net
             throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $@"Item data length:{valueCount} is overflow");
         }
 
-        internal static Item BytesDecode(ref SecsFormat format, byte[] data, ref int index, ref int length)
+        internal static Item BytesDecode(in SecsFormat format, in byte[] data, in int index, in int length)
         {
             switch (format)
             {
                 case SecsFormat.ASCII: return length == 0 ? A() : A(Encoding.ASCII.GetString(data, index, length));
                 case SecsFormat.JIS8: return length == 0 ? J() : J(Jis8Encoding.GetString(data, index, length));
-                case SecsFormat.Boolean: return length == 0 ? Boolean() : Boolean(Decode<bool>(data, ref index, ref length));
-                case SecsFormat.Binary: return length == 0 ? B() : B(Decode<byte>(data, ref index, ref length));
-                case SecsFormat.U1: return length == 0 ? U1() : U1(Decode<byte>(data, ref index, ref length));
-                case SecsFormat.U2: return length == 0 ? U2() : U2(Decode<ushort>(data, ref index, ref length));
-                case SecsFormat.U4: return length == 0 ? U4() : U4(Decode<uint>(data, ref index, ref length));
-                case SecsFormat.U8: return length == 0 ? U8() : U8(Decode<ulong>(data, ref index, ref length));
-                case SecsFormat.I1: return length == 0 ? I1() : I1(Decode<sbyte>(data, ref index, ref length));
-                case SecsFormat.I2: return length == 0 ? I2() : I2(Decode<short>(data, ref index, ref length));
-                case SecsFormat.I4: return length == 0 ? I4() : I4(Decode<int>(data, ref index, ref length));
-                case SecsFormat.I8: return length == 0 ? I8() : I8(Decode<long>(data, ref index, ref length));
-                case SecsFormat.F4: return length == 0 ? F4() : F4(Decode<float>(data, ref index, ref length));
-                case SecsFormat.F8: return length == 0 ? F8() : F8(Decode<double>(data, ref index, ref length));
+                case SecsFormat.Boolean: return length == 0 ? Boolean() : Boolean(Decode<bool>(data, index, length));
+                case SecsFormat.Binary: return length == 0 ? B() : B(Decode<byte>(data, index, length));
+                case SecsFormat.U1: return length == 0 ? U1() : U1(Decode<byte>(data, index, length));
+                case SecsFormat.U2: return length == 0 ? U2() : U2(Decode<ushort>(data, index, length));
+                case SecsFormat.U4: return length == 0 ? U4() : U4(Decode<uint>(data, index, length));
+                case SecsFormat.U8: return length == 0 ? U8() : U8(Decode<ulong>(data, index, length));
+                case SecsFormat.I1: return length == 0 ? I1() : I1(Decode<sbyte>(data, index, length));
+                case SecsFormat.I2: return length == 0 ? I2() : I2(Decode<short>(data, index, length));
+                case SecsFormat.I4: return length == 0 ? I4() : I4(Decode<int>(data, index, length));
+                case SecsFormat.I8: return length == 0 ? I8() : I8(Decode<long>(data, index, length));
+                case SecsFormat.F4: return length == 0 ? F4() : F4(Decode<float>(data, index, length));
+                case SecsFormat.F8: return length == 0 ? F8() : F8(Decode<double>(data, index, length));
                 default: throw new ArgumentException(@"Invalid format", nameof(format));
             }
 
-            T[] Decode<T>(byte[] data2, ref int index2, ref int length2) where T : struct
+            T[] Decode<T>(byte[] data2, in int index2, in int length2) where T : struct
             {
                 var elmSize = Unsafe.SizeOf<T>();
                 data2.Reverse(index2, index2 + length2, elmSize);

@@ -215,7 +215,7 @@ namespace Secs4Net.Sml
             {
             }
 
-            return new SecsMessage(s, f, replyExpected, name, rootItem);
+            return new SecsMessage(s, f, name, rootItem, replyExpected);
         }
 
         public static SecsMessage ToSecsMessage(this TextReader sr)
@@ -245,7 +245,7 @@ namespace Secs4Net.Sml
             {
             }
 
-            return new SecsMessage(s, f, replyExpected, name, rootItem);
+            return new SecsMessage(s, f, name, rootItem, replyExpected);
         }
 
         private static bool ParseItem(string line, Stack<List<Item>> stack, ref Item rootSecsItem)
