@@ -2,7 +2,7 @@
 
 namespace Secs4Net
 {
-    public class SecsException : Exception
+    public sealed class SecsException : Exception
     {
         public SecsMessage SecsMsg { get; }
 

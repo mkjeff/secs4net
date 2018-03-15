@@ -391,7 +391,7 @@ namespace Secs4Net
                 {
                     _logger.MessageIn(msg, systembyte);
                     _logger.Warning("Received Unrecognized Device Id Message");
-                    SendDataMessageAsync(new SecsMessage(9, 1, false, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10]))), NewSystemId);
+                    SendDataMessageAsync(new SecsMessage(9, 1, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10])), replyExpected: false), NewSystemId);
                     return;
                 }
 
@@ -419,7 +419,7 @@ namespace Secs4Net
             }
         }
 
-        private void SendControlMessage(MessageType msgType, int systembyte)
+        private void SendControlMessage(in MessageType msgType, in int systembyte)
         {
             var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
@@ -431,11 +431,11 @@ namespace Secs4Net
             {
                 BufferList = new List<ArraySegment<byte>>(2) {
                     ControlMessageLengthBytes,
-                    new ArraySegment<byte>(new MessageHeader{
-                        DeviceId = 0xFFFF,
-                        MessageType = msgType,
-                        SystemBytes = systembyte
-                    }.EncodeTo(new byte[10]))
+                    new ArraySegment<byte>(new MessageHeader(
+                        deviceId: 0xFFFF,
+                        messageType: msgType,
+                        systemBytes: systembyte
+                    ).EncodeTo(new byte[10]))
                 },
                 UserToken = token,
             };
@@ -466,7 +466,7 @@ namespace Secs4Net
             }
         }
 
-        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
+        internal Task<SecsMessage> SendDataMessageAsync(in SecsMessage msg, in int systembyte)
         {
             if (State != ConnectionState.Selected)
                 throw new SecsException("Device is not selected");
@@ -476,13 +476,13 @@ namespace Secs4Net
                 _replyExpectedMsgs[systembyte] = token;
 
             var header = new MessageHeader
-            {
-                S = msg.S,
-                F = msg.F,
-                ReplyExpected = msg.ReplyExpected,
-                DeviceId = DeviceId,
-                SystemBytes = systembyte
-            };
+            (
+                s: msg.S,
+                f: msg.F,
+                replyExpected: msg.ReplyExpected,
+                deviceId: DeviceId,
+                systemBytes: systembyte
+            );
 
             var bufferList = msg.RawDatas.Value;
             bufferList[1] = new ArraySegment<byte>(header.EncodeTo(new byte[10]));
@@ -532,7 +532,7 @@ namespace Secs4Net
             }
         }
 
-        private void CommunicationStateChanging(ConnectionState newState)
+        private void CommunicationStateChanging(in ConnectionState newState)
         {
             State = newState;
             ConnectionChanged?.Invoke(this, State);
@@ -608,14 +608,14 @@ namespace Secs4Net
             internal readonly int Id;
             internal readonly MessageType MsgType;
 
-            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType)
+            internal TaskCompletionSourceToken(in SecsMessage primaryMessageMsg, in int id, in MessageType msgType)
             {
                 MessageSent = primaryMessageMsg;
                 Id = id;
                 MsgType = msgType;
             }
 
-            internal void HandleReplyMessage(SecsMessage replyMsg)
+            internal void HandleReplyMessage(in SecsMessage replyMsg)
             {
                 replyMsg.Name = MessageSent.Name;
                 if (replyMsg.F == 0)

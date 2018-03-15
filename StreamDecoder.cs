@@ -71,7 +71,7 @@ namespace Secs4Net
             _previousRemainedCount = 0;
         }
 
-        internal StreamDecoder(int streamBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
+        internal StreamDecoder(in int streamBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
         {
             _buffer = new byte[streamBufferSize];
             _bufferOffset = 0;
@@ -91,7 +91,7 @@ namespace Secs4Net
             // 0: get total message length 4 bytes
             int GetTotalMessageLength(ref int length, out int need)
             {
-                if (!CheckAvailable(ref length, 4, out need))
+                if (!CheckAvailable(length, 4, out need))
                     return 0;
 
                 Array.Reverse(_buffer, _decodeIndex, 4);
@@ -105,7 +105,7 @@ namespace Secs4Net
             // 1: get message header 10 bytes
             int GetMessageHeader(ref int length, out int need)
             {
-                if (!CheckAvailable(ref length, 10, out need))
+                if (!CheckAvailable(length, 10, out need))
                     return 1;
 
                 _msgHeader = MessageHeader.Decode(_buffer, _decodeIndex);
@@ -115,7 +115,7 @@ namespace Secs4Net
                 if (_messageDataLength == 0)
                 {
                     if (_msgHeader.MessageType == MessageType.DataMessage)
-                        _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected, string.Empty));
+                        _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, string.Empty, replyExpected: _msgHeader.ReplyExpected));
                     else
                         _controlMsgHandler(_msgHeader);
                     return 0;
@@ -124,7 +124,7 @@ namespace Secs4Net
                 if (length >= _messageDataLength)
                 {
                     Trace.WriteLine("Get Complete Data Message with total data");
-                    _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected, string.Empty, BufferedDecodeItem(_buffer, ref _decodeIndex)));
+                    _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, string.Empty, BufferedDecodeItem(_buffer, ref _decodeIndex), _msgHeader.ReplyExpected));
                     length -= (int)_messageDataLength;
                     _messageDataLength = 0;
                     return 0; //completeWith message received
@@ -135,7 +135,7 @@ namespace Secs4Net
             // 2: get _format + lengthBits(2bit) 1 byte
             int GetItemHeader(ref int length, out int need)
             {
-                if (!CheckAvailable(ref length, 1, out need))
+                if (!CheckAvailable(length, 1, out need))
                     return 2;
 
                 _format = (SecsFormat)(_buffer[_decodeIndex] & 0xFC);
@@ -149,7 +149,7 @@ namespace Secs4Net
             // 3: get _itemLength _lengthBits bytes, at most 3 byte
             int GetItemLength(ref int length, out int need)
             {
-                if (!CheckAvailable(ref length, _lengthBits, out need))
+                if (!CheckAvailable(length, _lengthBits, out need))
                     return 3;
 
                 Array.Copy(_buffer, _decodeIndex, _itemLengthBytes, 0, _lengthBits);
@@ -184,10 +184,10 @@ namespace Secs4Net
                 }
                 else
                 {
-                    if (!CheckAvailable(ref length, _itemLength, out need))
+                    if (!CheckAvailable(length, _itemLength, out need))
                         return 4;
 
-                    item = Item.BytesDecode(ref _format, _buffer, ref _decodeIndex, ref _itemLength);
+                    item = Item.BytesDecode(_format, _buffer, _decodeIndex, _itemLength);
                     Trace.WriteLine($"Complete Item: {_format}");
 
                     _decodeIndex += _itemLength;
@@ -198,7 +198,7 @@ namespace Secs4Net
                 if (_stack.Count == 0)
                 {
                     Trace.WriteLine("Get Complete Data Message by stream decoded");
-                    _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected, string.Empty, item));
+                    _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, string.Empty, item, _msgHeader.ReplyExpected));
                     return 0;
                 }
 
@@ -216,7 +216,7 @@ namespace Secs4Net
                     else
                     {
                         Trace.WriteLine("Get Complete Data Message by stream decoded");
-                        _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected, string.Empty, item));
+                        _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, string.Empty, item, _msgHeader.ReplyExpected));
                         return 0;
                     }
                 }
@@ -224,7 +224,7 @@ namespace Secs4Net
                 return GetItemHeader(ref length, out need);
             }
 
-            bool CheckAvailable(ref int length, int required, out int need)
+            bool CheckAvailable(in int length, in int required, out int need)
             {
                 need = required - length;
                 if (need > 0)
@@ -257,7 +257,7 @@ namespace Secs4Net
                         list.Add(BufferedDecodeItem(bytes, ref index));
                     return Item.L(list);
                 }
-                var item = Item.BytesDecode(ref format, bytes, ref index, ref dataLength);
+                var item = Item.BytesDecode(format, bytes, index, dataLength);
                 index += dataLength;
                 return item;
             }

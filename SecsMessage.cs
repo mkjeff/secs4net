@@ -54,7 +54,7 @@ namespace Secs4Net
         /// <param name="replyExpected">expect reply message</param>
         /// <param name="name"></param>
         /// <param name="item">root item</param>
-        public SecsMessage(byte s, byte f, bool replyExpected = true, string name = null, Item item = null)
+        public SecsMessage(byte s, byte f, string name = null, Item item = null, bool replyExpected = true)
         {
             if (s > 0b0111_1111)
                 throw new ArgumentOutOfRangeException(nameof(s), s, Resources.SecsMessageStreamNumberMustLessThan127);
@@ -70,7 +70,7 @@ namespace Secs4Net
                     return EmptyMsgDatas;
 
                 var result = new List<ArraySegment<byte>> {
-                    default(ArraySegment<byte>),    // total length
+                    default,    // total length
                     new ArraySegment<byte>(Array.Empty<byte>())     // header
                     // item
                 };
@@ -84,17 +84,6 @@ namespace Secs4Net
                 return result;
             });
         }
-
-        /// <summary>
-        /// constructor of SecsMessage
-        /// </summary>
-        /// <param name="s">message stream number</param>
-        /// <param name="f">message function number</param>
-        /// <param name="name"></param>
-        /// <param name="item">root item</param>
-        public SecsMessage(byte s, byte f, string name, Item item = null)
-            : this(s, f, true, name, item)
-        { }
 
         #region ISerializable Members
         ////Binary Serialization
