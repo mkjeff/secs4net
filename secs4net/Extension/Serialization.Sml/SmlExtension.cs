@@ -28,8 +28,8 @@ namespace Secs4Net.Sml
                 return;
 
             writer.WriteLine(msg.ToString());
-            if (msg.SecsItem != null)
-                Write(writer, msg.SecsItem, indent);
+			if (msg.SecsItem != null)
+				msg.SecsItem.Write(writer, indent);
             writer.Write('.');
         }
 
@@ -44,7 +44,7 @@ namespace Secs4Net.Sml
             await writer.WriteAsync('.');
         }
 
-        public static void Write(TextWriter writer, Item item, int indent = 4)
+        public static void Write(this Item item, TextWriter writer, int indent = 4)
         {
             var indentStr = new string(' ', indent);
             writer.Write(indentStr);
@@ -58,8 +58,8 @@ namespace Secs4Net.Sml
                 case SecsFormat.List:
                     writer.WriteLine();
                     var items = item.Items;
-                    for (int i = 0, count = items.Count; i < count; i++)
-                        Write(writer, items[i], indent << 1);
+					for (int i = 0, count = items.Count; i < count; i++)
+						items[i].Write(writer, indent << 1);
                     writer.Write(indentStr);
                     break;
                 case SecsFormat.ASCII:
@@ -113,10 +113,10 @@ namespace Secs4Net.Sml
         public static async Task WriteAsync(TextWriter writer, Item item, int indent = 4)
         {
             var indentStr = new string(' ', indent);
-            await writer.WriteAsync(indentStr);
-            await writer.WriteAsync($"<{item.Format.ToSml()} [{item.Count}] ");
+            await writer.WriteAsync(indentStr).ConfigureAwait(false);
+            await writer.WriteAsync($"<{item.Format.ToSml()} [{item.Count}] ").ConfigureAwait(false);
             await WriteItemAcyn();
-            await writer.WriteLineAsync('>');
+            await writer.WriteLineAsync('>').ConfigureAwait(false);
 
             Task WriteItemAcyn()
             {
@@ -142,11 +142,11 @@ namespace Secs4Net.Sml
 
                 async Task WriteListAsnc(TextWriter w, Item secsItem, int d, string dStr)
                 {
-                    await w.WriteLineAsync();
+                    await w.WriteLineAsync().ConfigureAwait(false);
                     var items = secsItem.Items;
                     for (int i = 0, count = items.Count; i < count; i++)
-                        await WriteAsync(writer, items[i], d << 1);
-                    await writer.WriteAsync(dStr);
+                        await WriteAsync(writer, items[i], d << 1).ConfigureAwait(false);
+                    await writer.WriteAsync(dStr).ConfigureAwait(false);
                 }
             }
         }

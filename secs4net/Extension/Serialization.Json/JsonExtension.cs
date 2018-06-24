@@ -153,20 +153,23 @@ namespace Secs4Net.Json
 
         public static async Task WriteToAsync(this Item item, JsonTextWriter writer)
         {
-            await writer.WriteStartObjectAsync();
+            await writer.WriteStartObjectAsync().ConfigureAwait(false);
 
-            await writer.WritePropertyNameAsync(item.Format.GetName());
+            await writer.WritePropertyNameAsync(item.Format.GetName()).ConfigureAwait(false);
 
-            await (item.Format == SecsFormat.List ? WriteListAsync(writer, item) : WriteItemValueAsync(writer, item));
+			if (item.Format == SecsFormat.List)
+				await WriteListAsync(writer, item).ConfigureAwait(false);
+			else
+				await WriteItemValueAsync(writer, item).ConfigureAwait(false);
 
-            await writer.WriteEndObjectAsync();
+            await writer.WriteEndObjectAsync().ConfigureAwait(false);
 
             async Task WriteListAsync(JsonTextWriter w, Item i)
             {
-                await w.WriteStartArrayAsync();
+                await w.WriteStartArrayAsync().ConfigureAwait(false);
                 foreach (var subitem in i.Items)
-                    await subitem.WriteToAsync(w);
-                await w.WriteEndArrayAsync();
+                    await subitem.WriteToAsync(w).ConfigureAwait(false);
+                await w.WriteEndArrayAsync().ConfigureAwait(false);
             }
 
             Task WriteItemValueAsync(JsonTextWriter w, Item i)
@@ -194,12 +197,12 @@ namespace Secs4Net.Json
             async Task WriteValueAsync<T>(JsonWriter w, Item i)
                 where T : struct
             {
-                await w.WriteStartArrayAsync();
+                await w.WriteStartArrayAsync().ConfigureAwait(false);
 
                 foreach (var v in i.GetValues<T>())
-                    await w.WriteValueAsync(v);
+                    await w.WriteValueAsync(v).ConfigureAwait(false);
 
-                await w.WriteEndArrayAsync();
+                await w.WriteEndArrayAsync().ConfigureAwait(false);
             }
         }
 

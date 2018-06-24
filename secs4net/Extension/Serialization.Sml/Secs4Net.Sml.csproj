@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Version>2.0.0</Version>
     <PackageId>Secs4Net.Sml</PackageId>
     <Product>Secs4Net.Sml</Product>
@@ -10,10 +10,6 @@
     <AssemblyName>Secs4Net.Sml</AssemblyName>
     <RootNamespace>Secs4Net.Sml</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj" />
