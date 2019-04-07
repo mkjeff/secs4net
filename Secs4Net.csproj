@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <LangVersion>default</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
