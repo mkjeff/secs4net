@@ -142,7 +142,7 @@ namespace Secs4Net.Json
             }
             writer.WriteEndObject();
 
-            void WriteValue<T>(JsonTextWriter w, Item i) where T : struct
+            void WriteValue<T>(JsonTextWriter w, Item i) where T : unmanaged
             {
                 w.WriteStartArray();
                 foreach (var v in i.GetValues<T>())
@@ -195,7 +195,7 @@ namespace Secs4Net.Json
             }
 
             async Task WriteValueAsync<T>(JsonWriter w, Item i)
-                where T : struct
+                where T : unmanaged
             {
                 await w.WriteStartArrayAsync().ConfigureAwait(false);
 
