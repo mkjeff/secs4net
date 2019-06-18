@@ -11,6 +11,7 @@
     <AssemblyName>Secs4Net.Json</AssemblyName>
     <RootNamespace>Secs4Net.Json</RootNamespace>
     <Version>2.0.0</Version>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
