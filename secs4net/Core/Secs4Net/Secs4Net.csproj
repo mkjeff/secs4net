@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
     <PackageId>Secs4Net</PackageId>
     <Product>Secs4Net</Product>
     <Copyright>Copyright © secs4net 2017</Copyright>
