@@ -25,8 +25,7 @@ namespace Secs4Net
 		{
 			if (items.Count > byte.MaxValue)
 			{
-				throw new ArgumentOutOfRangeException(nameof(items) + "." + nameof(items.Count), items.Count,
-					@"List items length out of range, max length: 255");
+				throw new ArgumentOutOfRangeException(nameof(items) + "." + nameof(items.Count), items.Count, $"List items length out of range, max length: {byte.MaxValue}");
 			}
 
 			this.Format = SecsFormat.List;
