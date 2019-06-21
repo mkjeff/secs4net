@@ -15,12 +15,12 @@ namespace Secs4Net
 		public readonly int SystemBytes;
 
 		internal MessageHeader(
-			in ushort deviceId = default,
-			in bool replyExpected = default,
-			in byte s = default,
-			in byte f = default,
-			in MessageType messageType = default,
-			in int systemBytes = default)
+			ushort deviceId = default,
+			bool replyExpected = default,
+			byte s = default,
+			byte f = default,
+			MessageType messageType = default,
+			int systemBytes = default)
 		{
 			this.DeviceId = deviceId;
 			this.ReplyExpected = replyExpected;

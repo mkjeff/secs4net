@@ -71,7 +71,7 @@ namespace Secs4Net
 			this._previousRemainedCount = 0;
 		}
 
-		internal StreamDecoder(in int streamBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
+		internal StreamDecoder(int streamBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
 		{
 			this._buffer = new byte[streamBufferSize];
 			this._bufferOffset = 0;
@@ -239,7 +239,7 @@ namespace Secs4Net
 				return GetItemHeader(ref length, out need);
 			}
 
-			bool CheckAvailable(in int length, in int required, out int need)
+			bool CheckAvailable(int length, int required, out int need)
 			{
 				need = required - length;
 				if (need > 0)

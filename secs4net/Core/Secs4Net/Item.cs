@@ -63,7 +63,7 @@ namespace Secs4Net
 		/// <summary>
 		/// A,J
 		/// </summary>
-		private Item(in SecsFormat format, string value)
+		private Item(SecsFormat format, string value)
 		{
 			this.Format = format;
 			this._values = value;
@@ -83,7 +83,7 @@ namespace Secs4Net
 		/// </summary>
 		/// <param name="format"></param>
 		/// <param name="value"></param>
-		private Item(in SecsFormat format, IEnumerable value)
+		private Item(SecsFormat format, IEnumerable value)
 		{
 			this.Format = format;
 			this._values = value;
@@ -428,7 +428,7 @@ namespace Secs4Net
 			throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $@"Item data length:{valueCount} is overflow");
 		}
 
-		internal static Item BytesDecode(in SecsFormat format, in byte[] data, in int index, in int length)
+		internal static Item BytesDecode(SecsFormat format, byte[] data, int index, int length)
 		{
 			switch (format)
 			{
@@ -449,7 +449,7 @@ namespace Secs4Net
 				default: throw new ArgumentException(@"Invalid format", nameof(format));
 			}
 
-			T[] Decode<T>(byte[] data2, in int index2, in int length2) where T : unmanaged
+			T[] Decode<T>(byte[] data2, int index2, int length2) where T : unmanaged
 			{
 				var elmSize = Unsafe.SizeOf<T>();
 				data2.Reverse(index2, index2 + length2, elmSize);

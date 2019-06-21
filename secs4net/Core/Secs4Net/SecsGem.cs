@@ -449,7 +449,7 @@ namespace Secs4Net
 			}
 		}
 
-		private void SendControlMessage(in MessageType msgType, in int systembyte)
+		private void SendControlMessage(MessageType msgType, int systembyte)
 		{
 			var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
 			if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
@@ -498,7 +498,7 @@ namespace Secs4Net
 			}
 		}
 
-		internal Task<SecsMessage> SendDataMessageAsync(in SecsMessage msg, in int systembyte)
+		internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
 		{
 			if (this.State != ConnectionState.Selected)
 			{
@@ -570,7 +570,7 @@ namespace Secs4Net
 			}
 		}
 
-		private void CommunicationStateChanging(in ConnectionState newState)
+		private void CommunicationStateChanging(ConnectionState newState)
 		{
 			this.State = newState;
 			ConnectionChanged?.Invoke(this, this.State);
@@ -658,14 +658,14 @@ namespace Secs4Net
 			internal readonly int Id;
 			internal readonly MessageType MsgType;
 
-			internal TaskCompletionSourceToken(in SecsMessage primaryMessageMsg, in int id, in MessageType msgType)
+			internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType)
 			{
 				this.MessageSent = primaryMessageMsg;
 				this.Id = id;
 				this.MsgType = msgType;
 			}
 
-			internal void HandleReplyMessage(in SecsMessage replyMsg)
+			internal void HandleReplyMessage(SecsMessage replyMsg)
 			{
 				replyMsg.Name = this.MessageSent.Name;
 				if (replyMsg.F == 0)

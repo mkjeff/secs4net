@@ -17,7 +17,7 @@ namespace Secs4Net
 		public SecsMessage Message { get; }
 		public ref readonly int MessageId => ref this._header.SystemBytes;
 
-		internal PrimaryMessageWrapper(in SecsGem secsGem, in MessageHeader header, in SecsMessage msg)
+		internal PrimaryMessageWrapper(SecsGem secsGem, MessageHeader header, SecsMessage msg)
 		{
 			this._secsGem = new WeakReference<SecsGem>(secsGem);
 			this._header = header;
