@@ -165,7 +165,7 @@ namespace Secs4Net
 					return 3;
 				}
 
-				Array.Copy(this._buffer, this._decodeIndex, this._itemLengthBytes, 0, this._lengthBits);
+				System.Buffer.BlockCopy(this._buffer, this._decodeIndex, this._itemLengthBytes, 0, this._lengthBits);
 				Array.Reverse(this._itemLengthBytes, 0, this._lengthBits);
 
 				this._itemLength = BitConverter.ToInt32(this._itemLengthBytes, 0);
@@ -257,7 +257,7 @@ namespace Secs4Net
 				index++;
 
 				var itemLengthBytes = new byte[4];
-				Array.Copy(bytes, index, itemLengthBytes, 0, lengthBits);
+				System.Buffer.BlockCopy(bytes, index, itemLengthBytes, 0, lengthBits);
 				Array.Reverse(itemLengthBytes, 0, lengthBits);
 				int dataLength = BitConverter.ToInt32(itemLengthBytes, 0); // max to 3 byte dataLength
 				index += lengthBits;
@@ -337,7 +337,7 @@ namespace Secs4Net
 						// increase buffer size
 						var newBuffer = new byte[newSize];
 						// keep remained data to new buffer's head
-						Array.Copy(this._buffer, this._bufferOffset - remainCount, newBuffer, 0, remainCount);
+						System.Buffer.BlockCopy(this._buffer, this._bufferOffset - remainCount, newBuffer, 0, remainCount);
 						this._buffer = newBuffer;
 					}
 					else
@@ -345,7 +345,7 @@ namespace Secs4Net
 						Trace.WriteLine($@"<<buffer recyling>>: available = {this.BufferCount}, need = {nextStepReqiredCount}, remained = {remainCount}");
 
 						// move remained data to buffer's head
-						Array.Copy(this._buffer, this._bufferOffset - remainCount, this._buffer, 0, remainCount);
+						System.Buffer.BlockCopy(this._buffer, this._bufferOffset - remainCount, this._buffer, 0, remainCount);
 					}
 					this._bufferOffset = remainCount;
 					this._decodeIndex = 0;
