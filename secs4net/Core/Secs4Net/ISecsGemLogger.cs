@@ -1,35 +1,19 @@
-﻿
-using System;
-using static System.Diagnostics.Trace;
+﻿using System;
 
 namespace Secs4Net
 {
 	public interface ISecsGemLogger
 	{
-		void MessageIn(SecsMessage msg, int systembyte);
-		void MessageOut(SecsMessage msg, int systembyte);
+		void MessageIn(SecsMessage secsMessage, int systembyte);
 
-		void Debug(string msg);
-		void Info(string msg);
-		void Warning(string msg);
-		void Error(string msg, Exception ex = null);
-	}
+		void MessageOut(SecsMessage secsMessage, int systembyte);
 
-	/// <summary>
-	/// SECS Connector Logger
-	/// </summary>
-	public sealed class DefaultSecsGemLogger : ISecsGemLogger
-	{
-		public void MessageIn(SecsMessage msg, int systembyte) => WriteLine($"<-- [0x{systembyte:X8}] {msg}");
+		void Debug(string message);
 
-		public void MessageOut(SecsMessage msg, int systembyte) => WriteLine($"--> [0x{systembyte:X8}] {msg}");
+		void Info(string message);
 
-		public void Debug(string msg) => WriteLine(msg);
+		void Warning(string message);
 
-		public void Info(string msg) => TraceInformation(msg);
-
-		public void Warning(string msg) => TraceWarning(msg);
-
-		public void Error(string msg, Exception ex = null) => TraceError($"{msg}\n {ex}");
+		void Error(string message, Exception exception = null);
 	}
 }
