@@ -48,11 +48,16 @@ namespace Secs4Net
 			char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
 		}
 
-
 		public static bool IsMatch(this SecsMessage src, SecsMessage target)
 		{
-			return src.S == target.S && src.F == target.F &&
-				   (target.SecsItem == null || src.SecsItem.IsMatch(target.SecsItem));
+			if (object.ReferenceEquals(src, target))
+			{
+				return true;
+			}
+
+			return src.S == target.S
+				&& src.F == target.F
+				&& (target.SecsItem == null || src.SecsItem.IsMatch(target.SecsItem));
 		}
 
 		internal static void Reverse(this byte[] bytes, int begin, int end, int offSet)

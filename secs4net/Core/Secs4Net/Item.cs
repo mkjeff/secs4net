@@ -158,6 +158,11 @@ namespace Secs4Net
 
 		public bool IsMatch(Item target)
 		{
+			if (object.ReferenceEquals(this, target))
+			{
+				return true;
+			}
+
 			if (this.Format != target.Format)
 			{
 				return false;
