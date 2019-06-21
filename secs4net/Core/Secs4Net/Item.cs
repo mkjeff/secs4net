@@ -241,40 +241,61 @@ namespace Secs4Net
 		public override string ToString()
 		{
 			var sb = new StringBuilder(this.Format.GetName()).Append("[");
+
 			switch (this.Format)
 			{
 				case SecsFormat.List:
 					sb.Append(Unsafe.As<IReadOnlyList<Item>>(this._values).Count).Append("]: ...");
 					break;
+
 				case SecsFormat.ASCII:
 				case SecsFormat.JIS8:
 					sb.Append(Unsafe.As<string>(this._values).Length).Append("]: ").Append(Unsafe.As<string>(this._values));
 					break;
+
 				case SecsFormat.Binary:
 					sb.Append(Unsafe.As<byte[]>(this._values).Length).Append("]: ").Append(Unsafe.As<byte[]>(this._values).ToHexString());
 					break;
+
 				default:
 					sb.Append(Unsafe.As<Array>(this._values).Length).Append("]: ");
 					switch (this.Format)
 					{
-						case SecsFormat.Boolean: sb.Append(JoinAsString<bool>(this._values)); break;
-						case SecsFormat.I1: sb.Append(JoinAsString<sbyte>(this._values)); break;
-						case SecsFormat.I2: sb.Append(JoinAsString<short>(this._values)); break;
-						case SecsFormat.I4: sb.Append(JoinAsString<int>(this._values)); break;
-						case SecsFormat.I8: sb.Append(JoinAsString<long>(this._values)); break;
-						case SecsFormat.U1: sb.Append(JoinAsString<byte>(this._values)); break;
-						case SecsFormat.U2: sb.Append(JoinAsString<ushort>(this._values)); break;
-						case SecsFormat.U4: sb.Append(JoinAsString<uint>(this._values)); break;
-						case SecsFormat.U8: sb.Append(JoinAsString<ulong>(this._values)); break;
-						case SecsFormat.F4: sb.Append(JoinAsString<float>(this._values)); break;
-						case SecsFormat.F8: sb.Append(JoinAsString<double>(this._values)); break;
+						case SecsFormat.Boolean: AppendAsString<bool>(sb, this._values); break;
+						case SecsFormat.I1: AppendAsString<sbyte>(sb, this._values); break;
+						case SecsFormat.I2: AppendAsString<short>(sb, this._values); break;
+						case SecsFormat.I4: AppendAsString<int>(sb, this._values); break;
+						case SecsFormat.I8: AppendAsString<long>(sb, this._values); break;
+						case SecsFormat.U1: AppendAsString<byte>(sb, this._values); break;
+						case SecsFormat.U2: AppendAsString<ushort>(sb, this._values); break;
+						case SecsFormat.U4: AppendAsString<uint>(sb, this._values); break;
+						case SecsFormat.U8: AppendAsString<ulong>(sb, this._values); break;
+						case SecsFormat.F4: AppendAsString<float>(sb, this._values); break;
+						case SecsFormat.F8: AppendAsString<double>(sb, this._values); break;
 					}
 					break;
 			}
+
 			return sb.ToString();
 
-			string JoinAsString<T>(IEnumerable src)
-				where T : unmanaged => string.Join(" ", Unsafe.As<T[]>(src));
+			void AppendAsString<T>(StringBuilder stringBuilder, IEnumerable src)
+				where T : unmanaged
+			{
+				var array = Unsafe.As<T[]>(src);
+
+				if (array.Length == 0)
+				{
+					return;
+				}
+
+				stringBuilder.Append(array[0]);
+
+				for (int i = 1; i < array.Length; i++)
+				{
+					stringBuilder.Append(' ');
+					stringBuilder.Append(array[i]);
+				}
+			}
 		}
 
 		#region Type Casting Operator
