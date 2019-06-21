@@ -290,49 +290,49 @@ namespace Secs4Net
 
 		#region Factory Methods
 
-		internal static Item L(IList<Item> items) => items.Count > 0 ? new Item(new ReadOnlyCollection<Item>(items)) : L();
-		public static Item L(IEnumerable<Item> items) => L(items.ToList());
-		public static Item L(params Item[] items) => L((IList<Item>)items);
+		internal static Item L(IList<Item> items) => items?.Count > 0 ? new Item(new ReadOnlyCollection<Item>(items)) : Item.L();
+		public static Item L(IEnumerable<Item> items) => Item.L(items?.ToList());
+		public static Item L(params Item[] items) => Item.L((IList<Item>)items);
 
-		public static Item B(params byte[] value) => value.Length > 0 ? new Item(SecsFormat.Binary, value) : B();
-		public static Item B(IEnumerable<byte> value) => B(value.ToArray());
+		public static Item B(params byte[] value) => value?.Length > 0 ? new Item(SecsFormat.Binary, value) : Item.B();
+		public static Item B(IEnumerable<byte> value) => Item.B(value?.ToArray());
 
-		public static Item U1(params byte[] value) => value.Length > 0 ? new Item(SecsFormat.U1, value) : U1();
-		public static Item U1(IEnumerable<byte> value) => U1(value.ToArray());
+		public static Item U1(params byte[] value) => value?.Length > 0 ? new Item(SecsFormat.U1, value) : Item.U1();
+		public static Item U1(IEnumerable<byte> value) => U1(value?.ToArray());
 
-		public static Item U2(params ushort[] value) => value.Length > 0 ? new Item(SecsFormat.U2, value) : U2();
-		public static Item U2(IEnumerable<ushort> value) => U2(value.ToArray());
+		public static Item U2(params ushort[] value) => value?.Length > 0 ? new Item(SecsFormat.U2, value) : Item.U2();
+		public static Item U2(IEnumerable<ushort> value) => Item.U2(value?.ToArray());
 
-		public static Item U4(params uint[] value) => value.Length > 0 ? new Item(SecsFormat.U4, value) : U4();
-		public static Item U4(IEnumerable<uint> value) => U4(value.ToArray());
+		public static Item U4(params uint[] value) => value?.Length > 0 ? new Item(SecsFormat.U4, value) : Item.U4();
+		public static Item U4(IEnumerable<uint> value) => Item.U4(value?.ToArray());
 
-		public static Item U8(params ulong[] value) => value.Length > 0 ? new Item(SecsFormat.U8, value) : U8();
-		public static Item U8(IEnumerable<ulong> value) => U8(value.ToArray());
+		public static Item U8(params ulong[] value) => value?.Length > 0 ? new Item(SecsFormat.U8, value) : Item.U8();
+		public static Item U8(IEnumerable<ulong> value) => Item.U8(value?.ToArray());
 
-		public static Item I1(params sbyte[] value) => value.Length > 0 ? new Item(SecsFormat.I1, value) : I1();
-		public static Item I1(IEnumerable<sbyte> value) => I1(value.ToArray());
+		public static Item I1(params sbyte[] value) => value?.Length > 0 ? new Item(SecsFormat.I1, value) : Item.I1();
+		public static Item I1(IEnumerable<sbyte> value) => Item.I1(value?.ToArray());
 
-		public static Item I2(params short[] value) => value.Length > 0 ? new Item(SecsFormat.I2, value) : I2();
-		public static Item I2(IEnumerable<short> value) => I2(value.ToArray());
+		public static Item I2(params short[] value) => value?.Length > 0 ? new Item(SecsFormat.I2, value) : Item.I2();
+		public static Item I2(IEnumerable<short> value) => Item.I2(value?.ToArray());
 
-		public static Item I4(params int[] value) => value.Length > 0 ? new Item(SecsFormat.I4, value) : I4();
-		public static Item I4(IEnumerable<int> value) => I4(value.ToArray());
+		public static Item I4(params int[] value) => value?.Length > 0 ? new Item(SecsFormat.I4, value) : Item.I4();
+		public static Item I4(IEnumerable<int> value) => Item.I4(value?.ToArray());
 
-		public static Item I8(params long[] value) => value.Length > 0 ? new Item(SecsFormat.I8, value) : I8();
-		public static Item I8(IEnumerable<long> value) => I8(value.ToArray());
+		public static Item I8(params long[] value) => value?.Length > 0 ? new Item(SecsFormat.I8, value) : Item.I8();
+		public static Item I8(IEnumerable<long> value) => Item.I8(value?.ToArray());
 
-		public static Item F4(params float[] value) => value.Length > 0 ? new Item(SecsFormat.F4, value) : F4();
-		public static Item F4(IEnumerable<float> value) => F4(value.ToArray());
+		public static Item F4(params float[] value) => value?.Length > 0 ? new Item(SecsFormat.F4, value) : Item.F4();
+		public static Item F4(IEnumerable<float> value) => Item.F4(value?.ToArray());
 
-		public static Item F8(params double[] value) => value.Length > 0 ? new Item(SecsFormat.F8, value) : F8();
-		public static Item F8(IEnumerable<double> value) => F8(value.ToArray());
+		public static Item F8(params double[] value) => value?.Length > 0 ? new Item(SecsFormat.F8, value) : Item.F8();
+		public static Item F8(IEnumerable<double> value) => Item.F8(value?.ToArray());
 
-		public static Item Boolean(params bool[] value) => value.Length > 0 ? new Item(SecsFormat.Boolean, value) : Boolean();
-		public static Item Boolean(IEnumerable<bool> value) => Boolean(value.ToArray());
+		public static Item Boolean(params bool[] value) => value?.Length > 0 ? new Item(SecsFormat.Boolean, value) : Item.Boolean();
+		public static Item Boolean(IEnumerable<bool> value) => Item.Boolean(value?.ToArray());
 
-		public static Item A(string value) => value != string.Empty ? new Item(SecsFormat.ASCII, value) : A();
+		public static Item A(string value) => !string.IsNullOrEmpty(value) ? new Item(SecsFormat.ASCII, value) : Item.A();
 
-		public static Item J(string value) => value != string.Empty ? new Item(SecsFormat.JIS8, value) : J();
+		public static Item J(string value) => !string.IsNullOrEmpty(value) ? new Item(SecsFormat.JIS8, value) : Item.J();
 		#endregion
 
 		#region Share Object
