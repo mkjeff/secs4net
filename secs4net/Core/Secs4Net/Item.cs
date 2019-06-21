@@ -337,21 +337,21 @@ namespace Secs4Net
 
 		#region Share Object
 
-		public static Item L() => EmptyL;
-		public static Item B() => EmptyBinary;
-		public static Item U1() => EmptyU1;
-		public static Item U2() => EmptyU2;
-		public static Item U4() => EmptyU4;
-		public static Item U8() => EmptyU8;
-		public static Item I1() => EmptyI1;
-		public static Item I2() => EmptyI2;
-		public static Item I4() => EmptyI4;
-		public static Item I8() => EmptyI8;
-		public static Item F4() => EmptyF4;
-		public static Item F8() => EmptyF8;
-		public static Item Boolean() => EmptyBoolean;
-		public static Item A() => EmptyA;
-		public static Item J() => EmptyJ;
+		public static Item L() => Item.EmptyL;
+		public static Item B() => Item.EmptyBinary;
+		public static Item U1() => Item.EmptyU1;
+		public static Item U2() => Item.EmptyU2;
+		public static Item U4() => Item.EmptyU4;
+		public static Item U8() => Item.EmptyU8;
+		public static Item I1() => Item.EmptyI1;
+		public static Item I2() => Item.EmptyI2;
+		public static Item I4() => Item.EmptyI4;
+		public static Item I8() => Item.EmptyI8;
+		public static Item F4() => Item.EmptyF4;
+		public static Item F8() => Item.EmptyF8;
+		public static Item Boolean() => Item.EmptyBoolean;
+		public static Item A() => Item.EmptyA;
+		public static Item J() => Item.EmptyJ;
 
 		private static readonly Item EmptyL = new Item(SecsFormat.List, Enumerable.Empty<Item>());
 		private static readonly Item EmptyA = new Item(SecsFormat.ASCII, string.Empty);
