@@ -9,7 +9,7 @@ namespace Secs4Net
 		public SecsException(SecsMessage msg, string description)
 			: base(description)
 		{
-			SecsMsg = msg;
+			this.SecsMsg = msg;
 		}
 
 		public SecsException(string msg)

@@ -25,8 +25,8 @@ namespace Secs4Net
 		private ISecsGemLogger _logger = DefaultLogger;
 		public ISecsGemLogger Logger
 		{
-			get => _logger;
-			set => _logger = value ?? DefaultLogger;
+			get => this._logger;
+			set => this._logger = value ?? DefaultLogger;
 		}
 
 		/// <summary>
@@ -70,13 +70,13 @@ namespace Secs4Net
 		/// </summary>
 		public int LinkTestInterval
 		{
-			get => _linkTestInterval;
+			get => this._linkTestInterval;
 			set
 			{
-				if (_linkTestEnable)
+				if (this._linkTestEnable)
 				{
-					_linkTestInterval = value;
-					_timerLinkTest.Change(0, _linkTestInterval);
+					this._linkTestInterval = value;
+					this._timerLinkTest.Change(0, this._linkTestInterval);
 				}
 			}
 		}
@@ -89,17 +89,23 @@ namespace Secs4Net
 		/// </summary>
 		public bool LinkTestEnable
 		{
-			get => _linkTestEnable;
+			get => this._linkTestEnable;
 			set
 			{
-				if (_linkTestEnable == value)
+				if (this._linkTestEnable == value)
+				{
 					return;
+				}
 
-				_linkTestEnable = value;
-				if (_linkTestEnable)
-					_timerLinkTest.Change(0, LinkTestInterval);
+				this._linkTestEnable = value;
+				if (this._linkTestEnable)
+				{
+					this._timerLinkTest.Change(0, this.LinkTestInterval);
+				}
 				else
-					_timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
+				{
+					this._timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
+				}
 			}
 		}
 
@@ -112,13 +118,13 @@ namespace Secs4Net
 		private const int DisposalComplete = 1;
 		private int _disposeStage;
 
-		public bool IsDisposed => Interlocked.CompareExchange(ref _disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
+		public bool IsDisposed => Interlocked.CompareExchange(ref this._disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
 		/// <summary>
 		/// remote device endpoint address
 		/// </summary>
-		public string DeviceIpAddress => IsActive
-			? IpAddress.ToString()
-			: ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
+		public string DeviceIpAddress => this.IsActive
+			? this.IpAddress.ToString()
+			: ((IPEndPoint)this._socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
 
 		private Socket _socket;
 
@@ -139,7 +145,7 @@ namespace Secs4Net
 		private readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
 		private readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
 
-		internal int NewSystemId => _systemByte.New();
+		internal int NewSystemId => this._systemByte.New();
 
 		private readonly TaskFactory _taskFactory = new TaskFactory(TaskScheduler.Default);
 
@@ -153,71 +159,81 @@ namespace Secs4Net
 		public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
 		{
 			if (port <= 0)
+			{
 				port = 0;
+			}
 
-			_sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
-			_sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
-			_secsDecoder = new StreamDecoder(receiveBufferSize, HandleControlMessage, HandleDataMessage);
+			this._sendControlMessageCompleteHandler = this.SendControlMessageCompleteHandler;
+			this._sendDataMessageCompleteHandler = this.SendDataMessageCompleteHandler;
+			this._secsDecoder = new StreamDecoder(receiveBufferSize, HandleControlMessage, HandleDataMessage);
 
-			IpAddress = ip;
-			Port = port;
-			IsActive = isActive;
-			DecoderBufferSize = receiveBufferSize;
+			this.IpAddress = ip;
+			this.Port = port;
+			this.IsActive = isActive;
+			this.DecoderBufferSize = receiveBufferSize;
 
 			#region Timer Action
-			_timer7 = new Timer(delegate
+			this._timer7 = new Timer(delegate
 			{
-				_logger.Error($"T7 Timeout: {T7 / 1000} sec.");
-				CommunicationStateChanging(ConnectionState.Retry);
+				this._logger.Error($"T7 Timeout: {this.T7 / 1000} sec.");
+				this.CommunicationStateChanging(ConnectionState.Retry);
 			}, null, Timeout.Infinite, Timeout.Infinite);
 
-			_timer8 = new Timer(delegate
+			this._timer8 = new Timer(delegate
 			{
-				_logger.Error($"T8 Timeout: {T8 / 1000} sec.");
-				CommunicationStateChanging(ConnectionState.Retry);
+				this._logger.Error($"T8 Timeout: {this.T8 / 1000} sec.");
+				this.CommunicationStateChanging(ConnectionState.Retry);
 			}, null, Timeout.Infinite, Timeout.Infinite);
 
-			_timerLinkTest = new Timer(delegate
+			this._timerLinkTest = new Timer(delegate
 			{
-				if (State == ConnectionState.Selected)
-					SendControlMessage(MessageType.LinkTestRequest, NewSystemId);
+				if (this.State == ConnectionState.Selected)
+				{
+					this.SendControlMessage(MessageType.LinkTestRequest, this.NewSystemId);
+				}
 			}, null, Timeout.Infinite, Timeout.Infinite);
 			#endregion
 
-			if (IsActive)
+			if (this.IsActive)
 			{
-				_startImpl = async () =>
+				this._startImpl = async () =>
 				{
 					var connected = false;
 					do
 					{
-						if (IsDisposed)
+						if (this.IsDisposed)
+						{
 							return;
+						}
 
-						CommunicationStateChanging(ConnectionState.Connecting);
+						this.CommunicationStateChanging(ConnectionState.Connecting);
 						try
 						{
-							if (IsDisposed)
+							if (this.IsDisposed)
+							{
 								return;
+							}
 
-							_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-							await _socket.ConnectAsync(IpAddress, Port).ConfigureAwait(false);
+							this._socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+							await this._socket.ConnectAsync(this.IpAddress, this.Port).ConfigureAwait(false);
 							connected = true;
 						}
 						catch (Exception ex)
 						{
-							if (IsDisposed)
+							if (this.IsDisposed)
+							{
 								return;
+							}
 
-							_logger.Error(ex.Message);
-							_logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
-							await Task.Delay(T5);
+							this._logger.Error(ex.Message);
+							this._logger.Info($"Start T5 Timer: {this.T5 / 1000} sec.");
+							await Task.Delay(this.T5);
 						}
 					} while (!connected);
 
 					// hook receive event first, because no message will received before 'SelectRequest' send to device
 					StartSocketReceive();
-					SendControlMessage(MessageType.SelectRequest, NewSystemId);
+					this.SendControlMessage(MessageType.SelectRequest, this.NewSystemId);
 				};
 
 				//_stopImpl = delegate { };
@@ -225,32 +241,38 @@ namespace Secs4Net
 			else
 			{
 				var server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-				server.Bind(new IPEndPoint(IpAddress, Port));
+				server.Bind(new IPEndPoint(this.IpAddress, this.Port));
 				server.Listen(0);
 
-				_startImpl = async () =>
+				this._startImpl = async () =>
 				{
 					var connected = false;
 					do
 					{
-						if (IsDisposed)
+						if (this.IsDisposed)
+						{
 							return;
+						}
 
-						CommunicationStateChanging(ConnectionState.Connecting);
+						this.CommunicationStateChanging(ConnectionState.Connecting);
 						try
 						{
-							if (IsDisposed)
+							if (this.IsDisposed)
+							{
 								return;
+							}
 
-							_socket = await server.AcceptAsync().ConfigureAwait(false);
+							this._socket = await server.AcceptAsync().ConfigureAwait(false);
 							connected = true;
 						}
 						catch (Exception ex)
 						{
-							if (IsDisposed)
+							if (this.IsDisposed)
+							{
 								return;
+							}
 
-							_logger.Error(ex.Message);
+							this._logger.Error(ex.Message);
 							await Task.Delay(2000).ConfigureAwait(false);
 						}
 					} while (!connected);
@@ -258,9 +280,9 @@ namespace Secs4Net
 					StartSocketReceive();
 				};
 
-				_stopImpl = delegate
+				this._stopImpl = delegate
 				{
-					if (IsDisposed)
+					if (this.IsDisposed)
 					{
 						server.Dispose();
 					}
@@ -269,65 +291,71 @@ namespace Secs4Net
 
 			void StartSocketReceive()
 			{
-				CommunicationStateChanging(ConnectionState.Connected);
+				this.CommunicationStateChanging(ConnectionState.Connected);
 
 				var receiveCompleteEvent = new SocketAsyncEventArgs();
-				receiveCompleteEvent.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+				receiveCompleteEvent.SetBuffer(this._secsDecoder.Buffer, this._secsDecoder.BufferOffset, this._secsDecoder.BufferCount);
 				receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
 
-				if (!_socket.ReceiveAsync(receiveCompleteEvent))
-					SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
+				if (!this._socket.ReceiveAsync(receiveCompleteEvent))
+				{
+					SocketReceiveEventCompleted(this._socket, receiveCompleteEvent);
+				}
 
 				void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
 				{
 					if (e.SocketError != SocketError.Success)
 					{
 						var ex = new SocketException((int)e.SocketError);
-						_logger.Error($"RecieveComplete socket error:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
-						CommunicationStateChanging(ConnectionState.Retry);
+						this._logger.Error($"RecieveComplete socket error:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
+						this.CommunicationStateChanging(ConnectionState.Retry);
 						return;
 					}
 
 					try
 					{
-						_timer8.Change(Timeout.Infinite, Timeout.Infinite);
+						this._timer8.Change(Timeout.Infinite, Timeout.Infinite);
 						var receivedCount = e.BytesTransferred;
 						if (receivedCount == 0)
 						{
-							_logger.Error("Received 0 byte.");
-							CommunicationStateChanging(ConnectionState.Retry);
+							this._logger.Error("Received 0 byte.");
+							this.CommunicationStateChanging(ConnectionState.Retry);
 							return;
 						}
 
-						if (_secsDecoder.Decode(receivedCount))
+						if (this._secsDecoder.Decode(receivedCount))
 						{
 #if !DISABLE_T8
-							_logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
-							_timer8.Change(T8, Timeout.Infinite);
+							this._logger.Debug($"Start T8 Timer: {this.T8 / 1000} sec.");
+							this._timer8.Change(this.T8, Timeout.Infinite);
 #endif
 						}
 
-						if (_secsDecoder.Buffer.Length != DecoderBufferSize)
+						if (this._secsDecoder.Buffer.Length != this.DecoderBufferSize)
 						{
 							// buffer size changed
-							e.SetBuffer(_secsDecoder.Buffer, _secsDecoder.BufferOffset, _secsDecoder.BufferCount);
-							DecoderBufferSize = _secsDecoder.Buffer.Length;
+							e.SetBuffer(this._secsDecoder.Buffer, this._secsDecoder.BufferOffset, this._secsDecoder.BufferCount);
+							this.DecoderBufferSize = this._secsDecoder.Buffer.Length;
 						}
 						else
 						{
-							e.SetBuffer(_secsDecoder.BufferOffset, _secsDecoder.BufferCount);
+							e.SetBuffer(this._secsDecoder.BufferOffset, this._secsDecoder.BufferCount);
 						}
 
-						if (_socket is null || IsDisposed)
+						if (this._socket is null || this.IsDisposed)
+						{
 							return;
+						}
 
-						if (!_socket.ReceiveAsync(e))
+						if (!this._socket.ReceiveAsync(e))
+						{
 							SocketReceiveEventCompleted(sender, e);
+						}
 					}
 					catch (Exception ex)
 					{
-						_logger.Error("Unexpected exception", ex);
-						CommunicationStateChanging(ConnectionState.Retry);
+						this._logger.Error("Unexpected exception", ex);
+						this.CommunicationStateChanging(ConnectionState.Retry);
 					}
 				}
 			}
@@ -337,48 +365,48 @@ namespace Secs4Net
 				var systembyte = header.SystemBytes;
 				if ((byte)header.MessageType % 2 == 0)
 				{
-					if (_replyExpectedMsgs.TryGetValue(systembyte, out var ar))
+					if (this._replyExpectedMsgs.TryGetValue(systembyte, out var ar))
 					{
 						ar.SetResult(ControlMessage);
 					}
 					else
 					{
-						_logger.Warning("Received Unexpected Control Message: " + header.MessageType);
+						this._logger.Warning("Received Unexpected Control Message: " + header.MessageType);
 						return;
 					}
 				}
-				_logger.Info("Receive Control message: " + header.MessageType);
+				this._logger.Info("Receive Control message: " + header.MessageType);
 				switch (header.MessageType)
 				{
 					case MessageType.SelectRequest:
-						SendControlMessage(MessageType.SelectResponse, systembyte);
-						CommunicationStateChanging(ConnectionState.Selected);
+						this.SendControlMessage(MessageType.SelectResponse, systembyte);
+						this.CommunicationStateChanging(ConnectionState.Selected);
 						break;
 					case MessageType.SelectResponse:
 						switch (header.F)
 						{
 							case 0:
-								CommunicationStateChanging(ConnectionState.Selected);
+								this.CommunicationStateChanging(ConnectionState.Selected);
 								break;
 							case 1:
-								_logger.Error("Communication Already Active.");
+								this._logger.Error("Communication Already Active.");
 								break;
 							case 2:
-								_logger.Error("Connection Not Ready.");
+								this._logger.Error("Connection Not Ready.");
 								break;
 							case 3:
-								_logger.Error("Connection Exhaust.");
+								this._logger.Error("Connection Exhaust.");
 								break;
 							default:
-								_logger.Error("Connection Status Is Unknown.");
+								this._logger.Error("Connection Status Is Unknown.");
 								break;
 						}
 						break;
 					case MessageType.LinkTestRequest:
-						SendControlMessage(MessageType.LinkTestResponse, systembyte);
+						this.SendControlMessage(MessageType.LinkTestResponse, systembyte);
 						break;
 					case MessageType.SeperateRequest:
-						CommunicationStateChanging(ConnectionState.Retry);
+						this.CommunicationStateChanging(ConnectionState.Retry);
 						break;
 				}
 			}
@@ -387,11 +415,11 @@ namespace Secs4Net
 			{
 				var systembyte = header.SystemBytes;
 
-				if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
+				if (header.DeviceId != this.DeviceId && msg.S != 9 && msg.F != 1)
 				{
-					_logger.MessageIn(msg, systembyte);
-					_logger.Warning("Received Unrecognized Device Id Message");
-					SendDataMessageAsync(new SecsMessage(9, 1, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10])), replyExpected: false), NewSystemId);
+					this._logger.MessageIn(msg, systembyte);
+					this._logger.Warning("Received Unrecognized Device Id Message");
+					this.SendDataMessageAsync(new SecsMessage(9, 1, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10])), replyExpected: false), this.NewSystemId);
 					return;
 				}
 
@@ -400,8 +428,8 @@ namespace Secs4Net
 					if (msg.S != 9)
 					{
 						//Primary message
-						_logger.MessageIn(msg, systembyte);
-						_taskFactory.StartNew(
+						this._logger.MessageIn(msg, systembyte);
+						this._taskFactory.StartNew(
 							wrapper => PrimaryMessageReceived(this, Unsafe.As<PrimaryMessageWrapper>(wrapper)),
 							new PrimaryMessageWrapper(this, header, msg));
 
@@ -413,9 +441,11 @@ namespace Secs4Net
 				}
 
 				// Secondary message
-				_logger.MessageIn(msg, systembyte);
-				if (_replyExpectedMsgs.TryGetValue(systembyte, out var ar))
+				this._logger.MessageIn(msg, systembyte);
+				if (this._replyExpectedMsgs.TryGetValue(systembyte, out var ar))
+				{
 					ar.HandleReplyMessage(msg);
+				}
 			}
 		}
 
@@ -424,7 +454,7 @@ namespace Secs4Net
 			var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
 			if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
 			{
-				_replyExpectedMsgs[systembyte] = token;
+				this._replyExpectedMsgs[systembyte] = token;
 			}
 
 			var eap = new SocketAsyncEventArgs
@@ -439,9 +469,11 @@ namespace Secs4Net
 				},
 				UserToken = token,
 			};
-			eap.Completed += _sendControlMessageCompleteHandler;
-			if (!_socket.SendAsync(eap))
-				SendControlMessageCompleteHandler(_socket, eap);
+			eap.Completed += this._sendControlMessageCompleteHandler;
+			if (!this._socket.SendAsync(eap))
+			{
+				this.SendControlMessageCompleteHandler(this._socket, eap);
+			}
 		}
 
 		private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
@@ -454,33 +486,37 @@ namespace Secs4Net
 				return;
 			}
 
-			_logger.Info("Sent Control Message: " + completeToken.MsgType);
-			if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
+			this._logger.Info("Sent Control Message: " + completeToken.MsgType);
+			if (this._replyExpectedMsgs.ContainsKey(completeToken.Id))
 			{
-				if (!completeToken.Task.Wait(T6))
+				if (!completeToken.Task.Wait(this.T6))
 				{
-					_logger.Error($"T6 Timeout: {T6 / 1000} sec.");
-					CommunicationStateChanging(ConnectionState.Retry);
+					this._logger.Error($"T6 Timeout: {this.T6 / 1000} sec.");
+					this.CommunicationStateChanging(ConnectionState.Retry);
 				}
-				_replyExpectedMsgs.TryRemove(completeToken.Id, out _);
+				this._replyExpectedMsgs.TryRemove(completeToken.Id, out _);
 			}
 		}
 
 		internal Task<SecsMessage> SendDataMessageAsync(in SecsMessage msg, in int systembyte)
 		{
-			if (State != ConnectionState.Selected)
+			if (this.State != ConnectionState.Selected)
+			{
 				throw new SecsException("Device is not selected");
+			}
 
 			var token = new TaskCompletionSourceToken(msg, systembyte, MessageType.DataMessage);
 			if (msg.ReplyExpected)
-				_replyExpectedMsgs[systembyte] = token;
+			{
+				this._replyExpectedMsgs[systembyte] = token;
+			}
 
 			var header = new MessageHeader
 			(
 				s: msg.S,
 				f: msg.F,
 				replyExpected: msg.ReplyExpected,
-				deviceId: DeviceId,
+				deviceId: this.DeviceId,
 				systemBytes: systembyte
 			);
 
@@ -491,9 +527,11 @@ namespace Secs4Net
 				BufferList = bufferList,
 				UserToken = token,
 			};
-			eap.Completed += _sendDataMessageCompleteHandler;
-			if (!_socket.SendAsync(eap))
-				SendDataMessageCompleteHandler(_socket, eap);
+			eap.Completed += this._sendDataMessageCompleteHandler;
+			if (!this._socket.SendAsync(eap))
+			{
+				this.SendDataMessageCompleteHandler(this._socket, eap);
+			}
 
 			return token.Task;
 		}
@@ -505,13 +543,13 @@ namespace Secs4Net
 			if (e.SocketError != SocketError.Success)
 			{
 				completeToken.SetException(new SocketException((int)e.SocketError));
-				CommunicationStateChanging(ConnectionState.Retry);
+				this.CommunicationStateChanging(ConnectionState.Retry);
 				return;
 			}
 
-			_logger.MessageOut(completeToken.MessageSent, completeToken.Id);
+			this._logger.MessageOut(completeToken.MessageSent, completeToken.Id);
 
-			if (!_replyExpectedMsgs.ContainsKey(completeToken.Id))
+			if (!this._replyExpectedMsgs.ContainsKey(completeToken.Id))
 			{
 				completeToken.SetResult(null);
 				return;
@@ -519,85 +557,97 @@ namespace Secs4Net
 
 			try
 			{
-				if (!completeToken.Task.Wait(T3))
+				if (!completeToken.Task.Wait(this.T3))
 				{
-					_logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
+					this._logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {this.T3 / 1000} sec.");
 					completeToken.SetException(new SecsException(completeToken.MessageSent, Resources.T3Timeout));
 				}
 			}
 			catch (AggregateException) { }
 			finally
 			{
-				_replyExpectedMsgs.TryRemove(completeToken.Id, out _);
+				this._replyExpectedMsgs.TryRemove(completeToken.Id, out _);
 			}
 		}
 
 		private void CommunicationStateChanging(in ConnectionState newState)
 		{
-			State = newState;
-			ConnectionChanged?.Invoke(this, State);
+			this.State = newState;
+			ConnectionChanged?.Invoke(this, this.State);
 
-			switch (State)
+			switch (this.State)
 			{
 				case ConnectionState.Selected:
-					_timer7.Change(Timeout.Infinite, Timeout.Infinite);
-					_logger.Info("Stop T7 Timer");
+					this._timer7.Change(Timeout.Infinite, Timeout.Infinite);
+					this._logger.Info("Stop T7 Timer");
 					break;
 				case ConnectionState.Connected:
 #if !DISABLE_TIMER
-					_logger.Info($"Start T7 Timer: {T7 / 1000} sec.");
-					_timer7.Change(T7, Timeout.Infinite);
+					this._logger.Info($"Start T7 Timer: {this.T7 / 1000} sec.");
+					this._timer7.Change(this.T7, Timeout.Infinite);
 #endif
 					break;
 				case ConnectionState.Retry:
-					if (IsDisposed)
+					if (this.IsDisposed)
+					{
 						return;
-					Reset();
-					Task.Factory.StartNew(_startImpl);
+					}
+
+					this.Reset();
+					Task.Factory.StartNew(this._startImpl);
 					break;
 			}
 		}
 
 		private void Reset()
 		{
-			_timer7.Change(Timeout.Infinite, Timeout.Infinite);
-			_timer8.Change(Timeout.Infinite, Timeout.Infinite);
-			_timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
-			_secsDecoder.Reset();
-			_replyExpectedMsgs.Clear();
-			_stopImpl?.Invoke();
+			this._timer7.Change(Timeout.Infinite, Timeout.Infinite);
+			this._timer8.Change(Timeout.Infinite, Timeout.Infinite);
+			this._timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
+			this._secsDecoder.Reset();
+			this._replyExpectedMsgs.Clear();
+			this._stopImpl?.Invoke();
 
-			if (_socket is null)
+			if (this._socket is null)
+			{
 				return;
+			}
 
-			if (_socket.Connected)
-				_socket.Shutdown(SocketShutdown.Both);
+			if (this._socket.Connected)
+			{
+				this._socket.Shutdown(SocketShutdown.Both);
+			}
 
-			_socket.Dispose();
-			_socket = null;
+			this._socket.Dispose();
+			this._socket = null;
 		}
 
-		public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
+		public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(this._startImpl);
 
 		/// <summary>
 		/// Asynchronously send message to device .
 		/// </summary>
 		/// <param name="msg">primary message</param>
 		/// <returns>secondary message</returns>
-		public Task<SecsMessage> SendAsync(SecsMessage msg) => SendDataMessageAsync(msg, NewSystemId);
+		public Task<SecsMessage> SendAsync(SecsMessage msg) => this.SendDataMessageAsync(msg, this.NewSystemId);
 
 		public void Dispose()
 		{
-			if (Interlocked.Exchange(ref _disposeStage, DisposalComplete) != DisposalNotStarted)
+			if (Interlocked.Exchange(ref this._disposeStage, DisposalComplete) != DisposalNotStarted)
+			{
 				return;
+			}
 
 			ConnectionChanged = null;
-			if (State == ConnectionState.Selected)
-				SendControlMessage(MessageType.SeperateRequest, NewSystemId);
-			Reset();
-			_timer7.Dispose();
-			_timer8.Dispose();
-			_timerLinkTest.Dispose();
+			if (this.State == ConnectionState.Selected)
+			{
+				this.SendControlMessage(MessageType.SeperateRequest, this.NewSystemId);
+			}
+
+			this.Reset();
+			this._timer7.Dispose();
+			this._timer8.Dispose();
+			this._timerLinkTest.Dispose();
 		}
 
 
@@ -610,17 +660,17 @@ namespace Secs4Net
 
 			internal TaskCompletionSourceToken(in SecsMessage primaryMessageMsg, in int id, in MessageType msgType)
 			{
-				MessageSent = primaryMessageMsg;
-				Id = id;
-				MsgType = msgType;
+				this.MessageSent = primaryMessageMsg;
+				this.Id = id;
+				this.MsgType = msgType;
 			}
 
 			internal void HandleReplyMessage(in SecsMessage replyMsg)
 			{
-				replyMsg.Name = MessageSent.Name;
+				replyMsg.Name = this.MessageSent.Name;
 				if (replyMsg.F == 0)
 				{
-					SetException(new SecsException(MessageSent, Resources.SxF0));
+					this.SetException(new SecsException(this.MessageSent, Resources.SxF0));
 					return;
 				}
 
@@ -629,34 +679,34 @@ namespace Secs4Net
 					switch (replyMsg.F)
 					{
 						case 1:
-							SetException(new SecsException(MessageSent, Resources.S9F1));
+							this.SetException(new SecsException(this.MessageSent, Resources.S9F1));
 							break;
 						case 3:
-							SetException(new SecsException(MessageSent, Resources.S9F3));
+							this.SetException(new SecsException(this.MessageSent, Resources.S9F3));
 							break;
 						case 5:
-							SetException(new SecsException(MessageSent, Resources.S9F5));
+							this.SetException(new SecsException(this.MessageSent, Resources.S9F5));
 							break;
 						case 7:
-							SetException(new SecsException(MessageSent, Resources.S9F7));
+							this.SetException(new SecsException(this.MessageSent, Resources.S9F7));
 							break;
 						case 9:
-							SetException(new SecsException(MessageSent, Resources.S9F9));
+							this.SetException(new SecsException(this.MessageSent, Resources.S9F9));
 							break;
 						case 11:
-							SetException(new SecsException(MessageSent, Resources.S9F11));
+							this.SetException(new SecsException(this.MessageSent, Resources.S9F11));
 							break;
 						case 13:
-							SetException(new SecsException(MessageSent, Resources.S9F13));
+							this.SetException(new SecsException(this.MessageSent, Resources.S9F13));
 							break;
 						default:
-							SetException(new SecsException(MessageSent, Resources.S9Fy));
+							this.SetException(new SecsException(this.MessageSent, Resources.S9Fy));
 							break;
 					}
 					return;
 				}
 
-				SetResult(replyMsg);
+				this.SetResult(replyMsg);
 			}
 		}
 	}

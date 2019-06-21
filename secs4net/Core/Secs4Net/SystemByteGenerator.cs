@@ -7,6 +7,6 @@ namespace Secs4Net
 	{
 		private int _systemByte = new Random(Guid.NewGuid().GetHashCode()).Next();
 
-		public int New() => Interlocked.Increment(ref _systemByte);
+		public int New() => Interlocked.Increment(ref this._systemByte);
 	}
 }

@@ -8,10 +8,12 @@ namespace Secs4Net
 		static SecsMessage()
 		{
 			if (!BitConverter.IsLittleEndian)
+			{
 				throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
+			}
 		}
 
-		public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
+		public override string ToString() => $"'S{this.S}F{this.F}' {(this.ReplyExpected ? "W" : string.Empty)} {this.Name ?? string.Empty}";
 
 		/// <summary>
 		/// message stream number
@@ -37,7 +39,7 @@ namespace Secs4Net
 
 		internal readonly Lazy<List<ArraySegment<byte>>> RawDatas;
 
-		public IReadOnlyList<ArraySegment<byte>> RawBytes => RawDatas.Value.AsReadOnly();
+		public IReadOnlyList<ArraySegment<byte>> RawBytes => this.RawDatas.Value.AsReadOnly();
 
 		private static readonly List<ArraySegment<byte>> EmptyMsgDatas =
 			new List<ArraySegment<byte>>
@@ -57,17 +59,21 @@ namespace Secs4Net
 		public SecsMessage(byte s, byte f, string name = null, Item item = null, bool replyExpected = true)
 		{
 			if (s > 0b0111_1111)
-				throw new ArgumentOutOfRangeException(nameof(s), s, Resources.SecsMessageStreamNumberMustLessThan127);
-
-			S = s;
-			F = f;
-			Name = name;
-			ReplyExpected = replyExpected;
-			SecsItem = item;
-			RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
 			{
-				if (SecsItem is null)
+				throw new ArgumentOutOfRangeException(nameof(s), s, Resources.SecsMessageStreamNumberMustLessThan127);
+			}
+
+			this.S = s;
+			this.F = f;
+			this.Name = name;
+			this.ReplyExpected = replyExpected;
+			this.SecsItem = item;
+			this.RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
+			{
+				if (this.SecsItem is null)
+				{
 					return EmptyMsgDatas;
+				}
 
 				var result = new List<ArraySegment<byte>> {
 					default,    // total length
@@ -75,7 +81,7 @@ namespace Secs4Net
 					// item
 				};
 
-				var length = 10 + SecsItem.EncodeTo(result); // total length = item + header
+				var length = 10 + this.SecsItem.EncodeTo(result); // total length = item + header
 
 				var msgLengthByte = BitConverter.GetBytes(length);
 				Array.Reverse(msgLengthByte);
