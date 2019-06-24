@@ -605,7 +605,7 @@ namespace Secs4Net
 					return;
 				}
 
-				this._logger.MessageOut(completeToken.MessageSent, completeToken.Id);
+				this._logger.MessageOut(completeToken.SentSecsMessage, completeToken.Id);
 
 				if (!this._replyExpectedMsgs.ContainsKey(completeToken.Id))
 				{
@@ -618,7 +618,7 @@ namespace Secs4Net
 					if (!completeToken.Task.Wait(this.T3))
 					{
 						this._logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {this.T3 / 1000} sec.");
-						completeToken.SetException(new SecsException(completeToken.MessageSent, Resources.T3Timeout));
+						completeToken.SetException(new SecsSentMessageException(completeToken.SentSecsMessage, Resources.T3Timeout));
 					}
 				}
 				catch (AggregateException) { }
@@ -712,61 +712,68 @@ namespace Secs4Net
 		private sealed class TaskCompletionSourceToken :
 			TaskCompletionSource<SecsMessage>
 		{
-			internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType)
+			internal TaskCompletionSourceToken(SecsMessage primarySecsMessage, int id, MessageType msgType)
 			{
-				this.MessageSent = primaryMessageMsg;
+				this.SentSecsMessage = primarySecsMessage;
 				this.Id = id;
 				this.MsgType = msgType;
 			}
 
 			internal int Id { get; }
 
-			internal SecsMessage MessageSent { get; }
+			internal SecsMessage SentSecsMessage { get; }
 
 			internal MessageType MsgType { get; }
 
-			internal void HandleReplyMessage(SecsMessage replyMsg)
+			internal void HandleReplyMessage(SecsMessage replySecsMessage)
 			{
-				replyMsg.Name = this.MessageSent.Name;
-				if (replyMsg.F == 0)
+				replySecsMessage.Name = this.SentSecsMessage.Name;
+				if (replySecsMessage.F == 0)
 				{
-					this.SetException(new SecsException(this.MessageSent, Resources.SxF0));
+					this.SetException(new SecsDialogMessagesException(this.SentSecsMessage, replySecsMessage, Resources.SxF0));
 					return;
 				}
 
-				if (replyMsg.S == 9)
+				if (replySecsMessage.S == 9)
 				{
-					switch (replyMsg.F)
+					switch (replySecsMessage.F)
 					{
 						case 1:
-							this.SetException(new SecsException(this.MessageSent, Resources.S9F1));
+							this.SetException(new SecsDialogMessagesException(this.SentSecsMessage, replySecsMessage, Resources.S9F1));
 							break;
+
 						case 3:
-							this.SetException(new SecsException(this.MessageSent, Resources.S9F3));
+							this.SetException(new SecsDialogMessagesException(this.SentSecsMessage, replySecsMessage, Resources.S9F3));
 							break;
+
 						case 5:
-							this.SetException(new SecsException(this.MessageSent, Resources.S9F5));
+							this.SetException(new SecsDialogMessagesException(this.SentSecsMessage, replySecsMessage, Resources.S9F5));
 							break;
+
 						case 7:
-							this.SetException(new SecsException(this.MessageSent, Resources.S9F7));
+							this.SetException(new SecsDialogMessagesException(this.SentSecsMessage, replySecsMessage, Resources.S9F7));
 							break;
+
 						case 9:
-							this.SetException(new SecsException(this.MessageSent, Resources.S9F9));
+							this.SetException(new SecsDialogMessagesException(this.SentSecsMessage, replySecsMessage, Resources.S9F9));
 							break;
+
 						case 11:
-							this.SetException(new SecsException(this.MessageSent, Resources.S9F11));
+							this.SetException(new SecsDialogMessagesException(this.SentSecsMessage, replySecsMessage, Resources.S9F11));
 							break;
+
 						case 13:
-							this.SetException(new SecsException(this.MessageSent, Resources.S9F13));
+							this.SetException(new SecsDialogMessagesException(this.SentSecsMessage, replySecsMessage, Resources.S9F13));
 							break;
+
 						default:
-							this.SetException(new SecsException(this.MessageSent, Resources.S9Fy));
+							this.SetException(new SecsDialogMessagesException(this.SentSecsMessage, replySecsMessage, Resources.S9Fy));
 							break;
 					}
 					return;
 				}
 
-				this.SetResult(replyMsg);
+				this.SetResult(replySecsMessage);
 			}
 		}
 	}
