@@ -21,6 +21,7 @@ using log4net;
 using log4net.Layout;
 using log4net.Repository.Hierarchy;
 using Secs4Net;
+using Secs4Net.Exceptions;
 using Secs4Net.Sml;
 
 namespace Cim.Eap

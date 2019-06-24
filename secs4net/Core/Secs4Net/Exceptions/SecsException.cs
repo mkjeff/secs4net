@@ -1,20 +1,21 @@
 ﻿using System;
 
-namespace Secs4Net
+namespace Secs4Net.Exceptions
 {
-	public sealed class SecsException : Exception
+	public class SecsException :
+		Exception
 	{
-		public SecsMessage SecsMsg { get; }
-
-		public SecsException(SecsMessage msg, string description)
-			: base(description)
-		{
-			this.SecsMsg = msg;
-		}
-
-		public SecsException(string msg)
-			: this(null, msg)
+		public SecsException(string message)
+			: this(null, message)
 		{
 		}
+
+		public SecsException(SecsMessage sentSecsMessage, string message)
+			: base(message)
+		{
+			this.SentSecsMessage = sentSecsMessage;
+		}
+
+		public SecsMessage SentSecsMessage { get; }
 	}
 }

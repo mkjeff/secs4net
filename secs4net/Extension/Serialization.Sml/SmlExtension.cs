@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Secs4Net.Exceptions;
 using static Secs4Net.Item;
 
 namespace Secs4Net.Sml

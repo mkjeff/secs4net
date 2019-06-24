@@ -5,6 +5,7 @@ using Secs4Net;
 using System.Net;
 using System.Drawing;
 using Secs4Net.Sml;
+using Secs4Net.Exceptions;
 
 namespace SecsDevice
 {
