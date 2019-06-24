@@ -27,23 +27,24 @@ namespace Secs4Net
 			}
 		}
 
-		public static string ToHexString(this byte[] value)
+		public static string ToHexString(this byte[] values)
 		{
-			if (value.Length == 0)
+			if (values == null || values.Length == 0)
 			{
 				return string.Empty;
 			}
 
-			int length = value.Length * 3;
-			char[] chs = new char[length];
-			for (int ci = 0, i = 0; ci < length; ci += 3)
+			int length = values.Length * 3;
+			char[] chars = new char[length];
+			for (int charIndex = 0, valueIndex = 0; charIndex < length; charIndex += 3)
 			{
-				byte num = value[i++];
-				chs[ci] = GetHexValue(num / 0x10);
-				chs[ci + 1] = GetHexValue(num % 0x10);
-				chs[ci + 2] = ' ';
+				byte num = values[valueIndex++];
+				chars[charIndex] = GetHexValue(num / 0x10);
+				chars[charIndex + 1] = GetHexValue(num % 0x10);
+				chars[charIndex + 2] = ' ';
 			}
-			return new string(chs, 0, length - 1);
+
+			return new string(chars, 0, length - 1);
 
 			char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)((i - 10) + 0x41);
 		}
