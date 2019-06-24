@@ -9,145 +9,53 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-	public sealed class SecsGem : IDisposable
+	public sealed class SecsGem :
+		IDisposable
 	{
-		/// <summary>
-		/// HSMS connection state changed event
-		/// </summary>
-		public event EventHandler<ConnectionState> ConnectionChanged;
-
-		/// <summary>
-		/// Primary message received event
-		/// </summary>
-		public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived = DefaultPrimaryMessageReceived;
-		private static void DefaultPrimaryMessageReceived(object sender, PrimaryMessageWrapper _) { }
-
-		private ISecsGemLogger _logger = DefaultLogger;
-		public ISecsGemLogger Logger
-		{
-			get => this._logger;
-			set => this._logger = value ?? DefaultLogger;
-		}
-
-		/// <summary>
-		/// Connection state
-		/// </summary>
-		public ConnectionState State { get; private set; }
-
-		/// <summary>
-		/// Device Id.
-		/// </summary>
-		public ushort DeviceId { get; set; } = 0;
-
-		/// <summary>
-		/// T3 timer interval 
-		/// </summary>
-		public int T3 { get; set; } = 45000;
-
-		/// <summary>
-		/// T5 timer interval
-		/// </summary>
-		public int T5 { get; set; } = 10000;
-
-		/// <summary>
-		/// T6 timer interval
-		/// </summary>
-		public int T6 { get; set; } = 5000;
-
-		/// <summary>
-		/// T7 timer interval
-		/// </summary>
-		public int T7 { get; set; } = 10000;
-
-		/// <summary>
-		/// T8 timer interval
-		/// </summary>
-		public int T8 { get; set; } = 5000;
-
-
-		/// <summary>
-		/// Linking test timer interval
-		/// </summary>
-		public int LinkTestInterval
-		{
-			get => this._linkTestInterval;
-			set
-			{
-				if (this._linkTestEnable)
-				{
-					this._linkTestInterval = value;
-					this._timerLinkTest.Change(0, this._linkTestInterval);
-				}
-			}
-		}
-
-		private int _linkTestInterval = 60000;
-		private bool _linkTestEnable;
-
-		/// <summary>
-		/// get or set linking test timer enable or not 
-		/// </summary>
-		public bool LinkTestEnable
-		{
-			get => this._linkTestEnable;
-			set
-			{
-				if (this._linkTestEnable == value)
-				{
-					return;
-				}
-
-				this._linkTestEnable = value;
-				if (this._linkTestEnable)
-				{
-					this._timerLinkTest.Change(0, this.LinkTestInterval);
-				}
-				else
-				{
-					this._timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
-				}
-			}
-		}
-
-		public bool IsActive { get; }
-		public IPAddress IpAddress { get; }
-		public int Port { get; }
-		public int DecoderBufferSize { get; private set; }
+		private const int DisposalComplete = 1;
 
 		private const int DisposalNotStarted = 0;
-		private const int DisposalComplete = 1;
-		private int _disposeStage;
-
-		public bool IsDisposed => Interlocked.CompareExchange(ref this._disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
-		/// <summary>
-		/// remote device endpoint address
-		/// </summary>
-		public string DeviceIpAddress => this.IsActive
-			? this.IpAddress.ToString()
-			: ((IPEndPoint)this._socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
-
-		private Socket _socket;
-
-		private readonly StreamDecoder _secsDecoder;
-		private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
-		private readonly Timer _timer7; // between socket connected and received Select.req timer
-		private readonly Timer _timer8;
-		private readonly Timer _timerLinkTest;
-
-		private readonly Func<Task> _startImpl;
-		private readonly Action _stopImpl;
 
 		private static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
+
 		private static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
+
 		private static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
-		private readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
+
+		private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
+
+		private readonly StreamDecoder _secsDecoder;
 
 		private readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
+
 		private readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
 
-		internal int NewSystemId => this._systemByte.New();
+		private readonly Func<Task> _startImpl;
+
+		private readonly Action _stopImpl;
+
+		private readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
 
 		private readonly TaskFactory _taskFactory = new TaskFactory(TaskScheduler.Default);
+
+		/// <summary>
+		/// between socket connected and received Select.req timer
+		/// </summary>
+		private readonly Timer _timer7;
+
+		private readonly Timer _timer8;
+
+		private readonly Timer _timerLinkTest;
+
+		private int _disposeStage;
+
+		private bool _linkTestEnable;
+
+		private int _linkTestInterval = 60000;
+
+		private ISecsGemLogger _logger = DefaultLogger;
+
+		private Socket _socket;
 
 		/// <summary>
 		/// constructor
@@ -449,54 +357,144 @@ namespace Secs4Net
 			}
 		}
 
-		private void SendControlMessage(MessageType msgType, int systembyte)
-		{
-			var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
-			if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
-			{
-				this._replyExpectedMsgs[systembyte] = token;
-			}
+		/// <summary>
+		/// HSMS connection state changed event
+		/// </summary>
+		public event EventHandler<ConnectionState> ConnectionChanged;
 
-			var eap = new SocketAsyncEventArgs
+		/// <summary>
+		/// Primary message received event
+		/// </summary>
+		public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived = DefaultPrimaryMessageReceived;
+
+		public int DecoderBufferSize { get; private set; }
+
+		/// <summary>
+		/// Device Id.
+		/// </summary>
+		public ushort DeviceId { get; set; } = 0;
+
+		/// <summary>
+		/// remote device endpoint address
+		/// </summary>
+		public string DeviceIpAddress => this.IsActive
+			? this.IpAddress.ToString()
+			: ((IPEndPoint)this._socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
+
+		public IPAddress IpAddress { get; }
+
+		public bool IsActive { get; }
+
+		public bool IsDisposed => Interlocked.CompareExchange(ref this._disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
+
+		/// <summary>
+		/// get or set linking test timer enable or not 
+		/// </summary>
+		public bool LinkTestEnable
+		{
+			get => this._linkTestEnable;
+			set
 			{
-				BufferList = new List<ArraySegment<byte>>(2) {
-					ControlMessageLengthBytes,
-					new ArraySegment<byte>(new MessageHeader(
-						deviceId: 0xFFFF,
-						messageType: msgType,
-						systemBytes: systembyte
-					).EncodeTo(new byte[10]))
-				},
-				UserToken = token,
-			};
-			eap.Completed += this._sendControlMessageCompleteHandler;
-			if (!this._socket.SendAsync(eap))
-			{
-				this.SendControlMessageCompleteHandler(this._socket, eap);
+				if (this._linkTestEnable == value)
+				{
+					return;
+				}
+
+				this._linkTestEnable = value;
+				if (this._linkTestEnable)
+				{
+					this._timerLinkTest.Change(0, this.LinkTestInterval);
+				}
+				else
+				{
+					this._timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
+				}
 			}
 		}
 
-		private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
+		/// <summary>
+		/// Linking test timer interval
+		/// </summary>
+		public int LinkTestInterval
 		{
-			var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
-
-			if (e.SocketError != SocketError.Success)
+			get => this._linkTestInterval;
+			set
 			{
-				completeToken.SetException(new SocketException((int)e.SocketError));
+				if (this._linkTestEnable)
+				{
+					this._linkTestInterval = value;
+					this._timerLinkTest.Change(0, this._linkTestInterval);
+				}
+			}
+		}
+
+		public ISecsGemLogger Logger
+		{
+			get => this._logger;
+			set => this._logger = value ?? DefaultLogger;
+		}
+
+		public int Port { get; }
+
+		/// <summary>
+		/// Connection state
+		/// </summary>
+		public ConnectionState State { get; private set; }
+
+		/// <summary>
+		/// T3 timer interval 
+		/// </summary>
+		public int T3 { get; set; } = 45000;
+
+		/// <summary>
+		/// T5 timer interval
+		/// </summary>
+		public int T5 { get; set; } = 10000;
+
+		/// <summary>
+		/// T6 timer interval
+		/// </summary>
+		public int T6 { get; set; } = 5000;
+
+		/// <summary>
+		/// T7 timer interval
+		/// </summary>
+		public int T7 { get; set; } = 10000;
+
+		/// <summary>
+		/// T8 timer interval
+		/// </summary>
+		public int T8 { get; set; } = 5000;
+
+		internal int NewSystemId => this._systemByte.New();
+
+		public void Dispose()
+		{
+			if (Interlocked.Exchange(ref this._disposeStage, DisposalComplete) != DisposalNotStarted)
+			{
 				return;
 			}
 
-			this._logger.Info("Sent Control Message: " + completeToken.MsgType);
-			if (this._replyExpectedMsgs.ContainsKey(completeToken.Id))
+			ConnectionChanged = null;
+			if (this.State == ConnectionState.Selected)
 			{
-				if (!completeToken.Task.Wait(this.T6))
-				{
-					this._logger.Error($"T6 Timeout: {this.T6 / 1000} sec.");
-					this.CommunicationStateChanging(ConnectionState.Retry);
-				}
-				this._replyExpectedMsgs.TryRemove(completeToken.Id, out _);
+				this.SendControlMessage(MessageType.SeperateRequest, this.NewSystemId);
 			}
+
+			this.Reset();
+			this._timer7.Dispose();
+			this._timer8.Dispose();
+			this._timerLinkTest.Dispose();
 		}
+
+		/// <summary>
+		/// Asynchronously send message to device .
+		/// </summary>
+		/// <param name="msg">primary message</param>
+		/// <returns>secondary message</returns>
+		public Task<SecsMessage> SendAsync(SecsMessage msg) => this.SendDataMessageAsync(msg, this.NewSystemId);
+
+		public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(this._startImpl);
 
 		internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
 		{
@@ -536,39 +534,7 @@ namespace Secs4Net
 			return token.Task;
 		}
 
-		private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
-		{
-			var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
-
-			if (e.SocketError != SocketError.Success)
-			{
-				completeToken.SetException(new SocketException((int)e.SocketError));
-				this.CommunicationStateChanging(ConnectionState.Retry);
-				return;
-			}
-
-			this._logger.MessageOut(completeToken.MessageSent, completeToken.Id);
-
-			if (!this._replyExpectedMsgs.ContainsKey(completeToken.Id))
-			{
-				completeToken.SetResult(null);
-				return;
-			}
-
-			try
-			{
-				if (!completeToken.Task.Wait(this.T3))
-				{
-					this._logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {this.T3 / 1000} sec.");
-					completeToken.SetException(new SecsException(completeToken.MessageSent, Resources.T3Timeout));
-				}
-			}
-			catch (AggregateException) { }
-			finally
-			{
-				this._replyExpectedMsgs.TryRemove(completeToken.Id, out _);
-			}
-		}
+		private static void DefaultPrimaryMessageReceived(object sender, PrimaryMessageWrapper _) { }
 
 		private void CommunicationStateChanging(ConnectionState newState)
 		{
@@ -622,48 +588,104 @@ namespace Secs4Net
 			this._socket = null;
 		}
 
-		public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(this._startImpl);
-
-		/// <summary>
-		/// Asynchronously send message to device .
-		/// </summary>
-		/// <param name="msg">primary message</param>
-		/// <returns>secondary message</returns>
-		public Task<SecsMessage> SendAsync(SecsMessage msg) => this.SendDataMessageAsync(msg, this.NewSystemId);
-
-		public void Dispose()
+		private void SendControlMessage(MessageType msgType, int systembyte)
 		{
-			if (Interlocked.Exchange(ref this._disposeStage, DisposalComplete) != DisposalNotStarted)
+			var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
+			if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
 			{
+				this._replyExpectedMsgs[systembyte] = token;
+			}
+
+			var eap = new SocketAsyncEventArgs
+			{
+				BufferList = new List<ArraySegment<byte>>(2) {
+					ControlMessageLengthBytes,
+					new ArraySegment<byte>(new MessageHeader(
+						deviceId: 0xFFFF,
+						messageType: msgType,
+						systemBytes: systembyte
+					).EncodeTo(new byte[10]))
+				},
+				UserToken = token,
+			};
+			eap.Completed += this._sendControlMessageCompleteHandler;
+			if (!this._socket.SendAsync(eap))
+			{
+				this.SendControlMessageCompleteHandler(this._socket, eap);
+			}
+		}
+
+		private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
+		{
+			var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
+
+			if (e.SocketError != SocketError.Success)
+			{
+				completeToken.SetException(new SocketException((int)e.SocketError));
 				return;
 			}
 
-			ConnectionChanged = null;
-			if (this.State == ConnectionState.Selected)
+			this._logger.Info("Sent Control Message: " + completeToken.MsgType);
+			if (this._replyExpectedMsgs.ContainsKey(completeToken.Id))
 			{
-				this.SendControlMessage(MessageType.SeperateRequest, this.NewSystemId);
+				if (!completeToken.Task.Wait(this.T6))
+				{
+					this._logger.Error($"T6 Timeout: {this.T6 / 1000} sec.");
+					this.CommunicationStateChanging(ConnectionState.Retry);
+				}
+				this._replyExpectedMsgs.TryRemove(completeToken.Id, out _);
 			}
-
-			this.Reset();
-			this._timer7.Dispose();
-			this._timer8.Dispose();
-			this._timerLinkTest.Dispose();
 		}
 
-
-
-		private sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
+		private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
 		{
-			internal readonly SecsMessage MessageSent;
-			internal readonly int Id;
-			internal readonly MessageType MsgType;
+			var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
 
+			if (e.SocketError != SocketError.Success)
+			{
+				completeToken.SetException(new SocketException((int)e.SocketError));
+				this.CommunicationStateChanging(ConnectionState.Retry);
+				return;
+			}
+
+			this._logger.MessageOut(completeToken.MessageSent, completeToken.Id);
+
+			if (!this._replyExpectedMsgs.ContainsKey(completeToken.Id))
+			{
+				completeToken.SetResult(null);
+				return;
+			}
+
+			try
+			{
+				if (!completeToken.Task.Wait(this.T3))
+				{
+					this._logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {this.T3 / 1000} sec.");
+					completeToken.SetException(new SecsException(completeToken.MessageSent, Resources.T3Timeout));
+				}
+			}
+			catch (AggregateException) { }
+			finally
+			{
+				this._replyExpectedMsgs.TryRemove(completeToken.Id, out _);
+			}
+		}
+
+		private sealed class TaskCompletionSourceToken :
+			TaskCompletionSource<SecsMessage>
+		{
 			internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType)
 			{
 				this.MessageSent = primaryMessageMsg;
 				this.Id = id;
 				this.MsgType = msgType;
 			}
+
+			internal int Id { get; }
+
+			internal SecsMessage MessageSent { get; }
+
+			internal MessageType MsgType { get; }
 
 			internal void HandleReplyMessage(SecsMessage replyMsg)
 			{
@@ -681,24 +703,30 @@ namespace Secs4Net
 						case 1:
 							this.SetException(new SecsException(this.MessageSent, Resources.S9F1));
 							break;
+
 						case 3:
 							this.SetException(new SecsException(this.MessageSent, Resources.S9F3));
 							break;
+
 						case 5:
 							this.SetException(new SecsException(this.MessageSent, Resources.S9F5));
 							break;
 						case 7:
 							this.SetException(new SecsException(this.MessageSent, Resources.S9F7));
 							break;
+
 						case 9:
 							this.SetException(new SecsException(this.MessageSent, Resources.S9F9));
 							break;
+
 						case 11:
 							this.SetException(new SecsException(this.MessageSent, Resources.S9F11));
 							break;
+
 						case 13:
 							this.SetException(new SecsException(this.MessageSent, Resources.S9F13));
 							break;
+
 						default:
 							this.SetException(new SecsException(this.MessageSent, Resources.S9Fy));
 							break;
