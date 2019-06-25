@@ -107,7 +107,7 @@ namespace Secs4Net
         /// <summary>
         /// get value by specific type
         /// </summary>
-        public T GetValue<T>() where T : struct
+        public T GetValue<T>() where T : unmanaged
         {
             if (Format == SecsFormat.List)
                 throw new InvalidOperationException("The item is a list");
@@ -128,7 +128,7 @@ namespace Secs4Net
         /// <summary>
         /// get value array by specific type
         /// </summary>
-        public T[] GetValues<T>() where T : struct
+        public T[] GetValues<T>() where T : unmanaged
         {
             if (Format == SecsFormat.List)
                 throw new InvalidOperationException("The item is list");
@@ -231,7 +231,7 @@ namespace Secs4Net
             return sb.ToString();
 
             string JoinAsString<T>(IEnumerable src)
-                where T : struct => string.Join(" ", Unsafe.As<T[]>(src));
+                where T : unmanaged => string.Join(" ", Unsafe.As<T[]>(src));
         }
 
         #region Type Casting Operator
@@ -406,7 +406,7 @@ namespace Secs4Net
                 default: throw new ArgumentException(@"Invalid format", nameof(format));
             }
 
-            T[] Decode<T>(byte[] data2, in int index2, in int length2) where T : struct
+            T[] Decode<T>(byte[] data2, in int index2, in int length2) where T : unmanaged
             {
                 var elmSize = Unsafe.SizeOf<T>();
                 data2.Reverse(index2, index2 + length2, elmSize);
