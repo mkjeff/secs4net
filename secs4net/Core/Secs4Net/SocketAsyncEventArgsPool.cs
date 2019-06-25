@@ -15,14 +15,31 @@ namespace Secs4Net
 
 		private readonly object lockObject = new object();
 
+		/// <summary>
+		/// <para xml:lang="en">Initializes a <see langword="new"/> instance of the <see cref="SocketAsyncEventArgsPool"/> <see langword="class"/>.</para>
+		/// </summary>
 		public SocketAsyncEventArgsPool()
 		{
 			this.all = new List<SocketAsyncEventArgs>();
 			this.available = new Stack<SocketAsyncEventArgs>();
 		}
 
+		/// <summary>
+		/// <para xml:lang="en">Initializes a <see langword="new"/> instance of the <see cref="SocketAsyncEventArgsPool"/> <see langword="class"/>.</para>
+		/// </summary>
+		/// <param name="capacity">
+		/// <para xml:lang="en">The number of <see cref="SocketAsyncEventArgsPool"/> that the new <see cref="SocketAsyncEventArgsPool"/> can initially store.</para>
+		/// </param>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <para xml:lang="en"><paramref name="capacity"/> is less than 0.</para>
+		/// </exception>
 		public SocketAsyncEventArgsPool(int capacity)
 		{
+			if (capacity < 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(capacity), capacity, "The argument is less than 0.");
+			}
+
 			this.all = new List<SocketAsyncEventArgs>(capacity);
 			this.available = new Stack<SocketAsyncEventArgs>(capacity);
 		}
@@ -38,8 +55,14 @@ namespace Secs4Net
 			this.Dispose(false);
 		}
 
+		/// <summary>
+		/// <para xml:lang="en">Gets the count of all <see cref="SocketAsyncEventArgsPool"/> created by this instance.</para>
+		/// </summary>
 		public int CountAll => this.all.Count;
 
+		/// <summary>
+		/// <para xml:lang="en">Gets the count of all currently for lend available <see cref="SocketAsyncEventArgsPool"/> of this instance.</para>
+		/// </summary>
 		public int CountAvailable => this.available.Count;
 
 		/// <summary>
@@ -51,7 +74,7 @@ namespace Secs4Net
 		public bool IsDisposed { get; private set; }
 
 		/// <summary>
-		/// <para xml:lang="en">Performs class-defined tasks associated with freeing, releasing, or resetting managed resources.</para>
+		/// <para xml:lang="en">Disposed all <see cref="SocketAsyncEventArgsPool"/> created by this instance as well disposing this instance.</para>
 		/// </summary>
 		public void Dispose()
 		{
@@ -59,6 +82,15 @@ namespace Secs4Net
 			GC.SuppressFinalize(this);
 		}
 
+		/// <summary>
+		/// <para xml:lang="en">Lend a <see cref="SocketAsyncEventArgsPool"/> from this instance.</para>
+		/// </summary>
+		/// <exception cref="ObjectDisposedException">
+		/// <para xml:lang="en">This instance has been disposed.</para>
+		/// </exception>
+		/// <returns>
+		/// <para xml:lang="en">The lent instance of <see cref="SocketAsyncEventArgsPool"/> from this instance.</para>
+		/// </returns>
 		public SocketAsyncEventArgs Lend()
 		{
 			this.AssertObjectIsNotDisposed();
@@ -79,6 +111,9 @@ namespace Secs4Net
 			}
 		}
 
+		/// <summary>
+		/// <para xml:lang="en">Resets this instance by disposed and removing all <see cref="SocketAsyncEventArgsPool"/> created by this instance.</para>
+		/// </summary>
 		public void Reset()
 		{
 			lock (this.lockObject)
@@ -87,28 +122,47 @@ namespace Secs4Net
 			}
 		}
 
-		public void Return(SocketAsyncEventArgs args)
+		/// <summary>
+		/// <para xml:lang="en">Returns the specified <paramref name="args"/> to this instance.</para>
+		/// </summary>
+		/// <param name="args">
+		/// <para xml:lang="en">An instance of <see cref="SocketAsyncEventArgs"/> which was previously lent from this instance.</para>
+		/// </param>
+		/// <exception cref="ArgumentNullException">
+		/// <para xml:lang="en"><paramref name="args"/> is <see langword="null"/>.</para>
+		/// </exception>
+		/// <returns>
+		/// <para xml:lang="en"><see langword="true"/> if the specified <paramref name="args"/> was returned to this instance; otherwise <see langword="false"/>.</para>
+		/// </returns>
+		public bool Return(SocketAsyncEventArgs args)
 		{
 			if (args == null)
 			{
 				throw new ArgumentNullException(nameof(args));
 			}
 
-			this.ClearSocketAsyncEventArgs(args);
+			bool argsIsDisposed = SocketAsyncEventArgsPool.ClearSocketAsyncEventArgs(args);
 
 			if (this.IsDisposed)
 			{
-				return;
+				return false;
 			}
 
 			lock (this.lockObject)
 			{
 				if (this.IsDisposed)
 				{
-					return;
+					return false;
+				}
+
+				if (argsIsDisposed)
+				{
+					this.all.Remove(args);
+					return false;
 				}
 
 				this.available.Push(args);
+				return true;
 			}
 		}
 
@@ -126,22 +180,31 @@ namespace Secs4Net
 			}
 		}
 
-		private void ClearSocketAsyncEventArgs(SocketAsyncEventArgs args)
+		private static bool ClearSocketAsyncEventArgs(SocketAsyncEventArgs args)
 		{
-			args.AcceptSocket = null;
-			args.UserToken = null;
+			try
+			{
+				args.UserToken = null;
+				args.AcceptSocket = null;
 
-			if (args.BufferList != null)
-			{
-				args.BufferList = null;
+				if (args.BufferList != null)
+				{
+					args.BufferList = null;
+				}
+				if (args.Buffer != null)
+				{
+					args.SetBuffer(null, 0, 0);
+				}
+				if (args.SendPacketsElements != null)
+				{
+					args.SendPacketsElements = null;
+				}
+
+				return false;
 			}
-			if (args.Buffer != null)
+			catch (ObjectDisposedException)
 			{
-				args.SetBuffer(null, 0, 0);
-			}
-			if (args.SendPacketsElements != null)
-			{
-				args.SendPacketsElements = null;
+				return true;
 			}
 		}
 
