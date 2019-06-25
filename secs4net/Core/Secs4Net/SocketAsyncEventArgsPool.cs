@@ -79,6 +79,14 @@ namespace Secs4Net
 			}
 		}
 
+		public void Reset()
+		{
+			lock (this.lockObject)
+			{
+				this.InternalReset();
+			}
+		}
+
 		public void Return(SocketAsyncEventArgs args)
 		{
 			if (args == null)
@@ -151,13 +159,18 @@ namespace Secs4Net
 			lock (this.lockObject)
 			{
 				this.IsDisposed = true;
-				foreach (var item in this.all)
-				{
-					item.Dispose();
-				}
-				this.all.Clear();
-				this.available.Clear();
+				this.InternalReset();
 			}
+		}
+
+		private void InternalReset()
+		{
+			foreach (var item in this.all)
+			{
+				item.Dispose();
+			}
+			this.all.Clear();
+			this.available.Clear();
 		}
 	}
 }

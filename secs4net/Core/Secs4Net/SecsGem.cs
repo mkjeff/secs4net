@@ -308,6 +308,7 @@ namespace Secs4Net
 			}
 
 			this.Reset();
+			this.socketAsyncEventArgsPool.Dispose();
 			this._timer7.Dispose();
 			this._timer8.Dispose();
 			this._timerLinkTest.Dispose();
@@ -526,7 +527,7 @@ namespace Secs4Net
 				this.serverSocket = null;
 			}
 
-			this.socketAsyncEventArgsPool.Dispose();
+			this.socketAsyncEventArgsPool.Reset();
 		}
 
 		private void SendControlMessage(MessageType msgType, int systembyte)
