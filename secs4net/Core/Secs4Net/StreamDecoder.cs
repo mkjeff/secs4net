@@ -200,7 +200,7 @@ namespace Secs4Net
 				var list = new List<Item>(dataLength);
 				for (int i = 0; i < dataLength; i++)
 				{
-					list.Add(BufferedDecodeItem(bytes, ref index));
+					list.Add(StreamDecoder.BufferedDecodeItem(bytes, ref index));
 				}
 
 				return Item.L(list);
@@ -276,7 +276,7 @@ namespace Secs4Net
 			if (length >= this.messageDataLength)
 			{
 				Trace.WriteLine("Get Complete Data Message with total data");
-				this.dataMessageHandler(this.messageHeader, new SecsMessage(this.messageHeader.S, this.messageHeader.F, string.Empty, BufferedDecodeItem(this.Buffer, ref this.decodeIndex), this.messageHeader.ReplyExpected));
+				this.dataMessageHandler(this.messageHeader, new SecsMessage(this.messageHeader.S, this.messageHeader.F, string.Empty, StreamDecoder.BufferedDecodeItem(this.Buffer, ref this.decodeIndex), this.messageHeader.ReplyExpected));
 				length -= (int)this.messageDataLength;
 				this.messageDataLength = 0;
 				return 0; //completeWith message received
