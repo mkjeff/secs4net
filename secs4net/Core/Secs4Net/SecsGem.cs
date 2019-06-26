@@ -128,7 +128,7 @@ namespace Secs4Net
 								return;
 							}
 
-							this._logger.Error(ex.Message);
+							this._logger.Error(ex.Message, ex);
 							this._logger.Info($"Start T5 Timer: {this.T5 / 1000} sec.");
 							await Task.Delay(this.T5).ConfigureAwait(false);
 						}
@@ -173,7 +173,7 @@ namespace Secs4Net
 								return;
 							}
 
-							this._logger.Error(ex.Message);
+							this._logger.Error(ex.Message, ex);
 							await Task.Delay(2000).ConfigureAwait(false);
 						}
 					} while (!connected);
@@ -214,7 +214,7 @@ namespace Secs4Net
 		public bool IsDisposed => Interlocked.CompareExchange(ref this._disposeStage, SecsGem.disposalComplete, SecsGem.disposalComplete) == SecsGem.disposalComplete;
 
 		/// <summary>
-		/// get or set linking test timer enable or not 
+		/// Gets or sets linking test timer enable or not.
 		/// </summary>
 		public bool LinkTestEnable
 		{
@@ -239,7 +239,7 @@ namespace Secs4Net
 		}
 
 		/// <summary>
-		/// Linking test timer interval
+		/// Linking test timer interval in milliseconds. (Default: 60000)
 		/// </summary>
 		public int LinkTestInterval
 		{
@@ -268,27 +268,27 @@ namespace Secs4Net
 		public ConnectionState State { get; private set; }
 
 		/// <summary>
-		/// T3 timer interval 
+		/// T3 timer interval in milliseconds. (Default: 45000)
 		/// </summary>
 		public int T3 { get; set; } = 45000;
 
 		/// <summary>
-		/// T5 timer interval
+		/// T5 timer interval in milliseconds. (Default: 10000)
 		/// </summary>
 		public int T5 { get; set; } = 10000;
 
 		/// <summary>
-		/// T6 timer interval
+		/// T6 timer interval in milliseconds. (Default: 5000)
 		/// </summary>
 		public int T6 { get; set; } = 5000;
 
 		/// <summary>
-		/// T7 timer interval
+		/// T7 timer interval in milliseconds. (Default: 10000)
 		/// </summary>
 		public int T7 { get; set; } = 10000;
 
 		/// <summary>
-		/// T8 timer interval
+		/// T8 timer interval in milliseconds. (Default: 5000)
 		/// </summary>
 		public int T8 { get; set; } = 5000;
 
@@ -405,12 +405,12 @@ namespace Secs4Net
 				}
 				else
 				{
-					this._logger.Warning("Received Unexpected Control Message: " + header.MessageType);
+					this._logger.Warning($"Received Unexpected Control Message: {header.MessageType}");
 					return;
 				}
 			}
 
-			this._logger.Info("Receive Control message: " + header.MessageType);
+			this._logger.Info($"Receive Control message: {header.MessageType}");
 
 			switch (header.MessageType)
 			{
@@ -574,7 +574,7 @@ namespace Secs4Net
 					return;
 				}
 
-				this._logger.Info("Sent Control Message: " + completeToken.MsgType);
+				this._logger.Info($"Sent Control Message: {completeToken.MsgType}");
 				if (this._replyExpectedMsgs.ContainsKey(completeToken.Id))
 				{
 					if (!completeToken.Task.Wait(this.T6))

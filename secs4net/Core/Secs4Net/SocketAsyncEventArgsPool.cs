@@ -83,13 +83,13 @@ namespace Secs4Net
 		}
 
 		/// <summary>
-		/// <para xml:lang="en">Lend a <see cref="SocketAsyncEventArgsPool"/> from this instance.</para>
+		/// <para xml:lang="en">Lend a <see cref="SocketAsyncEventArgs"/> from this instance.</para>
 		/// </summary>
 		/// <exception cref="ObjectDisposedException">
 		/// <para xml:lang="en">This instance has been disposed.</para>
 		/// </exception>
 		/// <returns>
-		/// <para xml:lang="en">The lent instance of <see cref="SocketAsyncEventArgsPool"/> from this instance.</para>
+		/// <para xml:lang="en">The lent instance of <see cref="SocketAsyncEventArgs"/> from this instance.</para>
 		/// </returns>
 		public SocketAsyncEventArgs Lend()
 		{
