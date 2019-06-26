@@ -9,13 +9,16 @@ namespace Secs4Net
 	/// </summary>
 	internal sealed class StreamDecoder
 	{
-		public byte[] Buffer => this._buffer;
+		/// <summary>
+		/// data buffer
+		/// </summary>
+		public byte[] Buffer { get; private set; }
 
 		/// <summary>
 		/// Control the range of data receiver 
 		/// </summary>
-		public int BufferOffset => this._bufferOffset;
-		public int BufferCount => this.Buffer.Length - this._bufferOffset;
+		public int BufferOffset { get; private set; }
+		public int BufferCount => this.Buffer.Length - this.BufferOffset;
 
 		/// <summary>
 		/// decoder step
@@ -28,58 +31,50 @@ namespace Secs4Net
 		/// <summary>
 		/// decode pipelines
 		/// </summary>
-		private readonly Decoder[] _decoders;
+		private readonly Decoder[] decoders;
 
-		private int _decoderStep;
+		private int decoderStep;
 
-		private readonly Action<MessageHeader, SecsMessage> _dataMsgHandler;
-		private readonly Action<MessageHeader> _controlMsgHandler;
-
-		/// <summary>
-		/// data buffer
-		/// </summary>
-		private byte[] _buffer;
+		private readonly Action<MessageHeader, SecsMessage> dataMsgHandler;
+		private readonly Action<MessageHeader> controlMsgHandler;
 
 		/// <summary>
 		/// Control the range of data decoder
 		/// </summary>
-		private int _decodeIndex;
-
-
-		private int _bufferOffset;
+		private int decodeIndex;
 
 		/// <summary>
 		/// previous decoded remained count
 		/// </summary>
-		private int _previousRemainedCount;
+		private int previousRemainedCount;
 
-		private readonly Stack<List<Item>> _stack = new Stack<List<Item>>();
-		private uint _messageDataLength;
-		private MessageHeader _msgHeader;
-		private readonly byte[] _itemLengthBytes = new byte[4];
-		private SecsFormat _format;
-		private byte _lengthBits;
-		private int _itemLength;
+		private readonly Stack<List<Item>> stack = new Stack<List<Item>>();
+		private uint messageDataLength;
+		private MessageHeader msgHeader;
+		private readonly byte[] itemLengthBytes = new byte[4];
+		private SecsFormat format;
+		private byte lengthBits;
+		private int itemLength;
 
 		public void Reset()
 		{
-			this._stack.Clear();
-			this._decoderStep = 0;
-			this._decodeIndex = 0;
-			this._bufferOffset = 0;
-			this._messageDataLength = 0;
-			this._previousRemainedCount = 0;
+			this.stack.Clear();
+			this.decoderStep = 0;
+			this.decodeIndex = 0;
+			this.BufferOffset = 0;
+			this.messageDataLength = 0;
+			this.previousRemainedCount = 0;
 		}
 
 		internal StreamDecoder(int streamBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
 		{
-			this._buffer = new byte[streamBufferSize];
-			this._bufferOffset = 0;
-			this._decodeIndex = 0;
-			this._dataMsgHandler = dataMsgHandler;
-			this._controlMsgHandler = controlMsgHandler;
+			this.Buffer = new byte[streamBufferSize];
+			this.BufferOffset = 0;
+			this.decodeIndex = 0;
+			this.dataMsgHandler = dataMsgHandler;
+			this.controlMsgHandler = controlMsgHandler;
 
-			this._decoders = new Decoder[]
+			this.decoders = new Decoder[]
 			{
 				this.DecoderStep0GetTotalMessageLength,
 				this.DecoderStep1GetMessageHeader,
@@ -102,10 +97,10 @@ namespace Secs4Net
 				return 0;
 			}
 
-			Array.Reverse(this._buffer, this._decodeIndex, 4);
-			this._messageDataLength = BitConverter.ToUInt32(this._buffer, this._decodeIndex);
-			Trace.WriteLine($"Get Message Length: {this._messageDataLength}");
-			this._decodeIndex += 4;
+			Array.Reverse(this.Buffer, this.decodeIndex, 4);
+			this.messageDataLength = BitConverter.ToUInt32(this.Buffer, this.decodeIndex);
+			Trace.WriteLine($"Get Message Length: {this.messageDataLength}");
+			this.decodeIndex += 4;
 			length -= 4;
 			return this.DecoderStep1GetMessageHeader(ref length, out need);
 		}
@@ -123,30 +118,30 @@ namespace Secs4Net
 				return 1;
 			}
 
-			this._msgHeader = MessageHeader.Decode(new ReadOnlySpan<byte>(this._buffer, this._decodeIndex, 10));
-			this._decodeIndex += 10;
-			this._messageDataLength -= 10;
+			this.msgHeader = MessageHeader.Decode(new ReadOnlySpan<byte>(this.Buffer, this.decodeIndex, 10));
+			this.decodeIndex += 10;
+			this.messageDataLength -= 10;
 			length -= 10;
-			if (this._messageDataLength == 0)
+			if (this.messageDataLength == 0)
 			{
-				if (this._msgHeader.MessageType == MessageType.DataMessage)
+				if (this.msgHeader.MessageType == MessageType.DataMessage)
 				{
-					this._dataMsgHandler(this._msgHeader, new SecsMessage(this._msgHeader.S, this._msgHeader.F, string.Empty, replyExpected: this._msgHeader.ReplyExpected));
+					this.dataMsgHandler(this.msgHeader, new SecsMessage(this.msgHeader.S, this.msgHeader.F, string.Empty, replyExpected: this.msgHeader.ReplyExpected));
 				}
 				else
 				{
-					this._controlMsgHandler(this._msgHeader);
+					this.controlMsgHandler(this.msgHeader);
 				}
 
 				return 0;
 			}
 
-			if (length >= this._messageDataLength)
+			if (length >= this.messageDataLength)
 			{
 				Trace.WriteLine("Get Complete Data Message with total data");
-				this._dataMsgHandler(this._msgHeader, new SecsMessage(this._msgHeader.S, this._msgHeader.F, string.Empty, BufferedDecodeItem(this._buffer, ref this._decodeIndex), this._msgHeader.ReplyExpected));
-				length -= (int)this._messageDataLength;
-				this._messageDataLength = 0;
+				this.dataMsgHandler(this.msgHeader, new SecsMessage(this.msgHeader.S, this.msgHeader.F, string.Empty, BufferedDecodeItem(this.Buffer, ref this.decodeIndex), this.msgHeader.ReplyExpected));
+				length -= (int)this.messageDataLength;
+				this.messageDataLength = 0;
 				return 0; //completeWith message received
 			}
 			return this.DecoderStep2GetItemHeader(ref length, out need);
@@ -165,10 +160,10 @@ namespace Secs4Net
 				return 2;
 			}
 
-			this._format = (SecsFormat)(this._buffer[this._decodeIndex] & 0xFC);
-			this._lengthBits = (byte)(this._buffer[this._decodeIndex] & 3);
-			this._decodeIndex++;
-			this._messageDataLength--;
+			this.format = (SecsFormat)(this.Buffer[this.decodeIndex] & 0xFC);
+			this.lengthBits = (byte)(this.Buffer[this.decodeIndex] & 3);
+			this.decodeIndex++;
+			this.messageDataLength--;
 			length--;
 			return this.DecoderStep3GetItemLength(ref length, out need);
 		}
@@ -181,21 +176,21 @@ namespace Secs4Net
 		/// <returns>The decoder step to execute next.</returns>
 		private int DecoderStep3GetItemLength(ref int length, out int need)
 		{
-			if (!StreamDecoder.CheckAvailable(length, this._lengthBits, out need))
+			if (!StreamDecoder.CheckAvailable(length, this.lengthBits, out need))
 			{
 				return 3;
 			}
 
-			Array.Copy(this._buffer, this._decodeIndex, this._itemLengthBytes, 0, this._lengthBits);
-			Array.Reverse(this._itemLengthBytes, 0, this._lengthBits);
+			Array.Copy(this.Buffer, this.decodeIndex, this.itemLengthBytes, 0, this.lengthBits);
+			Array.Reverse(this.itemLengthBytes, 0, this.lengthBits);
 
-			this._itemLength = BitConverter.ToInt32(this._itemLengthBytes, 0);
-			Array.Clear(this._itemLengthBytes, 0, 4);
-			Trace.WriteLineIf(this._format != SecsFormat.List, $"Get format: {this._format}, length: {this._itemLength}");
+			this.itemLength = BitConverter.ToInt32(this.itemLengthBytes, 0);
+			Array.Clear(this.itemLengthBytes, 0, 4);
+			Trace.WriteLineIf(this.format != SecsFormat.List, $"Get format: {this.format}, length: {this.itemLength}");
 
-			this._decodeIndex += this._lengthBits;
-			this._messageDataLength -= this._lengthBits;
-			length -= this._lengthBits;
+			this.decodeIndex += this.lengthBits;
+			this.messageDataLength -= this.lengthBits;
+			length -= this.lengthBits;
 			return this.DecoderStep4GetItem(ref length, out need);
 		}
 
@@ -209,55 +204,55 @@ namespace Secs4Net
 		{
 			need = 0;
 			Item item;
-			if (this._format == SecsFormat.List)
+			if (this.format == SecsFormat.List)
 			{
-				if (this._itemLength == 0)
+				if (this.itemLength == 0)
 				{
 					item = Item.L();
 				}
 				else
 				{
-					this._stack.Push(new List<Item>(this._itemLength));
+					this.stack.Push(new List<Item>(this.itemLength));
 					return this.DecoderStep2GetItemHeader(ref length, out need);
 				}
 			}
 			else
 			{
-				if (!StreamDecoder.CheckAvailable(length, this._itemLength, out need))
+				if (!StreamDecoder.CheckAvailable(length, this.itemLength, out need))
 				{
 					return 4;
 				}
 
-				item = Item.BytesDecode(this._format, this._buffer, this._decodeIndex, this._itemLength);
-				Trace.WriteLine($"Complete Item: {this._format}");
+				item = Item.BytesDecode(this.format, this.Buffer, this.decodeIndex, this.itemLength);
+				Trace.WriteLine($"Complete Item: {this.format}");
 
-				this._decodeIndex += this._itemLength;
-				this._messageDataLength -= (uint)this._itemLength;
-				length -= this._itemLength;
+				this.decodeIndex += this.itemLength;
+				this.messageDataLength -= (uint)this.itemLength;
+				length -= this.itemLength;
 			}
 
-			if (this._stack.Count == 0)
+			if (this.stack.Count == 0)
 			{
 				Trace.WriteLine("Get Complete Data Message by stream decoded");
-				this._dataMsgHandler(this._msgHeader, new SecsMessage(this._msgHeader.S, this._msgHeader.F, string.Empty, item, this._msgHeader.ReplyExpected));
+				this.dataMsgHandler(this.msgHeader, new SecsMessage(this.msgHeader.S, this.msgHeader.F, string.Empty, item, this.msgHeader.ReplyExpected));
 				return 0;
 			}
 
-			var list = this._stack.Peek();
+			var list = this.stack.Peek();
 			list.Add(item);
 			while (list.Count == list.Capacity)
 			{
-				item = Item.L(this._stack.Pop());
+				item = Item.L(this.stack.Pop());
 				Trace.WriteLine($"Complete List: {item.Count}");
-				if (this._stack.Count > 0)
+				if (this.stack.Count > 0)
 				{
-					list = this._stack.Peek();
+					list = this.stack.Peek();
 					list.Add(item);
 				}
 				else
 				{
 					Trace.WriteLine("Get Complete Data Message by stream decoded");
-					this._dataMsgHandler(this._msgHeader, new SecsMessage(this._msgHeader.S, this._msgHeader.F, string.Empty, item, this._msgHeader.ReplyExpected));
+					this.dataMsgHandler(this.msgHeader, new SecsMessage(this.msgHeader.S, this.msgHeader.F, string.Empty, item, this.msgHeader.ReplyExpected));
 					return 0;
 				}
 			}
@@ -317,68 +312,68 @@ namespace Secs4Net
 		{
 			Debug.Assert(length > 0, "decode data length is 0.");
 			var decodeLength = length;
-			length += this._previousRemainedCount; // total available length = current length + previous remained
+			length += this.previousRemainedCount; // total available length = current length + previous remained
 			int need;
-			var nexStep = this._decoderStep;
+			var nexStep = this.decoderStep;
 			do
 			{
-				this._decoderStep = nexStep;
-				nexStep = this._decoders[this._decoderStep](ref length, out need);
-			} while (nexStep != this._decoderStep);
+				this.decoderStep = nexStep;
+				nexStep = this.decoders[this.decoderStep](ref length, out need);
+			} while (nexStep != this.decoderStep);
 
-			Debug.Assert(this._decodeIndex >= this._bufferOffset, "decode index should ahead of buffer index");
+			Debug.Assert(this.decodeIndex >= this.BufferOffset, "decode index should ahead of buffer index");
 
 			var remainCount = length;
 			Debug.Assert(remainCount >= 0, "remain count is only possible grater and equal zero");
 			Trace.WriteLine($"remain data length: {remainCount}");
-			Trace.WriteLineIf(this._messageDataLength > 0, $"need data count: {need}");
+			Trace.WriteLineIf(this.messageDataLength > 0, $"need data count: {need}");
 
 			if (remainCount == 0)
 			{
 				if (need > this.Buffer.Length)
 				{
 					var newSize = need * 2;
-					Trace.WriteLine($@"<<buffer resizing>>: current size = {this._buffer.Length}, new size = {newSize}");
+					Trace.WriteLine($@"<<buffer resizing>>: current size = {this.Buffer.Length}, new size = {newSize}");
 
 					// increase buffer size
-					this._buffer = new byte[newSize];
+					this.Buffer = new byte[newSize];
 				}
-				this._bufferOffset = 0;
-				this._decodeIndex = 0;
-				this._previousRemainedCount = 0;
+				this.BufferOffset = 0;
+				this.decodeIndex = 0;
+				this.previousRemainedCount = 0;
 			}
 			else
 			{
-				this._bufferOffset += decodeLength; // move next receive index
+				this.BufferOffset += decodeLength; // move next receive index
 				var nextStepReqiredCount = remainCount + need;
 				if (nextStepReqiredCount > this.BufferCount)
 				{
 					if (nextStepReqiredCount > this.Buffer.Length)
 					{
-						var newSize = Math.Max(this._messageDataLength / 2, nextStepReqiredCount) * 2;
-						Trace.WriteLine($@"<<buffer resizing>>: current size = {this._buffer.Length}, remained = {remainCount}, new size = {newSize}");
+						var newSize = Math.Max(this.messageDataLength / 2, nextStepReqiredCount) * 2;
+						Trace.WriteLine($@"<<buffer resizing>>: current size = {this.Buffer.Length}, remained = {remainCount}, new size = {newSize}");
 
 						// out of total buffer size
 						// increase buffer size
 						var newBuffer = new byte[newSize];
 						// keep remained data to new buffer's head
-						Array.Copy(this._buffer, this._bufferOffset - remainCount, newBuffer, 0, remainCount);
-						this._buffer = newBuffer;
+						Array.Copy(this.Buffer, this.BufferOffset - remainCount, newBuffer, 0, remainCount);
+						this.Buffer = newBuffer;
 					}
 					else
 					{
 						Trace.WriteLine($@"<<buffer recyling>>: available = {this.BufferCount}, need = {nextStepReqiredCount}, remained = {remainCount}");
 
 						// move remained data to buffer's head
-						Array.Copy(this._buffer, this._bufferOffset - remainCount, this._buffer, 0, remainCount);
+						Array.Copy(this.Buffer, this.BufferOffset - remainCount, this.Buffer, 0, remainCount);
 					}
-					this._bufferOffset = remainCount;
-					this._decodeIndex = 0;
+					this.BufferOffset = remainCount;
+					this.decodeIndex = 0;
 				}
-				this._previousRemainedCount = remainCount;
+				this.previousRemainedCount = remainCount;
 			}
 
-			return this._messageDataLength > 0;
+			return this.messageDataLength > 0;
 		}
 	}
 }
