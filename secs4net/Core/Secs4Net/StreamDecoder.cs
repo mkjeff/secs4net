@@ -9,9 +9,9 @@ namespace Secs4Net
 	/// </summary>
 	internal sealed class StreamDecoder
 	{
-		private readonly Action<MessageHeader> controlMsgHandler;
+		private readonly Action<MessageHeader> controlMessageHandler;
 
-		private readonly Action<MessageHeader, SecsMessage> dataMsgHandler;
+		private readonly Action<MessageHeader, SecsMessage> dataMessageHandler;
 
 		/// <summary>
 		/// decode pipelines
@@ -37,20 +37,20 @@ namespace Secs4Net
 
 		private uint messageDataLength;
 
-		private MessageHeader msgHeader;
+		private MessageHeader messageHeader;
 
 		/// <summary>
 		/// previous decoded remained count
 		/// </summary>
 		private int previousRemainedCount;
 
-		internal StreamDecoder(int streamBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
+		internal StreamDecoder(int streamBufferSize, Action<MessageHeader> controlMessageHandler, Action<MessageHeader, SecsMessage> dataMessageHandler)
 		{
 			this.Buffer = new byte[streamBufferSize];
 			this.BufferOffset = 0;
 			this.decodeIndex = 0;
-			this.dataMsgHandler = dataMsgHandler;
-			this.controlMsgHandler = controlMsgHandler;
+			this.dataMessageHandler = dataMessageHandler;
+			this.controlMessageHandler = controlMessageHandler;
 
 			this.decoders = new Decoder[]
 			{
@@ -98,7 +98,8 @@ namespace Secs4Net
 			{
 				this.decoderStep = nexStep;
 				nexStep = this.decoders[this.decoderStep](ref length, out need);
-			} while (nexStep != this.decoderStep);
+			}
+			while (nexStep != this.decoderStep);
 
 			Debug.Assert(this.decodeIndex >= this.BufferOffset, "decode index should ahead of buffer index");
 
@@ -112,7 +113,7 @@ namespace Secs4Net
 				if (need > this.Buffer.Length)
 				{
 					var newSize = need * 2;
-					Trace.WriteLine($@"<<buffer resizing>>: current size = {this.Buffer.Length}, new size = {newSize}");
+					Trace.WriteLine($"<<buffer resizing>>: current size = {this.Buffer.Length}, new size = {newSize}");
 
 					// increase buffer size
 					this.Buffer = new byte[newSize];
@@ -130,7 +131,7 @@ namespace Secs4Net
 					if (nextStepReqiredCount > this.Buffer.Length)
 					{
 						var newSize = Math.Max(this.messageDataLength / 2, nextStepReqiredCount) * 2;
-						Trace.WriteLine($@"<<buffer resizing>>: current size = {this.Buffer.Length}, remained = {remainCount}, new size = {newSize}");
+						Trace.WriteLine($"<<buffer resizing>>: current size = {this.Buffer.Length}, remained = {remainCount}, new size = {newSize}");
 
 						// out of total buffer size
 						// increase buffer size
@@ -141,7 +142,7 @@ namespace Secs4Net
 					}
 					else
 					{
-						Trace.WriteLine($@"<<buffer recyling>>: available = {this.BufferCount}, need = {nextStepReqiredCount}, remained = {remainCount}");
+						Trace.WriteLine($"<<buffer recyling>>: available = {this.BufferCount}, need = {nextStepReqiredCount}, remained = {remainCount}");
 
 						// move remained data to buffer's head
 						Array.Copy(this.Buffer, this.BufferOffset - remainCount, this.Buffer, 0, remainCount);
@@ -242,19 +243,19 @@ namespace Secs4Net
 				return 1;
 			}
 
-			this.msgHeader = MessageHeader.Decode(new ReadOnlySpan<byte>(this.Buffer, this.decodeIndex, 10));
+			this.messageHeader = MessageHeader.Decode(new ReadOnlySpan<byte>(this.Buffer, this.decodeIndex, 10));
 			this.decodeIndex += 10;
 			this.messageDataLength -= 10;
 			length -= 10;
 			if (this.messageDataLength == 0)
 			{
-				if (this.msgHeader.MessageType == MessageType.DataMessage)
+				if (this.messageHeader.MessageType == MessageType.DataMessage)
 				{
-					this.dataMsgHandler(this.msgHeader, new SecsMessage(this.msgHeader.S, this.msgHeader.F, string.Empty, replyExpected: this.msgHeader.ReplyExpected));
+					this.dataMessageHandler(this.messageHeader, new SecsMessage(this.messageHeader.S, this.messageHeader.F, string.Empty, replyExpected: this.messageHeader.ReplyExpected));
 				}
 				else
 				{
-					this.controlMsgHandler(this.msgHeader);
+					this.controlMessageHandler(this.messageHeader);
 				}
 
 				return 0;
@@ -263,7 +264,7 @@ namespace Secs4Net
 			if (length >= this.messageDataLength)
 			{
 				Trace.WriteLine("Get Complete Data Message with total data");
-				this.dataMsgHandler(this.msgHeader, new SecsMessage(this.msgHeader.S, this.msgHeader.F, string.Empty, BufferedDecodeItem(this.Buffer, ref this.decodeIndex), this.msgHeader.ReplyExpected));
+				this.dataMessageHandler(this.messageHeader, new SecsMessage(this.messageHeader.S, this.messageHeader.F, string.Empty, BufferedDecodeItem(this.Buffer, ref this.decodeIndex), this.messageHeader.ReplyExpected));
 				length -= (int)this.messageDataLength;
 				this.messageDataLength = 0;
 				return 0; //completeWith message received
@@ -358,7 +359,7 @@ namespace Secs4Net
 			if (this.stack.Count == 0)
 			{
 				Trace.WriteLine("Get Complete Data Message by stream decoded");
-				this.dataMsgHandler(this.msgHeader, new SecsMessage(this.msgHeader.S, this.msgHeader.F, string.Empty, item, this.msgHeader.ReplyExpected));
+				this.dataMessageHandler(this.messageHeader, new SecsMessage(this.messageHeader.S, this.messageHeader.F, string.Empty, item, this.messageHeader.ReplyExpected));
 				return 0;
 			}
 
@@ -376,7 +377,7 @@ namespace Secs4Net
 				else
 				{
 					Trace.WriteLine("Get Complete Data Message by stream decoded");
-					this.dataMsgHandler(this.msgHeader, new SecsMessage(this.msgHeader.S, this.msgHeader.F, string.Empty, item, this.msgHeader.ReplyExpected));
+					this.dataMessageHandler(this.messageHeader, new SecsMessage(this.messageHeader.S, this.messageHeader.F, string.Empty, item, this.messageHeader.ReplyExpected));
 					return 0;
 				}
 			}
