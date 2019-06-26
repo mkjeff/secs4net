@@ -85,10 +85,11 @@ namespace Secs4Net
 		public int BufferOffset { get; private set; }
 
 		/// <summary>
-		/// 
+		/// Decodes the <see cref="StreamDecoder.Buffer"/>.
 		/// </summary>
-		/// <param name="length">data length</param>
-		/// <returns>true, if need more data to decode completed message. otherwise, return false</returns>
+		/// <param name="length">The data length.</param>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is less than or equal to zero.</exception>
+		/// <returns><see langword="true"/>, if more data is needed to decode a completed message; otherwise, return <see langword="false"/>.</returns>
 		public bool Decode(int length)
 		{
 			if (length <= 0)
