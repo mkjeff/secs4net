@@ -81,21 +81,21 @@ namespace Secs4Net
 
 			this._decoders = new Decoder[]
 			{
-				this.GetTotalMessageLength,
-				this.GetMessageHeader,
-				this.GetItemHeader,
-				this.GetItemLength,
-				this.GetItem,
+				this.DecoderStep0GetTotalMessageLength,
+				this.DecoderStep1GetMessageHeader,
+				this.DecoderStep2GetItemHeader,
+				this.DecoderStep3GetItemLength,
+				this.DecoderStep4GetItem,
 			};
 		}
 
 		/// <summary>
-		/// 0: get total message length 4 bytes 
+		/// Decoder step 0: get total message length 4 bytes 
 		/// </summary>
 		/// <param name="length"></param>
 		/// <param name="need"></param>
-		/// <returns></returns>
-		private int GetTotalMessageLength(ref int length, out int need)
+		/// <returns>The decoder step to execute next.</returns>
+		private int DecoderStep0GetTotalMessageLength(ref int length, out int need)
 		{
 			if (!StreamDecoder.CheckAvailable(length, 4, out need))
 			{
@@ -107,16 +107,16 @@ namespace Secs4Net
 			Trace.WriteLine($"Get Message Length: {this._messageDataLength}");
 			this._decodeIndex += 4;
 			length -= 4;
-			return this.GetMessageHeader(ref length, out need);
+			return this.DecoderStep1GetMessageHeader(ref length, out need);
 		}
 
 		/// <summary>
-		/// 1: get message header 10 bytes 
+		/// Decoder step 1: get message header 10 bytes 
 		/// </summary>
 		/// <param name="length"></param>
 		/// <param name="need"></param>
-		/// <returns></returns>
-		private int GetMessageHeader(ref int length, out int need)
+		/// <returns>The decoder step to execute next.</returns>
+		private int DecoderStep1GetMessageHeader(ref int length, out int need)
 		{
 			if (!StreamDecoder.CheckAvailable(length, 10, out need))
 			{
@@ -149,16 +149,16 @@ namespace Secs4Net
 				this._messageDataLength = 0;
 				return 0; //completeWith message received
 			}
-			return this.GetItemHeader(ref length, out need);
+			return this.DecoderStep2GetItemHeader(ref length, out need);
 		}
 
 		/// <summary>
-		/// 2: get _format + lengthBits(2bit) 1 byte
+		/// Decoder step 2: get _format + lengthBits(2bit) 1 byte
 		/// </summary>
 		/// <param name="length"></param>
 		/// <param name="need"></param>
-		/// <returns></returns>
-		private int GetItemHeader(ref int length, out int need)
+		/// <returns>The decoder step to execute next.</returns>
+		private int DecoderStep2GetItemHeader(ref int length, out int need)
 		{
 			if (!StreamDecoder.CheckAvailable(length, 1, out need))
 			{
@@ -170,16 +170,16 @@ namespace Secs4Net
 			this._decodeIndex++;
 			this._messageDataLength--;
 			length--;
-			return this.GetItemLength(ref length, out need);
+			return this.DecoderStep3GetItemLength(ref length, out need);
 		}
 
 		/// <summary>
-		/// 3: get _itemLength _lengthBits bytes, at most 3 byte
+		/// Decoder step 3: get _itemLength _lengthBits bytes, at most 3 byte
 		/// </summary>
 		/// <param name="length"></param>
 		/// <param name="need"></param>
-		/// <returns></returns>
-		private int GetItemLength(ref int length, out int need)
+		/// <returns>The decoder step to execute next.</returns>
+		private int DecoderStep3GetItemLength(ref int length, out int need)
 		{
 			if (!StreamDecoder.CheckAvailable(length, this._lengthBits, out need))
 			{
@@ -196,16 +196,16 @@ namespace Secs4Net
 			this._decodeIndex += this._lengthBits;
 			this._messageDataLength -= this._lengthBits;
 			length -= this._lengthBits;
-			return this.GetItem(ref length, out need);
+			return this.DecoderStep4GetItem(ref length, out need);
 		}
 
 		/// <summary>
-		/// 4: get item value
+		/// Decoder step 4: get item value
 		/// </summary>
 		/// <param name="length"></param>
 		/// <param name="need"></param>
-		/// <returns></returns>
-		private int GetItem(ref int length, out int need)
+		/// <returns>The decoder step to execute next.</returns>
+		private int DecoderStep4GetItem(ref int length, out int need)
 		{
 			need = 0;
 			Item item;
@@ -218,7 +218,7 @@ namespace Secs4Net
 				else
 				{
 					this._stack.Push(new List<Item>(this._itemLength));
-					return this.GetItemHeader(ref length, out need);
+					return this.DecoderStep2GetItemHeader(ref length, out need);
 				}
 			}
 			else
@@ -262,7 +262,7 @@ namespace Secs4Net
 				}
 			}
 
-			return this.GetItemHeader(ref length, out need);
+			return this.DecoderStep2GetItemHeader(ref length, out need);
 		}
 
 		private static bool CheckAvailable(int length, int required, out int need)
