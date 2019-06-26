@@ -98,10 +98,10 @@ namespace Secs4Net
 
 			lock (this.lockObject)
 			{
-				var decodeLength = length;
+				int decodeLength = length;
 				length += this.previousRemainedCount; // total available length = current length + previous remained
 				int need;
-				var nexStep = this.decoderStep;
+				int nexStep = this.decoderStep;
 				do
 				{
 					this.decoderStep = nexStep;
@@ -111,7 +111,7 @@ namespace Secs4Net
 
 				Debug.Assert(this.decodeIndex >= this.BufferOffset, "decode index should ahead of buffer index");
 
-				var remainCount = length;
+				int remainCount = length;
 				Debug.Assert(remainCount >= 0, "remain count is only possible grater and equal zero");
 				Trace.WriteLine($"remain data length: {remainCount}");
 				Trace.WriteLineIf(this.messageDataLength > 0, $"need data count: {need}");
@@ -120,7 +120,7 @@ namespace Secs4Net
 				{
 					if (need > this.Buffer.Length)
 					{
-						var newSize = need * 2;
+						int newSize = need << 1;
 						Trace.WriteLine($"<<buffer resizing>>: current size = {this.Buffer.Length}, new size = {newSize}");
 
 						// increase buffer size
@@ -133,17 +133,17 @@ namespace Secs4Net
 				else
 				{
 					this.BufferOffset += decodeLength; // move next receive index
-					var nextStepReqiredCount = remainCount + need;
+					int nextStepReqiredCount = remainCount + need;
 					if (nextStepReqiredCount > this.BufferCount)
 					{
 						if (nextStepReqiredCount > this.Buffer.Length)
 						{
-							var newSize = Math.Max(this.messageDataLength / 2, nextStepReqiredCount) * 2;
+							int newSize = (int)(Math.Max(this.messageDataLength >> 1, nextStepReqiredCount) << 1);
 							Trace.WriteLine($"<<buffer resizing>>: current size = {this.Buffer.Length}, remained = {remainCount}, new size = {newSize}");
 
 							// out of total buffer size
 							// increase buffer size
-							var newBuffer = new byte[newSize];
+							byte[] newBuffer = new byte[newSize];
 							// keep remained data to new buffer's head
 							Array.Copy(this.Buffer, this.BufferOffset - remainCount, newBuffer, 0, remainCount);
 							this.Buffer = newBuffer;
@@ -181,10 +181,10 @@ namespace Secs4Net
 		private static Item BufferedDecodeItem(byte[] bytes, ref int index)
 		{
 			var format = (SecsFormat)(bytes[index] & 0xFC);
-			var lengthBits = (byte)(bytes[index] & 3);
+			byte lengthBits = (byte)(bytes[index] & 3);
 			index++;
 
-			var itemLengthBytes = new byte[4];
+			byte[] itemLengthBytes = new byte[4];
 			Array.Copy(bytes, index, itemLengthBytes, 0, lengthBits);
 			Array.Reverse(itemLengthBytes, 0, lengthBits);
 			int dataLength = BitConverter.ToInt32(itemLengthBytes, 0); // max to 3 byte dataLength
@@ -198,7 +198,7 @@ namespace Secs4Net
 				}
 
 				var list = new List<Item>(dataLength);
-				for (var i = 0; i < dataLength; i++)
+				for (int i = 0; i < dataLength; i++)
 				{
 					list.Add(BufferedDecodeItem(bytes, ref index));
 				}
