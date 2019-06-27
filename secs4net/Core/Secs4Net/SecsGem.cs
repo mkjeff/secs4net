@@ -23,11 +23,11 @@ namespace Secs4Net
 
 		private static readonly DefaultSecsGemLogger defaultLogger = new DefaultSecsGemLogger();
 
-		private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
+		private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> replyExpectedMessages = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
 
 		private readonly StreamDecoder secsDecoder;
 
-		private readonly Func<Task> startImpl;
+		private readonly Func<Task> startImplementationFunction;
 
 		/// <summary>
 		/// between socket connected and received Select.req timer
@@ -99,7 +99,7 @@ namespace Secs4Net
 
 			if (this.IsActive)
 			{
-				this.startImpl = async () =>
+				this.startImplementationFunction = async () =>
 				{
 					var connected = false;
 					do
@@ -145,7 +145,7 @@ namespace Secs4Net
 				this.serverSocket.Bind(new IPEndPoint(this.IpAddress, this.Port));
 				this.serverSocket.Listen(0);
 
-				this.startImpl = async () =>
+				this.startImplementationFunction = async () =>
 				{
 					var connected = false;
 					do
@@ -316,37 +316,37 @@ namespace Secs4Net
 		/// <summary>
 		/// Asynchronously send message to device .
 		/// </summary>
-		/// <param name="msg">primary message</param>
+		/// <param name="secsMessage">primary message</param>
 		/// <returns>secondary message</returns>
-		public Task<SecsMessage> SendAsync(SecsMessage msg) => this.SendDataMessageAsync(msg, this.GetNewSystemId());
+		public Task<SecsMessage> SendAsync(SecsMessage secsMessage) => this.SendDataMessageAsync(secsMessage, this.GetNewSystemId());
 
-		public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(this.startImpl);
+		public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(this.startImplementationFunction);
 
 		internal int GetNewSystemId() => this.systemByteGenerator.New();
 
-		internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
+		internal Task<SecsMessage> SendDataMessageAsync(SecsMessage secsMessage, int systemBytes)
 		{
 			if (this.State != ConnectionState.Selected)
 			{
 				throw new SecsException("Device is not selected");
 			}
 
-			var token = new TaskCompletionSourceToken(msg, systembyte, MessageType.DataMessage);
-			if (msg.ReplyExpected)
+			var token = new TaskCompletionSourceToken(secsMessage, systemBytes, MessageType.DataMessage);
+			if (secsMessage.ReplyExpected)
 			{
-				this.replyExpectedMsgs[systembyte] = token;
+				this.replyExpectedMessages[systemBytes] = token;
 			}
 
 			var header = new MessageHeader
 			(
-				s: msg.S,
-				f: msg.F,
-				replyExpected: msg.ReplyExpected,
+				s: secsMessage.S,
+				f: secsMessage.F,
+				replyExpected: secsMessage.ReplyExpected,
 				deviceId: this.DeviceId,
-				systemBytes: systembyte
+				systemBytes: systemBytes
 			);
 
-			var bufferList = msg.RawDatas.Value;
+			var bufferList = secsMessage.RawDatas.Value;
 			bufferList[1] = new ArraySegment<byte>(header.EncodeTo(new byte[10]));
 
 			var socketAsyncEventArgs = this.socketAsyncEventArgsPool.Lend();
@@ -389,7 +389,7 @@ namespace Secs4Net
 					}
 
 					this.Reset();
-					Task.Factory.StartNew(this.startImpl);
+					Task.Factory.StartNew(this.startImplementationFunction);
 					break;
 			}
 		}
@@ -399,9 +399,9 @@ namespace Secs4Net
 			var systemBytes = header.SystemBytes;
 			if ((byte)header.MessageType % 2 == 0)
 			{
-				if (this.replyExpectedMsgs.TryGetValue(systemBytes, out var ar))
+				if (this.replyExpectedMessages.TryGetValue(systemBytes, out var token))
 				{
-					ar.SetResult(controlMessage);
+					token.SetResult(controlMessage);
 				}
 				else
 				{
@@ -454,41 +454,41 @@ namespace Secs4Net
 			}
 		}
 
-		private void HandleDataMessage(MessageHeader header, SecsMessage msg)
+		private void HandleDataMessage(MessageHeader header, SecsMessage secsMessage)
 		{
 			var systembyte = header.SystemBytes;
 
-			if (header.DeviceId != this.DeviceId && msg.S != 9 && msg.F != 1)
+			if (header.DeviceId != this.DeviceId && secsMessage.S != 9 && secsMessage.F != 1)
 			{
-				this.logger.MessageIn(msg, systembyte);
+				this.logger.MessageIn(secsMessage, systembyte);
 				this.logger.Warning("Received Unrecognized Device Id Message");
 				this.SendDataMessageAsync(new SecsMessage(9, 1, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10])), replyExpected: false), this.GetNewSystemId());
 				return;
 			}
 
-			if (msg.F % 2 != 0)
+			if (secsMessage.F % 2 != 0)
 			{
-				if (msg.S != 9)
+				if (secsMessage.S != 9)
 				{
 					//Primary message
-					this.logger.MessageIn(msg, systembyte);
+					this.logger.MessageIn(secsMessage, systembyte);
 
 					Task.Factory.StartNew(
 						wrapper => this.InvokePrimaryMessageReceived(Unsafe.As<PrimaryMessageWrapper>(wrapper)),
-						new PrimaryMessageWrapper(this, header, msg));
+						new PrimaryMessageWrapper(this, header, secsMessage));
 
 					return;
 				}
 				// Error message
-				var headerBytes = msg.SecsItem.GetValues<byte>();
+				var headerBytes = secsMessage.SecsItem.GetValues<byte>();
 				systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
 			}
 
 			// Secondary message
-			this.logger.MessageIn(msg, systembyte);
-			if (this.replyExpectedMsgs.TryGetValue(systembyte, out var ar))
+			this.logger.MessageIn(secsMessage, systembyte);
+			if (this.replyExpectedMessages.TryGetValue(systembyte, out var ar))
 			{
-				ar.HandleReplyMessage(msg);
+				ar.HandleReplyMessage(secsMessage);
 			}
 		}
 
@@ -503,7 +503,7 @@ namespace Secs4Net
 			this.timer8.Change(Timeout.Infinite, Timeout.Infinite);
 			this.timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
 			this.secsDecoder.Reset();
-			this.replyExpectedMsgs.Clear();
+			this.replyExpectedMessages.Clear();
 
 			if (this.socket != null)
 			{
@@ -530,12 +530,12 @@ namespace Secs4Net
 			this.socketAsyncEventArgsPool.Reset();
 		}
 
-		private void SendControlMessage(MessageType msgType, int systembyte)
+		private void SendControlMessage(MessageType messageType, int systemBytes)
 		{
-			var token = new TaskCompletionSourceToken(controlMessage, systembyte, msgType);
-			if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
+			var token = new TaskCompletionSourceToken(controlMessage, systemBytes, messageType);
+			if ((byte)messageType % 2 == 1 && messageType != MessageType.SeperateRequest)
 			{
-				this.replyExpectedMsgs[systembyte] = token;
+				this.replyExpectedMessages[systemBytes] = token;
 			}
 
 			var socketAsyncEventArgs = this.socketAsyncEventArgsPool.Lend();
@@ -545,8 +545,8 @@ namespace Secs4Net
 				SecsGem.controlMessageLengthBytes,
 				new ArraySegment<byte>(new MessageHeader(
 					deviceId: 0xFFFF,
-					messageType: msgType,
-					systemBytes: systembyte
+					messageType: messageType,
+					systemBytes: systemBytes
 				).EncodeTo(new byte[10]))
 			};
 
@@ -574,15 +574,15 @@ namespace Secs4Net
 					return;
 				}
 
-				this.logger.Info($"Sent Control Message: {completeToken.MsgType}");
-				if (this.replyExpectedMsgs.ContainsKey(completeToken.Id))
+				this.logger.Info($"Sent Control Message: {completeToken.MessageType}");
+				if (this.replyExpectedMessages.ContainsKey(completeToken.SystemBytes))
 				{
 					if (!completeToken.Task.Wait(this.T6))
 					{
 						this.logger.Error($"T6 Timeout: {this.T6 / 1000} sec.");
 						this.CommunicationStateChanging(ConnectionState.Retry);
 					}
-					this.replyExpectedMsgs.TryRemove(completeToken.Id, out _);
+					this.replyExpectedMessages.TryRemove(completeToken.SystemBytes, out _);
 				}
 			}
 			finally
@@ -591,7 +591,7 @@ namespace Secs4Net
 			}
 		}
 
-		private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
+		private void SendDataMessageCompleteHandler(object sender, SocketAsyncEventArgs e)
 		{
 			e.Completed -= this.SendDataMessageCompleteHandler;
 
@@ -606,9 +606,9 @@ namespace Secs4Net
 					return;
 				}
 
-				this.logger.MessageOut(completeToken.SentSecsMessage, completeToken.Id);
+				this.logger.MessageOut(completeToken.SentSecsMessage, completeToken.SystemBytes);
 
-				if (!this.replyExpectedMsgs.ContainsKey(completeToken.Id))
+				if (!this.replyExpectedMessages.ContainsKey(completeToken.SystemBytes))
 				{
 					completeToken.SetResult(null);
 					return;
@@ -618,14 +618,14 @@ namespace Secs4Net
 				{
 					if (!completeToken.Task.Wait(this.T3))
 					{
-						this.logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {this.T3 / 1000} sec.");
+						this.logger.Error($"T3 Timeout[id=0x{completeToken.SystemBytes:X8}]: {this.T3 / 1000} sec.");
 						completeToken.SetException(new SecsSentMessageException(completeToken.SentSecsMessage, Resources.T3Timeout));
 					}
 				}
 				catch (AggregateException) { }
 				finally
 				{
-					this.replyExpectedMsgs.TryRemove(completeToken.Id, out _);
+					this.replyExpectedMessages.TryRemove(completeToken.SystemBytes, out _);
 				}
 			}
 			finally
@@ -713,16 +713,16 @@ namespace Secs4Net
 		private sealed class TaskCompletionSourceToken :
 			TaskCompletionSource<SecsMessage>
 		{
-			internal TaskCompletionSourceToken(SecsMessage primarySecsMessage, int id, MessageType msgType)
+			internal TaskCompletionSourceToken(SecsMessage primarySecsMessage, int systemBytes, MessageType messageType)
 			{
 				this.SentSecsMessage = primarySecsMessage;
-				this.Id = id;
-				this.MsgType = msgType;
+				this.SystemBytes = systemBytes;
+				this.MessageType = messageType;
 			}
 
-			internal int Id { get; }
+			internal int SystemBytes { get; }
 
-			internal MessageType MsgType { get; }
+			internal MessageType MessageType { get; }
 
 			internal SecsMessage SentSecsMessage { get; }
 
