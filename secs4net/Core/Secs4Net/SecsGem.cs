@@ -320,7 +320,7 @@ namespace Secs4Net
 		/// <returns>secondary message</returns>
 		public Task<SecsMessage> SendAsync(SecsMessage secsMessage) => this.SendDataMessageAsync(secsMessage, this.GetNewSystemId());
 
-		public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(this.startImplementationFunction);
+		public void Start() => Task.Run(this.startImplementationFunction);
 
 		internal int GetNewSystemId() => this.systemByteGenerator.New();
 
@@ -389,7 +389,7 @@ namespace Secs4Net
 					}
 
 					this.Reset();
-					Task.Factory.StartNew(this.startImplementationFunction);
+					Task.Run(this.startImplementationFunction);
 					break;
 			}
 		}
