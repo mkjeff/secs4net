@@ -92,7 +92,7 @@ namespace Secs4Net
 			{
 				if (this.State == ConnectionState.Selected)
 				{
-					this.SendControlMessage(MessageType.LinkTestRequest, this.NewSystemId);
+					this.SendControlMessage(MessageType.LinkTestRequest, this.GetNewSystemId());
 				}
 			}, null, Timeout.Infinite, Timeout.Infinite);
 			#endregion
@@ -136,7 +136,7 @@ namespace Secs4Net
 
 					// hook receive event first, because no message will received before 'SelectRequest' send to device
 					this.StartSocketReceive();
-					this.SendControlMessage(MessageType.SelectRequest, this.NewSystemId);
+					this.SendControlMessage(MessageType.SelectRequest, this.GetNewSystemId());
 				};
 			}
 			else
@@ -292,8 +292,6 @@ namespace Secs4Net
 		/// </summary>
 		public int T8 { get; set; } = 5000;
 
-		internal int NewSystemId => this.systemByteGenerator.New();
-
 		public void Dispose()
 		{
 			if (Interlocked.Exchange(ref this._disposeStage, SecsGem.disposalComplete) != SecsGem.disposalNotStarted)
@@ -304,7 +302,7 @@ namespace Secs4Net
 			this.ConnectionChanged = null;
 			if (this.State == ConnectionState.Selected)
 			{
-				this.SendControlMessage(MessageType.SeperateRequest, this.NewSystemId);
+				this.SendControlMessage(MessageType.SeperateRequest, this.GetNewSystemId());
 			}
 
 			this.Reset();
@@ -320,9 +318,11 @@ namespace Secs4Net
 		/// </summary>
 		/// <param name="msg">primary message</param>
 		/// <returns>secondary message</returns>
-		public Task<SecsMessage> SendAsync(SecsMessage msg) => this.SendDataMessageAsync(msg, this.NewSystemId);
+		public Task<SecsMessage> SendAsync(SecsMessage msg) => this.SendDataMessageAsync(msg, this.GetNewSystemId());
 
 		public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(this._startImpl);
+
+		internal int GetNewSystemId() => this.systemByteGenerator.New();
 
 		internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
 		{
@@ -462,7 +462,7 @@ namespace Secs4Net
 			{
 				this._logger.MessageIn(msg, systembyte);
 				this._logger.Warning("Received Unrecognized Device Id Message");
-				this.SendDataMessageAsync(new SecsMessage(9, 1, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10])), replyExpected: false), this.NewSystemId);
+				this.SendDataMessageAsync(new SecsMessage(9, 1, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10])), replyExpected: false), this.GetNewSystemId());
 				return;
 			}
 

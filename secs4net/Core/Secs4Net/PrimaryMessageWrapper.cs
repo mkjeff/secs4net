@@ -45,7 +45,7 @@ namespace Secs4Net
 			replyMessage = replyMessage ?? new SecsMessage(9, 7, "Unknown Message", Item.B(this._header.EncodeTo(new byte[10])), replyExpected: false);
 			replyMessage.ReplyExpected = false;
 
-			return secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.NewSystemId : this._header.SystemBytes)
+			return secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.GetNewSystemId() : this._header.SystemBytes)
 				.ContinueWith(ContinueWithFunc);
 		}
 
