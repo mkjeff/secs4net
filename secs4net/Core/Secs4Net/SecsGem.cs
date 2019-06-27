@@ -397,7 +397,7 @@ namespace Secs4Net
 		private void HandleControlMessage(MessageHeader header)
 		{
 			var systemBytes = header.SystemBytes;
-			if ((byte)header.MessageType % 2 == 0)
+			if (((byte)header.MessageType & 1) == 0)
 			{
 				if (this.replyExpectedMessages.TryGetValue(systemBytes, out var token))
 				{
@@ -456,22 +456,22 @@ namespace Secs4Net
 
 		private void HandleDataMessage(MessageHeader header, SecsMessage secsMessage)
 		{
-			var systembyte = header.SystemBytes;
+			var systemBytes = header.SystemBytes;
 
 			if (header.DeviceId != this.DeviceId && secsMessage.S != 9 && secsMessage.F != 1)
 			{
-				this.logger.MessageIn(secsMessage, systembyte);
+				this.logger.MessageIn(secsMessage, systemBytes);
 				this.logger.Warning("Received Unrecognized Device Id Message");
 				this.SendDataMessageAsync(new SecsMessage(9, 1, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10])), replyExpected: false), this.GetNewSystemId());
 				return;
 			}
 
-			if (secsMessage.F % 2 != 0)
+			if ((secsMessage.F & 1) == 1)
 			{
 				if (secsMessage.S != 9)
 				{
 					//Primary message
-					this.logger.MessageIn(secsMessage, systembyte);
+					this.logger.MessageIn(secsMessage, systemBytes);
 
 					Task.Factory.StartNew(
 						wrapper => this.InvokePrimaryMessageReceived(Unsafe.As<PrimaryMessageWrapper>(wrapper)),
@@ -481,14 +481,14 @@ namespace Secs4Net
 				}
 				// Error message
 				var headerBytes = secsMessage.SecsItem.GetValues<byte>();
-				systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
+				systemBytes = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
 			}
 
 			// Secondary message
-			this.logger.MessageIn(secsMessage, systembyte);
-			if (this.replyExpectedMessages.TryGetValue(systembyte, out var ar))
+			this.logger.MessageIn(secsMessage, systemBytes);
+			if (this.replyExpectedMessages.TryGetValue(systemBytes, out var token))
 			{
-				ar.HandleReplyMessage(secsMessage);
+				token.HandleReplyMessage(secsMessage);
 			}
 		}
 
@@ -533,7 +533,7 @@ namespace Secs4Net
 		private void SendControlMessage(MessageType messageType, int systemBytes)
 		{
 			var token = new TaskCompletionSourceToken(controlMessage, systemBytes, messageType);
-			if ((byte)messageType % 2 == 1 && messageType != MessageType.SeperateRequest)
+			if (((byte)messageType & 1) == 1 && messageType != MessageType.SeperateRequest)
 			{
 				this.replyExpectedMessages[systemBytes] = token;
 			}
