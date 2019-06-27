@@ -29,8 +29,6 @@ namespace Secs4Net
 
 		private readonly Func<Task> _startImpl;
 
-		private readonly SystemByteGenerator systemByteGenerator = new SystemByteGenerator();
-
 		/// <summary>
 		/// between socket connected and received Select.req timer
 		/// </summary>
@@ -41,6 +39,8 @@ namespace Secs4Net
 		private readonly Timer _timerLinkTest;
 
 		private readonly SocketAsyncEventArgsPool socketAsyncEventArgsPool = new SocketAsyncEventArgsPool();
+
+		private readonly SystemByteGenerator systemByteGenerator = new SystemByteGenerator();
 
 		private int _disposeStage;
 
@@ -634,21 +634,6 @@ namespace Secs4Net
 			}
 		}
 
-		private void StartSocketReceive()
-		{
-			this.CommunicationStateChanging(ConnectionState.Connected);
-
-			var receiveCompleteEvent = this.socketAsyncEventArgsPool.Lend();
-
-			receiveCompleteEvent.SetBuffer(this._secsDecoder.Buffer, this._secsDecoder.BufferOffset, this._secsDecoder.BufferCount);
-			receiveCompleteEvent.Completed += this.SocketReceiveEventCompleted;
-
-			if (!this._socket.ReceiveAsync(receiveCompleteEvent))
-			{
-				this.SocketReceiveEventCompleted(this._socket, receiveCompleteEvent);
-			}
-		}
-
 		private void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
 		{
 			e.Completed -= this.SocketReceiveEventCompleted;
@@ -710,6 +695,21 @@ namespace Secs4Net
 			}
 		}
 
+		private void StartSocketReceive()
+		{
+			this.CommunicationStateChanging(ConnectionState.Connected);
+
+			var receiveCompleteEvent = this.socketAsyncEventArgsPool.Lend();
+
+			receiveCompleteEvent.SetBuffer(this._secsDecoder.Buffer, this._secsDecoder.BufferOffset, this._secsDecoder.BufferCount);
+			receiveCompleteEvent.Completed += this.SocketReceiveEventCompleted;
+
+			if (!this._socket.ReceiveAsync(receiveCompleteEvent))
+			{
+				this.SocketReceiveEventCompleted(this._socket, receiveCompleteEvent);
+			}
+		}
+
 		private sealed class TaskCompletionSourceToken :
 			TaskCompletionSource<SecsMessage>
 		{
@@ -722,9 +722,9 @@ namespace Secs4Net
 
 			internal int Id { get; }
 
-			internal SecsMessage SentSecsMessage { get; }
-
 			internal MessageType MsgType { get; }
+
+			internal SecsMessage SentSecsMessage { get; }
 
 			internal void HandleReplyMessage(SecsMessage replySecsMessage)
 			{
