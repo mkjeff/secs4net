@@ -27,7 +27,11 @@ namespace Secs4Net
 
 		private readonly StreamDecoder secsDecoder;
 
+		private readonly SocketAsyncEventArgsPool socketAsyncEventArgsPool = new SocketAsyncEventArgsPool();
+
 		private readonly Func<Task> startImplementationFunction;
+
+		private readonly SystemByteGenerator systemByteGenerator = new SystemByteGenerator();
 
 		/// <summary>
 		/// between socket connected and received Select.req timer
@@ -38,10 +42,6 @@ namespace Secs4Net
 
 		private readonly Timer timerLinkTest;
 
-		private readonly SocketAsyncEventArgsPool socketAsyncEventArgsPool = new SocketAsyncEventArgsPool();
-
-		private readonly SystemByteGenerator systemByteGenerator = new SystemByteGenerator();
-
 		private int disposeStage;
 
 		private bool linkTestEnable;
@@ -50,9 +50,9 @@ namespace Secs4Net
 
 		private ISecsGemLogger logger = defaultLogger;
 
-		private Socket socket;
-
 		private Socket serverSocket;
+
+		private Socket socket;
 
 		/// <summary>
 		/// constructor
@@ -314,7 +314,7 @@ namespace Secs4Net
 		}
 
 		/// <summary>
-		/// Asynchronously send message to device .
+		/// Asynchronously send message to device.
 		/// </summary>
 		/// <param name="secsMessage">primary message</param>
 		/// <returns>secondary message</returns>
@@ -720,11 +720,11 @@ namespace Secs4Net
 				this.MessageType = messageType;
 			}
 
-			internal int SystemBytes { get; }
-
 			internal MessageType MessageType { get; }
 
 			internal SecsMessage SentSecsMessage { get; }
+
+			internal int SystemBytes { get; }
 
 			internal void HandleReplyMessage(SecsMessage replySecsMessage)
 			{
