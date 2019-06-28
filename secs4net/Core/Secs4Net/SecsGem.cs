@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -23,7 +22,7 @@ namespace Secs4Net
 
 		private static readonly DefaultSecsGemLogger defaultLogger = new DefaultSecsGemLogger();
 
-		private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> replyExpectedMessages = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
+		private readonly TokenCache replyExpectedMessages = new TokenCache();
 
 		private readonly StreamDecoder secsDecoder;
 
@@ -334,7 +333,7 @@ namespace Secs4Net
 			var token = new TaskCompletionSourceToken(secsMessage, systemBytes, MessageType.DataMessage);
 			if (secsMessage.ReplyExpected)
 			{
-				this.replyExpectedMessages[systemBytes] = token;
+				this.replyExpectedMessages.Add(token);
 			}
 
 			var header = new MessageHeader
@@ -535,7 +534,7 @@ namespace Secs4Net
 			var token = new TaskCompletionSourceToken(controlMessage, systemBytes, messageType);
 			if (((byte)messageType & 1) == 1 && messageType != MessageType.SeperateRequest)
 			{
-				this.replyExpectedMessages[systemBytes] = token;
+				this.replyExpectedMessages.Add(token);
 			}
 
 			var socketAsyncEventArgs = this.socketAsyncEventArgsPool.Lend();
@@ -575,14 +574,14 @@ namespace Secs4Net
 				}
 
 				this.logger.Info($"Sent Control Message: {completeToken.MessageType}");
-				if (this.replyExpectedMessages.ContainsKey(completeToken.SystemBytes))
+				if (this.replyExpectedMessages.Contains(completeToken))
 				{
 					if (!completeToken.Task.Wait(this.T6))
 					{
 						this.logger.Error($"T6 Timeout: {this.T6 / 1000} sec.");
 						this.CommunicationStateChanging(ConnectionState.Retry);
 					}
-					this.replyExpectedMessages.TryRemove(completeToken.SystemBytes, out _);
+					this.replyExpectedMessages.Remove(completeToken);
 				}
 			}
 			finally
@@ -608,7 +607,7 @@ namespace Secs4Net
 
 				this.logger.MessageOut(completeToken.SentSecsMessage, completeToken.SystemBytes);
 
-				if (!this.replyExpectedMessages.ContainsKey(completeToken.SystemBytes))
+				if (!this.replyExpectedMessages.Contains(completeToken))
 				{
 					completeToken.SetResult(null);
 					return;
@@ -625,7 +624,7 @@ namespace Secs4Net
 				catch (AggregateException) { }
 				finally
 				{
-					this.replyExpectedMessages.TryRemove(completeToken.SystemBytes, out _);
+					this.replyExpectedMessages.Remove(completeToken);
 				}
 			}
 			finally
@@ -775,6 +774,50 @@ namespace Secs4Net
 				}
 
 				this.SetResult(replySecsMessage);
+			}
+		}
+
+		private sealed class TokenCache
+		{
+			private readonly Dictionary<int, TaskCompletionSourceToken> dictionary = new Dictionary<int, TaskCompletionSourceToken>();
+
+			public void Add(TaskCompletionSourceToken token)
+			{
+				lock (this.dictionary)
+				{
+					this.dictionary.Add(token.SystemBytes, token);
+				}
+			}
+
+			public void Clear()
+			{
+				lock (this.dictionary)
+				{
+					this.dictionary.Clear();
+				}
+			}
+
+			public bool Contains(TaskCompletionSourceToken token)
+			{
+				lock (this.dictionary)
+				{
+					return this.dictionary.ContainsKey(token.SystemBytes);
+				}
+			}
+			public bool Remove(TaskCompletionSourceToken token)
+			{
+				lock (this.dictionary)
+				{
+					return this.dictionary.Remove(token.SystemBytes);
+				}
+			}
+
+			public bool TryGetValue(int id, out TaskCompletionSourceToken token)
+			{
+				lock (this.dictionary)
+				{
+					return this.dictionary.TryGetValue(id, out token);
+				}
 			}
 		}
 	}
