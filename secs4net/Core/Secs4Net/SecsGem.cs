@@ -635,62 +635,51 @@ namespace Secs4Net
 
 		private void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
 		{
-			e.Completed -= this.SocketReceiveEventCompleted;
+			if (e.SocketError != SocketError.Success)
+			{
+				var ex = new SocketException((int)e.SocketError);
+				this.logger.Error($"RecieveComplete socket error: {ex.Message}, ErrorCode: {ex.SocketErrorCode}", ex);
+				this.CommunicationStateChanging(ConnectionState.Retry);
+				return;
+			}
 
 			try
 			{
-				if (e.SocketError != SocketError.Success)
+				this.timer8.Change(Timeout.Infinite, Timeout.Infinite);
+				var receivedCount = e.BytesTransferred;
+				if (receivedCount == 0)
 				{
-					var ex = new SocketException((int)e.SocketError);
-					this.logger.Error($"RecieveComplete socket error:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
+					this.logger.Error("Received 0 byte.");
 					this.CommunicationStateChanging(ConnectionState.Retry);
 					return;
 				}
 
-				try
+				if (this.secsDecoder.Decode(receivedCount))
 				{
-					this.timer8.Change(Timeout.Infinite, Timeout.Infinite);
-					var receivedCount = e.BytesTransferred;
-					if (receivedCount == 0)
-					{
-						this.logger.Error("Received 0 byte.");
-						this.CommunicationStateChanging(ConnectionState.Retry);
-						return;
-					}
-
-					if (this.secsDecoder.Decode(receivedCount))
-					{
 #if !DISABLE_T8
-						this.logger.Debug($"Start T8 Timer: {this.T8 / 1000} sec.");
-						this.timer8.Change(this.T8, Timeout.Infinite);
+					this.logger.Debug($"Start T8 Timer: {this.T8 / 1000} sec.");
+					this.timer8.Change(this.T8, Timeout.Infinite);
 #endif
-					}
-
-					if (this.socket is null || this.IsDisposed)
-					{
-						return;
-					}
-
-					this.DecoderBufferSize = this.secsDecoder.Buffer.Length;
-
-					var receiveCompleteEvent = this.socketAsyncEventArgsPool.Lend();
-					receiveCompleteEvent.SetBuffer(this.secsDecoder.Buffer, this.secsDecoder.BufferOffset, this.secsDecoder.BufferCount);
-
-					receiveCompleteEvent.Completed += this.SocketReceiveEventCompleted;
-					if (!this.socket.ReceiveAsync(receiveCompleteEvent))
-					{
-						this.SocketReceiveEventCompleted(sender, receiveCompleteEvent);
-					}
 				}
-				catch (Exception ex)
+
+				if (this.socket == null || this.IsDisposed)
 				{
-					this.logger.Error("Unexpected exception", ex);
-					this.CommunicationStateChanging(ConnectionState.Retry);
+					return;
+				}
+
+				this.DecoderBufferSize = this.secsDecoder.Buffer.Length;
+
+				e.SetBuffer(this.secsDecoder.Buffer, this.secsDecoder.BufferOffset, this.secsDecoder.BufferCount);
+
+				if (!this.socket.ReceiveAsync(e))
+				{
+					this.SocketReceiveEventCompleted(sender, e);
 				}
 			}
-			finally
+			catch (Exception ex)
 			{
-				this.socketAsyncEventArgsPool.Return(e);
+				this.logger.Error("Unexpected exception", ex);
+				this.CommunicationStateChanging(ConnectionState.Retry);
 			}
 		}
 
