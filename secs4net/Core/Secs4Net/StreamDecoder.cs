@@ -99,21 +99,20 @@ namespace Secs4Net
 
 			lock (this.lockObject)
 			{
-				int decodeLength = length;
-				length += this.previousRemainedCount; // total available length = current length + previous remained
+				int remainCount = length + this.previousRemainedCount; // total available length = current length + previous remained
 				int need;
 				int nexStep = this.decoderStep;
+
 				do
 				{
 					this.decoderStep = nexStep;
-					nexStep = this.decoders[this.decoderStep](ref length, out need);
+					nexStep = this.decoders[this.decoderStep](ref remainCount, out need);
 				}
-				while (nexStep != this.decoderStep);
+				while (nexStep != this.decoderStep || need == 0);
 
-				Debug.Assert(this.decodeIndex >= this.BufferOffset, "decode index should ahead of buffer index");
+				Debug.Assert(this.decodeIndex >= this.BufferOffset, "decode index should be ahead of buffer index");
 
-				int remainCount = length;
-				Debug.Assert(remainCount >= 0, "remain count is only possible grater and equal zero");
+				Debug.Assert(remainCount >= 0, "remain count is only possible greater than or equal to zero");
 				Trace.WriteLine($"remain data length: {remainCount}");
 				Trace.WriteLineIf(this.messageDataLength > 0, $"need data count: {need}");
 
@@ -133,7 +132,7 @@ namespace Secs4Net
 				}
 				else
 				{
-					this.BufferOffset += decodeLength; // move next receive index
+					this.BufferOffset += length; // move next receive index
 					int nextStepReqiredCount = remainCount + need;
 					if (nextStepReqiredCount > this.BufferCount)
 					{
