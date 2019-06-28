@@ -327,7 +327,7 @@ namespace Secs4Net
 		{
 			if (this.State != ConnectionState.Selected)
 			{
-				throw new SecsException("Device is not selected");
+				throw new SecsException("Device is not selected.");
 			}
 
 			var token = new TaskCompletionSourceToken(secsMessage, systemBytes, MessageType.DataMessage);
@@ -395,7 +395,7 @@ namespace Secs4Net
 
 		private void HandleControlMessage(MessageHeader header)
 		{
-			var systemBytes = header.SystemBytes;
+			int systemBytes = header.SystemBytes;
 			if (((byte)header.MessageType & 1) == 0)
 			{
 				if (this.replyExpectedMessages.TryGetValue(systemBytes, out var token))
@@ -455,7 +455,7 @@ namespace Secs4Net
 
 		private void HandleDataMessage(MessageHeader header, SecsMessage secsMessage)
 		{
-			var systemBytes = header.SystemBytes;
+			int systemBytes = header.SystemBytes;
 
 			if (header.DeviceId != this.DeviceId && secsMessage.S != 9 && secsMessage.F != 1)
 			{
