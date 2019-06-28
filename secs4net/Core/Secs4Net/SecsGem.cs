@@ -504,17 +504,6 @@ namespace Secs4Net
 			this.secsDecoder.Reset();
 			this.replyExpectedMessages.Clear();
 
-			if (this.socket != null)
-			{
-				if (this.socket.Connected)
-				{
-					this.socket.Shutdown(SocketShutdown.Both);
-				}
-
-				this.socket.Dispose();
-				this.socket = null;
-			}
-
 			if (this.serverSocket != null)
 			{
 				if (this.serverSocket.Connected)
@@ -524,6 +513,17 @@ namespace Secs4Net
 
 				this.serverSocket.Dispose();
 				this.serverSocket = null;
+			}
+
+			if (this.socket != null)
+			{
+				if (this.socket.Connected)
+				{
+					this.socket.Shutdown(SocketShutdown.Both);
+				}
+
+				this.socket.Dispose();
+				this.socket = null;
 			}
 
 			this.socketAsyncEventArgsPool.Reset();
