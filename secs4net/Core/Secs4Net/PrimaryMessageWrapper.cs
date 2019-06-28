@@ -6,47 +6,59 @@ namespace Secs4Net
 {
 	public sealed class PrimaryMessageWrapper
 	{
-		private static readonly Task<bool> ReplyAsyncTrueCache = Task.FromResult(true);
-		private static readonly Task<bool> ReplyAsyncFalseCache = Task.FromResult(false);
-		private static readonly Func<Task<SecsMessage>, bool> ContinueWithFunc = ContinueWithSuccess;
-		private static bool ContinueWithSuccess(Task<SecsMessage> _) => true;
+		private static readonly Task<bool> replyAsyncFalseCache = Task.FromResult(false);
 
-		private int _isReplied = 0;
-		private readonly WeakReference<SecsGem> _secsGem;
-		private readonly MessageHeader _header;
-		public SecsMessage Message { get; }
-		public ref readonly int MessageId => ref this._header.SystemBytes;
+		private static readonly Task<bool> replyAsyncTrueCache = Task.FromResult(true);
 
-		internal PrimaryMessageWrapper(SecsGem secsGem, MessageHeader header, SecsMessage msg)
+		private readonly MessageHeader header;
+
+		private readonly WeakReference<SecsGem> weakReferenceSecsGem;
+
+		private int isReplied = 0;
+
+		internal PrimaryMessageWrapper(SecsGem secsGem, MessageHeader header, SecsMessage message)
 		{
-			this._secsGem = new WeakReference<SecsGem>(secsGem);
-			this._header = header;
-			this.Message = msg;
+			this.weakReferenceSecsGem = new WeakReference<SecsGem>(secsGem);
+			this.header = header;
+			this.Message = message;
 		}
+
+		public SecsMessage Message { get; }
+
+		public int MessageId => this.header.SystemBytes;
 
 		/// <summary>
 		/// Each PrimaryMessageWrapper can invoke Reply method once.
 		/// If the message already replied, will return false.
 		/// </summary>
-		/// <param name="replyMessage"></param>
-		/// <returns>true, if reply message sent.</returns>
+		/// <param name="replyMessage">The <see cref="Message"/></param>
+		/// <returns><see langword="true"/>, if reply message sent; otherwise <see langword="false"/>.</returns>
 		public Task<bool> ReplyAsync(SecsMessage replyMessage)
 		{
-			if (Interlocked.Exchange(ref this._isReplied, 1) == 1)
+			if (Interlocked.Exchange(ref this.isReplied, 1) == 1)
 			{
-				return ReplyAsyncFalseCache;
+				return PrimaryMessageWrapper.replyAsyncFalseCache;
 			}
 
-			if (!this.Message.ReplyExpected || !this._secsGem.TryGetTarget(out var secsGem))
+			SecsGem secsGem;
+			if (!this.Message.ReplyExpected
+				|| !this.weakReferenceSecsGem.TryGetTarget(out secsGem))
 			{
-				return ReplyAsyncTrueCache;
+				return PrimaryMessageWrapper.replyAsyncTrueCache;
 			}
 
-			replyMessage = replyMessage ?? new SecsMessage(9, 7, "Unknown Message", Item.B(this._header.EncodeTo(new byte[10])), replyExpected: false);
-			replyMessage.ReplyExpected = false;
+			if (replyMessage == null)
+			{
+				replyMessage = new SecsMessage(9, 7, "Unknown Message", Item.B(this.header.EncodeTo(new byte[10])), replyExpected: false);
+			}
+			else
+			{
+				replyMessage.ReplyExpected = false;
+			}
 
-			return secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.GetNewSystemId() : this._header.SystemBytes)
-				.ContinueWith(ContinueWithFunc);
+			return secsGem
+				.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.GetNewSystemId() : this.header.SystemBytes)
+				.ContinueWith((_) => true);
 		}
 
 		public override string ToString() => this.Message.ToString();
