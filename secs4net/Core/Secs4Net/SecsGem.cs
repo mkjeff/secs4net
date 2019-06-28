@@ -472,9 +472,7 @@ namespace Secs4Net
 					//Primary message
 					this.logger.MessageIn(secsMessage, systemBytes);
 
-					Task.Factory.StartNew(
-						wrapper => this.InvokePrimaryMessageReceived(Unsafe.As<PrimaryMessageWrapper>(wrapper)),
-						new PrimaryMessageWrapper(this, header, secsMessage));
+					this.InvokePrimaryMessageReceived(header, secsMessage);
 
 					return;
 				}
@@ -491,9 +489,17 @@ namespace Secs4Net
 			}
 		}
 
-		private void InvokePrimaryMessageReceived(PrimaryMessageWrapper wrapper)
+		private void InvokePrimaryMessageReceived(MessageHeader header, SecsMessage secsMessage)
 		{
-			this.PrimaryMessageReceived?.Invoke(this, wrapper);
+			var handler = this.PrimaryMessageReceived;
+			if (handler == null)
+			{
+				return;
+			}
+
+			var wrapper = new PrimaryMessageWrapper(this, header, secsMessage);
+
+			Task.Factory.StartNew(wrapperStateObject => handler.Invoke(this, Unsafe.As<PrimaryMessageWrapper>(wrapperStateObject)), wrapper);
 		}
 
 		private void Reset()
