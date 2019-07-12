@@ -450,7 +450,7 @@ namespace Secs4Net
 				result[3] = ptr[0];
 				return (result, 4);
 			}
-			throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $@"Item data length:{valueCount} is overflow");
+			throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $"Item data length: {valueCount} is overflown.");
 		}
 
 		internal static Item BytesDecode(SecsFormat format, byte[] data, int index, int length)
@@ -471,7 +471,7 @@ namespace Secs4Net
 				case SecsFormat.I8: return length == 0 ? I8() : I8(Decode<long>(data, index, length));
 				case SecsFormat.F4: return length == 0 ? F4() : F4(Decode<float>(data, index, length));
 				case SecsFormat.F8: return length == 0 ? F8() : F8(Decode<double>(data, index, length));
-				default: throw new ArgumentException(@"Invalid format", nameof(format));
+				default: throw new ArgumentException("Invalid format", nameof(format));
 			}
 
 			T[] Decode<T>(byte[] data2, int index2, int length2) where T : unmanaged
