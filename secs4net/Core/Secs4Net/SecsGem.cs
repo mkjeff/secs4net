@@ -12,6 +12,8 @@ namespace Secs4Net
 	public sealed class SecsGem :
 		IDisposable
 	{
+		private const int defaultInitalReceiveBufferSize = 0x4000;
+
 		private const int disposalComplete = 1;
 
 		private const int disposalNotStarted = 0;
@@ -54,25 +56,25 @@ namespace Secs4Net
 		private Socket socket;
 
 		/// <summary>
-		/// constructor
+		/// <para xml:lang="en">Initializes a <see langword="new"/> instance of the <see cref="SecsGem"/> <see langword="class"/>.</para>
 		/// </summary>
-		/// <param name="isActive">passive or active mode</param>
-		/// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
-		/// <param name="port">if active mode it should be remote device listener's port</param>
-		/// <param name="receiveBufferSize">Socket receive buffer size</param>
-		public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
+		/// <param name="isActive"><see langword="true"/> for active and <see langword="false"/> for passive mode.</param>
+		/// <param name="ip">If active mode, it should be remote device address, otherwise local listener address.</param>
+		/// <param name="port">If active mode, it should be remote device listener's port.</param>
+		/// <param name="initialReceiveBufferSize">The initial socket receive buffer size.</param>
+		public SecsGem(bool isActive, IPAddress ip, ushort port, int initialReceiveBufferSize = SecsGem.defaultInitalReceiveBufferSize)
 		{
-			if (port <= 0)
+			if (initialReceiveBufferSize < 64)
 			{
-				port = 0;
+				throw new ArgumentOutOfRangeException(nameof(initialReceiveBufferSize), initialReceiveBufferSize, $"The buffet size is less than {64}. Recommended is the default value of {SecsGem.defaultInitalReceiveBufferSize}.");
 			}
 
-			this.secsDecoder = new StreamDecoder(receiveBufferSize, this.HandleControlMessage, this.HandleDataMessage);
+			this.secsDecoder = new StreamDecoder(initialReceiveBufferSize, this.HandleControlMessage, this.HandleDataMessage);
 
 			this.IpAddress = ip;
 			this.Port = port;
 			this.IsActive = isActive;
-			this.DecoderBufferSize = receiveBufferSize;
+			this.DecoderBufferSize = initialReceiveBufferSize;
 
 			#region Timer Action
 			this.timer7 = new Timer(delegate
@@ -259,7 +261,7 @@ namespace Secs4Net
 			set => this.logger = value ?? SecsGem.defaultLogger;
 		}
 
-		public int Port { get; }
+		public ushort Port { get; }
 
 		/// <summary>
 		/// Connection state

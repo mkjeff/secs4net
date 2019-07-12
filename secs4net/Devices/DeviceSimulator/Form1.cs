@@ -35,7 +35,7 @@ namespace SecsDevice
             _secsGem = new SecsGem(
                 radioActiveMode.Checked,
                 IPAddress.Parse(txtAddress.Text),
-                (int)numPort.Value,
+                (ushort)(int)numPort.Value,
                 (int)numBufferSize.Value)
             { Logger = _logger, DeviceId = (ushort)numDeviceId.Value };
 

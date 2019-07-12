@@ -30,7 +30,7 @@ namespace HsmsWebHost.Hubs
 			}
 
 			device.penddingMessages = new ConcurrentDictionary<int, PrimaryMessageWrapper>();
-			var gem = new SecsGem(query.active, query.ip, query.port);
+			var gem = new SecsGem(query.active, query.ip, (ushort)query.port);
 
 			var caller = Clients.Caller;
 			gem.ConnectionChanged += (sender, e) => 

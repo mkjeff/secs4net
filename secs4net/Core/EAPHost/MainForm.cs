@@ -131,7 +131,7 @@ namespace Cim.Eap
             _secsGem = new SecsGem(
                 EAPConfig.Instance.Mode == ConnectionMode.Active,
                 IPAddress.Parse(EAPConfig.Instance.IP),
-                EAPConfig.Instance.TcpPort, EAPConfig.Instance.SocketRecvBufferSize)
+                (ushort)EAPConfig.Instance.TcpPort, EAPConfig.Instance.SocketRecvBufferSize)
             {
                 DeviceId = EAPConfig.Instance.DeviceId,
                 LinkTestInterval = EAPConfig.Instance.LinkTestInterval,
