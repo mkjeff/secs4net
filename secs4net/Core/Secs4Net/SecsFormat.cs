@@ -11,12 +11,12 @@
 		List = 0b_000_000_00,
 
 		/// <summary>
-		/// <para xml:lang="en">Binary values. (Format Code: Octal: 10 | Binary: 001 000)</para>
+		/// <para xml:lang="en">Binary values (<see cref="byte"/>). (Format Code: Octal: 10 | Binary: 001 000)</para>
 		/// </summary>
 		Binary = 0b_001_000_00,
 
 		/// <summary>
-		/// <para xml:lang="en">Boolean values. (Format Code: Octal: 11 | Binary: 001 001)</para>
+		/// <para xml:lang="en">Boolean values (<see cref="bool"/>). (Format Code: Octal: 11 | Binary: 001 001)</para>
 		/// </summary>
 		Boolean = 0b_001_001_00,
 
