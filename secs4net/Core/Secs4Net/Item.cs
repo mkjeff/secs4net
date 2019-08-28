@@ -14,9 +14,9 @@ namespace Secs4Net
 		/// if Format is List RawData is only header bytes.
 		/// otherwise include header and value bytes.
 		/// </summary>
-		private readonly Lazy<byte[]> _rawData;
+		private readonly Lazy<byte[]> rawData;
 
-		private readonly IEnumerable _values;
+		private readonly IEnumerable values;
 
 		/// <summary>
 		/// List
@@ -29,11 +29,11 @@ namespace Secs4Net
 			}
 
 			this.Format = SecsFormat.List;
-			this._values = items;
-			this._rawData = new Lazy<byte[]>(()
+			this.values = items;
+			this.rawData = new Lazy<byte[]>(()
 				=> new byte[]{
 					(byte)SecsFormat.List | 1,
-					unchecked((byte)(Unsafe.As<IReadOnlyList<Item>>(this._values).Count))
+					unchecked((byte)(Unsafe.As<IReadOnlyList<Item>>(this.values).Count))
 				});
 		}
 
@@ -47,10 +47,10 @@ namespace Secs4Net
 		private Item(SecsFormat format, Array value)
 		{
 			this.Format = format;
-			this._values = value;
-			this._rawData = new Lazy<byte[]>(() =>
+			this.values = value;
+			this.rawData = new Lazy<byte[]>(() =>
 			{
-				var arr = Unsafe.As<Array>(this._values);
+				var arr = Unsafe.As<Array>(this.values);
 				var bytelength = Buffer.ByteLength(arr);
 				var (result, headerLength) = this.EncodeItem(bytelength);
 				Buffer.BlockCopy(arr, 0, result, headerLength, bytelength);
@@ -65,10 +65,10 @@ namespace Secs4Net
 		private Item(SecsFormat format, string value)
 		{
 			this.Format = format;
-			this._values = value;
-			this._rawData = new Lazy<byte[]>(() =>
+			this.values = value;
+			this.rawData = new Lazy<byte[]>(() =>
 			{
-				var str = Unsafe.As<string>(this._values);
+				var str = Unsafe.As<string>(this.values);
 				var bytelength = str.Length;
 				var (result, headerLength) = this.EncodeItem(bytelength);
 				var encoder = this.Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
@@ -85,25 +85,25 @@ namespace Secs4Net
 		private Item(SecsFormat format, IEnumerable value)
 		{
 			this.Format = format;
-			this._values = value;
-			this._rawData = new Lazy<byte[]>(() => new byte[] { (byte)((byte)this.Format | 1), 0 });
+			this.values = value;
+			this.rawData = new Lazy<byte[]>(() => new byte[] { (byte)((byte)this.Format | 1), 0 });
 		}
 
 		public SecsFormat Format { get; }
 
 		public int Count =>
 			this.Format == SecsFormat.List
-			? Unsafe.As<IReadOnlyList<Item>>(this._values).Count
-			: Unsafe.As<Array>(this._values).Length;
+			? Unsafe.As<IReadOnlyList<Item>>(this.values).Count
+			: Unsafe.As<Array>(this.values).Length;
 
-		public IReadOnlyList<byte> RawBytes => this._rawData.Value;
+		public IReadOnlyList<byte> RawBytes => this.rawData.Value;
 
 		/// <summary>
 		/// List items
 		/// </summary>
 		public IReadOnlyList<Item> Items => this.Format != SecsFormat.List
 			? throw new InvalidOperationException("The item is not a list")
-			: Unsafe.As<IReadOnlyList<Item>>(this._values);
+			: Unsafe.As<IReadOnlyList<Item>>(this.values);
 
 		/// <summary>
 		/// get value by specific type
@@ -120,7 +120,7 @@ namespace Secs4Net
 				throw new InvalidOperationException("The item is a string");
 			}
 
-			if (this._values is T[] arr)
+			if (this.values is T[] arr)
 			{
 				return arr[0];
 			}
@@ -130,7 +130,7 @@ namespace Secs4Net
 
 		public string GetString() => this.Format != SecsFormat.ASCII && this.Format != SecsFormat.JIS8
 			? throw new InvalidOperationException("The type is incompatible")
-			: Unsafe.As<string>(this._values);
+			: Unsafe.As<string>(this.values);
 
 		/// <summary>
 		/// get value array by specific type
@@ -147,7 +147,7 @@ namespace Secs4Net
 				throw new InvalidOperationException("The item is a string");
 			}
 
-			if (this._values is T[] arr)
+			if (this.values is T[] arr)
 			{
 				return arr;
 			}
@@ -181,14 +181,14 @@ namespace Secs4Net
 			{
 				case SecsFormat.List:
 					return IsMatch(
-						Unsafe.As<IReadOnlyList<Item>>(this._values),
-						Unsafe.As<IReadOnlyList<Item>>(target._values));
+						Unsafe.As<IReadOnlyList<Item>>(this.values),
+						Unsafe.As<IReadOnlyList<Item>>(target.values));
 				case SecsFormat.ASCII:
 				case SecsFormat.JIS8:
-					return Unsafe.As<string>(this._values) == Unsafe.As<string>(target._values);
+					return Unsafe.As<string>(this.values) == Unsafe.As<string>(target.values);
 				default:
 					//return memcmp(Unsafe.As<byte[]>(_values), Unsafe.As<byte[]>(target._values), Buffer.ByteLength((Array)_values)) == 0;
-					return UnsafeCompare(Unsafe.As<Array>(this._values), Unsafe.As<Array>(target._values));
+					return UnsafeCompare(Unsafe.As<Array>(this.values), Unsafe.As<Array>(target.values));
 			}
 
 			//[DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -244,33 +244,33 @@ namespace Secs4Net
 			switch (this.Format)
 			{
 				case SecsFormat.List:
-					sb.Append(Unsafe.As<IReadOnlyList<Item>>(this._values).Count).Append("]: ...");
+					sb.Append(Unsafe.As<IReadOnlyList<Item>>(this.values).Count).Append("]: ...");
 					break;
 
 				case SecsFormat.ASCII:
 				case SecsFormat.JIS8:
-					sb.Append(Unsafe.As<string>(this._values).Length).Append("]: ").Append(Unsafe.As<string>(this._values));
+					sb.Append(Unsafe.As<string>(this.values).Length).Append("]: ").Append(Unsafe.As<string>(this.values));
 					break;
 
 				case SecsFormat.Binary:
-					sb.Append(Unsafe.As<byte[]>(this._values).Length).Append("]: ").Append(Unsafe.As<byte[]>(this._values).ToHexString());
+					sb.Append(Unsafe.As<byte[]>(this.values).Length).Append("]: ").Append(Unsafe.As<byte[]>(this.values).ToHexString());
 					break;
 
 				default:
-					sb.Append(Unsafe.As<Array>(this._values).Length).Append("]: ");
+					sb.Append(Unsafe.As<Array>(this.values).Length).Append("]: ");
 					switch (this.Format)
 					{
-						case SecsFormat.Boolean: AppendAsString<bool>(sb, this._values); break;
-						case SecsFormat.I1: AppendAsString<sbyte>(sb, this._values); break;
-						case SecsFormat.I2: AppendAsString<short>(sb, this._values); break;
-						case SecsFormat.I4: AppendAsString<int>(sb, this._values); break;
-						case SecsFormat.I8: AppendAsString<long>(sb, this._values); break;
-						case SecsFormat.U1: AppendAsString<byte>(sb, this._values); break;
-						case SecsFormat.U2: AppendAsString<ushort>(sb, this._values); break;
-						case SecsFormat.U4: AppendAsString<uint>(sb, this._values); break;
-						case SecsFormat.U8: AppendAsString<ulong>(sb, this._values); break;
-						case SecsFormat.F4: AppendAsString<float>(sb, this._values); break;
-						case SecsFormat.F8: AppendAsString<double>(sb, this._values); break;
+						case SecsFormat.Boolean: AppendAsString<bool>(sb, this.values); break;
+						case SecsFormat.I1: AppendAsString<sbyte>(sb, this.values); break;
+						case SecsFormat.I2: AppendAsString<short>(sb, this.values); break;
+						case SecsFormat.I4: AppendAsString<int>(sb, this.values); break;
+						case SecsFormat.I8: AppendAsString<long>(sb, this.values); break;
+						case SecsFormat.U1: AppendAsString<byte>(sb, this.values); break;
+						case SecsFormat.U2: AppendAsString<ushort>(sb, this.values); break;
+						case SecsFormat.U4: AppendAsString<uint>(sb, this.values); break;
+						case SecsFormat.U8: AppendAsString<ulong>(sb, this.values); break;
+						case SecsFormat.F4: AppendAsString<float>(sb, this.values); break;
+						case SecsFormat.F8: AppendAsString<double>(sb, this.values); break;
 					}
 					break;
 			}
@@ -404,7 +404,7 @@ namespace Secs4Net
 		/// <returns></returns>
 		internal uint EncodeTo(List<ArraySegment<byte>> buffer)
 		{
-			var bytes = this._rawData.Value;
+			var bytes = this.rawData.Value;
 			uint length = unchecked((uint)bytes.Length);
 			buffer.Add(new ArraySegment<byte>(bytes));
 			if (this.Format == SecsFormat.List)
