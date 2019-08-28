@@ -19,22 +19,20 @@ namespace Secs4Net
 		private readonly IEnumerable values;
 
 		/// <summary>
-		/// List
+		/// <para xml:lang="en">Initializes a <see langword="new"/> instance of the <see cref="Item"/> <see langword="class"/> for <see cref="SecsFormat.List"/>.</para>
 		/// </summary>
+		/// <param name="items">The items of the <see langword="new"/> instance.</param>
+		/// <exception cref="ArgumentOutOfRangeException"><see cref="IReadOnlyCollection{T}.Count"/> of <paramref name="items"/> is greater than <see cref="ItemHeader.MaxLength"/>.</exception>
 		private Item(IReadOnlyList<Item> items)
 		{
-			if (items.Count > byte.MaxValue)
+			if (items.Count > ItemHeader.MaxLength)
 			{
-				throw new ArgumentOutOfRangeException(nameof(items) + "." + nameof(items.Count), items.Count, $"List items length out of range, max length: {byte.MaxValue}");
+				throw new ArgumentOutOfRangeException(nameof(items) + "." + nameof(items.Count), items.Count, $"List items length out of range, max length: {ItemHeader.MaxLength}");
 			}
 
 			this.Format = SecsFormat.List;
 			this.values = items;
-			this.rawData = new Lazy<byte[]>(()
-				=> new byte[]{
-					(byte)SecsFormat.List | 1,
-					unchecked((byte)(Unsafe.As<IReadOnlyList<Item>>(this.values).Count))
-				});
+			this.rawData = new Lazy<byte[]>(() => new ItemHeader(SecsFormat.List, Unsafe.As<IReadOnlyList<Item>>(this.values).Count).GetRawData());
 		}
 
 		/// <summary>
@@ -86,7 +84,7 @@ namespace Secs4Net
 		{
 			this.Format = format;
 			this.values = value;
-			this.rawData = new Lazy<byte[]>(() => new byte[] { (byte)((byte)this.Format | 1), 0 });
+			this.rawData = new Lazy<byte[]>(() => new ItemHeader(format, 0).GetRawData());
 		}
 
 		public SecsFormat Format { get; }
