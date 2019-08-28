@@ -124,15 +124,31 @@ namespace Secs4Net
 		public int NumberOfLengthBytes => this.itemFormatCodeAndNumberOfLengthBytes & 0b_000000_11;
 
 		/// <summary>
-		/// <para xml:lang="en">Gets the RAW data size of this instance.</para>
+		/// <para xml:lang="en">Gets the RAW header data size of this instance.</para>
 		/// </summary>
-		public int RawDataSize => this.NumberOfLengthBytes + 1;
+		public int RawHeaderDataSize => this.NumberOfLengthBytes + 1;
 
 		/// <summary>
-		/// <para xml:lang="en">Gets the RAW data of this instance.</para>
+		/// <para xml:lang="en">Gets a <see langword="new"/> item buffer with the RAW header data of this instance and all the space needed for the item values.</para>
 		/// </summary>
-		/// <returns><para xml:lang="en">The RAW data of this instance.</para></returns>
-		public byte[] GetRawData()
+		/// <exception cref="InvalidOperationException"><para xml:lang="en">This instance does not have valid number of length bytes. Valid are 1, 2 or 3.</para></exception>
+		/// <returns><para xml:lang="en">The <see langword="new"/> item buffer including RAW header data of this instance and an offset of where to begin writing the item values.</para></returns>
+		public (byte[], int) GetItemBufferWithRawHeaderData()
+		{
+			var headerSize = this.RawHeaderDataSize;
+			var buffer = new byte[headerSize + this.ItemLength];
+
+			this.InternalWriteRawHeaderData(buffer, 0);
+
+			return (buffer, headerSize);
+		}
+
+		/// <summary>
+		/// <para xml:lang="en">Gets the RAW header data of this instance.</para>
+		/// </summary>
+		/// <exception cref="InvalidOperationException"><para xml:lang="en">This instance does not have valid number of length bytes. Valid are 1, 2 or 3.</para></exception>
+		/// <returns><para xml:lang="en">The RAW header data of this instance.</para></returns>
+		public byte[] GetRawHeaderData()
 		{
 			switch (this.NumberOfLengthBytes)
 			{
@@ -144,6 +160,58 @@ namespace Secs4Net
 
 				case 3:
 					return new byte[] { this.itemFormatCodeAndNumberOfLengthBytes, this.lengthByteOne, this.lengthByteTwo, this.lengthByteThree };
+
+				default:
+					throw new InvalidOperationException($"This instance does not have valid number of length bytes. Valid are 1, 2 or 3, however the current value is {this.NumberOfLengthBytes}.");
+			}
+		}
+
+		/// <summary>
+		/// <para xml:lang="en">Writes the RAW header data of this instance into the specified <paramref name="buffer"/> at the specified <paramref name="offset"/>.</para>
+		/// </summary>
+		/// <exception cref="ArgumentNullException"><para xml:lang="en"><paramref name="buffer"/> is <see langword="null"/>.</para></exception>
+		/// <exception cref="ArgumentOutOfRangeException"><para xml:lang="en"><paramref name="offset"/> is less than zero (0).</para></exception>
+		/// <exception cref="ArgumentOutOfRangeException"><para xml:lang="en"><see cref="Array.Length"/> of <paramref name="buffer"/> is less than <paramref name="offset"/> + <see cref="ItemHeader.RawHeaderDataSize"/>.</para></exception>
+		/// <exception cref="InvalidOperationException"><para xml:lang="en">This instance does not have valid number of length bytes. Valid are 1, 2 or 3.</para></exception>
+		public void WriteRawHeaderData(byte[] buffer, int offset)
+		{
+			if (buffer == null)
+			{
+				throw new ArgumentNullException(nameof(buffer));
+			}
+			if (offset < 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(offset), offset, "The argument is less than 0.");
+			}
+			if (buffer.Length < (offset + this.RawHeaderDataSize))
+			{
+				throw new ArgumentOutOfRangeException(nameof(buffer), buffer.Length, $"The length of the specified {nameof(buffer)} is less than {nameof(offset)} + {this.RawHeaderDataSize}.");
+			}
+
+			this.InternalWriteRawHeaderData(buffer, offset);
+		}
+
+		private void InternalWriteRawHeaderData(byte[] buffer, int offset)
+		{
+			switch (this.NumberOfLengthBytes)
+			{
+				case 1:
+					buffer[offset] = this.itemFormatCodeAndNumberOfLengthBytes;
+					buffer[offset + 1] = this.lengthByteThree;
+					break;
+
+				case 2:
+					buffer[offset] = this.itemFormatCodeAndNumberOfLengthBytes;
+					buffer[offset + 1] = this.lengthByteTwo;
+					buffer[offset + 2] = this.lengthByteThree;
+					break;
+
+				case 3:
+					buffer[offset] = this.itemFormatCodeAndNumberOfLengthBytes;
+					buffer[offset + 1] = this.lengthByteOne;
+					buffer[offset + 2] = this.lengthByteTwo;
+					buffer[offset + 3] = this.lengthByteThree;
+					break;
 
 				default:
 					throw new InvalidOperationException($"This instance does not have valid number of length bytes. Valid are 1, 2 or 3, however the current value is {this.NumberOfLengthBytes}.");

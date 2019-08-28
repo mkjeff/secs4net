@@ -32,7 +32,7 @@ namespace Secs4Net
 
 			this.Format = SecsFormat.List;
 			this.values = items;
-			this.rawData = new Lazy<byte[]>(() => new ItemHeader(SecsFormat.List, Unsafe.As<IReadOnlyList<Item>>(this.values).Count).GetRawData());
+			this.rawData = new Lazy<byte[]>(() => new ItemHeader(SecsFormat.List, Unsafe.As<IReadOnlyList<Item>>(this.values).Count).GetRawHeaderData());
 		}
 
 		/// <summary>
@@ -44,15 +44,45 @@ namespace Secs4Net
 		/// </summary>
 		private Item(SecsFormat format, Array value)
 		{
+			switch (format)
+			{
+				case SecsFormat.Binary:
+				case SecsFormat.Boolean:
+				case SecsFormat.I8:
+				case SecsFormat.I1:
+				case SecsFormat.I2:
+				case SecsFormat.I4:
+				case SecsFormat.F8:
+				case SecsFormat.F4:
+				case SecsFormat.U8:
+				case SecsFormat.U1:
+				case SecsFormat.U2:
+				case SecsFormat.U4:
+					break;
+
+				default:
+					throw new NotImplementedException($"The format \"{nameof(SecsFormat)}.{format}\" is not implemented within this constructor.");
+			}
+
 			this.Format = format;
 			this.values = value;
 			this.rawData = new Lazy<byte[]>(() =>
 			{
-				var arr = Unsafe.As<Array>(this.values);
-				var bytelength = Buffer.ByteLength(arr);
-				var (result, headerLength) = this.EncodeItem(bytelength);
-				Buffer.BlockCopy(arr, 0, result, headerLength, bytelength);
-				result.Reverse(headerLength, headerLength + bytelength, bytelength / arr.Length);
+				var array = Unsafe.As<Array>(this.values);
+
+				var bytelength = Buffer.ByteLength(array);
+
+				var itemHeader = new ItemHeader(this.Format, bytelength);
+
+				var (result, headerLength) = itemHeader.GetItemBufferWithRawHeaderData();
+
+				Buffer.BlockCopy(array, 0, result, headerLength, bytelength);
+
+				if (BitConverter.IsLittleEndian)
+				{
+					result.Reverse(headerLength, headerLength + bytelength, bytelength / array.Length);
+				}
+
 				return result;
 			});
 		}
@@ -62,15 +92,30 @@ namespace Secs4Net
 		/// </summary>
 		private Item(SecsFormat format, string value)
 		{
+			switch (format)
+			{
+				case SecsFormat.ASCII:
+				case SecsFormat.JIS8:
+					break;
+
+				default:
+					throw new NotImplementedException($"The format \"{nameof(SecsFormat)}.{format}\" is not implemented within this constructor.");
+			}
+
 			this.Format = format;
 			this.values = value;
 			this.rawData = new Lazy<byte[]>(() =>
 			{
-				var str = Unsafe.As<string>(this.values);
-				var bytelength = str.Length;
-				var (result, headerLength) = this.EncodeItem(bytelength);
-				var encoder = this.Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
-				encoder.GetBytes(str, 0, str.Length, result, headerLength);
+				var stringValue = Unsafe.As<string>(this.values);
+
+				var itemHeader = new ItemHeader(this.Format, stringValue.Length);
+
+				var (result, headerLength) = itemHeader.GetItemBufferWithRawHeaderData();
+
+				var encoder = this.Format == SecsFormat.ASCII ? Encoding.ASCII : Item.Jis8Encoding;
+
+				encoder.GetBytes(stringValue, 0, stringValue.Length, result, headerLength);
+
 				return result;
 			});
 		}
@@ -84,7 +129,7 @@ namespace Secs4Net
 		{
 			this.Format = format;
 			this.values = value;
-			this.rawData = new Lazy<byte[]>(() => new ItemHeader(format, 0).GetRawData());
+			this.rawData = new Lazy<byte[]>(() => new ItemHeader(this.Format, 0).GetRawHeaderData());
 		}
 
 		public SecsFormat Format { get; }
@@ -296,6 +341,7 @@ namespace Secs4Net
 		}
 
 		#region Type Casting Operator
+
 		public static implicit operator string(Item item) => item.GetString();
 		public static implicit operator byte(Item item) => item.GetValue<byte>();
 		public static implicit operator sbyte(Item item) => item.GetValue<sbyte>();
@@ -313,67 +359,301 @@ namespace Secs4Net
 
 		#region Factory Methods
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.List"/>.</para>
+		/// </summary>
+		/// <param name="items">The <see cref="IList{T}"/> of <see cref="Item"/> to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.List"/>.</para></returns>
 		internal static Item L(IList<Item> items) => items?.Count > 0 ? new Item(new ReadOnlyCollection<Item>(items)) : Item.L();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.List"/>.</para>
+		/// </summary>
+		/// <param name="items">The <see cref="IEnumerable{T}"/> of <see cref="Item"/> to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.List"/>.</para></returns>
 		public static Item L(IEnumerable<Item> items) => Item.L(items?.ToList());
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.List"/>.</para>
+		/// </summary>
+		/// <param name="items">The <see cref="Item"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.List"/>.</para></returns>
 		public static Item L(params Item[] items) => Item.L((IList<Item>)items);
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.Binary"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="byte"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.Binary"/>.</para></returns>
 		public static Item B(params byte[] value) => value?.Length > 0 ? new Item(SecsFormat.Binary, value) : Item.B();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.Binary"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="byte"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.Binary"/>.</para></returns>
 		public static Item B(IEnumerable<byte> value) => Item.B(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.U1"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="byte"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.U1"/>.</para></returns>
 		public static Item U1(params byte[] value) => value?.Length > 0 ? new Item(SecsFormat.U1, value) : Item.U1();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.U1"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="byte"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.U1"/>.</para></returns>
 		public static Item U1(IEnumerable<byte> value) => U1(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.U2"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="ushort"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.U2"/>.</para></returns>
 		public static Item U2(params ushort[] value) => value?.Length > 0 ? new Item(SecsFormat.U2, value) : Item.U2();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.U2"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="ushort"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.U2"/>.</para></returns>
 		public static Item U2(IEnumerable<ushort> value) => Item.U2(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.U4"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="uint"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.U4"/>.</para></returns>
 		public static Item U4(params uint[] value) => value?.Length > 0 ? new Item(SecsFormat.U4, value) : Item.U4();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.U4"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="uint"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.U4"/>.</para></returns>
 		public static Item U4(IEnumerable<uint> value) => Item.U4(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.U8"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="ulong"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.U8"/>.</para></returns>
 		public static Item U8(params ulong[] value) => value?.Length > 0 ? new Item(SecsFormat.U8, value) : Item.U8();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.U8"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="ulong"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.U8"/>.</para></returns>
 		public static Item U8(IEnumerable<ulong> value) => Item.U8(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.I1"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="sbyte"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.I1"/>.</para></returns>
 		public static Item I1(params sbyte[] value) => value?.Length > 0 ? new Item(SecsFormat.I1, value) : Item.I1();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.I1"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="sbyte"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.I1"/>.</para></returns>
 		public static Item I1(IEnumerable<sbyte> value) => Item.I1(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.I2"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="short"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.I2"/>.</para></returns>
 		public static Item I2(params short[] value) => value?.Length > 0 ? new Item(SecsFormat.I2, value) : Item.I2();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.I2"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="short"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.I2"/>.</para></returns>
 		public static Item I2(IEnumerable<short> value) => Item.I2(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.I4"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="int"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.I4"/>.</para></returns>
 		public static Item I4(params int[] value) => value?.Length > 0 ? new Item(SecsFormat.I4, value) : Item.I4();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.I4"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="int"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.I4"/>.</para></returns>
 		public static Item I4(IEnumerable<int> value) => Item.I4(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.I8"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="long"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.I8"/>.</para></returns>
 		public static Item I8(params long[] value) => value?.Length > 0 ? new Item(SecsFormat.I8, value) : Item.I8();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.I8"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="long"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.I8"/>.</para></returns>
 		public static Item I8(IEnumerable<long> value) => Item.I8(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.F4"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="float"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.F4"/>.</para></returns>
 		public static Item F4(params float[] value) => value?.Length > 0 ? new Item(SecsFormat.F4, value) : Item.F4();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.F4"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="float"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.F4"/>.</para></returns>
 		public static Item F4(IEnumerable<float> value) => Item.F4(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.F8"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="double"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.F8"/>.</para></returns>
 		public static Item F8(params double[] value) => value?.Length > 0 ? new Item(SecsFormat.F8, value) : Item.F8();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.F8"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="double"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.F8"/>.</para></returns>
 		public static Item F8(IEnumerable<double> value) => Item.F8(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.Boolean"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="bool"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.Boolean"/>.</para></returns>
 		public static Item Boolean(params bool[] value) => value?.Length > 0 ? new Item(SecsFormat.Boolean, value) : Item.Boolean();
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.Boolean"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="bool"/>(s) to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.Boolean"/>.</para></returns>
 		public static Item Boolean(IEnumerable<bool> value) => Item.Boolean(value?.ToArray());
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.ASCII"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="string"/> to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.ASCII"/>.</para></returns>
 		public static Item A(string value) => !string.IsNullOrEmpty(value) ? new Item(SecsFormat.ASCII, value) : Item.A();
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an <see cref="Item"/> of <see cref="SecsFormat.JIS8"/>.</para>
+		/// </summary>
+		/// <param name="value">The <see cref="string"/> to be used.</param>
+		/// <returns><para xml:lang="en">An <see cref="Item"/> of <see cref="SecsFormat.JIS8"/>.</para></returns>
 		public static Item J(string value) => !string.IsNullOrEmpty(value) ? new Item(SecsFormat.JIS8, value) : Item.J();
+
 		#endregion
 
 		#region Share Object
 
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.List"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.List"/>.</para></returns>
 		public static Item L() => Item.EmptyL;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.Binary"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.Binary"/>.</para></returns>
 		public static Item B() => Item.EmptyBinary;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.U1"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.U1"/>.</para></returns>
 		public static Item U1() => Item.EmptyU1;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.U2"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.U2"/>.</para></returns>
 		public static Item U2() => Item.EmptyU2;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.U4"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.U4"/>.</para></returns>
 		public static Item U4() => Item.EmptyU4;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.U8"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.U8"/>.</para></returns>
 		public static Item U8() => Item.EmptyU8;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.I1"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.I1"/>.</para></returns>
 		public static Item I1() => Item.EmptyI1;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.I2"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.I2"/>.</para></returns>
 		public static Item I2() => Item.EmptyI2;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.I4"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.I4"/>.</para></returns>
 		public static Item I4() => Item.EmptyI4;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.I8"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.I8"/>.</para></returns>
 		public static Item I8() => Item.EmptyI8;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.F4"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.F4"/>.</para></returns>
 		public static Item F4() => Item.EmptyF4;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.F8"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.F8"/>.</para></returns>
 		public static Item F8() => Item.EmptyF8;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.Boolean"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.Boolean"/>.</para></returns>
 		public static Item Boolean() => Item.EmptyBoolean;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.ASCII"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.ASCII"/>.</para></returns>
 		public static Item A() => Item.EmptyA;
+
+		/// <summary>
+		/// <para xml:lang="en">Returns an empty <see cref="Item"/> of <see cref="SecsFormat.JIS8"/>.</para>
+		/// </summary>
+		/// <returns><para xml:lang="en">An empty <see cref="Item"/> of <see cref="SecsFormat.JIS8"/>.</para></returns>
 		public static Item J() => Item.EmptyJ;
 
 		private static readonly Item EmptyL = new Item(SecsFormat.List, Enumerable.Empty<Item>());
@@ -414,41 +694,6 @@ namespace Secs4Net
 			}
 
 			return length;
-		}
-
-		/// <summary>
-		/// Encode Item header + value (initial array only)
-		/// </summary>
-		/// <param name="valueCount">Item value bytes length</param>
-		/// <returns>header bytes + initial bytes of value </returns>
-		private unsafe (byte[] buffer, int headerlength) EncodeItem(int valueCount)
-		{
-			var ptr = (byte*)Unsafe.AsPointer(ref valueCount);
-			if (valueCount <= 0xff)
-			{//	1 byte
-				var result = new byte[valueCount + 2];
-				result[0] = (byte)((byte)this.Format | 1);
-				result[1] = ptr[0];
-				return (result, 2);
-			}
-			if (valueCount <= 0xffff)
-			{//	2 byte
-				var result = new byte[valueCount + 3];
-				result[0] = (byte)((byte)this.Format | 2);
-				result[1] = ptr[1];
-				result[2] = ptr[0];
-				return (result, 3);
-			}
-			if (valueCount <= 0xffffff)
-			{//	3 byte
-				var result = new byte[valueCount + 4];
-				result[0] = (byte)((byte)this.Format | 3);
-				result[1] = ptr[2];
-				result[2] = ptr[1];
-				result[3] = ptr[0];
-				return (result, 4);
-			}
-			throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $"Item data length: {valueCount} is overflown.");
 		}
 
 		internal static Item BytesDecode(SecsFormat format, byte[] data, int index, int length)

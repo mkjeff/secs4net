@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Secs4Net.Tests
 {
@@ -11,121 +12,184 @@ namespace Secs4Net.Tests
 		/// <summary>
 		/// <para xml:lang="en">A test for <see cref="ItemHeader.ItemHeader(int)"/>.</para>
 		/// </summary>
-		[TestMethod]
-		public void CanItemHeaderBeConstructedWithHighLength()
+		[DataTestMethod]
+		[DataRow(SecsFormat.U1, 0xffffff, (byte)3, (byte)4)]
+		[DataRow(SecsFormat.U1, 0x876543, (byte)3, (byte)4)]
+		[DataRow(SecsFormat.U1, 0x8765, (byte)2, (byte)3)]
+		[DataRow(SecsFormat.U1, 0x87, (byte)1, (byte)2)]
+		[DataRow(SecsFormat.U1, 0, (byte)1, (byte)2)]
+		public void CanItemHeaderBeConstructed(SecsFormat expectedSecsFormat, int expectedItemLength, byte expectedNumberOfLengthBytes, byte expectedRawHeaderDataSize)
 		{
-			const SecsFormat expectedSecsFormat = SecsFormat.U1;
-			const int expectedItemLength = 0x876543;
-			const int expectedNumberOfLengthBytes = 3;
-			const int expectedRawDataSize = 4;
-			byte[] expectedRawData = new byte[] { (int)expectedSecsFormat | 0b_000000_11, 0x87, 0x65, 0x43 };
-
 			ItemHeader itemHeader = new ItemHeader(expectedSecsFormat, expectedItemLength);
 
 			Assert.IsTrue(itemHeader.IsValid, nameof(itemHeader.IsValid));
 			Assert.AreEqual(expectedSecsFormat, itemHeader.Format, nameof(itemHeader.Format));
 			Assert.AreEqual(expectedItemLength, itemHeader.ItemLength, nameof(itemHeader.ItemLength));
 			Assert.AreEqual(expectedNumberOfLengthBytes, itemHeader.NumberOfLengthBytes, nameof(itemHeader.NumberOfLengthBytes));
-			Assert.AreEqual(expectedRawDataSize, itemHeader.RawDataSize, nameof(itemHeader.RawDataSize));
+			Assert.AreEqual(expectedRawHeaderDataSize, itemHeader.RawHeaderDataSize, nameof(itemHeader.RawHeaderDataSize));
 
-			byte[] actualRawData = itemHeader.GetRawData();
-			CollectionAssert.AreEqual(expectedRawData, actualRawData);
+			byte[] expectedRawHeaderData = new byte[expectedRawHeaderDataSize];
+			expectedRawHeaderData[0] = (byte)((int)expectedSecsFormat | expectedNumberOfLengthBytes);
+
+			switch (expectedNumberOfLengthBytes)
+			{
+				case 1:
+					expectedRawHeaderData[1] = (byte)expectedItemLength;
+					break;
+
+				case 2:
+					expectedRawHeaderData[1] = (byte)(expectedItemLength >> 8);
+					expectedRawHeaderData[2] = (byte)expectedItemLength;
+					break;
+
+				case 3:
+					expectedRawHeaderData[1] = (byte)(expectedItemLength >> 16);
+					expectedRawHeaderData[2] = (byte)(expectedItemLength >> 8);
+					expectedRawHeaderData[3] = (byte)expectedItemLength;
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException(nameof(expectedNumberOfLengthBytes), expectedNumberOfLengthBytes, "The argument must be 1, 2 or 3.");
+			}
+
+			byte[] actualRawHeaderData = itemHeader.GetRawHeaderData();
+			CollectionAssert.AreEqual(expectedRawHeaderData, actualRawHeaderData);
+
+			byte[] expectedItemBufferWithRawHeaderData = new byte[expectedRawHeaderDataSize + expectedItemLength];
+			Array.Copy(expectedRawHeaderData, 0, expectedItemBufferWithRawHeaderData, 0, expectedRawHeaderData.Length);
+
+			var (actualItemBufferWithRawHeaderData, actualOffset) = itemHeader.GetItemBufferWithRawHeaderData();
+			Assert.AreEqual(expectedRawHeaderDataSize, actualOffset, nameof(actualOffset));
+			CollectionAssert.AreEqual(expectedItemBufferWithRawHeaderData, actualItemBufferWithRawHeaderData);
 		}
 
 		/// <summary>
-		/// <para xml:lang="en">A test for <see cref="ItemHeader.ItemHeader(int)"/>.</para>
+		/// <para xml:lang="en">A test for <see cref="ItemHeader.GetItemBufferWithRawHeaderData"/>.</para>
 		/// </summary>
-		[TestMethod]
-		public void CanItemHeaderBeConstructedWithLowLength()
+		[DataTestMethod]
+		[DataRow(SecsFormat.U1, 0xffffff, (byte)3, (byte)4)]
+		[DataRow(SecsFormat.U1, 0x876543, (byte)3, (byte)4)]
+		[DataRow(SecsFormat.U1, 0x8765, (byte)2, (byte)3)]
+		[DataRow(SecsFormat.U1, 0x87, (byte)1, (byte)2)]
+		[DataRow(SecsFormat.U1, 0, (byte)1, (byte)2)]
+		public void CanItemHeaderGetItemBufferWithRawHeaderData(SecsFormat expectedSecsFormat, int expectedItemLength, byte expectedNumberOfLengthBytes, byte expectedRawHeaderDataSize)
 		{
-			const SecsFormat expectedSecsFormat = SecsFormat.U1;
-			const int expectedItemLength = 0x87;
-			const int expectedNumberOfLengthBytes = 1;
-			const int expectedRawDataSize = 2;
-			byte[] expectedRawData = new byte[] { (int)expectedSecsFormat | 0b_000000_01, 0x87 };
-
 			ItemHeader itemHeader = new ItemHeader(expectedSecsFormat, expectedItemLength);
 
-			Assert.IsTrue(itemHeader.IsValid, nameof(itemHeader.IsValid));
-			Assert.AreEqual(expectedSecsFormat, itemHeader.Format, nameof(itemHeader.Format));
-			Assert.AreEqual(expectedItemLength, itemHeader.ItemLength, nameof(itemHeader.ItemLength));
-			Assert.AreEqual(expectedNumberOfLengthBytes, itemHeader.NumberOfLengthBytes, nameof(itemHeader.NumberOfLengthBytes));
-			Assert.AreEqual(expectedRawDataSize, itemHeader.RawDataSize, nameof(itemHeader.RawDataSize));
+			byte[] expectedItemBufferWithRawHeaderData = new byte[expectedRawHeaderDataSize + expectedItemLength];
+			expectedItemBufferWithRawHeaderData[0] = (byte)((int)expectedSecsFormat | expectedNumberOfLengthBytes);
 
-			byte[] actualRawData = itemHeader.GetRawData();
-			CollectionAssert.AreEqual(expectedRawData, actualRawData);
+			switch (expectedNumberOfLengthBytes)
+			{
+				case 1:
+					expectedItemBufferWithRawHeaderData[1] = (byte)expectedItemLength;
+					break;
+
+				case 2:
+					expectedItemBufferWithRawHeaderData[1] = (byte)(expectedItemLength >> 8);
+					expectedItemBufferWithRawHeaderData[2] = (byte)expectedItemLength;
+					break;
+
+				case 3:
+					expectedItemBufferWithRawHeaderData[1] = (byte)(expectedItemLength >> 16);
+					expectedItemBufferWithRawHeaderData[2] = (byte)(expectedItemLength >> 8);
+					expectedItemBufferWithRawHeaderData[3] = (byte)expectedItemLength;
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException(nameof(expectedNumberOfLengthBytes), expectedNumberOfLengthBytes, "The argument must be 1, 2 or 3.");
+			}
+
+			var (actualItemBufferWithRawHeaderData, actualOffset) = itemHeader.GetItemBufferWithRawHeaderData();
+
+			Assert.AreEqual(expectedRawHeaderDataSize, actualOffset, nameof(actualOffset));
+
+			CollectionAssert.AreEqual(expectedItemBufferWithRawHeaderData, actualItemBufferWithRawHeaderData);
 		}
 
 		/// <summary>
-		/// <para xml:lang="en">A test for <see cref="ItemHeader.ItemHeader(int)"/>.</para>
+		/// <para xml:lang="en">A test for <see cref="ItemHeader.GetRawHeaderData"/>.</para>
 		/// </summary>
-		[TestMethod]
-		public void CanItemHeaderBeConstructedWithMaxLength()
+		[DataTestMethod]
+		[DataRow(SecsFormat.U1, 0xffffff, (byte)3, (byte)4)]
+		[DataRow(SecsFormat.U1, 0x876543, (byte)3, (byte)4)]
+		[DataRow(SecsFormat.U1, 0x8765, (byte)2, (byte)3)]
+		[DataRow(SecsFormat.U1, 0x87, (byte)1, (byte)2)]
+		[DataRow(SecsFormat.U1, 0, (byte)1, (byte)2)]
+		public void CanItemHeaderGetRawHeaderData(SecsFormat expectedSecsFormat, int expectedItemLength, byte expectedNumberOfLengthBytes, byte expectedRawHeaderDataSize)
 		{
-			const SecsFormat expectedSecsFormat = SecsFormat.U1;
-			const int expectedItemLength = 0xffffff;
-			const int expectedNumberOfLengthBytes = 3;
-			const int expectedRawDataSize = 4;
-			byte[] expectedRawData = new byte[] { (int)expectedSecsFormat | 0b_000000_11, 0xff, 0xff, 0xff };
-
 			ItemHeader itemHeader = new ItemHeader(expectedSecsFormat, expectedItemLength);
 
-			Assert.IsTrue(itemHeader.IsValid, nameof(itemHeader.IsValid));
-			Assert.AreEqual(expectedSecsFormat, itemHeader.Format, nameof(itemHeader.Format));
-			Assert.AreEqual(expectedItemLength, itemHeader.ItemLength, nameof(itemHeader.ItemLength));
-			Assert.AreEqual(expectedNumberOfLengthBytes, itemHeader.NumberOfLengthBytes, nameof(itemHeader.NumberOfLengthBytes));
-			Assert.AreEqual(expectedRawDataSize, itemHeader.RawDataSize, nameof(itemHeader.RawDataSize));
+			byte[] expectedRawHeaderData = new byte[expectedRawHeaderDataSize];
+			expectedRawHeaderData[0] = (byte)((int)expectedSecsFormat | expectedNumberOfLengthBytes);
 
-			byte[] actualRawData = itemHeader.GetRawData();
-			CollectionAssert.AreEqual(expectedRawData, actualRawData);
+			switch (expectedNumberOfLengthBytes)
+			{
+				case 1:
+					expectedRawHeaderData[1] = (byte)expectedItemLength;
+					break;
+
+				case 2:
+					expectedRawHeaderData[1] = (byte)(expectedItemLength >> 8);
+					expectedRawHeaderData[2] = (byte)expectedItemLength;
+					break;
+
+				case 3:
+					expectedRawHeaderData[1] = (byte)(expectedItemLength >> 16);
+					expectedRawHeaderData[2] = (byte)(expectedItemLength >> 8);
+					expectedRawHeaderData[3] = (byte)expectedItemLength;
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException(nameof(expectedNumberOfLengthBytes), expectedNumberOfLengthBytes, "The argument must be 1, 2 or 3.");
+			}
+
+			byte[] actualRawHeaderData = itemHeader.GetRawHeaderData();
+			CollectionAssert.AreEqual(expectedRawHeaderData, actualRawHeaderData);
 		}
 
 		/// <summary>
-		/// <para xml:lang="en">A test for <see cref="ItemHeader.ItemHeader(int)"/>.</para>
+		/// <para xml:lang="en">A test for <see cref="ItemHeader.WriteRawHeaderData"/>.</para>
 		/// </summary>
-		[TestMethod]
-		public void CanItemHeaderBeConstructedWithMidLength()
+		[DataTestMethod]
+		[DataRow(SecsFormat.U1, 0xffffff, (byte)3, (byte)4)]
+		[DataRow(SecsFormat.U1, 0x876543, (byte)3, (byte)4)]
+		[DataRow(SecsFormat.U1, 0x8765, (byte)2, (byte)3)]
+		[DataRow(SecsFormat.U1, 0x87, (byte)1, (byte)2)]
+		[DataRow(SecsFormat.U1, 0, (byte)1, (byte)2)]
+		public void CanItemHeaderWriteRawHeaderData(SecsFormat expectedSecsFormat, int expectedItemLength, byte expectedNumberOfLengthBytes, byte expectedRawHeaderDataSize)
 		{
-			const SecsFormat expectedSecsFormat = SecsFormat.U1;
-			const int expectedItemLength = 0x8765;
-			const int expectedNumberOfLengthBytes = 2;
-			const int expectedRawDataSize = 3;
-			byte[] expectedRawData = new byte[] { (int)expectedSecsFormat | 0b_000000_10, 0x87, 0x65 };
-
 			ItemHeader itemHeader = new ItemHeader(expectedSecsFormat, expectedItemLength);
 
-			Assert.IsTrue(itemHeader.IsValid, nameof(itemHeader.IsValid));
-			Assert.AreEqual(expectedSecsFormat, itemHeader.Format, nameof(itemHeader.Format));
-			Assert.AreEqual(expectedItemLength, itemHeader.ItemLength, nameof(itemHeader.ItemLength));
-			Assert.AreEqual(expectedNumberOfLengthBytes, itemHeader.NumberOfLengthBytes, nameof(itemHeader.NumberOfLengthBytes));
-			Assert.AreEqual(expectedRawDataSize, itemHeader.RawDataSize, nameof(itemHeader.RawDataSize));
+			byte[] expectedRawHeaderData = new byte[expectedRawHeaderDataSize];
+			expectedRawHeaderData[0] = (byte)((int)expectedSecsFormat | expectedNumberOfLengthBytes);
 
-			byte[] actualRawData = itemHeader.GetRawData();
-			CollectionAssert.AreEqual(expectedRawData, actualRawData);
-		}
+			switch (expectedNumberOfLengthBytes)
+			{
+				case 1:
+					expectedRawHeaderData[1] = (byte)expectedItemLength;
+					break;
 
-		/// <summary>
-		/// <para xml:lang="en">A test for <see cref="ItemHeader.ItemHeader(int)"/>.</para>
-		/// </summary>
-		[TestMethod]
-		public void CanItemHeaderBeConstructedWithMinLength()
-		{
-			const SecsFormat expectedSecsFormat = SecsFormat.U1;
-			const int expectedItemLength = 0;
-			const int expectedNumberOfLengthBytes = 1;
-			const int expectedRawDataSize = 2;
-			byte[] expectedRawData = new byte[] { (int)expectedSecsFormat | 0b_000000_01, 0x00 };
+				case 2:
+					expectedRawHeaderData[1] = (byte)(expectedItemLength >> 8);
+					expectedRawHeaderData[2] = (byte)expectedItemLength;
+					break;
 
-			ItemHeader itemHeader = new ItemHeader(expectedSecsFormat, expectedItemLength);
+				case 3:
+					expectedRawHeaderData[1] = (byte)(expectedItemLength >> 16);
+					expectedRawHeaderData[2] = (byte)(expectedItemLength >> 8);
+					expectedRawHeaderData[3] = (byte)expectedItemLength;
+					break;
 
-			Assert.IsTrue(itemHeader.IsValid, nameof(itemHeader.IsValid));
-			Assert.AreEqual(expectedSecsFormat, itemHeader.Format, nameof(itemHeader.Format));
-			Assert.AreEqual(expectedItemLength, itemHeader.ItemLength, nameof(itemHeader.ItemLength));
-			Assert.AreEqual(expectedNumberOfLengthBytes, itemHeader.NumberOfLengthBytes, nameof(itemHeader.NumberOfLengthBytes));
-			Assert.AreEqual(expectedRawDataSize, itemHeader.RawDataSize, nameof(itemHeader.RawDataSize));
+				default:
+					throw new ArgumentOutOfRangeException(nameof(expectedNumberOfLengthBytes), expectedNumberOfLengthBytes, "The argument must be 1, 2 or 3.");
+			}
 
-			byte[] actualRawData = itemHeader.GetRawData();
-			CollectionAssert.AreEqual(expectedRawData, actualRawData);
+			byte[] actualRawHeaderData = new byte[expectedRawHeaderData.Length];
+
+			itemHeader.WriteRawHeaderData(actualRawHeaderData, 0);
+
+			CollectionAssert.AreEqual(expectedRawHeaderData, actualRawHeaderData);
 		}
 	}
 }
