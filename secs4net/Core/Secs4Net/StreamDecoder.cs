@@ -180,8 +180,9 @@ namespace Secs4Net
 
 		private static Item BufferedDecodeItem(byte[] bytes, ref int index)
 		{
-			var format = (SecsFormat)(bytes[index] & 0xFC);
-			byte lengthBits = (byte)(bytes[index] & 3);
+			byte formatCodeValue = bytes[index];
+			var format = (SecsFormat)(formatCodeValue & 0b_111111_00);
+			byte lengthBits = (byte)(formatCodeValue & 0b_000000_11);
 			index++;
 
 			byte[] itemLengthBytes = new byte[4];
