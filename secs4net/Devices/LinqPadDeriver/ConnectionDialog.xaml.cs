@@ -84,7 +84,7 @@ namespace Secs4Net.LinqPad
                 using (var secsGem = new SecsGem(
                     (bool)config.Attribute("isActive"),
                     IPAddress.Parse(config.Attribute("ip").Value),
-                    (int)config.Attribute("port")))
+                    (ushort)(int)config.Attribute("port")))
                 {
                     secsGem.ConnectionChanged += delegate {
                         if (secsGem.State == ConnectionState.Selected)

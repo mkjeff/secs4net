@@ -15,46 +15,46 @@ namespace Secs4Net
 		public readonly int SystemBytes;
 
 		internal MessageHeader(
-			in ushort deviceId = default,
-			in bool replyExpected = default,
-			in byte s = default,
-			in byte f = default,
-			in MessageType messageType = default,
-			in int systemBytes = default)
+			ushort deviceId = default,
+			bool replyExpected = default,
+			byte s = default,
+			byte f = default,
+			MessageType messageType = default,
+			int systemBytes = default)
 		{
-			DeviceId = deviceId;
-			ReplyExpected = replyExpected;
-			S = s;
-			F = f;
-			MessageType = messageType;
-			SystemBytes = systemBytes;
+			this.DeviceId = deviceId;
+			this.ReplyExpected = replyExpected;
+			this.S = s;
+			this.F = f;
+			this.MessageType = messageType;
+			this.SystemBytes = systemBytes;
 		}
 
 		internal unsafe byte[] EncodeTo(byte[] buffer)
 		{
-			EncodeTo(buffer.AsSpan());
+			this.EncodeTo(buffer.AsSpan());
 			return buffer;
 		}
 
 		internal unsafe void EncodeTo(Span<byte> buffer)
 		{
 			// DeviceId
-			BinaryPrimitives.WriteUInt16BigEndian(buffer, DeviceId);
+			BinaryPrimitives.WriteUInt16BigEndian(buffer, this.DeviceId);
 
 			ref var head = ref MemoryMarshal.GetReference(buffer);
 			// S, ReplyExpected
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 2), (byte)(S | (ReplyExpected ? 0b1000_0000 : 0)));
+			Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 2), (byte)(this.S | (this.ReplyExpected ? 0b1000_0000 : 0)));
 
 			// F
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 3), F);
+			Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 3), this.F);
 
 			Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 4), 0);
 
 			// MessageType
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 5), (byte)MessageType);
+			Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 5), (byte)this.MessageType);
 
 			// SystemBytes
-			BinaryPrimitives.WriteInt32BigEndian(buffer.Slice(6), SystemBytes);
+			BinaryPrimitives.WriteInt32BigEndian(buffer.Slice(6), this.SystemBytes);
 		}
 
 		internal static unsafe MessageHeader Decode(in ReadOnlySpan<byte> buffer)
