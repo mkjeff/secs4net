@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
-MinimumVisualStudioVersion = 10.0.40219.1
+VisualStudioVersion = 15.0.28307.705
+MinimumVisualStudioVersion = 15.0.28307.705
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Devices", "Devices", "{A2129504-BE77-47D7-BFB0-D8C333EA3CA4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecsDevice", "Devices\DeviceSimulator\SecsDevice.csproj", "{8BF9676F-4514-4C43-A33A-23B9A098DC63}"
@@ -55,6 +55,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReadMe", "ReadMe", "{FFE65C
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HsmsWebHost", "Devices\WebHost\HsmsWebHost.csproj", "{25A40479-E3D1-422D-8ED4-C9FED4210435}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Secs4Net.Tests", "Core\Secs4Net.Tests\Secs4Net.Tests.csproj", "{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -200,6 +202,14 @@ Global
 		{25A40479-E3D1-422D-8ED4-C9FED4210435}.Release|Any CPU.Build.0 = Release|Any CPU
 		{25A40479-E3D1-422D-8ED4-C9FED4210435}.Release|x86.ActiveCfg = Release|Any CPU
 		{25A40479-E3D1-422D-8ED4-C9FED4210435}.Release|x86.Build.0 = Release|Any CPU
+		{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19}.Debug|x86.Build.0 = Debug|Any CPU
+		{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19}.Release|x86.ActiveCfg = Release|Any CPU
+		{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -221,6 +231,7 @@ Global
 		{B05ED3B8-AB3F-44D5-ABA7-E6AA4A924FDB} = {35657E73-7929-41AB-9415-BD463CD4DB76}
 		{1F7E1172-8C7E-4411-852A-FA44125D6CCA} = {35657E73-7929-41AB-9415-BD463CD4DB76}
 		{25A40479-E3D1-422D-8ED4-C9FED4210435} = {A2129504-BE77-47D7-BFB0-D8C333EA3CA4}
+		{F92B262B-5F9C-4E23-BBCC-10B9F14BEF19} = {47372419-BB0F-4D47-A9A9-F93EE7551CB9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6D65953E-CAC2-4CC3-AD7F-1385F33D7C21}

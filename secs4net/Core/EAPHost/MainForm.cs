@@ -21,6 +21,7 @@ using log4net;
 using log4net.Layout;
 using log4net.Repository.Hierarchy;
 using Secs4Net;
+using Secs4Net.Exceptions;
 using Secs4Net.Sml;
 
 namespace Cim.Eap
@@ -130,7 +131,7 @@ namespace Cim.Eap
             _secsGem = new SecsGem(
                 EAPConfig.Instance.Mode == ConnectionMode.Active,
                 IPAddress.Parse(EAPConfig.Instance.IP),
-                EAPConfig.Instance.TcpPort, EAPConfig.Instance.SocketRecvBufferSize)
+                (ushort)EAPConfig.Instance.TcpPort, EAPConfig.Instance.SocketRecvBufferSize)
             {
                 DeviceId = EAPConfig.Instance.DeviceId,
                 LinkTestInterval = EAPConfig.Instance.LinkTestInterval,
