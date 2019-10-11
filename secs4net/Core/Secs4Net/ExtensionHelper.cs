@@ -29,7 +29,11 @@ namespace Secs4Net
 
         public static string ToHexString(this byte[] value)
         {
-            if (value.Length == 0) return string.Empty;
+            if (value.Length == 0)
+            {
+                return string.Empty;
+            }
+
             int length = value.Length * 3;
             char[] chs = new char[length];
             for (int ci = 0, i = 0; ci < length; ci += 3)
@@ -53,9 +57,15 @@ namespace Secs4Net
 
         internal static void Reverse(this byte[] bytes, in int begin, in int end, in int offSet)
         {
-            if (offSet <= 1) return;
+            if (offSet <= 1)
+            {
+                return;
+            }
+
             for (var i = begin; i < end; i += offSet)
+            {
                 Array.Reverse(bytes, i, offSet);
+            }
         }
     }
 }

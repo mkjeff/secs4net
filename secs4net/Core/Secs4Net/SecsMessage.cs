@@ -8,7 +8,9 @@ namespace Secs4Net
         static SecsMessage()
         {
             if (!BitConverter.IsLittleEndian)
+            {
                 throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
+            }
         }
 
         public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
@@ -57,7 +59,9 @@ namespace Secs4Net
         public SecsMessage(byte s, byte f, string name = null, Item item = null, bool replyExpected = true)
         {
             if (s > 0b0111_1111)
+            {
                 throw new ArgumentOutOfRangeException(nameof(s), s, Resources.SecsMessageStreamNumberMustLessThan127);
+            }
 
             S = s;
             F = f;
@@ -67,7 +71,9 @@ namespace Secs4Net
             RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
             {
                 if (SecsItem is null)
+                {
                     return EmptyMsgDatas;
+                }
 
                 var result = new List<ArraySegment<byte>> {
                     default,    // total length
