@@ -92,7 +92,9 @@ namespace Secs4Net
             int GetTotalMessageLength(ref int length, out int need)
             {
                 if (!CheckAvailable(length, 4, out need))
+                {
                     return 0;
+                }
 
                 Array.Reverse(_buffer, _decodeIndex, 4);
                 _messageDataLength = BitConverter.ToUInt32(_buffer, _decodeIndex);
@@ -106,18 +108,25 @@ namespace Secs4Net
             int GetMessageHeader(ref int length, out int need)
             {
                 if (!CheckAvailable(length, 10, out need))
+                {
                     return 1;
+                }
 
-				_msgHeader = MessageHeader.Decode(new ReadOnlySpan<byte>(_buffer, _decodeIndex, 10));
+                _msgHeader = MessageHeader.Decode(new ReadOnlySpan<byte>(_buffer, _decodeIndex, 10));
                 _decodeIndex += 10;
                 _messageDataLength -= 10;
                 length -= 10;
                 if (_messageDataLength == 0)
                 {
                     if (_msgHeader.MessageType == MessageType.DataMessage)
+                    {
                         _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, string.Empty, replyExpected: _msgHeader.ReplyExpected));
+                    }
                     else
+                    {
                         _controlMsgHandler(_msgHeader);
+                    }
+
                     return 0;
                 }
 
@@ -136,7 +145,9 @@ namespace Secs4Net
             int GetItemHeader(ref int length, out int need)
             {
                 if (!CheckAvailable(length, 1, out need))
+                {
                     return 2;
+                }
 
                 _format = (SecsFormat)(_buffer[_decodeIndex] & 0xFC);
                 _lengthBits = (byte)(_buffer[_decodeIndex] & 3);
@@ -150,7 +161,9 @@ namespace Secs4Net
             int GetItemLength(ref int length, out int need)
             {
                 if (!CheckAvailable(length, _lengthBits, out need))
+                {
                     return 3;
+                }
 
                 Array.Copy(_buffer, _decodeIndex, _itemLengthBytes, 0, _lengthBits);
                 Array.Reverse(_itemLengthBytes, 0, _lengthBits);
@@ -185,7 +198,9 @@ namespace Secs4Net
                 else
                 {
                     if (!CheckAvailable(length, _itemLength, out need))
+                    {
                         return 4;
+                    }
 
                     item = Item.BytesDecode(_format, _buffer, _decodeIndex, _itemLength);
                     Trace.WriteLine($"Complete Item: {_format}");
@@ -250,11 +265,16 @@ namespace Secs4Net
                 if (format == SecsFormat.List)
                 {
                     if (dataLength == 0)
+                    {
                         return Item.L();
+                    }
 
                     var list = new List<Item>(dataLength);
                     for (var i = 0; i < dataLength; i++)
+                    {
                         list.Add(BufferedDecodeItem(bytes, ref index));
+                    }
+
                     return Item.L(list);
                 }
                 var item = Item.BytesDecode(format, bytes, index, dataLength);

@@ -93,13 +93,19 @@ namespace Secs4Net
             set
             {
                 if (_linkTestEnable == value)
+                {
                     return;
+                }
 
                 _linkTestEnable = value;
                 if (_linkTestEnable)
+                {
                     _timerLinkTest.Change(0, LinkTestInterval);
+                }
                 else
+                {
                     _timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
+                }
             }
         }
 
@@ -153,7 +159,9 @@ namespace Secs4Net
         public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
         {
             if (port <= 0)
+            {
                 port = 0;
+            }
 
             _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
             _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
@@ -180,7 +188,9 @@ namespace Secs4Net
             _timerLinkTest = new Timer(delegate
             {
                 if (State == ConnectionState.Selected)
+                {
                     SendControlMessage(MessageType.LinkTestRequest, NewSystemId);
+                }
             }, null, Timeout.Infinite, Timeout.Infinite);
             #endregion
 
@@ -192,13 +202,17 @@ namespace Secs4Net
                     do
                     {
                         if (IsDisposed)
+                        {
                             return;
+                        }
 
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
                             if (IsDisposed)
+                            {
                                 return;
+                            }
 
                             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                             await _socket.ConnectAsync(IpAddress, Port).ConfigureAwait(false);
@@ -207,7 +221,9 @@ namespace Secs4Net
                         catch (Exception ex)
                         {
                             if (IsDisposed)
+                            {
                                 return;
+                            }
 
                             _logger.Error(ex.Message);
                             _logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
@@ -234,13 +250,17 @@ namespace Secs4Net
                     do
                     {
                         if (IsDisposed)
+                        {
                             return;
+                        }
 
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
                             if (IsDisposed)
+                            {
                                 return;
+                            }
 
                             _socket = await server.AcceptAsync().ConfigureAwait(false);
                             connected = true;
@@ -248,7 +268,9 @@ namespace Secs4Net
                         catch (Exception ex)
                         {
                             if (IsDisposed)
+                            {
                                 return;
+                            }
 
                             _logger.Error(ex.Message);
                             await Task.Delay(2000).ConfigureAwait(false);
@@ -276,7 +298,9 @@ namespace Secs4Net
                 receiveCompleteEvent.Completed += SocketReceiveEventCompleted;
 
                 if (!_socket.ReceiveAsync(receiveCompleteEvent))
+                {
                     SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
+                }
 
                 void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
                 {
@@ -319,10 +343,14 @@ namespace Secs4Net
                         }
 
                         if (_socket is null || IsDisposed)
+                        {
                             return;
+                        }
 
                         if (!_socket.ReceiveAsync(e))
+                        {
                             SocketReceiveEventCompleted(sender, e);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -415,7 +443,9 @@ namespace Secs4Net
                 // Secondary message
                 _logger.MessageIn(msg, systembyte);
                 if (_replyExpectedMsgs.TryGetValue(systembyte, out var ar))
+                {
                     ar.HandleReplyMessage(msg);
+                }
             }
         }
 
@@ -441,7 +471,9 @@ namespace Secs4Net
             };
             eap.Completed += _sendControlMessageCompleteHandler;
             if (!_socket.SendAsync(eap))
+            {
                 SendControlMessageCompleteHandler(_socket, eap);
+            }
         }
 
         private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
@@ -469,11 +501,15 @@ namespace Secs4Net
         internal Task<SecsMessage> SendDataMessageAsync(in SecsMessage msg, in int systembyte)
         {
             if (State != ConnectionState.Selected)
+            {
                 throw new SecsException("Device is not selected");
+            }
 
             var token = new TaskCompletionSourceToken(msg, systembyte, MessageType.DataMessage);
             if (msg.ReplyExpected)
+            {
                 _replyExpectedMsgs[systembyte] = token;
+            }
 
             var header = new MessageHeader
             (
@@ -493,7 +529,9 @@ namespace Secs4Net
             };
             eap.Completed += _sendDataMessageCompleteHandler;
             if (!_socket.SendAsync(eap))
+            {
                 SendDataMessageCompleteHandler(_socket, eap);
+            }
 
             return token.Task;
         }
@@ -551,7 +589,10 @@ namespace Secs4Net
                     break;
                 case ConnectionState.Retry:
                     if (IsDisposed)
+                    {
                         return;
+                    }
+
                     Reset();
                     Task.Factory.StartNew(_startImpl);
                     break;
@@ -568,10 +609,14 @@ namespace Secs4Net
             _stopImpl?.Invoke();
 
             if (_socket is null)
+            {
                 return;
+            }
 
             if (_socket.Connected)
+            {
                 _socket.Shutdown(SocketShutdown.Both);
+            }
 
             _socket.Dispose();
             _socket = null;
@@ -589,11 +634,16 @@ namespace Secs4Net
         public void Dispose()
         {
             if (Interlocked.Exchange(ref _disposeStage, DisposalComplete) != DisposalNotStarted)
+            {
                 return;
+            }
 
             ConnectionChanged = null;
             if (State == ConnectionState.Selected)
+            {
                 SendControlMessage(MessageType.SeperateRequest, NewSystemId);
+            }
+
             Reset();
             _timer7.Dispose();
             _timer8.Dispose();
