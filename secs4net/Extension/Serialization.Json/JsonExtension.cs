@@ -230,24 +230,24 @@ namespace Secs4Net.Json
         public static Item ToItem(this JObject jobject)
         {
             var json = (JProperty)jobject.First;
-
-            switch (json.Name)
+            var Format = jobject.SelectToken("Format").ToString();
+            switch (Format)
             {
-                case nameof(SecsFormat.List): return L(json.Value.Value<JArray>().Values<JObject>().Select(ToItem));
+                case nameof(SecsFormat.List): return L(jobject.SelectToken("Items").Values<JObject>().Select(ToItem));
                 case nameof(SecsFormat.ASCII): return A(json.Value.Value<string>());
                 case nameof(SecsFormat.JIS8): return J(json.Value.Value<string>());
-                case nameof(SecsFormat.Binary): return B(json.Value.Values<byte>());
-                case nameof(SecsFormat.Boolean): return Boolean(json.Value.Values<bool>());
-                case nameof(SecsFormat.F4): return F4(json.Value.Values<float>());
-                case nameof(SecsFormat.F8): return F8(json.Value.Values<double>());
-                case nameof(SecsFormat.I1): return I1(json.Value.Values<sbyte>());
-                case nameof(SecsFormat.I2): return I2(json.Value.Values<short>());
-                case nameof(SecsFormat.I4): return I4(json.Value.Values<int>());
-                case nameof(SecsFormat.I8): return I8(json.Value.Values<long>());
-                case nameof(SecsFormat.U1): return U1(json.Value.Values<byte>());
-                case nameof(SecsFormat.U2): return U2(json.Value.Values<ushort>());
-                case nameof(SecsFormat.U4): return U4(json.Value.Values<uint>());
-                case nameof(SecsFormat.U8): return U8(json.Value.Values<ulong>());
+                case nameof(SecsFormat.Binary): return B(jobject.SelectToken("Values").Values<byte>());
+                case nameof(SecsFormat.Boolean): return Boolean(jobject.SelectToken("Values").Values<bool>());
+                case nameof(SecsFormat.F4): return F4(jobject.SelectToken("Values").Values<float>());
+                case nameof(SecsFormat.F8): return F8(jobject.SelectToken("Values").Values<double>());
+                case nameof(SecsFormat.I1): return I1(jobject.SelectToken("Values").Values<sbyte>());
+                case nameof(SecsFormat.I2): return I2(jobject.SelectToken("Values").Values<short>());
+                case nameof(SecsFormat.I4): return I4(jobject.SelectToken("Values").Values<int>());
+                case nameof(SecsFormat.I8): return I8(jobject.SelectToken("Values").Values<long>());
+                case nameof(SecsFormat.U1): return U1(jobject.SelectToken("Values").Values<byte>());
+                case nameof(SecsFormat.U2): return U2(jobject.SelectToken("Values").Values<ushort>());
+                case nameof(SecsFormat.U4): return U4(jobject.SelectToken("Values").Values<uint>());
+                case nameof(SecsFormat.U8): return U8(jobject.SelectToken("Values").Values<ulong>());
                 default: throw new ArgumentOutOfRangeException($"Unknown item format: {json.Name}");
             }
         }
