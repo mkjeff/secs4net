@@ -153,6 +153,11 @@ namespace Secs4Net
                 return arr;
             }
 
+            if (_values is IEnumerable<T> linq)
+            {
+                return linq.ToArray();
+            }
+
             throw new InvalidOperationException("The type is incompatible");
         }
 
@@ -239,7 +244,13 @@ namespace Secs4Net
             switch (Format)
             {
                 case SecsFormat.List:
-                    sb.Append(Unsafe.As<IReadOnlyList<Item>>(_values).Count).Append("]: ...");
+                    try
+                    {
+                        var hasChildren = Unsafe.As<IReadOnlyList<Item>>(_values).Count > 0;
+                        sb.Append(hasChildren).Append("]: ...");
+                    } catch (EntryPointNotFoundException) {
+                        sb.Append(false).Append("]");
+                    }
                     break;
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
