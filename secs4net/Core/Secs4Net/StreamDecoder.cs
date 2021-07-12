@@ -71,7 +71,7 @@ namespace Secs4Net
             _previousRemainedCount = 0;
         }
 
-        internal StreamDecoder(in int streamBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
+        internal StreamDecoder(int streamBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
         {
             _buffer = new byte[streamBufferSize];
             _bufferOffset = 0;
@@ -239,7 +239,7 @@ namespace Secs4Net
                 return GetItemHeader(ref length, out need);
             }
 
-            bool CheckAvailable(in int length, in int required, out int need)
+            static bool CheckAvailable(int length, int required, out int need)
             {
                 need = required - length;
                 if (need > 0)
@@ -250,7 +250,7 @@ namespace Secs4Net
                 return true;
             }
 
-            Item BufferedDecodeItem(byte[] bytes, ref int index)
+            static Item BufferedDecodeItem(byte[] bytes, ref int index)
             {
                 var format = (SecsFormat)(bytes[index] & 0xFC);
                 var lengthBits = (byte)(bytes[index] & 3);
@@ -290,7 +290,7 @@ namespace Secs4Net
         /// <returns>true, if need more data to decode completed message. otherwise, return false</returns>
         public bool Decode(int length)
         {
-            Debug.Assert(length > 0,"decode data length is 0.");
+            Debug.Assert(length > 0, "decode data length is 0.");
             var decodeLength = length;
             length += _previousRemainedCount; // total available length = current length + previous remained
             int need;
@@ -304,7 +304,7 @@ namespace Secs4Net
             Debug.Assert(_decodeIndex >= _bufferOffset, "decode index should ahead of buffer index");
 
             var remainCount = length;
-            Debug.Assert(remainCount >= 0,"remain count is only possible grater and equal zero");
+            Debug.Assert(remainCount >= 0, "remain count is only possible grater and equal zero");
             Trace.WriteLine($"remain data length: {remainCount}");
             Trace.WriteLineIf(_messageDataLength > 0, $"need data count: {need}");
 
@@ -322,10 +322,10 @@ namespace Secs4Net
                 _decodeIndex = 0;
                 _previousRemainedCount = 0;
             }
-            else 
+            else
             {
-                _bufferOffset += decodeLength ; // move next receive index
-                var nextStepReqiredCount = remainCount + need;              
+                _bufferOffset += decodeLength; // move next receive index
+                var nextStepReqiredCount = remainCount + need;
                 if (nextStepReqiredCount > BufferCount)
                 {
                     if (nextStepReqiredCount > Buffer.Length)

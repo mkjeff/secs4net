@@ -83,7 +83,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="format"></param>
         /// <param name="value"></param>
-        private Item(in SecsFormat format, IEnumerable value)
+        private Item(SecsFormat format, IEnumerable value)
         {
             Format = format;
             _values = value;
@@ -219,7 +219,7 @@ namespace Secs4Net
                 }
             }
 
-            bool IsMatch(IReadOnlyList<Item> a, IReadOnlyList<Item> b)
+            static bool IsMatch(IReadOnlyList<Item> a, IReadOnlyList<Item> b)
             {
                 for (int i = 0, count = a.Count; i < count; i++)
                 {
@@ -235,7 +235,7 @@ namespace Secs4Net
 
         public override string ToString()
         {
-            var sb = new StringBuilder(Format.GetName()).Append("[");
+            var sb = new StringBuilder(Format.ToString()).Append('[');
             switch (Format)
             {
                 case SecsFormat.List:
@@ -268,7 +268,7 @@ namespace Secs4Net
             }
             return sb.ToString();
 
-            string JoinAsString<T>(IEnumerable src)
+            static string JoinAsString<T>(IEnumerable src)
                 where T : unmanaged => string.Join(" ", Unsafe.As<T[]>(src));
         }
 
@@ -292,7 +292,7 @@ namespace Secs4Net
 
         internal static Item L(IList<Item> items) => items.Count > 0 ? new Item(new ReadOnlyCollection<Item>(items)) : L();
         public static Item L(IEnumerable<Item> items) => L(items.ToList());
-        public static Item L(params Item[] items) => L((IList<Item>) items);
+        public static Item L(params Item[] items) => L((IList<Item>)items);
 
         public static Item B(params byte[] value) => value.Length > 0 ? new Item(SecsFormat.Binary, value) : B();
         public static Item B(IEnumerable<byte> value) => B(value.ToArray());
@@ -353,21 +353,21 @@ namespace Secs4Net
         public static Item A() => EmptyA;
         public static Item J() => EmptyJ;
 
-        private static readonly Item EmptyL = new Item(SecsFormat.List, Enumerable.Empty<Item>());
-        private static readonly Item EmptyA = new Item(SecsFormat.ASCII, string.Empty);
-        private static readonly Item EmptyJ = new Item(SecsFormat.JIS8, string.Empty);
-        private static readonly Item EmptyBoolean = new Item(SecsFormat.Boolean, Enumerable.Empty<bool>());
-        private static readonly Item EmptyBinary = new Item(SecsFormat.Binary, Enumerable.Empty<byte>());
-        private static readonly Item EmptyU1 = new Item(SecsFormat.U1, Enumerable.Empty<byte>());
-        private static readonly Item EmptyU2 = new Item(SecsFormat.U2, Enumerable.Empty<ushort>());
-        private static readonly Item EmptyU4 = new Item(SecsFormat.U4, Enumerable.Empty<uint>());
-        private static readonly Item EmptyU8 = new Item(SecsFormat.U8, Enumerable.Empty<ulong>());
-        private static readonly Item EmptyI1 = new Item(SecsFormat.I1, Enumerable.Empty<sbyte>());
-        private static readonly Item EmptyI2 = new Item(SecsFormat.I2, Enumerable.Empty<short>());
-        private static readonly Item EmptyI4 = new Item(SecsFormat.I4, Enumerable.Empty<int>());
-        private static readonly Item EmptyI8 = new Item(SecsFormat.I8, Enumerable.Empty<long>());
-        private static readonly Item EmptyF4 = new Item(SecsFormat.F4, Enumerable.Empty<float>());
-        private static readonly Item EmptyF8 = new Item(SecsFormat.F8, Enumerable.Empty<double>());
+        private static readonly Item EmptyL = new(SecsFormat.List, Enumerable.Empty<Item>());
+        private static readonly Item EmptyA = new(SecsFormat.ASCII, string.Empty);
+        private static readonly Item EmptyJ = new(SecsFormat.JIS8, string.Empty);
+        private static readonly Item EmptyBoolean = new(SecsFormat.Boolean, Enumerable.Empty<bool>());
+        private static readonly Item EmptyBinary = new(SecsFormat.Binary, Enumerable.Empty<byte>());
+        private static readonly Item EmptyU1 = new(SecsFormat.U1, Enumerable.Empty<byte>());
+        private static readonly Item EmptyU2 = new(SecsFormat.U2, Enumerable.Empty<ushort>());
+        private static readonly Item EmptyU4 = new(SecsFormat.U4, Enumerable.Empty<uint>());
+        private static readonly Item EmptyU8 = new(SecsFormat.U8, Enumerable.Empty<ulong>());
+        private static readonly Item EmptyI1 = new(SecsFormat.I1, Enumerable.Empty<sbyte>());
+        private static readonly Item EmptyI2 = new(SecsFormat.I2, Enumerable.Empty<short>());
+        private static readonly Item EmptyI4 = new(SecsFormat.I4, Enumerable.Empty<int>());
+        private static readonly Item EmptyI8 = new(SecsFormat.I8, Enumerable.Empty<long>());
+        private static readonly Item EmptyF4 = new(SecsFormat.F4, Enumerable.Empty<float>());
+        private static readonly Item EmptyF8 = new(SecsFormat.F8, Enumerable.Empty<double>());
 
         private static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
         #endregion
@@ -428,33 +428,33 @@ namespace Secs4Net
             throw new ArgumentOutOfRangeException(nameof(valueCount), valueCount, $@"Item data length:{valueCount} is overflow");
         }
 
-        internal static Item BytesDecode(in SecsFormat format, in byte[] data, in int index, in int length)
+        internal static Item BytesDecode(SecsFormat format, byte[] data, int index, int length)
         {
-            switch (format)
+            return format switch
             {
-                case SecsFormat.ASCII: return length == 0 ? A() : A(Encoding.ASCII.GetString(data, index, length));
-                case SecsFormat.JIS8: return length == 0 ? J() : J(Jis8Encoding.GetString(data, index, length));
-                case SecsFormat.Boolean: return length == 0 ? Boolean() : Boolean(Decode<bool>(data, index, length));
-                case SecsFormat.Binary: return length == 0 ? B() : B(Decode<byte>(data, index, length));
-                case SecsFormat.U1: return length == 0 ? U1() : U1(Decode<byte>(data, index, length));
-                case SecsFormat.U2: return length == 0 ? U2() : U2(Decode<ushort>(data, index, length));
-                case SecsFormat.U4: return length == 0 ? U4() : U4(Decode<uint>(data, index, length));
-                case SecsFormat.U8: return length == 0 ? U8() : U8(Decode<ulong>(data, index, length));
-                case SecsFormat.I1: return length == 0 ? I1() : I1(Decode<sbyte>(data, index, length));
-                case SecsFormat.I2: return length == 0 ? I2() : I2(Decode<short>(data, index, length));
-                case SecsFormat.I4: return length == 0 ? I4() : I4(Decode<int>(data, index, length));
-                case SecsFormat.I8: return length == 0 ? I8() : I8(Decode<long>(data, index, length));
-                case SecsFormat.F4: return length == 0 ? F4() : F4(Decode<float>(data, index, length));
-                case SecsFormat.F8: return length == 0 ? F8() : F8(Decode<double>(data, index, length));
-                default: throw new ArgumentException(@"Invalid format", nameof(format));
-            }
+                SecsFormat.ASCII => length == 0 ? A() : A(Encoding.ASCII.GetString(data, index, length)),
+                SecsFormat.JIS8 => length == 0 ? J() : J(Jis8Encoding.GetString(data, index, length)),
+                SecsFormat.Boolean => length == 0 ? Boolean() : Boolean(Decode<bool>(data, index, length)),
+                SecsFormat.Binary => length == 0 ? B() : B(Decode<byte>(data, index, length)),
+                SecsFormat.U1 => length == 0 ? U1() : U1(Decode<byte>(data, index, length)),
+                SecsFormat.U2 => length == 0 ? U2() : U2(Decode<ushort>(data, index, length)),
+                SecsFormat.U4 => length == 0 ? U4() : U4(Decode<uint>(data, index, length)),
+                SecsFormat.U8 => length == 0 ? U8() : U8(Decode<ulong>(data, index, length)),
+                SecsFormat.I1 => length == 0 ? I1() : I1(Decode<sbyte>(data, index, length)),
+                SecsFormat.I2 => length == 0 ? I2() : I2(Decode<short>(data, index, length)),
+                SecsFormat.I4 => length == 0 ? I4() : I4(Decode<int>(data, index, length)),
+                SecsFormat.I8 => length == 0 ? I8() : I8(Decode<long>(data, index, length)),
+                SecsFormat.F4 => length == 0 ? F4() : F4(Decode<float>(data, index, length)),
+                SecsFormat.F8 => length == 0 ? F8() : F8(Decode<double>(data, index, length)),
+                _ => throw new ArgumentException(@"Invalid format", nameof(format)),
+            };
 
-            T[] Decode<T>(byte[] data2, in int index2, in int length2) where T : unmanaged
+            static T[] Decode<T>(byte[] data, int index, int length) where T : unmanaged
             {
                 var elmSize = Unsafe.SizeOf<T>();
-                data2.Reverse(index2, index2 + length2, elmSize);
-                var values = new T[length2 / elmSize];
-                Buffer.BlockCopy(data2, index2, values, 0, length2);
+                data.Reverse(index, index + length, elmSize);
+                var values = new T[length / elmSize];
+                Buffer.BlockCopy(data, index, values, 0, length);
                 return values;
             }
         }

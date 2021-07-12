@@ -57,7 +57,7 @@ namespace Secs4Net
             BinaryPrimitives.WriteInt32BigEndian(buffer.Slice(6), SystemBytes);
         }
 
-        internal static unsafe MessageHeader Decode(in ReadOnlySpan<byte> buffer)
+        internal static unsafe MessageHeader Decode(ReadOnlySpan<byte> buffer)
         {
             ref var head = ref MemoryMarshal.GetReference(buffer);
             var s = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref head, 2));

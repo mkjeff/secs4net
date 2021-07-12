@@ -42,9 +42,9 @@ namespace Secs4Net
         public IReadOnlyList<ArraySegment<byte>> RawBytes => RawDatas.Value.AsReadOnly();
 
         private static readonly List<ArraySegment<byte>> EmptyMsgDatas =
-            new List<ArraySegment<byte>>
+            new()
             {
-                new ArraySegment<byte>(new byte[]{ 0, 0, 0, 10 }), // total length = header
+                new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 }), // total length = header
                 new ArraySegment<byte>(Array.Empty<byte>())        // header placeholder
             };
 
@@ -90,29 +90,5 @@ namespace Secs4Net
                 return result;
             });
         }
-
-        #region ISerializable Members
-        ////Binary Serialization
-        //SecsMessage(SerializationInfo info, StreamingContext context)
-        //{
-        //    S = info.GetByte(nameof(S));
-        //    F = info.GetByte(nameof(F));
-        //    ReplyExpected = info.GetBoolean(nameof(ReplyExpected));
-        //    Name = info.GetString(nameof(Name));
-        //    _rawDatas = Lazy.Create(info.GetValue(nameof(_rawDatas), typeof(ReadOnlyCollection<RawData>)) as ReadOnlyCollection<RawData>);
-        //    int i = 0;
-        //    if (_rawDatas.Value.Count > 2)
-        //        SecsItem = Decode(_rawDatas.Value.Skip(2).SelectMany(arr => arr.Bytes).ToArray(), ref i);
-        //}
-
-        //[SecurityPermission(SecurityAction.LinkDemand, SerializationFormatter = true)]
-        //void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context) {
-        //    info.AddValue(nameof(S), S);
-        //    info.AddValue(nameof(F), F);
-        //    info.AddValue(nameof(ReplyExpected), ReplyExpected);
-        //    info.AddValue(nameof(Name), Name);
-        //    info.AddValue(nameof(_rawDatas), _rawDatas.Value);
-        //}
-        #endregion
     }
 }

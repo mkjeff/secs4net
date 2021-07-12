@@ -129,7 +129,7 @@ namespace Secs4Net
         private Socket _socket;
 
         private readonly StreamDecoder _secsDecoder;
-        private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new ConcurrentDictionary<int, TaskCompletionSourceToken>();
+        private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new();
         private readonly Timer _timer7;	// between socket connected and received Select.req timer
         private readonly Timer _timer8;
         private readonly Timer _timerLinkTest;
@@ -137,10 +137,10 @@ namespace Secs4Net
         private readonly Func<Task> _startImpl;
         private readonly Action _stopImpl;
 
-        private static readonly SecsMessage ControlMessage = new SecsMessage(0, 0, string.Empty);
-        private static readonly ArraySegment<byte> ControlMessageLengthBytes = new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 });
-        private static readonly DefaultSecsGemLogger DefaultLogger = new DefaultSecsGemLogger();
-        private readonly SystemByteGenerator _systemByte = new SystemByteGenerator();
+        private static readonly SecsMessage ControlMessage = new(0, 0, string.Empty);
+        private static readonly ArraySegment<byte> ControlMessageLengthBytes = new(new byte[] { 0, 0, 0, 10 });
+        private static readonly DefaultSecsGemLogger DefaultLogger = new();
+        private readonly SystemByteGenerator _systemByte = new();
 
         private readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
         private readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
@@ -449,7 +449,7 @@ namespace Secs4Net
             }
         }
 
-        private void SendControlMessage(in MessageType msgType, in int systembyte)
+        private void SendControlMessage(MessageType msgType, int systembyte)
         {
             var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
@@ -498,7 +498,7 @@ namespace Secs4Net
             }
         }
 
-        internal Task<SecsMessage> SendDataMessageAsync(in SecsMessage msg, in int systembyte)
+        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
         {
             if (State != ConnectionState.Selected)
             {
@@ -570,7 +570,7 @@ namespace Secs4Net
             }
         }
 
-        private void CommunicationStateChanging(in ConnectionState newState)
+        private void CommunicationStateChanging(ConnectionState newState)
         {
             State = newState;
             ConnectionChanged?.Invoke(this, State);
@@ -658,7 +658,7 @@ namespace Secs4Net
             internal readonly int Id;
             internal readonly MessageType MsgType;
 
-            internal TaskCompletionSourceToken(in SecsMessage primaryMessageMsg, in int id, in MessageType msgType)
+            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType)
                 : base(TaskCreationOptions.RunContinuationsAsynchronously)
             {
                 MessageSent = primaryMessageMsg;
@@ -666,7 +666,7 @@ namespace Secs4Net
                 MsgType = msgType;
             }
 
-            internal void HandleReplyMessage(in SecsMessage replyMsg)
+            internal void HandleReplyMessage(SecsMessage replyMsg)
             {
                 replyMsg.Name = MessageSent.Name;
                 if (replyMsg.F == 0)
