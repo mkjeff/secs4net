@@ -410,7 +410,7 @@ namespace Secs4Net
                         break;
                 }
             }
-            
+
             void HandleDataMessage(MessageHeader header, SecsMessage msg)
             {
                 var systembyte = header.SystemBytes;
@@ -659,6 +659,7 @@ namespace Secs4Net
             internal readonly MessageType MsgType;
 
             internal TaskCompletionSourceToken(in SecsMessage primaryMessageMsg, in int id, in MessageType msgType)
+                : base(TaskCreationOptions.RunContinuationsAsynchronously)
             {
                 MessageSent = primaryMessageMsg;
                 Id = id;
