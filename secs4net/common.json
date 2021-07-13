@@ -17,19 +17,15 @@
     "ReplyExpected": false,
     "Name": "OLD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": [
+          "U1": [
             1,
             2
           ]
@@ -43,8 +39,7 @@
     "ReplyExpected": false,
     "Name": "OLD_H",
     "SecsItem": {
-      "Format": "List",
-      "Items": []
+      "List": []
     }
   },
   {
@@ -53,11 +48,9 @@
     "ReplyExpected": true,
     "Name": "CheckCJSpace",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             18001
           ]
         }
@@ -70,11 +63,9 @@
     "ReplyExpected": true,
     "Name": "GetAllCJ",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             18000
           ]
         }
@@ -87,23 +78,19 @@
     "ReplyExpected": true,
     "Name": "QueryLoadPortAccessMode",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             18011
           ]
         },
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             18012
           ]
         },
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             18013
           ]
         }
@@ -116,11 +103,9 @@
     "ReplyExpected": true,
     "Name": "QueryOnlineSubStatus",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             1
           ]
         }
@@ -133,23 +118,19 @@
     "ReplyExpected": true,
     "Name": "QueryPortStatus",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             18026
           ]
         },
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             18027
           ]
         },
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             18028
           ]
         }
@@ -162,11 +143,9 @@
     "ReplyExpected": true,
     "Name": "SVNR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -177,22 +156,17 @@
     "ReplyExpected": false,
     "Name": "SVNRR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U1",
-              "Values": []
+              "U1": []
             },
             {
-              "Format": "ASCII",
-              "Values": ""
+              "ASCII": ""
             },
             {
-              "Format": "ASCII",
-              "Values": ""
+              "ASCII": ""
             }
           ]
         }
@@ -205,8 +179,7 @@
     "ReplyExpected": true,
     "Name": "EstablishCommunicationsRequest_Host",
     "SecsItem": {
-      "Format": "List",
-      "Items": []
+      "List": []
     }
   },
   {
@@ -215,17 +188,14 @@
     "ReplyExpected": false,
     "Name": "S1F14EstablishCommunicationsRequestAck_Host_Ack",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -248,15 +218,12 @@
     "ReplyExpected": true,
     "Name": "CR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "MDLN"
+          "ASCII": "MDLN"
         },
         {
-          "Format": "ASCII",
-          "Values": "Softrev"
+          "ASCII": "Softrev"
         }
       ]
     }
@@ -267,8 +234,7 @@
     "ReplyExpected": true,
     "Name": "CR_H",
     "SecsItem": {
-      "Format": "List",
-      "Items": []
+      "List": []
     }
   },
   {
@@ -277,24 +243,19 @@
     "ReplyExpected": false,
     "Name": "CRA",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": ""
+              "ASCII": ""
             },
             {
-              "Format": "ASCII",
-              "Values": ""
+              "ASCII": ""
             }
           ]
         }
@@ -307,17 +268,14 @@
     "ReplyExpected": false,
     "Name": "CRA_H",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -334,11 +292,9 @@
     "ReplyExpected": true,
     "Name": "ECR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -349,11 +305,9 @@
     "ReplyExpected": false,
     "Name": "ECD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "Binary": []
         }
       ]
     }
@@ -364,20 +318,16 @@
     "ReplyExpected": true,
     "Name": "ECS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U2",
-              "Values": [
+              "U4": [
                 1
               ]
             },
             {
-              "Format": "U1",
-              "Values": []
+              "Binary": []
             }
           ]
         }
@@ -390,8 +340,7 @@
     "ReplyExpected": false,
     "Name": "ECA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -402,8 +351,7 @@
     "ReplyExpected": false,
     "Name": "ECA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -420,8 +368,7 @@
     "ReplyExpected": false,
     "Name": "DTD",
     "SecsItem": {
-      "Format": "ASCII",
-      "Values": ""
+      "ASCII": ""
     }
   },
   {
@@ -430,30 +377,23 @@
     "ReplyExpected": true,
     "Name": "TIS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U1",
-              "Values": []
+              "U1": []
             }
           ]
         }
@@ -466,8 +406,7 @@
     "ReplyExpected": false,
     "Name": "TIA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -478,8 +417,7 @@
     "ReplyExpected": false,
     "Name": "TIA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -490,8 +428,7 @@
     "ReplyExpected": true,
     "Name": "LDR",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "Binary": []
     }
   },
   {
@@ -500,8 +437,7 @@
     "ReplyExpected": false,
     "Name": "LDD",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -512,11 +448,9 @@
     "ReplyExpected": true,
     "Name": "ECNR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -527,34 +461,26 @@
     "ReplyExpected": false,
     "Name": "ECN",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U1",
-              "Values": []
+              "U1": []
             },
             {
-              "Format": "ASCII",
-              "Values": ""
+              "ASCII": ""
             },
             {
-              "Format": "U1",
-              "Values": []
+              "Binary": []
             },
             {
-              "Format": "U1",
-              "Values": []
+              "Binary": []
             },
             {
-              "Format": "U1",
-              "Values": []
+              "Binary": []
             },
             {
-              "Format": "ASCII",
-              "Values": ""
+              "ASCII": ""
             }
           ]
         }
@@ -567,8 +493,7 @@
     "ReplyExpected": true,
     "Name": "DTS",
     "SecsItem": {
-      "Format": "ASCII",
-      "Values": ""
+      "ASCII": ""
     }
   },
   {
@@ -577,8 +502,7 @@
     "ReplyExpected": false,
     "Name": "DTA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -589,8 +513,7 @@
     "ReplyExpected": false,
     "Name": "DTA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -601,17 +524,14 @@
     "ReplyExpected": true,
     "Name": "DMBI",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         },
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         }
@@ -624,8 +544,7 @@
     "ReplyExpected": false,
     "Name": "DMBG",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -636,8 +555,7 @@
     "ReplyExpected": false,
     "Name": "DMBG_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -648,25 +566,19 @@
     "ReplyExpected": true,
     "Name": "HCS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": ""
+                  "ASCII": ""
                 },
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "Binary": []
                 }
               ]
             }
@@ -681,25 +593,19 @@
     "ReplyExpected": true,
     "Name": "S2F41ChangeOnlineSubState",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "CONTROLMODECHANGE"
+          "ASCII": "CONTROLMODECHANGE"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "REMOTEMODE"
+                  "ASCII": "REMOTEMODE"
                 },
                 {
-                  "Format": "U2",
-                  "Values": [
+                  "U1": [
                     1
                   ]
                 }
@@ -716,17 +622,14 @@
     "ReplyExpected": false,
     "Name": "HCA",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -737,27 +640,21 @@
     "ReplyExpected": false,
     "Name": "HCA_Nak",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "Binary": [
             1
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": ""
+                  "ASCII": ""
                 },
                 {
-                  "Format": "Binary",
-                  "Values": [
+                  "Binary": [
                     2
                   ]
                 }
@@ -774,8 +671,7 @@
     "ReplyExpected": true,
     "Name": "DisableSpoolingForAllStreams",
     "SecsItem": {
-      "Format": "List",
-      "Items": []
+      "List": []
     }
   },
   {
@@ -784,18 +680,14 @@
     "ReplyExpected": true,
     "Name": "DisableSpoolingForFunctions",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U1",
-              "Values": []
+              "U1": []
             },
             {
-              "Format": "List",
-              "Items": []
+              "List": []
             }
           ]
         }
@@ -808,21 +700,16 @@
     "ReplyExpected": true,
     "Name": "RSSF",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U1",
-              "Values": []
+              "U1": []
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 }
               ]
             }
@@ -837,17 +724,14 @@
     "ReplyExpected": false,
     "Name": "RSA",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -858,38 +742,30 @@
     "ReplyExpected": false,
     "Name": "RSA_Nak",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "Binary": [
             1
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "Binary",
-                  "Values": [
+                  "U1": [
                     0
                   ]
                 },
                 {
-                  "Format": "U2",
-                  "Values": [
+                  "Binary": [
                     1
                   ]
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "Binary",
-                      "Values": [
+                      "U1": [
                         0
                       ]
                     }
@@ -908,44 +784,33 @@
     "ReplyExpected": true,
     "Name": "DVLA",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "U1",
-                          "Values": []
+                          "Binary": []
                         },
                         {
-                          "Format": "List",
-                          "Items": [
+                          "List": [
                             {
-                              "Format": "U1",
-                              "Values": []
+                              "U1": []
                             },
                             {
-                              "Format": "U1",
-                              "Values": []
+                              "U1": []
                             }
                           ]
                         }
@@ -966,17 +831,14 @@
     "ReplyExpected": true,
     "Name": "DVLA_1",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -987,27 +849,21 @@
     "ReplyExpected": true,
     "Name": "DVLA_2",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 },
                 {
-                  "Format": "List",
-                  "Items": []
+                  "List": []
                 }
               ]
             }
@@ -1022,37 +878,28 @@
     "ReplyExpected": true,
     "Name": "DVLA_3",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "U1",
-                          "Values": []
+                          "Binary": []
                         },
                         {
-                          "Format": "List",
-                          "Items": []
+                          "List": []
                         }
                       ]
                     }
@@ -1071,17 +918,14 @@
     "ReplyExpected": false,
     "Name": "VLAA",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -1092,40 +936,31 @@
     "ReplyExpected": false,
     "Name": "VLAA_Nak",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "Binary": [
             1
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 },
                 {
-                  "Format": "U2",
-                  "Values": [
+                  "Binary": [
                     1
                   ]
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "U1",
-                      "Values": []
+                      "Binary": []
                     },
                     {
-                      "Format": "U2",
-                      "Values": [
+                      "Binary": [
                         1
                       ]
                     }
@@ -1144,8 +979,7 @@
     "ReplyExpected": true,
     "Name": "S2F47VariableLimitAttributeRequest_ALL",
     "SecsItem": {
-      "Format": "List",
-      "Items": []
+      "List": []
     }
   },
   {
@@ -1154,11 +988,9 @@
     "ReplyExpected": true,
     "Name": "VLAR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1169,57 +1001,45 @@
     "ReplyExpected": false,
     "Name": "VLAS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "Binary",
-              "Values": [
+              "U1": [
                 0
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "sec"
+                  "ASCII": "sec"
                 },
                 {
-                  "Format": "Binary",
-                  "Values": [
+                  "U1": [
                     0
                   ]
                 },
                 {
-                  "Format": "U1",
-                  "Values": [
+                  "U1": [
                     100
                   ]
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "U2",
-                          "Values": [
+                          "Binary": [
                             1
                           ]
                         },
                         {
-                          "Format": "U2",
-                          "Values": [
+                          "U1": [
                             1
                           ]
                         },
                         {
-                          "Format": "U1",
-                          "Values": [
+                          "U1": [
                             5
                           ]
                         }
@@ -1240,33 +1060,25 @@
     "ReplyExpected": true,
     "Name": "SC",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "DATAID"
+          "ASCII": "DATAID"
         },
         {
-          "Format": "ASCII",
-          "Values": "OBJSPEC"
+          "ASCII": "OBJSPEC"
         },
         {
-          "Format": "ASCII",
-          "Values": "STARTCARRIER"
+          "ASCII": "STARTCARRIER"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "PTN"
+                  "ASCII": "PTN"
                 },
                 {
-                  "Format": "U1",
-                  "Values": [
+                  "Binary": [
                     100
                   ]
                 }
@@ -1283,33 +1095,25 @@
     "ReplyExpected": true,
     "Name": "SC_1",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "DATAID"
+          "ASCII": "DATAID"
         },
         {
-          "Format": "ASCII",
-          "Values": "OBJSPEC"
+          "ASCII": "OBJSPEC"
         },
         {
-          "Format": "ASCII",
-          "Values": "UNLOAD"
+          "ASCII": "UNLOAD"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "PTN"
+                  "ASCII": "PTN"
                 },
                 {
-                  "Format": "U1",
-                  "Values": [
+                  "Binary": [
                     100
                   ]
                 }
@@ -1326,33 +1130,25 @@
     "ReplyExpected": true,
     "Name": "SC_2",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "DATAID"
+          "ASCII": "DATAID"
         },
         {
-          "Format": "ASCII",
-          "Values": "OBJSPEC"
+          "ASCII": "OBJSPEC"
         },
         {
-          "Format": "ASCII",
-          "Values": "LOADREADY"
+          "ASCII": "LOADREADY"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "PTN"
+                  "ASCII": "PTN"
                 },
                 {
-                  "Format": "U1",
-                  "Values": [
+                  "Binary": [
                     100
                   ]
                 }
@@ -1369,27 +1165,21 @@
     "ReplyExpected": false,
     "Name": "CA",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "PTN"
+                  "ASCII": "PTN"
                 },
                 {
-                  "Format": "U1",
-                  "Values": [
+                  "Binary": [
                     100
                   ]
                 }
@@ -1412,29 +1202,22 @@
     "ReplyExpected": false,
     "Name": "MSD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "Binary": []
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 },
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 },
                 {
-                  "Format": "ASCII",
-                  "Values": ""
+                  "ASCII": ""
                 }
               ]
             }
@@ -1449,31 +1232,25 @@
     "ReplyExpected": true,
     "Name": "CancelCarrier",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U4": [
             0
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": "CancelCarrier"
+          "ASCII": "CancelCarrier"
         },
         {
-          "Format": "ASCII",
-          "Values": "ASR12272"
+          "ASCII": "ASR12272"
         },
         {
-          "Format": "U2",
-          "Values": [
+          "Binary": [
             1
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -1484,31 +1261,25 @@
     "ReplyExpected": true,
     "Name": "CancelCarrierAtPort",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U4": [
             0
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": "CancelCarrierAtPort"
+          "ASCII": "CancelCarrierAtPort"
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U2",
-          "Values": [
+          "Binary": [
             1
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -1519,31 +1290,25 @@
     "ReplyExpected": true,
     "Name": "ProceedWithCarrier",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "U4": [
             1
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": "ProceedWithCarrier"
+          "ASCII": "ProceedWithCarrier"
         },
         {
-          "Format": "ASCII",
-          "Values": "ASR10192"
+          "ASCII": "ASR10192"
         },
         {
-          "Format": "U2",
-          "Values": [
+          "Binary": [
             1
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -1554,29 +1319,22 @@
     "ReplyExpected": true,
     "Name": "ChangeAccessMode",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "ChangeAccess"
+          "ASCII": "ChangeAccess"
         },
         {
-          "Format": "ASCII",
-          "Values": "1"
+          "ASCII": "1"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "AccessMode"
+                  "ASCII": "AccessMode"
                 },
                 {
-                  "Format": "Binary",
-                  "Values": [
+                  "Binary": [
                     0
                   ]
                 }
@@ -1599,33 +1357,25 @@
     "ReplyExpected": false,
     "Name": "CSRR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 },
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 },
                 {
-                  "Format": "ASCII",
-                  "Values": ""
+                  "ASCII": ""
                 },
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 }
               ]
             }
@@ -1640,23 +1390,18 @@
     "ReplyExpected": false,
     "Name": "RTL",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1667,23 +1412,18 @@
     "ReplyExpected": false,
     "Name": "SM",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1694,23 +1434,18 @@
     "ReplyExpected": false,
     "Name": "HC",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1721,23 +1456,18 @@
     "ReplyExpected": false,
     "Name": "MR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1748,23 +1478,18 @@
     "ReplyExpected": false,
     "Name": "SIR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1775,27 +1500,21 @@
     "ReplyExpected": false,
     "Name": "PCE",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1806,23 +1525,18 @@
     "ReplyExpected": false,
     "Name": "AL",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1833,23 +1547,18 @@
     "ReplyExpected": false,
     "Name": "RTUP",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1866,21 +1575,17 @@
     "ReplyExpected": true,
     "Name": "ARS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "Binary": [
             1
           ]
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "ASCII",
-          "Values": "Sample alarm text"
+          "ASCII": "Sample alarm text"
         }
       ]
     }
@@ -1891,8 +1596,7 @@
     "ReplyExpected": false,
     "Name": "ARA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -1903,8 +1607,7 @@
     "ReplyExpected": false,
     "Name": "ARA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -1915,17 +1618,14 @@
     "ReplyExpected": true,
     "Name": "EAS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             128
           ]
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -1936,8 +1636,7 @@
     "ReplyExpected": false,
     "Name": "EAA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -1948,8 +1647,7 @@
     "ReplyExpected": false,
     "Name": "EAA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -1960,8 +1658,7 @@
     "ReplyExpected": true,
     "Name": "LAR",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "U1": []
     }
   },
   {
@@ -1970,8 +1667,7 @@
     "ReplyExpected": true,
     "Name": "LAR_All",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "U1": []
     }
   },
   {
@@ -1980,24 +1676,19 @@
     "ReplyExpected": false,
     "Name": "LAD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U2",
-              "Values": [
+              "Binary": [
                 1
               ]
             },
             {
-              "Format": "U1",
-              "Values": []
+              "U1": []
             },
             {
-              "Format": "ASCII",
-              "Values": "Sample alarm text"
+              "ASCII": "Sample alarm text"
             }
           ]
         }
@@ -2016,24 +1707,19 @@
     "ReplyExpected": false,
     "Name": "LEAD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U2",
-              "Values": [
+              "Binary": [
                 1
               ]
             },
             {
-              "Format": "U1",
-              "Values": []
+              "U1": []
             },
             {
-              "Format": "ASCII",
-              "Values": "Sample alarm text"
+              "ASCII": "Sample alarm text"
             }
           ]
         }
@@ -2046,35 +1732,27 @@
     "ReplyExpected": true,
     "Name": "ARBS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U4": []
                 },
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "Boolean": []
                 },
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U4": []
                 },
                 {
-                  "Format": "ASCII",
-                  "Values": "YYYYMMDDhhmmsscc"
+                  "ASCII": "YYYYMMDDhhmmsscc"
                 }
               ]
             }
@@ -2089,8 +1767,7 @@
     "ReplyExpected": false,
     "Name": "ABRA",
     "SecsItem": {
-      "Format": "List",
-      "Items": []
+      "List": []
     }
   },
   {
@@ -2099,19 +1776,15 @@
     "ReplyExpected": true,
     "Name": "AN",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "U4": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "Boolean": []
         },
         {
-          "Format": "ASCII",
-          "Values": "YYYYMMDDhhmmsscc"
+          "ASCII": "YYYYMMDDhhmmsscc"
         }
       ]
     }
@@ -2122,8 +1795,7 @@
     "ReplyExpected": false,
     "Name": "ANA",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "Binary": []
     }
   },
   {
@@ -2138,26 +1810,20 @@
     "ReplyExpected": true,
     "Name": "S6F1TDS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U1",
-              "Values": []
+              "Binary": []
             }
           ]
         }
@@ -2170,8 +1836,7 @@
     "ReplyExpected": false,
     "Name": "TDA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -2182,8 +1847,7 @@
     "ReplyExpected": false,
     "Name": "TDA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -2194,41 +1858,31 @@
     "ReplyExpected": true,
     "Name": "DVS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U2": [
             0
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": "0"
+          "ASCII": "0"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "0"
+                  "ASCII": "0"
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "0"
+                          "ASCII": "0"
                         },
                         {
-                          "Format": "Binary",
-                          "Values": [
+                          "Binary": [
                             0
                           ]
                         }
@@ -2249,8 +1903,7 @@
     "ReplyExpected": false,
     "Name": "DVA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -2261,8 +1914,7 @@
     "ReplyExpected": false,
     "Name": "DVA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -2273,17 +1925,14 @@
     "ReplyExpected": true,
     "Name": "MBI",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         },
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         }
@@ -2296,8 +1945,7 @@
     "ReplyExpected": false,
     "Name": "MBG",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -2308,8 +1956,7 @@
     "ReplyExpected": false,
     "Name": "MBG_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -2320,8 +1967,7 @@
     "ReplyExpected": true,
     "Name": "DDR",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "U2": [
         0
       ]
     }
@@ -2332,41 +1978,31 @@
     "ReplyExpected": false,
     "Name": "DDD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U2": [
             0
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": "0"
+          "ASCII": "0"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "0"
+                  "ASCII": "0"
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "0"
+                          "ASCII": "0"
                         },
                         {
-                          "Format": "Binary",
-                          "Values": [
+                          "Binary": [
                             0
                           ]
                         }
@@ -2387,40 +2023,31 @@
     "ReplyExpected": true,
     "Name": "FVS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             1
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": "1"
+          "ASCII": "1"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "1"
+                  "ASCII": "1"
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "U2",
-                      "Values": [
+                      "Binary": [
                         1
                       ]
                     }
@@ -2439,54 +2066,42 @@
     "ReplyExpected": true,
     "Name": "PD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "Binary": [
             1
           ]
         },
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             1
           ]
         },
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             300
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": ""
+                  "ASCII": ""
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "ASCII",
-                      "Values": "970326113700"
+                      "ASCII": "970326113700"
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "970326123200"
+                      "ASCII": "970326123200"
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "99"
+                      "ASCII": "99"
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "SLot001"
+                      "ASCII": "SLot001"
                     }
                   ]
                 }
@@ -2503,97 +2118,74 @@
     "ReplyExpected": true,
     "Name": "PDSLot",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U2",
-          "Values": [
+          "Binary": [
             1
           ]
         },
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             1
           ]
         },
         {
-          "Format": "U2",
-          "Values": [
+          "U2": [
             6
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": ""
+                  "ASCII": ""
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "ASCII",
-                      "Values": "9"
+                      "ASCII": "9"
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "9"
+                      "ASCII": "9"
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "9"
+                      "ASCII": "9"
                     }
                   ]
                 }
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": ""
+                  "ASCII": ""
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "C"
+                          "ASCII": "C"
                         },
                         {
-                          "Format": "ASCII",
-                          "Values": "L"
+                          "ASCII": "L"
                         },
                         {
-                          "Format": "ASCII",
-                          "Values": "25"
+                          "ASCII": "25"
                         },
                         {
-                          "Format": "List",
-                          "Items": [
+                          "List": [
                             {
-                              "Format": "ASCII",
-                              "Values": "C"
+                              "ASCII": "C"
                             },
                             {
-                              "Format": "ASCII",
-                              "Values": "L"
+                              "ASCII": "L"
                             },
                             {
-                              "Format": "List",
-                              "Items": [
+                              "List": [
                                 {
-                                  "Format": "ASCII",
-                                  "Values": "0113"
+                                  "ASCII": "0113"
                                 }
                               ]
                             }
@@ -2616,8 +2208,7 @@
     "ReplyExpected": false,
     "Name": "FVA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -2628,8 +2219,7 @@
     "ReplyExpected": false,
     "Name": "FVA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -2640,8 +2230,7 @@
     "ReplyExpected": false,
     "Name": "ERA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -2652,45 +2241,35 @@
     "ReplyExpected": true,
     "Name": "AERS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U2": [
             0
           ]
         },
         {
-          "Format": "Binary",
-          "Values": [
+          "U2": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U2",
-                  "Values": [
+                  "U2": [
                     12
                   ]
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "0"
+                          "ASCII": "0"
                         },
                         {
-                          "Format": "Binary",
-                          "Values": [
+                          "Binary": [
                             0
                           ]
                         }
@@ -2711,8 +2290,7 @@
     "ReplyExpected": false,
     "Name": "AERA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -2723,8 +2301,7 @@
     "ReplyExpected": false,
     "Name": "AERA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -2735,8 +2312,7 @@
     "ReplyExpected": true,
     "Name": "ERR",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "U1": []
     }
   },
   {
@@ -2745,34 +2321,26 @@
     "ReplyExpected": false,
     "Name": "ERD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U1": [
             0
           ]
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U1": []
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "U1",
-                      "Values": []
+                      "U1": []
                     }
                   ]
                 }
@@ -2789,8 +2357,7 @@
     "ReplyExpected": true,
     "Name": "AERR",
     "SecsItem": {
-      "Format": "ASCII",
-      "Values": "0"
+      "ASCII": "0"
     }
   },
   {
@@ -2799,45 +2366,35 @@
     "ReplyExpected": false,
     "Name": "AERD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U2": [
             0
           ]
         },
         {
-          "Format": "Binary",
-          "Values": [
+          "U2": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U2",
-                  "Values": [
+                  "U2": [
                     12
                   ]
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "0"
+                          "ASCII": "0"
                         },
                         {
-                          "Format": "Binary",
-                          "Values": [
+                          "Binary": [
                             0
                           ]
                         }
@@ -2858,8 +2415,7 @@
     "ReplyExpected": true,
     "Name": "IRR",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "U1": []
     }
   },
   {
@@ -2868,11 +2424,9 @@
     "ReplyExpected": false,
     "Name": "IRD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -2883,8 +2437,7 @@
     "ReplyExpected": true,
     "Name": "AIRR",
     "SecsItem": {
-      "Format": "ASCII",
-      "Values": ""
+      "ASCII": ""
     }
   },
   {
@@ -2893,18 +2446,14 @@
     "ReplyExpected": false,
     "Name": "AIRD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": "0"
+              "ASCII": "0"
             },
             {
-              "Format": "Binary",
-              "Values": [
+              "Binary": [
                 0
               ]
             }
@@ -2919,8 +2468,7 @@
     "ReplyExpected": true,
     "Name": "RSD",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "U1": [
         0
       ]
     }
@@ -2931,8 +2479,7 @@
     "ReplyExpected": false,
     "Name": "RSDAC",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -2943,8 +2490,7 @@
     "ReplyExpected": false,
     "Name": "RSDAC_1",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -2961,15 +2507,12 @@
     "ReplyExpected": true,
     "Name": "PPI",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "U1": []
         }
       ]
     }
@@ -2980,8 +2523,7 @@
     "ReplyExpected": false,
     "Name": "PPG",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -2992,15 +2534,12 @@
     "ReplyExpected": true,
     "Name": "PPS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "12"
+          "ASCII": "12"
         },
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             18,
             18,
             18,
@@ -3018,8 +2557,7 @@
     "ReplyExpected": false,
     "Name": "PPA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -3030,8 +2568,7 @@
     "ReplyExpected": false,
     "Name": "PPA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -3042,8 +2579,7 @@
     "ReplyExpected": true,
     "Name": "PPR",
     "SecsItem": {
-      "Format": "ASCII",
-      "Values": "12"
+      "ASCII": "12"
     }
   },
   {
@@ -3052,15 +2588,12 @@
     "ReplyExpected": false,
     "Name": "PPD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "Binary": []
         }
       ]
     }
@@ -3071,11 +2604,9 @@
     "ReplyExpected": true,
     "Name": "DPS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         }
       ]
     }
@@ -3086,8 +2617,7 @@
     "ReplyExpected": false,
     "Name": "DPA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -3098,8 +2628,7 @@
     "ReplyExpected": false,
     "Name": "DPA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -3116,15 +2645,12 @@
     "ReplyExpected": false,
     "Name": "RED",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "yyy"
+          "ASCII": "yyy"
         },
         {
-          "Format": "ASCII",
-          "Values": "xxx"
+          "ASCII": "xxx"
         }
       ]
     }
@@ -3135,38 +2661,29 @@
     "ReplyExpected": true,
     "Name": "FPS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "2"
+          "ASCII": "2"
         },
         {
-          "Format": "ASCII",
-          "Values": "a"
+          "ASCII": "a"
         },
         {
-          "Format": "ASCII",
-          "Values": "v"
+          "ASCII": "v"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U2",
-                  "Values": [
+                  "U2": [
                     12
                   ]
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "ASCII",
-                      "Values": "12"
+                      "ASCII": "12"
                     }
                   ]
                 }
@@ -3183,8 +2700,7 @@
     "ReplyExpected": false,
     "Name": "FPA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -3195,8 +2711,7 @@
     "ReplyExpected": false,
     "Name": "FPA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -3207,8 +2722,7 @@
     "ReplyExpected": true,
     "Name": "FPR",
     "SecsItem": {
-      "Format": "ASCII",
-      "Values": "12"
+      "ASCII": "12"
     }
   },
   {
@@ -3217,8 +2731,7 @@
     "ReplyExpected": true,
     "Name": "S7F25xFormattedProcessProgramRequest",
     "SecsItem": {
-      "Format": "ASCII",
-      "Values": "9"
+      "ASCII": "9"
     }
   },
   {
@@ -3227,36 +2740,27 @@
     "ReplyExpected": false,
     "Name": "FPD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U2": []
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "ASCII",
-                      "Values": ""
+                      "ASCII": ""
                     }
                   ]
                 }
@@ -3273,31 +2777,24 @@
     "ReplyExpected": true,
     "Name": "PVS",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "Binary",
-                  "Values": [
+                  "U1": [
                     0
                   ]
                 },
                 {
-                  "Format": "U1",
-                  "Values": []
+                  "U2": []
                 },
                 {
-                  "Format": "ASCII",
-                  "Values": ""
+                  "ASCII": ""
                 }
               ]
             }
@@ -3318,8 +2815,7 @@
     "ReplyExpected": true,
     "Name": "PVI",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "U1": []
     }
   },
   {
@@ -3328,8 +2824,7 @@
     "ReplyExpected": false,
     "Name": "PVG",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -3346,8 +2841,7 @@
     "ReplyExpected": false,
     "Name": "UDN",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "Binary": []
     }
   },
   {
@@ -3356,8 +2850,7 @@
     "ReplyExpected": false,
     "Name": "USN",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "Binary": []
     }
   },
   {
@@ -3366,8 +2859,7 @@
     "ReplyExpected": false,
     "Name": "UFN",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "Binary": []
     }
   },
   {
@@ -3376,8 +2868,7 @@
     "ReplyExpected": false,
     "Name": "IDN",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "Binary": []
     }
   },
   {
@@ -3386,8 +2877,7 @@
     "ReplyExpected": false,
     "Name": "TTN",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "Binary": []
     }
   },
   {
@@ -3396,8 +2886,7 @@
     "ReplyExpected": false,
     "Name": "DLN",
     "SecsItem": {
-      "Format": "U1",
-      "Values": []
+      "Binary": []
     }
   },
   {
@@ -3406,15 +2895,12 @@
     "ReplyExpected": false,
     "Name": "CTN",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "U1",
-          "Values": []
+          "Binary": []
         }
       ]
     }
@@ -3431,17 +2917,14 @@
     "ReplyExpected": true,
     "Name": "TRN",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         }
       ]
     }
@@ -3452,8 +2935,7 @@
     "ReplyExpected": false,
     "Name": "TRA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -3464,8 +2946,7 @@
     "ReplyExpected": false,
     "Name": "TRA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -3476,17 +2957,14 @@
     "ReplyExpected": true,
     "Name": "VTN",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         }
       ]
     }
@@ -3497,8 +2975,7 @@
     "ReplyExpected": false,
     "Name": "VTA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -3509,8 +2986,7 @@
     "ReplyExpected": false,
     "Name": "VTA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -3521,20 +2997,16 @@
     "ReplyExpected": true,
     "Name": "VTN",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "Binary": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": ""
+              "ASCII": ""
             }
           ]
         }
@@ -3547,8 +3019,7 @@
     "ReplyExpected": false,
     "Name": "VMA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -3559,8 +3030,7 @@
     "ReplyExpected": false,
     "Name": "VMA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -3571,8 +3041,7 @@
     "ReplyExpected": false,
     "Name": "MNN",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -3583,8 +3052,7 @@
     "ReplyExpected": false,
     "Name": "BCN",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "I1": [
         0
       ]
     }
@@ -3595,8 +3063,7 @@
     "ReplyExpected": false,
     "Name": "BCA",
     "SecsItem": {
-      "Format": "Binary",
-      "Values": [
+      "Binary": [
         0
       ]
     }
@@ -3607,8 +3074,7 @@
     "ReplyExpected": false,
     "Name": "BCA_Nak",
     "SecsItem": {
-      "Format": "U2",
-      "Values": [
+      "Binary": [
         1
       ]
     }
@@ -3619,32 +3085,25 @@
     "ReplyExpected": true,
     "Name": "GAR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": "LoadPort"
+          "ASCII": "LoadPort"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": "1"
+              "ASCII": "1"
             }
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -3655,32 +3114,25 @@
     "ReplyExpected": true,
     "Name": "GAR_1",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": "Carrier"
+          "ASCII": "Carrier"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": "CAS001"
+              "ASCII": "CAS001"
             }
           ]
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -3691,42 +3143,32 @@
     "ReplyExpected": true,
     "Name": "GAR_2",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "ASCII",
-          "Values": "LoadPort"
+          "ASCII": "LoadPort"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": "1"
+              "ASCII": "1"
             }
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "abc"
+                  "ASCII": "abc"
                 },
                 {
-                  "Format": "ASCII",
-                  "Values": "abc"
+                  "ASCII": "abc"
                 },
                 {
-                  "Format": "Binary",
-                  "Values": [
+                  "U1": [
                     0
                   ]
                 }
@@ -3735,11 +3177,9 @@
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": "abc"
+              "ASCII": "abc"
             }
           ]
         }
@@ -3752,31 +3192,23 @@
     "ReplyExpected": false,
     "Name": "GAD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "abc"
+                  "ASCII": "abc"
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "abc"
+                          "ASCII": "abc"
                         },
                         {
-                          "Format": "ASCII",
-                          "Values": "abc"
+                          "ASCII": "abc"
                         }
                       ]
                     }
@@ -3787,29 +3219,23 @@
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "Binary",
-              "Values": [
+              "U1": [
                 0
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "Binary",
-                      "Values": [
+                      "U1": [
                         0
                       ]
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "abc"
+                      "ASCII": "abc"
                     }
                   ]
                 }
@@ -3826,31 +3252,23 @@
     "ReplyExpected": false,
     "Name": "GAD_Nak",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "abc"
+                  "ASCII": "abc"
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "abc"
+                          "ASCII": "abc"
                         },
                         {
-                          "Format": "ASCII",
-                          "Values": "abc"
+                          "ASCII": "abc"
                         }
                       ]
                     }
@@ -3861,29 +3279,23 @@
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U2",
-              "Values": [
+              "U1": [
                 1
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "Binary",
-                      "Values": [
+                      "U1": [
                         0
                       ]
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "abc"
+                      "ASCII": "abc"
                     }
                   ]
                 }
@@ -3900,38 +3312,29 @@
     "ReplyExpected": true,
     "Name": "SAR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "abc"
+          "ASCII": "abc"
         },
         {
-          "Format": "ASCII",
-          "Values": "abc"
+          "ASCII": "abc"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": "abc"
+              "ASCII": "abc"
             }
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "abc"
+                  "ASCII": "abc"
                 },
                 {
-                  "Format": "ASCII",
-                  "Values": "abc"
+                  "ASCII": "abc"
                 }
               ]
             }
@@ -3946,31 +3349,23 @@
     "ReplyExpected": false,
     "Name": "SAD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "abc"
+                  "ASCII": "abc"
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "abc"
+                          "ASCII": "abc"
                         },
                         {
-                          "Format": "ASCII",
-                          "Values": "abc"
+                          "ASCII": "abc"
                         }
                       ]
                     }
@@ -3981,29 +3376,23 @@
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "Binary",
-              "Values": [
+              "U1": [
                 0
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "Binary",
-                      "Values": [
+                      "U1": [
                         0
                       ]
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "abc"
+                      "ASCII": "abc"
                     }
                   ]
                 }
@@ -4020,31 +3409,23 @@
     "ReplyExpected": false,
     "Name": "SAD_Nak",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "abc"
+                  "ASCII": "abc"
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "abc"
+                          "ASCII": "abc"
                         },
                         {
-                          "Format": "ASCII",
-                          "Values": "abc"
+                          "ASCII": "abc"
                         }
                       ]
                     }
@@ -4055,29 +3436,23 @@
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "U2",
-              "Values": [
+              "U1": [
                 1
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "Binary",
-                      "Values": [
+                      "U1": [
                         0
                       ]
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "abc"
+                      "ASCII": "abc"
                     }
                   ]
                 }
@@ -4094,8 +3469,7 @@
     "ReplyExpected": true,
     "Name": "GTR",
     "SecsItem": {
-      "Format": "ASCII",
-      "Values": ""
+      "ASCII": ""
     }
   },
   {
@@ -4104,41 +3478,32 @@
     "ReplyExpected": false,
     "Name": "GTD",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": "abc"
+              "ASCII": "abc"
             }
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "Binary",
-              "Values": [
+              "Binary": [
                 0
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "Binary",
-                      "Values": [
+                      "U1": [
                         0
                       ]
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "abc"
+                      "ASCII": "abc"
                     }
                   ]
                 }
@@ -4155,22 +3520,17 @@
     "ReplyExpected": true,
     "Name": "GANR",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": ""
+          "ASCII": ""
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "ASCII",
-              "Values": "LoadPort"
+              "ASCII": "LoadPort"
             },
             {
-              "Format": "ASCII",
-              "Values": "Carrier"
+              "ASCII": "Carrier"
             }
           ]
         }
@@ -4183,24 +3543,18 @@
     "ReplyExpected": false,
     "Name": "GAND",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "abc"
+                  "ASCII": "abc"
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "ASCII",
-                      "Values": "abc"
+                      "ASCII": "abc"
                     }
                   ]
                 }
@@ -4209,29 +3563,23 @@
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "Binary",
-              "Values": [
+              "U1": [
                 0
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "Binary",
-                      "Values": [
+                      "U1": [
                         0
                       ]
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "abc"
+                      "ASCII": "abc"
                     }
                   ]
                 }
@@ -4248,99 +3596,566 @@
     "ReplyExpected": true,
     "Name": "CreateControlJob",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "ASCII",
-          "Values": "Equipment"
+          "ASCII": "Equipment"
         },
         {
-          "Format": "ASCII",
-          "Values": "ControlJob"
+          "ASCII": "ControlJob"
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "ObjID"
+                  "ASCII": "ObjID"
                 },
                 {
-                  "Format": "ASCII",
-                  "Values": "CJ02"
+                  "ASCII": "CJ02"
                 }
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "ProcessingCtrlSpec"
+                  "ASCII": "ProcessingCtrlSpec"
                 },
                 {
-                  "Format": "List",
-                  "Items": []
+                  "List": []
                 }
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "CarrierInputSpec"
+                  "ASCII": "CarrierInputSpec"
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "ASCII",
-                      "Values": "ASR10192"
+                      "ASCII": "ASR10192"
                     }
                   ]
                 }
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "MtrlOutSpec"
+                  "ASCII": "MtrlOutSpec"
                 },
                 {
-                  "Format": "ASCII",
-                  "Values": ""
+                  "ASCII": ""
                 }
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "ProcessOrderMgmt"
+                  "ASCII": "ProcessOrderMgmt"
                 },
                 {
-                  "Format": "ASCII",
-                  "Values": "LIST"
+                  "ASCII": "LIST"
                 }
               ]
             },
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "StartMethod"
+                  "ASCII": "StartMethod"
                 },
                 {
-                  "Format": "Boolean",
-                  "Values": [
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
                     true
                   ]
                 }
@@ -4357,25 +4172,20 @@
     "ReplyExpected": true,
     "Name": "PJCancel",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U4",
-          "Values": [
+          "U4": [
             1234
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": "PJ3"
+          "ASCII": "PJ3"
         },
         {
-          "Format": "ASCII",
-          "Values": "Cancel"
+          "ASCII": "Cancel"
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -4386,25 +4196,20 @@
     "ReplyExpected": true,
     "Name": "S16F5PJAbort",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "U4",
-          "Values": [
+          "U4": [
             1234
           ]
         },
         {
-          "Format": "ASCII",
-          "Values": "PJ1"
+          "ASCII": "PJ1"
         },
         {
-          "Format": "ASCII",
-          "Values": "Abort"
+          "ASCII": "Abort"
         },
         {
-          "Format": "List",
-          "Items": []
+          "List": []
         }
       ]
     }
@@ -4415,52 +4220,40 @@
     "ReplyExpected": true,
     "Name": "CreateProcessJob",
     "SecsItem": {
-      "Format": "List",
-      "Items": [
+      "List": [
         {
-          "Format": "Binary",
-          "Values": [
+          "U4": [
             0
           ]
         },
         {
-          "Format": "List",
-          "Items": [
+          "List": [
             {
-              "Format": "List",
-              "Items": [
+              "List": [
                 {
-                  "Format": "ASCII",
-                  "Values": "PJ2"
+                  "ASCII": "PJ2"
                 },
                 {
-                  "Format": "Binary",
-                  "Values": [
+                  "Binary": [
                     13
                   ]
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "List",
-                      "Items": [
+                      "List": [
                         {
-                          "Format": "ASCII",
-                          "Values": "ASR10192"
+                          "ASCII": "ASR10192"
                         },
                         {
-                          "Format": "List",
-                          "Items": [
+                          "List": [
                             {
-                              "Format": "U1",
-                              "Values": [
+                              "U1": [
                                 3
                               ]
                             },
                             {
-                              "Format": "U1",
-                              "Values": [
+                              "U1": [
                                 5
                               ]
                             }
@@ -4471,33 +4264,27 @@
                   ]
                 },
                 {
-                  "Format": "List",
-                  "Items": [
+                  "List": [
                     {
-                      "Format": "U2",
-                      "Values": [
+                      "U1": [
                         1
                       ]
                     },
                     {
-                      "Format": "ASCII",
-                      "Values": "9"
+                      "ASCII": "9"
                     },
                     {
-                      "Format": "List",
-                      "Items": []
+                      "List": []
                     }
                   ]
                 },
                 {
-                  "Format": "Boolean",
-                  "Values": [
+                  "Boolean": [
                     true
                   ]
                 },
                 {
-                  "Format": "List",
-                  "Items": []
+                  "List": []
                 }
               ]
             }

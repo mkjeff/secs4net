@@ -4,9 +4,9 @@ namespace Secs4Net
 {
     public sealed class SecsException : Exception
     {
-        public SecsMessage SecsMsg { get; }
+        public SecsMessage? SecsMsg { get; }
 
-        public SecsException(SecsMessage msg, string description)
+        public SecsException(SecsMessage? msg, string description)
             : base(description)
         {
             SecsMsg = msg;

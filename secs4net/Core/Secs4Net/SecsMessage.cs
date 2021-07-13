@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Secs4Net
 {
     public sealed class SecsMessage
     {
-        static SecsMessage()
-        {
-            if (!BitConverter.IsLittleEndian)
-            {
-                throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
-            }
-        }
-
         public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
 
         /// <summary>
@@ -33,9 +26,9 @@ namespace Secs4Net
         /// <summary>
         /// the root item of message
         /// </summary>
-        public Item SecsItem { get; }
+        public Item? SecsItem { get; init; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         internal readonly Lazy<List<ArraySegment<byte>>> RawDatas;
 
@@ -56,7 +49,7 @@ namespace Secs4Net
         /// <param name="replyExpected">expect reply message</param>
         /// <param name="name"></param>
         /// <param name="item">root item</param>
-        public SecsMessage(byte s, byte f, string name = null, Item item = null, bool replyExpected = true)
+        public SecsMessage(byte s, byte f, bool replyExpected = true)
         {
             if (s > 0b0111_1111)
             {
@@ -65,9 +58,7 @@ namespace Secs4Net
 
             S = s;
             F = f;
-            Name = name;
             ReplyExpected = replyExpected;
-            SecsItem = item;
             RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
             {
                 if (SecsItem is null)

@@ -12,7 +12,7 @@ namespace Secs4Net
         void Debug(string msg);
         void Info(string msg);
         void Warning(string msg);
-        void Error(string msg, Exception ex = null);
+        void Error(string msg, Exception? ex = null);
     }
 
     /// <summary>
@@ -30,6 +30,6 @@ namespace Secs4Net
 
         public void Warning(string msg) => TraceWarning(msg);
 
-        public void Error(string msg, Exception ex = null) => TraceError($"{msg}\n {ex}");
+        public void Error(string msg, Exception? ex = null) => TraceError($"{msg}\n {ex}");
     }
 }

@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <Version>2.0.0</Version>
     <PackageId>Secs4Net.Sml</PackageId>
     <Product>Secs4Net.Sml</Product>
-    <Company />
     <Authors>mkjeff</Authors>
-    <AssemblyName>Secs4Net.Sml</AssemblyName>
-    <RootNamespace>Secs4Net.Sml</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

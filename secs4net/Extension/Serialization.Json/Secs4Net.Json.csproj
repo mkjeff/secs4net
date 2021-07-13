@@ -1,21 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <PackageId>Secs4Net.Json</PackageId>
     <Product>Secs4Net.Json</Product>
-    <Company />
     <Authors>mkjeff</Authors>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
     <AssemblyName>Secs4Net.Json</AssemblyName>
     <RootNamespace>Secs4Net.Json</RootNamespace>
     <Version>2.0.0</Version>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj" />

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text;
+using System.Text.Json;
 using static Secs4Net.Item;
 
 namespace Secs4Net.Json
@@ -12,44 +12,44 @@ namespace Secs4Net.Json
     {
         public static string ToJson(this SecsMessage msg)
         {
-            using (var sw = new StringWriter())
-            {
-                msg.WriteTo(sw);
-                return sw.ToString();
-            }
+            using var mem = new MemoryStream();
+            msg.WriteTo(mem);
+            return Encoding.UTF8.GetString(mem.ToArray());
         }
 
-        public static void WriteTo(this SecsMessage msg, TextWriter writer, Formatting formatting = Formatting.Indented)
-            => msg.WriteTo(new JsonTextWriter(writer)
+        public static void WriteTo(this IEnumerable<SecsMessage> messages, Stream writer, JsonWriterOptions options)
+        {
+            using var jwtr = new Utf8JsonWriter(writer, options);
+            jwtr.WriteStartArray();
+            foreach (var msg in messages)
             {
-                QuoteName = false,
-                QuoteChar = '\'',
-                Formatting = formatting
-            });
+                msg.WriteTo(jwtr);
+            }
+            jwtr.WriteEndArray();
+            jwtr.Flush();
+        }
 
-        public static Task WriteToAsync(this SecsMessage msg, TextWriter writer, Formatting formatting = Formatting.Indented)
-            => msg.WriteToAsync(new JsonTextWriter(writer)
-            {
-                QuoteName = false,
-                QuoteChar = '\'',
-                Formatting = formatting
-            });
+        public static void WriteTo(this SecsMessage msg, Stream writer)
+            => msg.WriteTo(writer, new JsonWriterOptions { Indented = true });
 
-        public static void WriteTo(this SecsMessage msg, JsonTextWriter jwtr)
+        public static void WriteTo(this SecsMessage msg, Stream writer, JsonWriterOptions options)
+            => msg.WriteTo(new Utf8JsonWriter(writer, options));
+
+        public static void WriteTo(this SecsMessage msg, Utf8JsonWriter jwtr)
         {
             jwtr.WriteStartObject();
 
             jwtr.WritePropertyName(nameof(msg.S));
-            jwtr.WriteValue(msg.S);
+            jwtr.WriteNumberValue(msg.S);
 
             jwtr.WritePropertyName(nameof(msg.F));
-            jwtr.WriteValue(msg.S);
+            jwtr.WriteNumberValue(msg.S);
 
             jwtr.WritePropertyName(nameof(msg.ReplyExpected));
-            jwtr.WriteValue(msg.ReplyExpected);
+            jwtr.WriteBooleanValue(msg.ReplyExpected);
 
             jwtr.WritePropertyName(nameof(msg.Name));
-            jwtr.WriteValue(msg.Name);
+            jwtr.WriteStringValue(msg.Name);
 
             if (msg.SecsItem != null)
             {
@@ -58,198 +58,143 @@ namespace Secs4Net.Json
             }
 
             jwtr.WriteEndObject();
+            jwtr.Flush();
         }
 
-        public static async Task WriteToAsync(this SecsMessage msg, JsonTextWriter jwtr)
-        {
-            await jwtr.WriteStartObjectAsync();
-
-            await jwtr.WritePropertyNameAsync(nameof(msg.S));
-            await jwtr.WriteValueAsync(msg.S);
-
-            await jwtr.WritePropertyNameAsync(nameof(msg.F));
-            await jwtr.WriteValueAsync(msg.S);
-
-            await jwtr.WritePropertyNameAsync(nameof(msg.ReplyExpected));
-            await jwtr.WriteValueAsync(msg.ReplyExpected);
-
-            await jwtr.WritePropertyNameAsync(nameof(msg.Name));
-            await jwtr.WriteValueAsync(msg.Name);
-
-            if (msg.SecsItem != null)
-            {
-                await jwtr.WritePropertyNameAsync(nameof(msg.SecsItem));
-                await msg.SecsItem.WriteToAsync(jwtr);
-            }
-
-            await jwtr.WriteEndObjectAsync();
-        }
-
-        public static void WriteTo(this Item item, JsonTextWriter writer)
+        public static void WriteTo(this Item item, Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
 
-            writer.WritePropertyName(item.Format.GetName());
+            writer.WritePropertyName(item.Format.ToString());
 
             switch (item.Format)
             {
                 case SecsFormat.List:
                     writer.WriteStartArray();
                     foreach (var subitem in item.Items)
+                    {
                         subitem.WriteTo(writer);
+                    }
                     writer.WriteEndArray();
                     break;
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
-                    writer.WriteValue(item.GetString());
+                    writer.WriteStringValue(item.GetString());
                     break;
                 case SecsFormat.Binary:
-                    WriteValue<byte>(writer, item);
+                    WriteValue<byte>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.Boolean:
-                    WriteValue<bool>(writer, item);
+                    WriteValue<bool>(writer, item, static (writer, i) => writer.WriteBooleanValue(i));
                     break;
                 case SecsFormat.I8:
-                    WriteValue<long>(writer, item);
+                    WriteValue<long>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.I1:
-                    WriteValue<sbyte>(writer, item);
+                    WriteValue<sbyte>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.I2:
-                    WriteValue<short>(writer, item);
+                    WriteValue<short>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.I4:
-                    WriteValue<int>(writer, item);
+                    WriteValue<int>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.F4:
-                    WriteValue<float>(writer, item);
+                    WriteValue<float>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.F8:
-                    WriteValue<double>(writer, item);
+                    WriteValue<double>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.U8:
-                    WriteValue<ulong>(writer, item);
+                    WriteValue<ulong>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.U1:
-                    WriteValue<byte>(writer, item);
+                    WriteValue<byte>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.U2:
-                    WriteValue<ushort>(writer, item);
+                    WriteValue<ushort>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.U4:
-                    WriteValue<uint>(writer, item);
+                    WriteValue<uint>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
                     break;
             }
             writer.WriteEndObject();
 
-            void WriteValue<T>(JsonTextWriter w, Item i) where T : unmanaged
+            static void WriteValue<T>(Utf8JsonWriter w, Item i, Action<Utf8JsonWriter, T> write) where T : unmanaged
             {
                 w.WriteStartArray();
                 foreach (var v in i.GetValues<T>())
-                    w.WriteValue(v);
+                {
+                    write(w, v);
+                }
                 w.WriteEndArray();
             }
         }
 
-        public static async Task WriteToAsync(this Item item, JsonTextWriter writer)
-        {
-            await writer.WriteStartObjectAsync().ConfigureAwait(false);
-
-            await writer.WritePropertyNameAsync(item.Format.GetName()).ConfigureAwait(false);
-
-			if (item.Format == SecsFormat.List)
-				await WriteListAsync(writer, item).ConfigureAwait(false);
-			else
-				await WriteItemValueAsync(writer, item).ConfigureAwait(false);
-
-            await writer.WriteEndObjectAsync().ConfigureAwait(false);
-
-            async Task WriteListAsync(JsonTextWriter w, Item i)
-            {
-                await w.WriteStartArrayAsync().ConfigureAwait(false);
-                foreach (var subitem in i.Items)
-                    await subitem.WriteToAsync(w).ConfigureAwait(false);
-                await w.WriteEndArrayAsync().ConfigureAwait(false);
-            }
-
-            Task WriteItemValueAsync(JsonTextWriter w, Item i)
-            {
-                switch (i.Format)
-                {
-                    case SecsFormat.ASCII:
-                    case SecsFormat.JIS8: return w.WriteValueAsync(i.GetString());
-                    case SecsFormat.Binary: return WriteValueAsync<byte>(w, i);
-                    case SecsFormat.Boolean: return WriteValueAsync<bool>(w, i);
-                    case SecsFormat.I8: return WriteValueAsync<long>(w, i);
-                    case SecsFormat.I1: return WriteValueAsync<sbyte>(w, i);
-                    case SecsFormat.I2: return WriteValueAsync<short>(w, i);
-                    case SecsFormat.I4: return WriteValueAsync<int>(w, i);
-                    case SecsFormat.F4: return WriteValueAsync<float>(w, i);
-                    case SecsFormat.F8: return WriteValueAsync<double>(w, i);
-                    case SecsFormat.U8: return WriteValueAsync<ulong>(w, i);
-                    case SecsFormat.U1: return WriteValueAsync<byte>(w, i);
-                    case SecsFormat.U2: return WriteValueAsync<ushort>(w, i);
-                    case SecsFormat.U4: return WriteValueAsync<uint>(w, i);
-                    default: throw new ArgumentOutOfRangeException($"Invalid SecsItem Format: {i.Format}");
-                }
-            }
-
-            async Task WriteValueAsync<T>(JsonWriter w, Item i)
-                where T : unmanaged
-            {
-                await w.WriteStartArrayAsync().ConfigureAwait(false);
-
-                foreach (var v in i.GetValues<T>())
-                    await w.WriteValueAsync(v).ConfigureAwait(false);
-
-                await w.WriteEndArrayAsync().ConfigureAwait(false);
-            }
-        }
-
         public static SecsMessage ToSecsMessage(this string jsonString)
-            => JObject.Parse(jsonString).ToSecsMessage();
+            => JsonDocument.Parse(jsonString).ToSecsMessage();
 
-        public static SecsMessage ToSecsMessage(this JObject json)
+        public static SecsMessage ToSecsMessage(this JsonDocument jsonDocument)
         {
-            var s = json.Value<byte>(nameof(SecsMessage.S));
-            var f = json.Value<byte>(nameof(SecsMessage.F));
-            var r = json.Value<bool>(nameof(SecsMessage.ReplyExpected));
-            var name = json.Value<string>(nameof(SecsMessage.Name));
-            var root = json.Value<JObject>(nameof(SecsMessage.SecsItem));
-            return (root is null)
-                ? new SecsMessage(s, f, name, replyExpected: r)
-                : new SecsMessage(s, f, name, root.ToItem(), replyExpected: r);
-        }
+            var json = jsonDocument.RootElement;
+            var s = json.GetProperty(nameof(SecsMessage.S)).GetByte();
+            var f = json.GetProperty(nameof(SecsMessage.F)).GetByte();
+            var r = json.GetProperty(nameof(SecsMessage.ReplyExpected)).GetBoolean();
+            var name = json.GetProperty(nameof(SecsMessage.Name)).GetString();
+            var item = json.TryGetProperty(nameof(SecsMessage.SecsItem), out var root)
+                ? root.ToItem()
+                : null;
 
-        public static SecsMessage[] ToSecsMessages(this TextReader reader) => JArray.Load(new JsonTextReader(reader))
-                                                                                    .Values<JObject>()
-                                                                                    .Select(ToSecsMessage)
-                                                                                    .ToArray();
+            return new SecsMessage(s, f, replyExpected: r)
+            {
+                Name = name,
+                SecsItem = item,
+            };
+        }
 
         // Define other methods and classes here
-        public static Item ToItem(this JObject jobject)
+        public static Item ToItem(this JsonElement jobject)
         {
-            var json = (JProperty)jobject.First;
-
-            switch (json.Name)
+            var json = jobject.EnumerateObject().First();
+            return json.Name switch
             {
-                case nameof(SecsFormat.List): return L(json.Value.Value<JArray>().Values<JObject>().Select(ToItem));
-                case nameof(SecsFormat.ASCII): return A(json.Value.Value<string>());
-                case nameof(SecsFormat.JIS8): return J(json.Value.Value<string>());
-                case nameof(SecsFormat.Binary): return B(json.Value.Values<byte>());
-                case nameof(SecsFormat.Boolean): return Boolean(json.Value.Values<bool>());
-                case nameof(SecsFormat.F4): return F4(json.Value.Values<float>());
-                case nameof(SecsFormat.F8): return F8(json.Value.Values<double>());
-                case nameof(SecsFormat.I1): return I1(json.Value.Values<sbyte>());
-                case nameof(SecsFormat.I2): return I2(json.Value.Values<short>());
-                case nameof(SecsFormat.I4): return I4(json.Value.Values<int>());
-                case nameof(SecsFormat.I8): return I8(json.Value.Values<long>());
-                case nameof(SecsFormat.U1): return U1(json.Value.Values<byte>());
-                case nameof(SecsFormat.U2): return U2(json.Value.Values<ushort>());
-                case nameof(SecsFormat.U4): return U4(json.Value.Values<uint>());
-                case nameof(SecsFormat.U8): return U8(json.Value.Values<ulong>());
-                default: throw new ArgumentOutOfRangeException($"Unknown item format: {json.Name}");
+                nameof(SecsFormat.List) => L(json.Value.EnumerateArray().Select(ToItem)),
+                nameof(SecsFormat.ASCII) => A(json.Value.GetString()),
+                nameof(SecsFormat.JIS8) => J(json.Value.GetString()),
+                nameof(SecsFormat.Binary) => B(json.Value.EnumerateArray().Select(a => a.GetByte())),
+                nameof(SecsFormat.Boolean) => Boolean(json.Value.EnumerateArray().Select(a => a.GetBoolean())),
+                nameof(SecsFormat.F4) => F4(json.Value.EnumerateArray().Select(a => a.GetSingle())),
+                nameof(SecsFormat.F8) => F8(json.Value.EnumerateArray().Select(a => a.GetDouble())),
+                nameof(SecsFormat.I1) => I1(json.Value.EnumerateArray().Select(a => a.GetSByte())),
+                nameof(SecsFormat.I2) => I2(json.Value.EnumerateArray().Select(a => a.GetInt16())),
+                nameof(SecsFormat.I4) => I4(json.Value.EnumerateArray().Select(a => a.GetInt32())),
+                nameof(SecsFormat.I8) => I8(json.Value.EnumerateArray().Select(a => a.GetInt64())),
+                nameof(SecsFormat.U1) => U1(json.Value.EnumerateArray().Select(a => a.GetByte())),
+                nameof(SecsFormat.U2) => U2(json.Value.EnumerateArray().Select(a => a.GetUInt16())),
+                nameof(SecsFormat.U4) => U4(json.Value.EnumerateArray().Select(a => a.GetUInt32())),
+                nameof(SecsFormat.U8) => U8(json.Value.EnumerateArray().Select(a => a.GetUInt64())),
+                _ => throw new ArgumentOutOfRangeException($"Unknown item format: {json.Name}"),
+            };
+        }
+
+        public static List<SecsMessage> ToSecsMessages(this Stream stream)
+        {
+            using var jsonStreamReader = new Utf8JsonStreamReader(stream, 4096);
+            jsonStreamReader.Read(); // move to array start
+            jsonStreamReader.Read(); // move to start of the object
+
+            var result = new List<SecsMessage>(capacity: 32);
+            while (jsonStreamReader.TokenType != JsonTokenType.EndArray)
+            {
+                // deserialize object
+                var jsonObject = jsonStreamReader.GetJsonDocument();
+                result.Add(jsonObject.ToSecsMessage());
+                // JsonSerializer.Deserialize ends on last token of the object parsed,
+                // move to the first token of next object
+                jsonStreamReader.Read();
             }
+
+            return result;
         }
     }
 }

@@ -42,7 +42,11 @@ namespace Secs4Net
                 return ReplyAsyncTrueCache;
             }
 
-            replyMessage ??= new SecsMessage(9, 7, "Unknown Message", Item.B(_header.EncodeTo(new byte[10])), replyExpected: false);
+            replyMessage ??= new SecsMessage(9, 7, replyExpected: false)
+            {
+                Name = "Unknown Message",
+                SecsItem = Item.B(_header.EncodeTo(new byte[10])),
+            };
             replyMessage.ReplyExpected = false;
 
             return secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes)

@@ -199,14 +199,14 @@ namespace Secs4Net
                     int l = length;
                     for (int i = 0; i < l / 8; i++, x1 += 8, x2 += 8)
                     {
-                        if (*((long*)x1) != *((long*)x2))
+                        if (*(long*)x1 != *(long*)x2)
                         {
                             return false;
                         }
                     }
 
-                    if ((l & 4) != 0) { if (*((int*)x1) != *((int*)x2)) { return false; } x1 += 4; x2 += 4; }
-                    if ((l & 2) != 0) { if (*((short*)x1) != *((short*)x2)) { return false; } x1 += 2; x2 += 2; }
+                    if ((l & 4) != 0) { if (*(int*)x1 != *(int*)x2) { return false; } x1 += 4; x2 += 4; }
+                    if ((l & 2) != 0) { if (*(short*)x1 != *(short*)x2) { return false; } x1 += 2; x2 += 2; }
                     if ((l & 1) != 0)
                     {
                         if (*x1 != *x2)
@@ -330,9 +330,9 @@ namespace Secs4Net
         public static Item Boolean(params bool[] value) => value.Length > 0 ? new Item(SecsFormat.Boolean, value) : Boolean();
         public static Item Boolean(IEnumerable<bool> value) => Boolean(value.ToArray());
 
-        public static Item A(string value) => value != string.Empty ? new Item(SecsFormat.ASCII, value) : A();
+        public static Item A(string? value) => string.IsNullOrEmpty(value) ? A() : new Item(SecsFormat.ASCII, value);
 
-        public static Item J(string value) => value != string.Empty ? new Item(SecsFormat.JIS8, value) : J();
+        public static Item J(string? value) => string.IsNullOrEmpty(value) ? J() : new Item(SecsFormat.JIS8, value);
         #endregion
 
         #region Share Object
@@ -356,18 +356,18 @@ namespace Secs4Net
         private static readonly Item EmptyL = new(SecsFormat.List, Enumerable.Empty<Item>());
         private static readonly Item EmptyA = new(SecsFormat.ASCII, string.Empty);
         private static readonly Item EmptyJ = new(SecsFormat.JIS8, string.Empty);
-        private static readonly Item EmptyBoolean = new(SecsFormat.Boolean, Enumerable.Empty<bool>());
-        private static readonly Item EmptyBinary = new(SecsFormat.Binary, Enumerable.Empty<byte>());
-        private static readonly Item EmptyU1 = new(SecsFormat.U1, Enumerable.Empty<byte>());
-        private static readonly Item EmptyU2 = new(SecsFormat.U2, Enumerable.Empty<ushort>());
-        private static readonly Item EmptyU4 = new(SecsFormat.U4, Enumerable.Empty<uint>());
-        private static readonly Item EmptyU8 = new(SecsFormat.U8, Enumerable.Empty<ulong>());
-        private static readonly Item EmptyI1 = new(SecsFormat.I1, Enumerable.Empty<sbyte>());
-        private static readonly Item EmptyI2 = new(SecsFormat.I2, Enumerable.Empty<short>());
-        private static readonly Item EmptyI4 = new(SecsFormat.I4, Enumerable.Empty<int>());
-        private static readonly Item EmptyI8 = new(SecsFormat.I8, Enumerable.Empty<long>());
-        private static readonly Item EmptyF4 = new(SecsFormat.F4, Enumerable.Empty<float>());
-        private static readonly Item EmptyF8 = new(SecsFormat.F8, Enumerable.Empty<double>());
+        private static readonly Item EmptyBoolean = new(SecsFormat.Boolean, Array.Empty<bool>().AsEnumerable());
+        private static readonly Item EmptyBinary = new(SecsFormat.Binary, Array.Empty<byte>().AsEnumerable());
+        private static readonly Item EmptyU1 = new(SecsFormat.U1, Array.Empty<byte>().AsEnumerable());
+        private static readonly Item EmptyU2 = new(SecsFormat.U2, Array.Empty<ushort>().AsEnumerable());
+        private static readonly Item EmptyU4 = new(SecsFormat.U4, Array.Empty<uint>().AsEnumerable());
+        private static readonly Item EmptyU8 = new(SecsFormat.U8, Array.Empty<ulong>().AsEnumerable());
+        private static readonly Item EmptyI1 = new(SecsFormat.I1, Array.Empty<sbyte>().AsEnumerable());
+        private static readonly Item EmptyI2 = new(SecsFormat.I2, Array.Empty<short>().AsEnumerable());
+        private static readonly Item EmptyI4 = new(SecsFormat.I4, Array.Empty<int>().AsEnumerable());
+        private static readonly Item EmptyI8 = new(SecsFormat.I8, Array.Empty<long>().AsEnumerable());
+        private static readonly Item EmptyF4 = new(SecsFormat.F4, Array.Empty<float>().AsEnumerable());
+        private static readonly Item EmptyF8 = new(SecsFormat.F8, Array.Empty<double>().AsEnumerable());
 
         private static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
         #endregion

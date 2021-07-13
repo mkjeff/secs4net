@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -14,13 +15,13 @@ namespace Secs4Net
         /// <summary>
         /// HSMS connection state changed event
         /// </summary>
-        public event EventHandler<ConnectionState> ConnectionChanged;
+        public event EventHandler<ConnectionState>? ConnectionChanged;
 
         /// <summary>
         /// Primary message received event
         /// </summary>
         public event EventHandler<PrimaryMessageWrapper> PrimaryMessageReceived = DefaultPrimaryMessageReceived;
-        private static void DefaultPrimaryMessageReceived(object sender, PrimaryMessageWrapper _) { }
+        private static void DefaultPrimaryMessageReceived(object? sender, PrimaryMessageWrapper _) { }
 
         private ISecsGemLogger _logger = DefaultLogger;
         public ISecsGemLogger Logger
@@ -124,9 +125,9 @@ namespace Secs4Net
         /// </summary>
         public string DeviceIpAddress => IsActive
             ? IpAddress.ToString()
-            : ((IPEndPoint)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
+            : ((IPEndPoint?)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
 
-        private Socket _socket;
+        private Socket? _socket;
 
         private readonly StreamDecoder _secsDecoder;
         private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new();
@@ -137,7 +138,7 @@ namespace Secs4Net
         private readonly Func<Task> _startImpl;
         private readonly Action _stopImpl;
 
-        private static readonly SecsMessage ControlMessage = new(0, 0, string.Empty);
+        private static readonly SecsMessage ControlMessage = new(0, 0);
         private static readonly ArraySegment<byte> ControlMessageLengthBytes = new(new byte[] { 0, 0, 0, 10 });
         private static readonly DefaultSecsGemLogger DefaultLogger = new();
         private readonly SystemByteGenerator _systemByte = new();
@@ -147,7 +148,7 @@ namespace Secs4Net
 
         internal int NewSystemId => _systemByte.New();
 
-        private readonly TaskFactory _taskFactory = new TaskFactory(TaskScheduler.Default);
+        private static readonly TaskFactory _taskFactory = new(TaskScheduler.Default);
 
         /// <summary>
         /// constructor
@@ -236,7 +237,7 @@ namespace Secs4Net
                     SendControlMessage(MessageType.SelectRequest, NewSystemId);
                 };
 
-                //_stopImpl = delegate { };
+                _stopImpl = delegate { };
             }
             else
             {
@@ -291,6 +292,7 @@ namespace Secs4Net
 
             void StartSocketReceive()
             {
+                Debug.Assert(_socket != null);
                 CommunicationStateChanging(ConnectionState.Connected);
 
                 var receiveCompleteEvent = new SocketAsyncEventArgs();
@@ -302,7 +304,7 @@ namespace Secs4Net
                     SocketReceiveEventCompleted(_socket, receiveCompleteEvent);
                 }
 
-                void SocketReceiveEventCompleted(object sender, SocketAsyncEventArgs e)
+                void SocketReceiveEventCompleted(object? sender, SocketAsyncEventArgs e)
                 {
                     if (e.SocketError != SocketError.Success)
                     {
@@ -419,7 +421,11 @@ namespace Secs4Net
                 {
                     _logger.MessageIn(msg, systembyte);
                     _logger.Warning("Received Unrecognized Device Id Message");
-                    SendDataMessageAsync(new SecsMessage(9, 1, "Unrecognized Device Id", Item.B(header.EncodeTo(new byte[10])), replyExpected: false), NewSystemId);
+                    SendDataMessageAsync(new SecsMessage(9, 1, replyExpected: false)
+                    {
+                        Name = "Unrecognized Device Id",
+                        SecsItem = Item.B(header.EncodeTo(new byte[10])),
+                    }, NewSystemId);
                     return;
                 }
 
@@ -430,14 +436,21 @@ namespace Secs4Net
                         //Primary message
                         _logger.MessageIn(msg, systembyte);
                         _taskFactory.StartNew(
-                            wrapper => PrimaryMessageReceived(this, Unsafe.As<PrimaryMessageWrapper>(wrapper)),
+                            wrapper => PrimaryMessageReceived(this, Unsafe.As<PrimaryMessageWrapper>(wrapper)!),
                             new PrimaryMessageWrapper(this, header, msg));
 
                         return;
                     }
                     // Error message
-                    var headerBytes = msg.SecsItem.GetValues<byte>();
-                    systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
+                    var headerBytes = msg.SecsItem?.GetValues<byte>();
+                    if (headerBytes is null)
+                    {
+                        _logger.Warning("Can't get expected header bytes");
+                    }
+                    else
+                    {
+                        systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
+                    }
                 }
 
                 // Secondary message
@@ -451,6 +464,7 @@ namespace Secs4Net
 
         private void SendControlMessage(MessageType msgType, int systembyte)
         {
+            Debug.Assert(_socket != null);
             var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
             {
@@ -476,9 +490,9 @@ namespace Secs4Net
             }
         }
 
-        private void SendControlMessageCompleteHandler(object o, SocketAsyncEventArgs e)
+        private void SendControlMessageCompleteHandler(object? o, SocketAsyncEventArgs e)
         {
-            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
+            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken!);
 
             if (e.SocketError != SocketError.Success)
             {
@@ -505,6 +519,7 @@ namespace Secs4Net
                 throw new SecsException("Device is not selected");
             }
 
+            Debug.Assert(_socket != null);
             var token = new TaskCompletionSourceToken(msg, systembyte, MessageType.DataMessage);
             if (msg.ReplyExpected)
             {
@@ -536,9 +551,9 @@ namespace Secs4Net
             return token.Task;
         }
 
-        private void SendDataMessageCompleteHandler(object socket, SocketAsyncEventArgs e)
+        private void SendDataMessageCompleteHandler(object? socket, SocketAsyncEventArgs e)
         {
-            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken);
+            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken!);
 
             if (e.SocketError != SocketError.Success)
             {
@@ -551,7 +566,7 @@ namespace Secs4Net
 
             if (!_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
-                completeToken.SetResult(null);
+                completeToken.SetCanceled();
                 return;
             }
 
@@ -606,7 +621,7 @@ namespace Secs4Net
             _timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
             _secsDecoder.Reset();
             _replyExpectedMsgs.Clear();
-            _stopImpl?.Invoke();
+            _stopImpl.Invoke();
 
             if (_socket is null)
             {
@@ -650,13 +665,11 @@ namespace Secs4Net
             _timerLinkTest.Dispose();
         }
 
-
-
         private sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {
-            internal readonly SecsMessage MessageSent;
-            internal readonly int Id;
-            internal readonly MessageType MsgType;
+            public SecsMessage MessageSent { get; }
+            public int Id { get; }
+            public MessageType MsgType { get; }
 
             internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType)
                 : base(TaskCreationOptions.RunContinuationsAsynchronously)
