@@ -6,30 +6,19 @@
     <Product>Secs4Net</Product>
     <Copyright>Copyright © secs4net 2017</Copyright>
     <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
-    <Company />
+    <Version>1.1.0</Version>
     <Authors>mkjeff</Authors>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageProjectUrl>https://github.com/mkjeff/secs4net</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/mkjeff/secs4net/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RootNamespace>Secs4Net</RootNamespace>
     <AssemblyName>Secs4Net</AssemblyName>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>2.0.0</Version>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Memory" Version="4.5.3" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
