@@ -7,6 +7,8 @@ namespace Secs4Net.Sml
 {
     public static class SmlWriter
     {
+        public static int SmlIndent = 4;
+
         public static string ToSml(this SecsMessage msg)
         {
             if (msg is null)
@@ -40,13 +42,13 @@ namespace Secs4Net.Sml
                 return;
             }
 
-            await writer.WriteLineAsync(msg.ToString());
+            await writer.WriteLineAsync(msg.ToString()).ConfigureAwait(false);
             if (msg.SecsItem != null)
             {
-                await WriteAsync(writer, msg.SecsItem, indent);
+                await WriteAsync(writer, msg.SecsItem, indent).ConfigureAwait(false);
             }
 
-            await writer.WriteAsync('.');
+            await writer.WriteAsync('.').ConfigureAwait(false);
         }
 
         public static void Write(this Item item, TextWriter writer, int indent = 4)
@@ -65,7 +67,7 @@ namespace Secs4Net.Sml
                     var items = item.Items;
                     for (int i = 0, count = items.Count; i < count; i++)
                     {
-                        items[i].Write(writer, indent << 1);
+                        items[i].Write(writer, indent + SmlIndent);
                     }
 
                     writer.Write(indentStr);
@@ -158,7 +160,7 @@ namespace Secs4Net.Sml
             var indentStr = new string(' ', indent);
             await writer.WriteAsync(indentStr).ConfigureAwait(false);
             await writer.WriteAsync($"<{item.Format.ToSml()} [{item.Count}] ").ConfigureAwait(false);
-            await WriteItemAcyn(writer, item, indent, indentStr);
+            await WriteItemAcyn(writer, item, indent, indentStr).ConfigureAwait(false);
             await writer.WriteLineAsync('>').ConfigureAwait(false);
 
             static Task WriteItemAcyn(TextWriter writer, Item item, int indent, string indentStr)
@@ -181,16 +183,16 @@ namespace Secs4Net.Sml
                     _ => throw new ArgumentOutOfRangeException($"{nameof(item)}.{nameof(item.Format)}", item.Format, "Invalid enum value"),
                 };
 
-            static async Task WriteListAsnc(TextWriter writer, Item secsItem, int d, string dStr)
+            static async Task WriteListAsnc(TextWriter writer, Item item, int indent, string indentStr)
             {
                 await writer.WriteLineAsync().ConfigureAwait(false);
-                var items = secsItem.Items;
+                var items = item.Items;
                 for (int i = 0, count = items.Count; i < count; i++)
                 {
-                    await WriteAsync(writer, items[i], d << 1).ConfigureAwait(false);
+                    await WriteAsync(writer, items[i], indent + SmlIndent).ConfigureAwait(false);
                 }
 
-                await writer.WriteAsync(dStr).ConfigureAwait(false);
+                await writer.WriteAsync(indentStr).ConfigureAwait(false);
             }
 
             static async Task WriteArrayAsync<T>(TextWriter writer, IReadOnlyList<T> array) where T : unmanaged
@@ -198,11 +200,11 @@ namespace Secs4Net.Sml
                 for (int i = 0; i < array.Count - 1; i++)
                 {
                     T a = array[i];
-                    await writer.WriteAsync(array[i].ToString());
-                    await writer.WriteAsync(' ');
+                    await writer.WriteAsync(array[i].ToString()).ConfigureAwait(false);
+                    await writer.WriteAsync(' ').ConfigureAwait(false);
                 }
 
-                await writer.WriteAsync(array[^1].ToString());
+                await writer.WriteAsync(array[^1].ToString()).ConfigureAwait(false);
             }
 
             static async Task WriteHexArray(TextWriter writer, byte[] value)
@@ -215,17 +217,17 @@ namespace Secs4Net.Sml
                 int length = value.Length * 3;
                 for (int i = 0; i < value.Length - 1; i++)
                 {
-                    await AppendHexChars(writer, value[i]);
-                    await writer.WriteAsync(' ');
+                    await AppendHexChars(writer, value[i]).ConfigureAwait(false);
+                    await writer.WriteAsync(' ').ConfigureAwait(false);
                 }
 
-                await AppendHexChars(writer, value[^1]);
+                await AppendHexChars(writer, value[^1]).ConfigureAwait(false);
 
                 static async Task AppendHexChars(TextWriter sb, byte num)
                 {
                     var hex1 = Math.DivRem(num, 0x10, out var hex0);
-                    await sb.WriteAsync(GetHexChar(hex1));
-                    await sb.WriteAsync(GetHexChar(hex0));
+                    await sb.WriteAsync(GetHexChar(hex1)).ConfigureAwait(false);
+                    await sb.WriteAsync(GetHexChar(hex0)).ConfigureAwait(false);
                 }
             }
         }
