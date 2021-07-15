@@ -112,7 +112,7 @@ namespace Secs4Net
                     return 1;
                 }
 
-                _msgHeader = MessageHeader.Decode(new ReadOnlySpan<byte>(_buffer, _decodeIndex, 10));
+                _msgHeader = MessageHeader.Decode(new Span<byte>(_buffer, _decodeIndex, 10));
                 _decodeIndex += 10;
                 _messageDataLength -= 10;
                 length -= 10;

@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Buffers;
 
 namespace Secs4Net
 {
@@ -30,17 +29,6 @@ namespace Secs4Net
 
         public string? Name { get; set; }
 
-        internal readonly Lazy<List<ArraySegment<byte>>> RawDatas;
-
-        public IReadOnlyList<ArraySegment<byte>> RawBytes => RawDatas.Value.AsReadOnly();
-
-        private static readonly List<ArraySegment<byte>> EmptyMsgDatas =
-            new()
-            {
-                new ArraySegment<byte>(new byte[] { 0, 0, 0, 10 }), // total length = header
-                new ArraySegment<byte>(Array.Empty<byte>())        // header placeholder
-            };
-
         /// <summary>
         /// constructor of SecsMessage
         /// </summary>
@@ -59,27 +47,21 @@ namespace Secs4Net
             S = s;
             F = f;
             ReplyExpected = replyExpected;
-            RawDatas = new Lazy<List<ArraySegment<byte>>>(() =>
-            {
-                if (SecsItem is null)
-                {
-                    return EmptyMsgDatas;
-                }
+        }
 
-                var result = new List<ArraySegment<byte>> {
-                    default,    // total length
-                    new ArraySegment<byte>(Array.Empty<byte>())     // header
-                    // item
-                };
-
-                var length = 10 + SecsItem.EncodeTo(result); // total length = item + header
-
-                var msgLengthByte = BitConverter.GetBytes(length);
-                Array.Reverse(msgLengthByte);
-                result[0] = new ArraySegment<byte>(msgLengthByte);
-
-                return result;
-            });
+        public void EncodeTo(IBufferWriter<byte> buffer, ushort deviceId, int systemBytes)
+        {
+            var header = new MessageHeader
+            (
+                deviceId,
+                ReplyExpected,
+                S,
+                F,
+                MessageType.DataMessage,
+                systemBytes
+            );
+            header.EncodeTo(buffer);
+            SecsItem?.EncodeTo(buffer);
         }
     }
 }

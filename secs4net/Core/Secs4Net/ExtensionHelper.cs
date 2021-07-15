@@ -1,18 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
     public static class SecsExtension
     {
-        public static string ToHexString(this byte[] value)
+        [SkipLocalsInit]
+        public static string ToHexString(this IReadOnlyList<byte> value)
         {
-            if (value.Length == 0)
+            if (value.Count == 0)
             {
                 return string.Empty;
             }
 
-            int length = value.Length * 3;
-            char[] chs = new char[length];
+            int length = value.Count * 3;
+            Span<char> chs = stackalloc char[length];
             for (int ci = 0, i = 0; ci < length; ci += 3)
             {
                 byte num = value[i++];
@@ -20,7 +23,7 @@ namespace Secs4Net
                 chs[ci + 1] = GetHexValue(num % 0x10);
                 chs[ci + 2] = ' ';
             }
-            return new string(chs, 0, length - 1);
+            return new string(chs.Slice(0, length - 1));
 
             static char GetHexValue(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
         }
@@ -43,6 +46,19 @@ namespace Secs4Net
             for (var i = begin; i < end; i += offSet)
             {
                 Array.Reverse(bytes, i, offSet);
+            }
+        }
+
+        internal static void Reverse(this Span<byte> bytes, int offSet)
+        {
+            if (offSet <= 1)
+            {
+                return;
+            }
+
+            for (var i = 0; i < bytes.Length; i += offSet)
+            {
+                bytes.Slice(i, offSet).Reverse();
             }
         }
     }

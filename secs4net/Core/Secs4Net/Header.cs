@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance;
+using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -30,34 +32,30 @@ namespace Secs4Net
             SystemBytes = systemBytes;
         }
 
-        internal unsafe byte[] EncodeTo(byte[] buffer)
+        internal void EncodeTo(IBufferWriter<byte> buffer)
         {
-            EncodeTo(buffer.AsSpan());
-            return buffer;
-        }
-
-        internal unsafe void EncodeTo(Span<byte> buffer)
-        {
+            var span = buffer.GetSpan(sizeHint: 10);
             // DeviceId
-            BinaryPrimitives.WriteUInt16BigEndian(buffer, DeviceId);
+            BinaryPrimitives.WriteUInt16BigEndian(span, DeviceId);
 
-            ref var head = ref MemoryMarshal.GetReference(buffer);
             // S, ReplyExpected
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 2), (byte)(S | (ReplyExpected ? 0b1000_0000 : 0)));
+            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(2), (byte)(S | (ReplyExpected ? 0b1000_0000 : 0)));
 
             // F
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 3), F);
+            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(3), F);
 
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 4), 0);
+            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(4), 0);
 
             // MessageType
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref head, 5), (byte)MessageType);
+            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(5), (byte)MessageType);
 
             // SystemBytes
-            BinaryPrimitives.WriteInt32BigEndian(buffer.Slice(6), SystemBytes);
+            BinaryPrimitives.WriteInt32BigEndian(span.Slice(6), SystemBytes);
+
+            buffer.Advance(10);
         }
 
-        internal static unsafe MessageHeader Decode(ReadOnlySpan<byte> buffer)
+        internal static MessageHeader Decode(ReadOnlySpan<byte> buffer)
         {
             ref var head = ref MemoryMarshal.GetReference(buffer);
             var s = Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref head, 2));

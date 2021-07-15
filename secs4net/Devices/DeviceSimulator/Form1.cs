@@ -1,19 +1,21 @@
-﻿using System;
-using System.ComponentModel;
-using System.Windows.Forms;
-using Secs4Net;
-using System.Net;
-using System.Drawing;
+﻿using Secs4Net;
 using Secs4Net.Sml;
+using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.Net;
+using System.Windows.Forms;
 
 namespace SecsDevice
 {
-    public partial class Form1 : Form {
+    public partial class Form1 : Form
+    {
         SecsGem _secsGem;
         readonly ISecsGemLogger _logger;
         readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
 
-        public Form1() {
+        public Form1()
+        {
             InitializeComponent();
 
             radioActiveMode.DataBindings.Add("Enabled", btnEnable, "Enabled");
@@ -36,7 +38,10 @@ namespace SecsDevice
                 IPAddress.Parse(txtAddress.Text),
                 (int)numPort.Value,
                 (int)numBufferSize.Value)
-            { Logger = _logger, DeviceId = (ushort)numDeviceId.Value };
+            {
+                Logger = _logger,
+                DeviceId = (ushort)numDeviceId.Value,
+            };
 
             _secsGem.ConnectionChanged += delegate
             {
@@ -87,31 +92,31 @@ namespace SecsDevice
             }
         }
 
-        private void lstUnreplyMsg_SelectedIndexChanged(object sender, EventArgs e) {
+        private void lstUnreplyMsg_SelectedIndexChanged(object sender, EventArgs e)
+        {
             var receivedMessage = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
-            txtRecvPrimary.Text = receivedMessage?.Message.ToSml();
+            txtRecvPrimary.Text = receivedMessage?.PrimaryMessage.ToSml();
         }
 
         private async void btnReplySecondary_Click(object sender, EventArgs e)
         {
-            if (!(lstUnreplyMsg.SelectedItem is PrimaryMessageWrapper recv))
+            if (lstUnreplyMsg.SelectedItem is not PrimaryMessageWrapper recv)
                 return;
 
             if (string.IsNullOrWhiteSpace(txtReplySeconary.Text))
                 return;
 
-            await recv.ReplyAsync(txtReplySeconary.Text.ToSecsMessage());
+            await recv.TryReplyAsync(txtReplySeconary.Text.ToSecsMessage());
             recvBuffer.Remove(recv);
             txtRecvPrimary.Clear();
         }
 
         private async void btnReplyS9F7_Click(object sender, EventArgs e)
         {
-            var recv = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
-            if (recv == null)
+            if (lstUnreplyMsg.SelectedItem is not PrimaryMessageWrapper recv)
                 return;
 
-            await recv.ReplyAsync(null);
+            await recv.TryReplyAsync(null);
 
             recvBuffer.Remove(recv);
             txtRecvPrimary.Clear();
@@ -126,7 +131,8 @@ namespace SecsDevice
             }
             public void MessageIn(SecsMessage msg, int systembyte)
             {
-                _form.Invoke((MethodInvoker)delegate {
+                _form.Invoke((MethodInvoker)delegate
+                {
                     _form.richTextBox1.SelectionColor = Color.Black;
                     _form.richTextBox1.AppendText($"<-- [0x{systembyte:X8}] {msg.ToSml()}\n");
                 });
@@ -134,7 +140,8 @@ namespace SecsDevice
 
             public void MessageOut(SecsMessage msg, int systembyte)
             {
-                _form.Invoke((MethodInvoker)delegate {
+                _form.Invoke((MethodInvoker)delegate
+                {
                     _form.richTextBox1.SelectionColor = Color.Black;
                     _form.richTextBox1.AppendText($"--> [0x{systembyte:X8}] {msg.ToSml()}\n");
                 });
@@ -142,7 +149,8 @@ namespace SecsDevice
 
             public void Info(string msg)
             {
-                _form.Invoke((MethodInvoker)delegate {
+                _form.Invoke((MethodInvoker)delegate
+                {
                     _form.richTextBox1.SelectionColor = Color.Blue;
                     _form.richTextBox1.AppendText($"{msg}\n");
                 });
@@ -150,7 +158,8 @@ namespace SecsDevice
 
             public void Warning(string msg)
             {
-                _form.Invoke((MethodInvoker)delegate {
+                _form.Invoke((MethodInvoker)delegate
+                {
                     _form.richTextBox1.SelectionColor = Color.Green;
                     _form.richTextBox1.AppendText($"{msg}\n");
                 });
@@ -158,7 +167,8 @@ namespace SecsDevice
 
             public void Error(string msg, Exception ex = null)
             {
-                _form.Invoke((MethodInvoker)delegate {
+                _form.Invoke((MethodInvoker)delegate
+                {
                     _form.richTextBox1.SelectionColor = Color.Red;
                     _form.richTextBox1.AppendText($"{msg}\n");
                     _form.richTextBox1.SelectionColor = Color.Gray;
@@ -168,7 +178,8 @@ namespace SecsDevice
 
             public void Debug(string msg)
             {
-                _form.Invoke((MethodInvoker)delegate {
+                _form.Invoke((MethodInvoker)delegate
+                {
                     _form.richTextBox1.SelectionColor = Color.Yellow;
                     _form.richTextBox1.AppendText($"{msg}\n");
                 });

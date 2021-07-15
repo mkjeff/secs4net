@@ -7,7 +7,7 @@ namespace System
     //https://github.com/bbartels/coreclr/blob/master/src/System.Private.CoreLib/shared/System/MemoryExtensions.Split.cs
     // https://github.com/dotnet/runtime/pull/295
 
-    public static partial class MemoryExtensions
+    internal static partial class MemoryExtensions
     {
         /// <summary>
         /// Returns an enumerator that iterates through a <see cref="ReadOnlySpan{T}"/>,

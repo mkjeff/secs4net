@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance.Buffers;
+using System;
+using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -139,12 +141,11 @@ namespace Secs4Net
         private readonly Action _stopImpl;
 
         private static readonly SecsMessage ControlMessage = new(0, 0);
-        private static readonly ArraySegment<byte> ControlMessageLengthBytes = new(new byte[] { 0, 0, 0, 10 });
+        private static readonly byte[] ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
         private static readonly DefaultSecsGemLogger DefaultLogger = new();
         private readonly SystemByteGenerator _systemByte = new();
 
         private readonly EventHandler<SocketAsyncEventArgs> _sendControlMessageCompleteHandler;
-        private readonly EventHandler<SocketAsyncEventArgs> _sendDataMessageCompleteHandler;
 
         internal int NewSystemId => _systemByte.New();
 
@@ -165,7 +166,6 @@ namespace Secs4Net
             }
 
             _sendControlMessageCompleteHandler = SendControlMessageCompleteHandler;
-            _sendDataMessageCompleteHandler = SendDataMessageCompleteHandler;
             _secsDecoder = new StreamDecoder(receiveBufferSize, HandleControlMessage, HandleDataMessage);
 
             IpAddress = ip;
@@ -234,7 +234,7 @@ namespace Secs4Net
 
                     // hook receive event first, because no message will received before 'SelectRequest' send to device
                     StartSocketReceive();
-                    SendControlMessage(MessageType.SelectRequest, NewSystemId);
+                    _ = Task.Run(() => SendControlMessage(MessageType.SelectRequest, NewSystemId));
                 };
 
                 _stopImpl = delegate { };
@@ -421,11 +421,18 @@ namespace Secs4Net
                 {
                     _logger.MessageIn(msg, systembyte);
                     _logger.Warning("Received Unrecognized Device Id Message");
-                    SendDataMessageAsync(new SecsMessage(9, 1, replyExpected: false)
+
+                    Task.Run(() =>
                     {
-                        Name = "Unrecognized Device Id",
-                        SecsItem = Item.B(header.EncodeTo(new byte[10])),
-                    }, NewSystemId);
+                        var headerBytes = new byte[10];
+                        header.EncodeTo(new MemoryBufferWriter<byte>(headerBytes));
+                        return SendDataMessageAsync(new SecsMessage(9, 1, replyExpected: false)
+                        {
+                            Name = "Unrecognized Device Id",
+                            SecsItem = Item.B(headerBytes),
+                        }, NewSystemId);
+                    });
+
                     return;
                 }
 
@@ -455,9 +462,9 @@ namespace Secs4Net
 
                 // Secondary message
                 _logger.MessageIn(msg, systembyte);
-                if (_replyExpectedMsgs.TryGetValue(systembyte, out var ar))
+                if (_replyExpectedMsgs.TryGetValue(systembyte, out var token))
                 {
-                    ar.HandleReplyMessage(msg);
+                    token.HandleReplyMessage(msg);
                 }
             }
         }
@@ -473,16 +480,17 @@ namespace Secs4Net
 
             var eap = new SocketAsyncEventArgs
             {
-                BufferList = new List<ArraySegment<byte>>(2) {
-                    ControlMessageLengthBytes,
-                    new ArraySegment<byte>(new MessageHeader(
-                        deviceId: 0xFFFF,
-                        messageType: msgType,
-                        systemBytes: systembyte
-                    ).EncodeTo(new byte[10]))
-                },
                 UserToken = token,
             };
+
+            using var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: 14);
+            buffer.Write(ControlMessageLengthBytes);
+            new MessageHeader(
+                deviceId: 0xFFFF,
+                messageType: msgType,
+                systemBytes: systembyte).EncodeTo(buffer);
+
+            eap.SetBuffer(MemoryMarshal.AsMemory(buffer.WrittenMemory));
             eap.Completed += _sendControlMessageCompleteHandler;
             if (!_socket.SendAsync(eap))
             {
@@ -500,7 +508,7 @@ namespace Secs4Net
                 return;
             }
 
-            _logger.Info("Sent Control Message: " + completeToken.MsgType);
+            _logger.Info("Sent Control Message: " + completeToken.MessageType);
             if (_replyExpectedMsgs.ContainsKey(completeToken.Id))
             {
                 if (!completeToken.Task.Wait(T6))
@@ -512,7 +520,7 @@ namespace Secs4Net
             }
         }
 
-        internal Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
+        internal async Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte)
         {
             if (State != ConnectionState.Selected)
             {
@@ -526,62 +534,53 @@ namespace Secs4Net
                 _replyExpectedMsgs[systembyte] = token;
             }
 
-            var header = new MessageHeader
-            (
-                s: msg.S,
-                f: msg.F,
-                replyExpected: msg.ReplyExpected,
-                deviceId: DeviceId,
-                systemBytes: systembyte
-            );
-
-            var bufferList = msg.RawDatas.Value;
-            bufferList[1] = new ArraySegment<byte>(header.EncodeTo(new byte[10]));
-            var eap = new SocketAsyncEventArgs
-            {
-                BufferList = bufferList,
-                UserToken = token,
-            };
-            eap.Completed += _sendDataMessageCompleteHandler;
-            if (!_socket.SendAsync(eap))
-            {
-                SendDataMessageCompleteHandler(_socket, eap);
-            }
-
-            return token.Task;
-        }
-
-        private void SendDataMessageCompleteHandler(object? socket, SocketAsyncEventArgs e)
-        {
-            var completeToken = Unsafe.As<TaskCompletionSourceToken>(e.UserToken!);
-
-            if (e.SocketError != SocketError.Success)
-            {
-                completeToken.SetException(new SocketException((int)e.SocketError));
-                CommunicationStateChanging(ConnectionState.Retry);
-                return;
-            }
-
-            _logger.MessageOut(completeToken.MessageSent, completeToken.Id);
-
-            if (!_replyExpectedMsgs.ContainsKey(completeToken.Id))
-            {
-                completeToken.SetCanceled();
-                return;
-            }
-
             try
             {
-                if (!completeToken.Task.Wait(T3))
+                using var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: 14);
+                EncodeMessage(msg, systembyte, DeviceId, buffer);
+
+                var bytesToTransfer = buffer.WrittenMemory;
+                do
                 {
-                    _logger.Error($"T3 Timeout[id=0x{completeToken.Id:X8}]: {T3 / 1000} sec.");
-                    completeToken.SetException(new SecsException(completeToken.MessageSent, Resources.T3Timeout));
+                    var length = await _socket.SendAsync(bytesToTransfer, SocketFlags.None).ConfigureAwait(false);
+                    bytesToTransfer = bytesToTransfer.Slice(length);
+                } while (!bytesToTransfer.IsEmpty);
+
+                _logger.MessageOut(msg, token.Id);
+
+                if (!msg.ReplyExpected)
+                {
+                    return default!;
                 }
+
+                var response = await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T3)).ConfigureAwait(false);
+                return response;
             }
-            catch (AggregateException) { }
+            catch (SocketException)
+            {
+                CommunicationStateChanging(ConnectionState.Retry);
+                throw;
+            }
+            catch (TimeoutException)
+            {
+                _logger.Error($"T3 Timeout[id=0x{systembyte:X8}]: {T3 / 1000} sec.");
+                throw new SecsException(msg, Resources.T3Timeout);
+            }
             finally
             {
-                _replyExpectedMsgs.TryRemove(completeToken.Id, out _);
+                _replyExpectedMsgs.TryRemove(systembyte, out _);
+            }
+
+            static void EncodeMessage(SecsMessage msg, int systembyte, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
+            {
+                // reserve 4 byte for total length
+                var lengthSpan = buffer.GetSpan(sizeof(int)).Slice(0, sizeof(int));
+                buffer.Advance(sizeof(int));
+
+                msg.EncodeTo(buffer, deviceId, systembyte);
+
+                BitConverter.TryWriteBytes(lengthSpan, buffer.WrittenCount - sizeof(int));
+                lengthSpan.Reverse();
             }
         }
 
@@ -609,7 +608,7 @@ namespace Secs4Net
                     }
 
                     Reset();
-                    Task.Factory.StartNew(_startImpl);
+                    Task.Run(_startImpl);
                     break;
             }
         }
@@ -637,7 +636,7 @@ namespace Secs4Net
             _socket = null;
         }
 
-        public void Start() => new TaskFactory(TaskScheduler.Default).StartNew(_startImpl);
+        public void Start() => Task.Run(_startImpl);
 
         /// <summary>
         /// Asynchronously send message to device .
@@ -669,14 +668,14 @@ namespace Secs4Net
         {
             public SecsMessage MessageSent { get; }
             public int Id { get; }
-            public MessageType MsgType { get; }
+            public MessageType MessageType { get; }
 
-            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType msgType)
+            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType messageType)
                 : base(TaskCreationOptions.RunContinuationsAsynchronously)
             {
                 MessageSent = primaryMessageMsg;
                 Id = id;
-                MsgType = msgType;
+                MessageType = messageType;
             }
 
             internal void HandleReplyMessage(SecsMessage replyMsg)
