@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using Microsoft.Toolkit.HighPerformance;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -249,38 +250,6 @@ namespace Secs4Net
         /// </summary>
         public void EncodeTo(IBufferWriter<byte> buffer)
             => _encode(this, buffer);
-
-        internal static Item BytesDecode(SecsFormat format, byte[] data, int index, int length)
-        {
-            return format switch
-            {
-                SecsFormat.ASCII => length == 0 ? A() : A(Encoding.ASCII.GetString(data, index, length)),
-                SecsFormat.JIS8 => length == 0 ? J() : J(Jis8Encoding.GetString(data, index, length)),
-                SecsFormat.Boolean => length == 0 ? Boolean() : Boolean(Decode<bool>(data, index, length)),
-                SecsFormat.Binary => length == 0 ? B() : B(Decode<byte>(data, index, length)),
-                SecsFormat.U1 => length == 0 ? U1() : U1(Decode<byte>(data, index, length)),
-                SecsFormat.U2 => length == 0 ? U2() : U2(Decode<ushort>(data, index, length)),
-                SecsFormat.U4 => length == 0 ? U4() : U4(Decode<uint>(data, index, length)),
-                SecsFormat.U8 => length == 0 ? U8() : U8(Decode<ulong>(data, index, length)),
-                SecsFormat.I1 => length == 0 ? I1() : I1(Decode<sbyte>(data, index, length)),
-                SecsFormat.I2 => length == 0 ? I2() : I2(Decode<short>(data, index, length)),
-                SecsFormat.I4 => length == 0 ? I4() : I4(Decode<int>(data, index, length)),
-                SecsFormat.I8 => length == 0 ? I8() : I8(Decode<long>(data, index, length)),
-                SecsFormat.F4 => length == 0 ? F4() : F4(Decode<float>(data, index, length)),
-                SecsFormat.F8 => length == 0 ? F8() : F8(Decode<double>(data, index, length)),
-                _ => throw new ArgumentException(@"Invalid format", nameof(format)),
-            };
-
-            static T[] Decode<T>(byte[] data, int index, int length) where T : unmanaged
-            {
-                var elmSize = Unsafe.SizeOf<T>();
-                data.Reverse(index, index + length, elmSize);
-                var values = new T[length / elmSize];
-                Buffer.BlockCopy(data, index, values, 0, length);
-                return values;
-            }
-        }
-
         private sealed class EncodedItemDebugView
         {
             private readonly Item _item;

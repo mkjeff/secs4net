@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -56,9 +57,8 @@ namespace Secs4Net
         private readonly Stack<List<Item>> _stack = new();
         private uint _messageDataLength;
         private MessageHeader _msgHeader;
-        private readonly byte[] _itemLengthBytes = new byte[4];
         private SecsFormat _format;
-        private byte _lengthBits;
+        private byte _lengthByteCount;
         private int _itemLength;
 
         public void Reset()
@@ -112,7 +112,7 @@ namespace Secs4Net
                     return 1;
                 }
 
-                _msgHeader = MessageHeader.Decode(new Span<byte>(_buffer, _decodeIndex, 10));
+                _msgHeader = MessageHeader.Decode(_buffer.AsSpan(_decodeIndex, 10));
                 _decodeIndex += 10;
                 _messageDataLength -= 10;
                 length -= 10;
@@ -152,32 +152,26 @@ namespace Secs4Net
                     return 2;
                 }
 
-                _format = (SecsFormat)(_buffer[_decodeIndex] & 0xFC);
-                _lengthBits = (byte)(_buffer[_decodeIndex] & 3);
-                _decodeIndex++;
+                (_format, _lengthByteCount) =  GetItemFormatAndLengthByteCount(_buffer.AsSpan(), ref _decodeIndex);
                 _messageDataLength--;
                 length--;
                 return GetItemLength(ref length, out need);
             }
 
-            // 3: get _itemLength _lengthBits bytes, at most 3 byte
+            // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
             int GetItemLength(ref int length, out int need)
             {
-                if (!CheckAvailable(length, _lengthBits, out need))
+                if (!CheckAvailable(length, _lengthByteCount, out need))
                 {
                     return 3;
                 }
 
-                Array.Copy(_buffer, _decodeIndex, _itemLengthBytes, 0, _lengthBits);
-                Array.Reverse(_itemLengthBytes, 0, _lengthBits);
-
-                _itemLength = BitConverter.ToInt32(_itemLengthBytes, 0);
-                Array.Clear(_itemLengthBytes, 0, 4);
+                _itemLength = GetDataLength(_buffer.AsSpan().Slice(_decodeIndex, _lengthByteCount));
                 Trace.WriteLineIf(_format != SecsFormat.List, $"Get format: {_format}, length: {_itemLength}");
 
-                _decodeIndex += _lengthBits;
-                _messageDataLength -= _lengthBits;
-                length -= _lengthBits;
+                _decodeIndex += _lengthByteCount;
+                _messageDataLength -= _lengthByteCount;
+                length -= _lengthByteCount;
                 return GetItem(ref length, out need);
             }
 
@@ -205,7 +199,7 @@ namespace Secs4Net
                         return 4;
                     }
 
-                    item = Item.BytesDecode(_format, _buffer, _decodeIndex, _itemLength);
+                    item = Item.Create(_format, _buffer.AsSpan(_decodeIndex, _itemLength));
                     Trace.WriteLine($"Complete Item: {_format}");
 
                     _decodeIndex += _itemLength;
@@ -259,17 +253,11 @@ namespace Secs4Net
                 return true;
             }
 
-            static Item BufferedDecodeItem(byte[] bytes, ref int index)
+            static Item BufferedDecodeItem(Span<byte> bytes, ref int index)
             {
-                var format = (SecsFormat)(bytes[index] & 0xFC);
-                var lengthBits = (byte)(bytes[index] & 3);
-                index++;
-
-                var itemLengthBytes = new byte[4];
-                Array.Copy(bytes, index, itemLengthBytes, 0, lengthBits);
-                Array.Reverse(itemLengthBytes, 0, lengthBits);
-                int dataLength = BitConverter.ToInt32(itemLengthBytes, 0); // max to 3 byte dataLength
-                index += lengthBits;
+                var (format, lengthByteCount) = GetItemFormatAndLengthByteCount(bytes, ref index);
+                int dataLength = GetDataLength(bytes.Slice(index, lengthByteCount));
+                index += lengthByteCount;
 
                 if (format == SecsFormat.List)
                 {
@@ -286,10 +274,28 @@ namespace Secs4Net
 
                     return Item.L(list);
                 }
-                var item = Item.BytesDecode(format, bytes, index, dataLength);
+                var item = Item.Create(format, bytes.Slice(index, dataLength));
                 index += dataLength;
                 return item;
             }
+        }
+
+        private static (SecsFormat format, byte lengthByteCount) GetItemFormatAndLengthByteCount(Span<byte> bytes, ref int index)
+        {
+            var formatAndLengthByte = bytes.DangerousGetReferenceAt(index);
+            var format = (SecsFormat)(formatAndLengthByte & 0xFC);
+            var lengthByteCount = (byte)(formatAndLengthByte & 3);
+            index++;
+            return (format, lengthByteCount);
+        }
+
+        private static int GetDataLength(Span<byte> sourceBytes)
+        {
+            Span<byte> itemLengthBytes = stackalloc byte[4];
+            sourceBytes.CopyTo(itemLengthBytes);
+            itemLengthBytes.Slice(0, sourceBytes.Length).Reverse();
+            int dataLength = BitConverter.ToInt32(itemLengthBytes); // max to 3 byte dataLength
+            return dataLength;
         }
 
         /// <summary>
