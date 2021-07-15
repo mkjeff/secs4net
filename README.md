@@ -3,6 +3,8 @@
 [![NuGet](https://img.shields.io/nuget/v/secs4net.svg)](https://www.nuget.org/packages/secs4net/)
 
 **Project Description**  
+Note: Secs4net will only support .net6.0+ starting from v2.
+
 SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to communicate with SEMI standard compatible device.  
 
 1\. Send message to device
@@ -39,11 +41,11 @@ secsGem.PrimaryMessageReceived += async (sender, messageWrapper) =>
     try 
     {
         //do something for primaryMsg
-        var primaryMsg = messageWrapper.Message;
+        var primaryMsg = messageWrapper.PrimaryMessage;
 	   
 
         // reply secondary msg to device
-        await messageWrapper.ReplyAsync( secondaryMsg ); 
+        await messageWrapper.TryReplyAsync( secondaryMsg ); 
     }
     catch (Exception ex) 
     {
