@@ -134,6 +134,7 @@ namespace Secs4Net
         /// Encode Item header
         /// </summary>
         /// <param name="count">List item count or value bytes length</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
         {
             var lengthSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<int, byte>(ref count), sizeof(int));
@@ -164,7 +165,10 @@ namespace Secs4Net
                 buffer.Advance(4);
                 return;
             }
-            throw new ArgumentOutOfRangeException(nameof(count), count, $@"Item data length:{count} is overflow");
+
+            ThrowHelper(count);
+
+            static void ThrowHelper(int count) => throw new ArgumentOutOfRangeException(nameof(count), count, $@"Item data length:{count} is overflow");
         }
     }
 }

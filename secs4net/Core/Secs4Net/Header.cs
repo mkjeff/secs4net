@@ -35,23 +35,12 @@ namespace Secs4Net
         internal void EncodeTo(IBufferWriter<byte> buffer)
         {
             var span = buffer.GetSpan(sizeHint: 10);
-            // DeviceId
             BinaryPrimitives.WriteUInt16BigEndian(span, DeviceId);
-
-            // S, ReplyExpected
             Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(2), (byte)(S | (ReplyExpected ? 0b1000_0000 : 0)));
-
-            // F
             Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(3), F);
-
-            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(4), 0);
-
-            // MessageType
+            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(4), (byte)0);
             Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(5), (byte)MessageType);
-
-            // SystemBytes
             BinaryPrimitives.WriteInt32BigEndian(span.Slice(6), SystemBytes);
-
             buffer.Advance(10);
         }
 

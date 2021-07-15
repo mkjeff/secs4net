@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance.Buffers;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -8,8 +10,11 @@ using System.Text;
 
 namespace Secs4Net
 {
+    [DebuggerDisplay("{GetDebugString()}")]
+    [DebuggerTypeProxy(typeof(EncodedItemDebugView))]
     public unsafe sealed partial class Item
     {
+        private const int DebuggerDisplayMaxCount = 20;
         private static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
         private static readonly Item EmptyL = new(SecsFormat.List, Array.Empty<Item>(), &EncodeEmptyItem);
         private static readonly Item EmptyA = new(SecsFormat.ASCII, string.Empty, &EncodeEmptyItem);
@@ -28,6 +33,7 @@ namespace Secs4Net
         private static readonly Item EmptyF8 = new(SecsFormat.F8, Array.Empty<double>(), &EncodeEmptyItem);
 
         private readonly object _values;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly unsafe delegate*<Item, IBufferWriter<byte>, void> _encode;
 
         public SecsFormat Format { get; }
@@ -82,7 +88,7 @@ namespace Secs4Net
         /// <summary>
         /// Get item array value
         /// </summary>
-        public IReadOnlyList<T> GetValues<T>() where T : unmanaged
+        public T[] GetValues<T>() where T : unmanaged
             => GetItemArray<T>();
 
         private T[] GetItemArray<T>() where T : unmanaged
@@ -159,43 +165,83 @@ namespace Secs4Net
             }
         }
 
-        public override string ToString()
-        {
-            var sb = new StringBuilder(Format.ToString()).Append('[');
-            switch (Format)
-            {
-                case SecsFormat.List:
-                    sb.Append(Unsafe.As<IReadOnlyList<Item>>(_values).Count).Append("]: ...");
-                    break;
-                case SecsFormat.ASCII:
-                case SecsFormat.JIS8:
-                    sb.Append(Unsafe.As<string>(_values).Length).Append("]: ").Append(Unsafe.As<string>(_values));
-                    break;
-                case SecsFormat.Binary:
-                    sb.Append(Unsafe.As<byte[]>(_values).Length).Append("]: ").Append(Unsafe.As<byte[]>(_values).ToHexString());
-                    break;
-                default:
-                    sb.Append(Unsafe.As<Array>(_values).Length).Append("]: ");
-                    switch (Format)
-                    {
-                        case SecsFormat.Boolean: sb.Append(JoinAsString<bool>(_values)); break;
-                        case SecsFormat.I1: sb.Append(JoinAsString<sbyte>(_values)); break;
-                        case SecsFormat.I2: sb.Append(JoinAsString<short>(_values)); break;
-                        case SecsFormat.I4: sb.Append(JoinAsString<int>(_values)); break;
-                        case SecsFormat.I8: sb.Append(JoinAsString<long>(_values)); break;
-                        case SecsFormat.U1: sb.Append(JoinAsString<byte>(_values)); break;
-                        case SecsFormat.U2: sb.Append(JoinAsString<ushort>(_values)); break;
-                        case SecsFormat.U4: sb.Append(JoinAsString<uint>(_values)); break;
-                        case SecsFormat.U8: sb.Append(JoinAsString<ulong>(_values)); break;
-                        case SecsFormat.F4: sb.Append(JoinAsString<float>(_values)); break;
-                        case SecsFormat.F8: sb.Append(JoinAsString<double>(_values)); break;
-                    }
-                    break;
-            }
-            return sb.ToString();
+        public override string ToString() => $"{Format}[{Count}]";
 
-            static string JoinAsString<T>(object src) where T : unmanaged
-                => string.Join(" ", Unsafe.As<T[]>(src));
+        private string GetDebugString()
+        {
+            var sb = new StringBuilder(Format.ToString()).Append('[').Append(Count).Append("]: ");
+            return Format switch
+            {
+                SecsFormat.List => sb.Append("...").ToString(),
+                SecsFormat.ASCII or SecsFormat.JIS8 => sb.Append(Unsafe.As<string>(_values)).ToString(),
+                SecsFormat.Binary => AppendBinary(sb, Unsafe.As<byte[]>(_values)).ToString(),
+                SecsFormat.Boolean => AppendArray<bool>(sb, _values).ToString(),
+                SecsFormat.I1 => AppendArray<sbyte>(sb, _values).ToString(),
+                SecsFormat.I2 => AppendArray<short>(sb, _values).ToString(),
+                SecsFormat.I4 => AppendArray<int>(sb, _values).ToString(),
+                SecsFormat.I8 => AppendArray<long>(sb, _values).ToString(),
+                SecsFormat.U1 => AppendArray<byte>(sb, _values).ToString(),
+                SecsFormat.U2 => AppendArray<ushort>(sb, _values).ToString(),
+                SecsFormat.U4 => AppendArray<uint>(sb, _values).ToString(),
+                SecsFormat.U8 => AppendArray<ulong>(sb, _values).ToString(),
+                SecsFormat.F4 => AppendArray<float>(sb, _values).ToString(),
+                SecsFormat.F8 => AppendArray<double>(sb, _values).ToString(),
+                _ => sb.ToString(),
+            };
+
+            static StringBuilder AppendArray<T>(StringBuilder sb, object src) where T : unmanaged
+            {
+                var arrary = Unsafe.As<T[]>(src);
+                if (arrary.Length == 0)
+                {
+                    return sb;
+                }
+
+                var len = Math.Min(arrary.Length, DebuggerDisplayMaxCount);
+                for (int i = 0; i < len - 1; i++)
+                {
+                    var val = arrary[i];
+                    sb.Append(val.ToString()).Append(' ');
+                }
+                sb.Append(arrary[len - 1]);
+                if (len < arrary.Length)
+                {
+                    sb.Append(" ...");
+                }
+
+                return sb;
+            }
+
+            static StringBuilder AppendBinary(StringBuilder sb, byte[] arrary)
+            {
+                if (arrary.Length == 0)
+                {
+                    return sb;
+                }
+
+                var len = Math.Min(arrary.Length, DebuggerDisplayMaxCount);
+                for (int i = 0; i < len - 1; i++)
+                {
+                    AppendHexChars(sb, arrary[i]);
+                    sb.Append(' ');
+                }
+
+                AppendHexChars(sb, arrary[len - 1]);
+                if (len < arrary.Length)
+                {
+                    sb.Append(" ...");
+                }
+
+                return sb;
+
+                static void AppendHexChars(StringBuilder sb, byte num)
+                {
+                    var hex1 = Math.DivRem(num, 0x10, out var hex0);
+                    sb.Append(GetHexChar(hex1)).Append(GetHexChar(hex0));
+                }
+
+                static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
+            }
         }
 
         /// <summary>
@@ -232,6 +278,26 @@ namespace Secs4Net
                 var values = new T[length / elmSize];
                 Buffer.BlockCopy(data, index, values, 0, length);
                 return values;
+            }
+        }
+
+        private sealed class EncodedItemDebugView
+        {
+            private readonly Item _item;
+
+            public EncodedItemDebugView(Item item)
+            {
+                _item = item;
+            }
+
+            public byte[] EncodedBytes
+            {
+                get
+                {
+                    using var buffer = new ArrayPoolBufferWriter<byte>();
+                    _item.EncodeTo(buffer);
+                    return buffer.WrittenSpan.ToArray();
+                }
             }
         }
     }

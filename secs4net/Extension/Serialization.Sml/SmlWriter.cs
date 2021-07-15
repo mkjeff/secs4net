@@ -77,7 +77,7 @@ namespace Secs4Net.Sml
                     writer.Write('\'');
                     break;
                 case SecsFormat.Binary:
-                    writer.Write(item.GetValues<byte>().ToHexString());
+                    WriteHexArray(writer, item.GetValues<byte>());
                     break;
                 case SecsFormat.F4:
                     WriteArray(writer, item.GetValues<float>());
@@ -117,16 +117,39 @@ namespace Secs4Net.Sml
             }
             writer.WriteLine('>');
 
-            static void WriteArray<T>(TextWriter writer, IReadOnlyList<T> array) where T : unmanaged
+            static void WriteArray<T>(TextWriter writer, T[] array) where T : unmanaged
             {
-                for (int i = 0; i < array.Count - 1; i++)
+                for (int i = 0; i < array.Length - 1; i++)
                 {
-                    T a = array[i];
                     writer.Write(array[i].ToString());
                     writer.Write(' ');
                 }
 
                 writer.Write(array[^1].ToString());
+            }
+
+            static void WriteHexArray(TextWriter writer, byte[] value)
+            {
+                if (value.Length == 0)
+                {
+                    return;
+                }
+
+                int length = value.Length * 3;
+                for (int i = 0; i < value.Length - 1; i++)
+                {
+                    AppendHexChars(writer, value[i]);
+                    writer.Write(' ');
+                }
+
+                AppendHexChars(writer, value[^1]);
+
+                static void AppendHexChars(TextWriter sb, byte num)
+                {
+                    var hex1 = Math.DivRem(num, 0x10, out var hex0);
+                    sb.Write(GetHexChar(hex1));
+                    sb.Write(GetHexChar(hex0));
+                }
             }
         }
 
@@ -143,7 +166,7 @@ namespace Secs4Net.Sml
                 {
                     SecsFormat.List => WriteListAsnc(writer, item, indent, indentStr),
                     SecsFormat.ASCII or SecsFormat.JIS8 => writer.WriteAsync($"'{item.GetString()}'"),
-                    SecsFormat.Binary => writer.WriteAsync(item.GetValues<byte>().ToHexString()),
+                    SecsFormat.Binary => WriteHexArray(writer, item.GetValues<byte>()),
                     SecsFormat.F4 => WriteArrayAsync(writer, item.GetValues<float>()),
                     SecsFormat.F8 => WriteArrayAsync(writer, item.GetValues<double>()),
                     SecsFormat.I1 => WriteArrayAsync(writer, item.GetValues<sbyte>()),
@@ -181,6 +204,30 @@ namespace Secs4Net.Sml
 
                 await writer.WriteAsync(array[^1].ToString());
             }
+
+            static async Task WriteHexArray(TextWriter writer, byte[] value)
+            {
+                if (value.Length == 0)
+                {
+                    return;
+                }
+
+                int length = value.Length * 3;
+                for (int i = 0; i < value.Length - 1; i++)
+                {
+                    await AppendHexChars(writer, value[i]);
+                    await writer.WriteAsync(' ');
+                }
+
+                await AppendHexChars(writer, value[^1]);
+
+                static async Task AppendHexChars(TextWriter sb, byte num)
+                {
+                    var hex1 = Math.DivRem(num, 0x10, out var hex0);
+                    await sb.WriteAsync(GetHexChar(hex1));
+                    await sb.WriteAsync(GetHexChar(hex0));
+                }
+            }
         }
 
         internal static string ToSml(this SecsFormat format)
@@ -203,5 +250,7 @@ namespace Secs4Net.Sml
                 SecsFormat.U4 => "U4",
                 _ => throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value"),
             };
+
+        private static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
     }
 }
