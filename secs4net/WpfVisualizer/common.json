@@ -1,0 +1,4308 @@
+[
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "ABT_S1"
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "AreYouThere"
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "OLD",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": [
+            1,
+            2
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "OLD_H",
+    "SecsItem": {
+      "List": []
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "CheckCJSpace",
+    "SecsItem": {
+      "List": [
+        {
+          "U2": [
+            18001
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "GetAllCJ",
+    "SecsItem": {
+      "List": [
+        {
+          "U2": [
+            18000
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "QueryLoadPortAccessMode",
+    "SecsItem": {
+      "List": [
+        {
+          "U2": [
+            18011
+          ]
+        },
+        {
+          "U2": [
+            18012
+          ]
+        },
+        {
+          "U2": [
+            18013
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "QueryOnlineSubStatus",
+    "SecsItem": {
+      "List": [
+        {
+          "U2": [
+            1
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "QueryPortStatus",
+    "SecsItem": {
+      "List": [
+        {
+          "U2": [
+            18026
+          ]
+        },
+        {
+          "U2": [
+            18027
+          ]
+        },
+        {
+          "U2": [
+            18028
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "SVNR",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "SVNRR",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "U1": []
+            },
+            {
+              "ASCII": ""
+            },
+            {
+              "ASCII": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "EstablishCommunicationsRequest_Host",
+    "SecsItem": {
+      "List": []
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "S1F14EstablishCommunicationsRequestAck_Host_Ack",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "RequestOffline"
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "RequestOnline"
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "CR",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "MDLN"
+        },
+        {
+          "ASCII": "Softrev"
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": true,
+    "Name": "CR_H",
+    "SecsItem": {
+      "List": []
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "CRA",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "ASCII": ""
+            },
+            {
+              "ASCII": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 1,
+    "F": 1,
+    "ReplyExpected": false,
+    "Name": "CRA_H",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ABT_S2"
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "ECR",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ECD",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "ECS",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "U4": [
+                1
+              ]
+            },
+            {
+              "Binary": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ECA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ECA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DTR"
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DTD",
+    "SecsItem": {
+      "ASCII": ""
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "TIS",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": []
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        },
+        {
+          "List": [
+            {
+              "U1": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "TIA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "TIA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "LDR",
+    "SecsItem": {
+      "Binary": []
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "LDD",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "ECNR",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "ECN",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "U1": []
+            },
+            {
+              "ASCII": ""
+            },
+            {
+              "Binary": []
+            },
+            {
+              "Binary": []
+            },
+            {
+              "Binary": []
+            },
+            {
+              "ASCII": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DTS",
+    "SecsItem": {
+      "ASCII": ""
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DTA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DTA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DMBI",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": [
+            0
+          ]
+        },
+        {
+          "U1": [
+            0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DMBG",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "DMBG_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "HCS",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": ""
+                },
+                {
+                  "Binary": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "S2F41ChangeOnlineSubState",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "CONTROLMODECHANGE"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "REMOTEMODE"
+                },
+                {
+                  "U1": [
+                    1
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "HCA",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "HCA_Nak",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            1
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": ""
+                },
+                {
+                  "Binary": [
+                    2
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DisableSpoolingForAllStreams",
+    "SecsItem": {
+      "List": []
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DisableSpoolingForFunctions",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "U1": []
+            },
+            {
+              "List": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "RSSF",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "U1": []
+            },
+            {
+              "List": [
+                {
+                  "U1": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "RSA",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "RSA_Nak",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            1
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U1": [
+                    0
+                  ]
+                },
+                {
+                  "Binary": [
+                    1
+                  ]
+                },
+                {
+                  "List": [
+                    {
+                      "U1": [
+                        0
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DVLA",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U1": []
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "Binary": []
+                        },
+                        {
+                          "List": [
+                            {
+                              "U1": []
+                            },
+                            {
+                              "U1": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DVLA_1",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": [
+            0
+          ]
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DVLA_2",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U1": []
+                },
+                {
+                  "List": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "DVLA_3",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U1": []
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "Binary": []
+                        },
+                        {
+                          "List": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "VLAA",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "VLAA_Nak",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            1
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U1": []
+                },
+                {
+                  "Binary": [
+                    1
+                  ]
+                },
+                {
+                  "List": [
+                    {
+                      "Binary": []
+                    },
+                    {
+                      "Binary": [
+                        1
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "S2F47VariableLimitAttributeRequest_ALL",
+    "SecsItem": {
+      "List": []
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "VLAR",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "VLAS",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "U1": [
+                0
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "sec"
+                },
+                {
+                  "U1": [
+                    0
+                  ]
+                },
+                {
+                  "U1": [
+                    100
+                  ]
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "Binary": [
+                            1
+                          ]
+                        },
+                        {
+                          "U1": [
+                            1
+                          ]
+                        },
+                        {
+                          "U1": [
+                            5
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "SC",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "DATAID"
+        },
+        {
+          "ASCII": "OBJSPEC"
+        },
+        {
+          "ASCII": "STARTCARRIER"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "PTN"
+                },
+                {
+                  "Binary": [
+                    100
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "SC_1",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "DATAID"
+        },
+        {
+          "ASCII": "OBJSPEC"
+        },
+        {
+          "ASCII": "UNLOAD"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "PTN"
+                },
+                {
+                  "Binary": [
+                    100
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": true,
+    "Name": "SC_2",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "DATAID"
+        },
+        {
+          "ASCII": "OBJSPEC"
+        },
+        {
+          "ASCII": "LOADREADY"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "PTN"
+                },
+                {
+                  "Binary": [
+                    100
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 2,
+    "F": 2,
+    "ReplyExpected": false,
+    "Name": "CA",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "PTN"
+                },
+                {
+                  "Binary": [
+                    100
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "MSR"
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": false,
+    "Name": "MSD",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": []
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U1": []
+                },
+                {
+                  "U1": []
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "CancelCarrier",
+    "SecsItem": {
+      "List": [
+        {
+          "U4": [
+            0
+          ]
+        },
+        {
+          "ASCII": "CancelCarrier"
+        },
+        {
+          "ASCII": "ASR12272"
+        },
+        {
+          "Binary": [
+            1
+          ]
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "CancelCarrierAtPort",
+    "SecsItem": {
+      "List": [
+        {
+          "U4": [
+            0
+          ]
+        },
+        {
+          "ASCII": "CancelCarrierAtPort"
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "Binary": [
+            1
+          ]
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "ProceedWithCarrier",
+    "SecsItem": {
+      "List": [
+        {
+          "U4": [
+            1
+          ]
+        },
+        {
+          "ASCII": "ProceedWithCarrier"
+        },
+        {
+          "ASCII": "ASR10192"
+        },
+        {
+          "Binary": [
+            1
+          ]
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "ChangeAccessMode",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "ChangeAccess"
+        },
+        {
+          "ASCII": "1"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "AccessMode"
+                },
+                {
+                  "Binary": [
+                    0
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": true,
+    "Name": "CSR"
+  },
+  {
+    "S": 3,
+    "F": 3,
+    "ReplyExpected": false,
+    "Name": "CSRR",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": []
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U1": []
+                },
+                {
+                  "U1": []
+                },
+                {
+                  "ASCII": ""
+                },
+                {
+                  "U1": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "RTL",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "SM",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "HC",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "MR",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "SIR",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "PCE",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "AL",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 4,
+    "F": 4,
+    "ReplyExpected": false,
+    "Name": "RTUP",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ABT_S5"
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "ARS",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            1
+          ]
+        },
+        {
+          "U1": []
+        },
+        {
+          "ASCII": "Sample alarm text"
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ARA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ARA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "EAS",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            128
+          ]
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "EAA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "EAA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "LAR",
+    "SecsItem": {
+      "U1": []
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "LAR_All",
+    "SecsItem": {
+      "U1": []
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "LAD",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "Binary": [
+                1
+              ]
+            },
+            {
+              "U1": []
+            },
+            {
+              "ASCII": "Sample alarm text"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "LEAR"
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "LEAD",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "Binary": [
+                1
+              ]
+            },
+            {
+              "U1": []
+            },
+            {
+              "ASCII": "Sample alarm text"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "ARBS",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U4": []
+                },
+                {
+                  "Boolean": []
+                },
+                {
+                  "U4": []
+                },
+                {
+                  "ASCII": "YYYYMMDDhhmmsscc"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ABRA",
+    "SecsItem": {
+      "List": []
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": true,
+    "Name": "AN",
+    "SecsItem": {
+      "List": [
+        {
+          "U4": []
+        },
+        {
+          "Boolean": []
+        },
+        {
+          "ASCII": "YYYYMMDDhhmmsscc"
+        }
+      ]
+    }
+  },
+  {
+    "S": 5,
+    "F": 5,
+    "ReplyExpected": false,
+    "Name": "ANA",
+    "SecsItem": {
+      "Binary": []
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "ABT_S6"
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "S6F1TDS",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": []
+        },
+        {
+          "U1": []
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "List": [
+            {
+              "Binary": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "TDA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "TDA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "DVS",
+    "SecsItem": {
+      "List": [
+        {
+          "U2": [
+            0
+          ]
+        },
+        {
+          "ASCII": "0"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "0"
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "0"
+                        },
+                        {
+                          "Binary": [
+                            0
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "DVA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "DVA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "MBI",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": [
+            0
+          ]
+        },
+        {
+          "U1": [
+            0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "MBG",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "MBG_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "DDR",
+    "SecsItem": {
+      "U2": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "DDD",
+    "SecsItem": {
+      "List": [
+        {
+          "U2": [
+            0
+          ]
+        },
+        {
+          "ASCII": "0"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "0"
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "0"
+                        },
+                        {
+                          "Binary": [
+                            0
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "FVS",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "U2": [
+            1
+          ]
+        },
+        {
+          "ASCII": "1"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "1"
+                },
+                {
+                  "List": [
+                    {
+                      "Binary": [
+                        1
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "PD",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            1
+          ]
+        },
+        {
+          "U2": [
+            1
+          ]
+        },
+        {
+          "U2": [
+            300
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": ""
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "970326113700"
+                    },
+                    {
+                      "ASCII": "970326123200"
+                    },
+                    {
+                      "ASCII": "99"
+                    },
+                    {
+                      "ASCII": "SLot001"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "PDSLot",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            1
+          ]
+        },
+        {
+          "U2": [
+            1
+          ]
+        },
+        {
+          "U2": [
+            6
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": ""
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "9"
+                    },
+                    {
+                      "ASCII": "9"
+                    },
+                    {
+                      "ASCII": "9"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": ""
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "C"
+                        },
+                        {
+                          "ASCII": "L"
+                        },
+                        {
+                          "ASCII": "25"
+                        },
+                        {
+                          "List": [
+                            {
+                              "ASCII": "C"
+                            },
+                            {
+                              "ASCII": "L"
+                            },
+                            {
+                              "List": [
+                                {
+                                  "ASCII": "0113"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "FVA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "FVA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "ERA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "AERS",
+    "SecsItem": {
+      "List": [
+        {
+          "U2": [
+            0
+          ]
+        },
+        {
+          "U2": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U2": [
+                    12
+                  ]
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "0"
+                        },
+                        {
+                          "Binary": [
+                            0
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "AERA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "AERA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "ERR",
+    "SecsItem": {
+      "U1": []
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "ERD",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": [
+            0
+          ]
+        },
+        {
+          "U1": []
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U1": []
+                },
+                {
+                  "List": [
+                    {
+                      "U1": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "AERR",
+    "SecsItem": {
+      "ASCII": "0"
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "AERD",
+    "SecsItem": {
+      "List": [
+        {
+          "U2": [
+            0
+          ]
+        },
+        {
+          "U2": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U2": [
+                    12
+                  ]
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "0"
+                        },
+                        {
+                          "Binary": [
+                            0
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "IRR",
+    "SecsItem": {
+      "U1": []
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "IRD",
+    "SecsItem": {
+      "List": [
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "AIRR",
+    "SecsItem": {
+      "ASCII": ""
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "AIRD",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "ASCII": "0"
+            },
+            {
+              "Binary": [
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": true,
+    "Name": "RSD",
+    "SecsItem": {
+      "U1": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "RSDAC",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 6,
+    "F": 6,
+    "ReplyExpected": false,
+    "Name": "RSDAC_1",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "ABT_S7"
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PPI",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "U1": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PPG",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PPS",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "12"
+        },
+        {
+          "Binary": [
+            18,
+            18,
+            18,
+            18,
+            35,
+            52
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PPA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PPA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PPR",
+    "SecsItem": {
+      "ASCII": "12"
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PPD",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "Binary": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "DPS",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "DPA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "DPA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "GetRecipeList"
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "RED",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "yyy"
+        },
+        {
+          "ASCII": "xxx"
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "FPS",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "2"
+        },
+        {
+          "ASCII": "a"
+        },
+        {
+          "ASCII": "v"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U2": [
+                    12
+                  ]
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "12"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "FPA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "FPA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "FPR",
+    "SecsItem": {
+      "ASCII": "12"
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "S7F25xFormattedProcessProgramRequest",
+    "SecsItem": {
+      "ASCII": "9"
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "FPD",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": ""
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U2": []
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PVS",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "U1": [
+                    0
+                  ]
+                },
+                {
+                  "U2": []
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PVA"
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": true,
+    "Name": "PVI",
+    "SecsItem": {
+      "U1": []
+    }
+  },
+  {
+    "S": 7,
+    "F": 7,
+    "ReplyExpected": false,
+    "Name": "PVG",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "ABT_S9"
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "UDN",
+    "SecsItem": {
+      "Binary": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "USN",
+    "SecsItem": {
+      "Binary": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "UFN",
+    "SecsItem": {
+      "Binary": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "IDN",
+    "SecsItem": {
+      "Binary": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "TTN",
+    "SecsItem": {
+      "Binary": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "DLN",
+    "SecsItem": {
+      "Binary": []
+    }
+  },
+  {
+    "S": 9,
+    "F": 9,
+    "ReplyExpected": false,
+    "Name": "CTN",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "Binary": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "ABT_S10"
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": true,
+    "Name": "TRN",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "ASCII": ""
+        }
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "TRA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "TRA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": true,
+    "Name": "VTN",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "ASCII": ""
+        }
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "VTA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "VTA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": true,
+    "Name": "VTN",
+    "SecsItem": {
+      "List": [
+        {
+          "Binary": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "ASCII": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "VMA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "VMA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "MNN",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "BCN",
+    "SecsItem": {
+      "I1": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "BCA",
+    "SecsItem": {
+      "Binary": [
+        0
+      ]
+    }
+  },
+  {
+    "S": 10,
+    "F": 10,
+    "ReplyExpected": false,
+    "Name": "BCA_Nak",
+    "SecsItem": {
+      "Binary": [
+        1
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GAR",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": "LoadPort"
+        },
+        {
+          "List": [
+            {
+              "ASCII": "1"
+            }
+          ]
+        },
+        {
+          "List": []
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GAR_1",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": "Carrier"
+        },
+        {
+          "List": [
+            {
+              "ASCII": "CAS001"
+            }
+          ]
+        },
+        {
+          "List": []
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GAR_2",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "ASCII": "LoadPort"
+        },
+        {
+          "List": [
+            {
+              "ASCII": "1"
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "abc"
+                },
+                {
+                  "ASCII": "abc"
+                },
+                {
+                  "U1": [
+                    0
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "ASCII": "abc"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "GAD",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "abc"
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "abc"
+                        },
+                        {
+                          "ASCII": "abc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "U1": [
+                0
+              ]
+            },
+            {
+              "List": [
+                {
+                  "List": [
+                    {
+                      "U1": [
+                        0
+                      ]
+                    },
+                    {
+                      "ASCII": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "GAD_Nak",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "abc"
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "abc"
+                        },
+                        {
+                          "ASCII": "abc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "U1": [
+                1
+              ]
+            },
+            {
+              "List": [
+                {
+                  "List": [
+                    {
+                      "U1": [
+                        0
+                      ]
+                    },
+                    {
+                      "ASCII": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "SAR",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "abc"
+        },
+        {
+          "ASCII": "abc"
+        },
+        {
+          "List": [
+            {
+              "ASCII": "abc"
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "abc"
+                },
+                {
+                  "ASCII": "abc"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "SAD",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "abc"
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "abc"
+                        },
+                        {
+                          "ASCII": "abc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "U1": [
+                0
+              ]
+            },
+            {
+              "List": [
+                {
+                  "List": [
+                    {
+                      "U1": [
+                        0
+                      ]
+                    },
+                    {
+                      "ASCII": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "SAD_Nak",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "abc"
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "abc"
+                        },
+                        {
+                          "ASCII": "abc"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "U1": [
+                1
+              ]
+            },
+            {
+              "List": [
+                {
+                  "List": [
+                    {
+                      "U1": [
+                        0
+                      ]
+                    },
+                    {
+                      "ASCII": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GTR",
+    "SecsItem": {
+      "ASCII": ""
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "GTD",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "ASCII": "abc"
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "Binary": [
+                0
+              ]
+            },
+            {
+              "List": [
+                {
+                  "List": [
+                    {
+                      "U1": [
+                        0
+                      ]
+                    },
+                    {
+                      "ASCII": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "GANR",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": ""
+        },
+        {
+          "List": [
+            {
+              "ASCII": "LoadPort"
+            },
+            {
+              "ASCII": "Carrier"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": false,
+    "Name": "GAND",
+    "SecsItem": {
+      "List": [
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "abc"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "U1": [
+                0
+              ]
+            },
+            {
+              "List": [
+                {
+                  "List": [
+                    {
+                      "U1": [
+                        0
+                      ]
+                    },
+                    {
+                      "ASCII": "abc"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 14,
+    "F": 14,
+    "ReplyExpected": true,
+    "Name": "CreateControlJob",
+    "SecsItem": {
+      "List": [
+        {
+          "ASCII": "Equipment"
+        },
+        {
+          "ASCII": "ControlJob"
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "ObjID"
+                },
+                {
+                  "ASCII": "CJ02"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessingCtrlSpec"
+                },
+                {
+                  "List": []
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "CarrierInputSpec"
+                },
+                {
+                  "List": [
+                    {
+                      "ASCII": "ASR10192"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "MtrlOutSpec"
+                },
+                {
+                  "ASCII": ""
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "ProcessOrderMgmt"
+                },
+                {
+                  "ASCII": "LIST"
+                }
+              ]
+            },
+            {
+              "List": [
+                {
+                  "ASCII": "StartMethod"
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "PJCancel",
+    "SecsItem": {
+      "List": [
+        {
+          "U4": [
+            1234
+          ]
+        },
+        {
+          "ASCII": "PJ3"
+        },
+        {
+          "ASCII": "Cancel"
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "S16F5PJAbort",
+    "SecsItem": {
+      "List": [
+        {
+          "U4": [
+            1234
+          ]
+        },
+        {
+          "ASCII": "PJ1"
+        },
+        {
+          "ASCII": "Abort"
+        },
+        {
+          "List": []
+        }
+      ]
+    }
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "CreateProcessJob",
+    "SecsItem": {
+      "List": [
+        {
+          "U4": [
+            0
+          ]
+        },
+        {
+          "List": [
+            {
+              "List": [
+                {
+                  "ASCII": "PJ2"
+                },
+                {
+                  "Binary": [
+                    13
+                  ]
+                },
+                {
+                  "List": [
+                    {
+                      "List": [
+                        {
+                          "ASCII": "ASR10192"
+                        },
+                        {
+                          "List": [
+                            {
+                              "U1": [
+                                3
+                              ]
+                            },
+                            {
+                              "U1": [
+                                5
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "List": [
+                    {
+                      "U1": [
+                        1
+                      ]
+                    },
+                    {
+                      "ASCII": "9"
+                    },
+                    {
+                      "List": []
+                    }
+                  ]
+                },
+                {
+                  "Boolean": [
+                    true
+                  ]
+                },
+                {
+                  "List": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "CheckPJDuplicated"
+  },
+  {
+    "S": 16,
+    "F": 16,
+    "ReplyExpected": true,
+    "Name": "CheckPJSpace"
+  }
+]

@@ -15,6 +15,16 @@ namespace Secs4Net.Json
             return Encoding.UTF8.GetString(mem.ToArray());
         }
 
+        public static string ToJson(this Item item, JsonWriterOptions options = default)
+        {
+            using var mem = new MemoryStream();
+            using var jwtr = new Utf8JsonWriter(mem, options);
+            item.WriteTo(jwtr);
+            jwtr.Flush();
+            return Encoding.UTF8.GetString(mem.ToArray());
+        }
+
+
         public static void WriteTo(this IEnumerable<SecsMessage> messages, Stream writer, JsonWriterOptions options)
         {
             using var jwtr = new Utf8JsonWriter(writer, options);

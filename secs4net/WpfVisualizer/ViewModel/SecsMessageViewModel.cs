@@ -1,7 +1,6 @@
-﻿using System.IO;
-using Newtonsoft.Json;
-using Secs4Net;
+﻿using Secs4Net;
 using Secs4Net.Json;
+using System.Text.Json;
 
 namespace SecsMessageVisuallizer.ViewModel
 {
@@ -32,15 +31,7 @@ namespace SecsMessageVisuallizer.ViewModel
         }
         public bool ReplyExpected => _secsMsg.ReplyExpected;
 
-        public override string ToString()
-        {
-            using (var s = new StringWriter())
-            using (var j = new JsonTextWriter(s) { Formatting = Formatting.Indented })
-            {
-                _secsMsg.WriteTo(j);
-                j.Flush();
-                return s.ToString();
-            }
-        }
+        public override string ToString() 
+            => _secsMsg.ToJson(new JsonWriterOptions { Indented = true });
     }
 }

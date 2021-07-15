@@ -1,9 +1,10 @@
-﻿
-using Secs4Net;
+﻿using Secs4Net;
 using System.Collections.Generic;
 
-namespace SecsMessageVisuallizer.ViewModel {
-    public class SecsMessageCollectionViewModel {
+namespace SecsMessageVisuallizer.ViewModel
+{
+    public class SecsMessageCollectionViewModel
+    {
         readonly SecsMessageList _msgList;
 
         public SecsMessageCollectionViewModel(SecsMessageList secsMsgList)

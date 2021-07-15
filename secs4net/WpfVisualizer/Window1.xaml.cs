@@ -9,7 +9,7 @@ namespace SecsMessageVisuallizer {
     public partial class Window1 : Window {
         public Window1() {
             InitializeComponent();
-            base.DataContext = new SecsMessageCollectionViewModel(new SecsMessageList("common.json"));
+            DataContext = new SecsMessageCollectionViewModel(new SecsMessageList("common.json"));
         }
     }
 }
