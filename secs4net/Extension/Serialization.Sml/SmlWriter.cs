@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -119,8 +120,13 @@ namespace Secs4Net.Sml
             }
             writer.WriteLine('>');
 
-            static void WriteArray<T>(TextWriter writer, T[] array) where T : unmanaged
+            static void WriteArray<T>(TextWriter writer, ValueArray<T> array) where T : unmanaged
             {
+                if (array.IsEmpty)
+                {
+                    return;
+                }
+
                 for (int i = 0; i < array.Length - 1; i++)
                 {
                     writer.Write(array[i].ToString());
@@ -130,21 +136,21 @@ namespace Secs4Net.Sml
                 writer.Write(array[^1].ToString());
             }
 
-            static void WriteHexArray(TextWriter writer, byte[] value)
+            static void WriteHexArray(TextWriter writer, ValueArray<byte> array)
             {
-                if (value.Length == 0)
+                if (array.IsEmpty)
                 {
                     return;
                 }
 
-                int length = value.Length * 3;
-                for (int i = 0; i < value.Length - 1; i++)
+                int length = array.Length * 3;
+                for (int i = 0; i < array.Length - 1; i++)
                 {
-                    AppendHexChars(writer, value[i]);
+                    AppendHexChars(writer, array[i]);
                     writer.Write(' ');
                 }
 
-                AppendHexChars(writer, value[^1]);
+                AppendHexChars(writer, array[^1]);
 
                 static void AppendHexChars(TextWriter sb, byte num)
                 {
@@ -168,7 +174,7 @@ namespace Secs4Net.Sml
                 {
                     SecsFormat.List => WriteListAsnc(writer, item, indent, indentStr),
                     SecsFormat.ASCII or SecsFormat.JIS8 => writer.WriteAsync($"'{item.GetString()}'"),
-                    SecsFormat.Binary => WriteHexArray(writer, item.GetValues<byte>()),
+                    SecsFormat.Binary => WriteHexArrayAsync(writer, item.GetValues<byte>()),
                     SecsFormat.F4 => WriteArrayAsync(writer, item.GetValues<float>()),
                     SecsFormat.F8 => WriteArrayAsync(writer, item.GetValues<double>()),
                     SecsFormat.I1 => WriteArrayAsync(writer, item.GetValues<sbyte>()),
@@ -195,11 +201,15 @@ namespace Secs4Net.Sml
                 await writer.WriteAsync(indentStr).ConfigureAwait(false);
             }
 
-            static async Task WriteArrayAsync<T>(TextWriter writer, IReadOnlyList<T> array) where T : unmanaged
+            static async Task WriteArrayAsync<T>(TextWriter writer, ValueArray<T> array) where T : unmanaged
             {
-                for (int i = 0; i < array.Count - 1; i++)
+                if (array.IsEmpty)
                 {
-                    T a = array[i];
+                    return;
+                }
+
+                for (int i = 0; i < array.Length - 1; i++)
+                {
                     await writer.WriteAsync(array[i].ToString()).ConfigureAwait(false);
                     await writer.WriteAsync(' ').ConfigureAwait(false);
                 }
@@ -207,21 +217,21 @@ namespace Secs4Net.Sml
                 await writer.WriteAsync(array[^1].ToString()).ConfigureAwait(false);
             }
 
-            static async Task WriteHexArray(TextWriter writer, byte[] value)
+            static async Task WriteHexArrayAsync(TextWriter writer, ValueArray<byte> array)
             {
-                if (value.Length == 0)
+                if (array.Length == 0)
                 {
                     return;
                 }
 
-                int length = value.Length * 3;
-                for (int i = 0; i < value.Length - 1; i++)
+                int length = array.Length * 3;
+                for (int i = 0; i < array.Length - 1; i++)
                 {
-                    await AppendHexChars(writer, value[i]).ConfigureAwait(false);
+                    await AppendHexChars(writer, array[i]).ConfigureAwait(false);
                     await writer.WriteAsync(' ').ConfigureAwait(false);
                 }
 
-                await AppendHexChars(writer, value[^1]).ConfigureAwait(false);
+                await AppendHexChars(writer, array[^1]).ConfigureAwait(false);
 
                 static async Task AppendHexChars(TextWriter sb, byte num)
                 {

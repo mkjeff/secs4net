@@ -10,7 +10,7 @@ namespace SecsDevice
 {
     public partial class Form1 : Form
     {
-        SecsGem _secsGem;
+        SecsGem? _secsGem;
         readonly ISecsGemLogger _logger;
         readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
 
@@ -58,7 +58,7 @@ namespace SecsDevice
             btnDisable.Enabled = true;
         }
 
-        private void PrimaryMessageReceived(object sender, PrimaryMessageWrapper e)
+        private void PrimaryMessageReceived(object? sender, PrimaryMessageWrapper e)
         {
             this.Invoke(new MethodInvoker(() => recvBuffer.Add(e)));
         }
@@ -76,7 +76,7 @@ namespace SecsDevice
 
         private async void btnSendPrimary_Click(object sender, EventArgs e)
         {
-            if (_secsGem.State != ConnectionState.Selected)
+            if (_secsGem?.State != ConnectionState.Selected)
                 return;
             if (string.IsNullOrWhiteSpace(txtSendPrimary.Text))
                 return;
@@ -165,7 +165,7 @@ namespace SecsDevice
                 });
             }
 
-            public void Error(string msg, Exception ex = null)
+            public void Error(string msg, Exception? ex = null)
             {
                 _form.Invoke((MethodInvoker)delegate
                 {

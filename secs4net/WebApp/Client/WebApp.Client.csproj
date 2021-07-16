@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <RunAOTCompilation>true</RunAOTCompilation>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

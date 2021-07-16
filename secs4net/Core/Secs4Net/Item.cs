@@ -2,6 +2,7 @@
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Secs4Net
 {
     [DebuggerDisplay("{GetDebugString()}")]
     [DebuggerTypeProxy(typeof(EncodedItemDebugView))]
-    public unsafe sealed partial class Item
+    public unsafe sealed partial class Item : IEquatable<Item>
     {
         private const int DebuggerDisplayMaxCount = 20;
         private static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
@@ -37,6 +38,13 @@ namespace Secs4Net
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly unsafe delegate*<Item, IBufferWriter<byte>, void> _encode;
 
+        private unsafe Item(SecsFormat format, IEnumerable values, delegate*<Item, IBufferWriter<byte>, void> encoder)
+        {
+            Format = format;
+            _values = values;
+            _encode = encoder;
+        }
+
         public SecsFormat Format { get; }
 
         public int Count
@@ -55,61 +63,65 @@ namespace Secs4Net
         /// <summary>
         /// Get the first element of item array value
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public ref readonly T GetValue<T>() where T : unmanaged
         {
-            T[] arr = GetItemArray<T>();
-
-            if (arr.Length == 0)
+            var arr = GetArray();
+            if (arr.Length == 0 || Buffer.ByteLength(arr) / Unsafe.SizeOf<T>() == 0)
             {
                 throw new IndexOutOfRangeException("The item is empty");
             }
 
             ref var data = ref MemoryMarshal.GetArrayDataReference(arr);
-            return ref Unsafe.Add(ref data, 0);
+            return ref Unsafe.As<byte, T>(ref data);
         }
 
         /// <summary>
         /// Get the first element of item array value
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public ref readonly T GetValueOrDefault<T>(in T defaultValue = default) where T : unmanaged
         {
-            T[] arr = GetItemArray<T>();
-
-            if (arr.Length > 0)
+            var arr = GetArray();
+            if (arr.Length == 0 || Buffer.ByteLength(arr) / Unsafe.SizeOf<T>() == 0)
             {
-                ref var data = ref MemoryMarshal.GetArrayDataReference(arr);
-                return ref Unsafe.Add(ref data, 0);
+                return ref defaultValue;
             }
             else
             {
-                return ref defaultValue;
+                ref var data = ref MemoryMarshal.GetArrayDataReference(arr);
+                return ref Unsafe.As<byte, T>(ref data);
             }
         }
 
         /// <summary>
-        /// Get item array value
+        /// Get item value array wrapper
         /// </summary>
-        public T[] GetValues<T>() where T : unmanaged
-            => GetItemArray<T>();
+        public ValueArray<T> GetValues<T>() where T : unmanaged
+            => new(GetArray());
 
-        private T[] GetItemArray<T>() where T : unmanaged
+        private Array GetArray()
         {
-            if (_values is T[] arr)
-            {
-                return arr;
-            }
-
             if (Format == SecsFormat.List)
             {
-                throw new InvalidOperationException("The item is a list");
+                ThrowHelper(new InvalidOperationException("The item is a list"));
             }
 
             if (Format == SecsFormat.ASCII || Format == SecsFormat.JIS8)
             {
-                throw new InvalidOperationException("The item is a string");
+                ThrowHelper(new InvalidOperationException("The item is a string"));
             }
 
-            throw new InvalidOperationException("The type is incompatible");
+            if (_values is not Array arr)
+            {
+                ThrowHelper(new InvalidOperationException("The type is incompatible"));
+            }
+
+            return arr;
+
+            static void ThrowHelper(Exception ex) => throw ex;
         }
 
         /// <summary>
@@ -121,7 +133,9 @@ namespace Secs4Net
             ? throw new InvalidOperationException("The type is incompatible")
             : Unsafe.As<string>(_values);
 
-        public bool IsMatch(Item target)
+        public override bool Equals(object? obj) => Equals(obj as Item);
+        public bool Equals(Item? other) => other is not null && IsMatch(other);
+        private bool IsMatch(Item target)
         {
             if (Format != target.Format)
             {
@@ -192,8 +206,8 @@ namespace Secs4Net
 
             static StringBuilder AppendArray<T>(StringBuilder sb, object src) where T : unmanaged
             {
-                var arrary = Unsafe.As<T[]>(src);
-                if (arrary.Length == 0)
+                ReadOnlySpan<T> arrary = Unsafe.As<T[]>(src);
+                if (arrary.IsEmpty)
                 {
                     return sb;
                 }
@@ -201,10 +215,10 @@ namespace Secs4Net
                 var len = Math.Min(arrary.Length, DebuggerDisplayMaxCount);
                 for (int i = 0; i < len - 1; i++)
                 {
-                    var val = arrary[i];
-                    sb.Append(val.ToString()).Append(' ');
+                    sb.Append(arrary.DangerousGetReferenceAt(i).ToString()).Append(' ');
                 }
-                sb.Append(arrary[len - 1]);
+
+                sb.Append(arrary.DangerousGetReferenceAt(len - 1));
                 if (len < arrary.Length)
                 {
                     sb.Append(" ...");
@@ -213,9 +227,9 @@ namespace Secs4Net
                 return sb;
             }
 
-            static StringBuilder AppendBinary(StringBuilder sb, byte[] arrary)
+            static StringBuilder AppendBinary(StringBuilder sb, ReadOnlySpan<byte> arrary)
             {
-                if (arrary.Length == 0)
+                if (arrary.IsEmpty)
                 {
                     return sb;
                 }
@@ -223,11 +237,11 @@ namespace Secs4Net
                 var len = Math.Min(arrary.Length, DebuggerDisplayMaxCount);
                 for (int i = 0; i < len - 1; i++)
                 {
-                    AppendHexChars(sb, arrary[i]);
+                    AppendHexChars(sb, arrary.DangerousGetReferenceAt(i));
                     sb.Append(' ');
                 }
 
-                AppendHexChars(sb, arrary[len - 1]);
+                AppendHexChars(sb, arrary.DangerousGetReferenceAt(len - 1));
                 if (len < arrary.Length)
                 {
                     sb.Append(" ...");
@@ -250,24 +264,22 @@ namespace Secs4Net
         /// </summary>
         public void EncodeTo(IBufferWriter<byte> buffer)
             => _encode(this, buffer);
+
+        public byte[] GetEncodedBytes()
+        {
+            using var buffer = new ArrayPoolBufferWriter<byte>();
+            EncodeTo(buffer);
+            return buffer.WrittenSpan.ToArray();
+        }
+
         private sealed class EncodedItemDebugView
         {
             private readonly Item _item;
-
-            public EncodedItemDebugView(Item item)
-            {
-                _item = item;
-            }
-
-            public byte[] EncodedBytes
-            {
-                get
-                {
-                    using var buffer = new ArrayPoolBufferWriter<byte>();
-                    _item.EncodeTo(buffer);
-                    return buffer.WrittenSpan.ToArray();
-                }
-            }
+            public EncodedItemDebugView(Item item) => _item = item;
+            public byte[] EncodedBytes => _item.GetEncodedBytes();
         }
+
+        public override int GetHashCode()
+            => throw new NotImplementedException("Secs4Net.Item is possible a large value object. You should implement a custom IEqualityComparer<Item> for your hash logic.");
     }
 }

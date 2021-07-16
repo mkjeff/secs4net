@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <PackageId>Secs4Net.Json</PackageId>
     <Product>Secs4Net.Json</Product>
     <Authors>mkjeff</Authors>
     <AssemblyName>Secs4Net.Json</AssemblyName>

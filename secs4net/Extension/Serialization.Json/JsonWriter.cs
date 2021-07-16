@@ -125,14 +125,15 @@ namespace Secs4Net.Json
             }
             writer.WriteEndObject();
 
-            static void WriteValue<T>(Utf8JsonWriter w, Item i, Action<Utf8JsonWriter, T> write) where T : unmanaged
+            static void WriteValue<T>(Utf8JsonWriter writer, Item item, Action<Utf8JsonWriter, T> write) where T : unmanaged
             {
-                w.WriteStartArray();
-                foreach (var v in i.GetValues<T>())
+                writer.WriteStartArray();
+                var values = item.GetValues<T>();
+                for (var i =0; i< values.Length; i++)
                 {
-                    write(w, v);
+                    write(writer, values[i]);
                 }
-                w.WriteEndArray();
+                writer.WriteEndArray();
             }
         }
     }

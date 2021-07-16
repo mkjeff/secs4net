@@ -52,9 +52,14 @@ namespace WebApp.Server.Hubs
             return base.OnConnectedAsync();
         }
 
-        (IPAddress ip, int port, bool active) ParseQueryString(HttpContext httpContext)
+        (IPAddress ip, int port, bool active) ParseQueryString(HttpContext? httpContext)
         {
-            var query = httpContext?.Request.Query;
+            if(httpContext == null)
+            {
+                return default;
+            }
+
+            var query = httpContext.Request.Query;
             if (query == null)
             {
                 BadRequest(httpContext.Response, "");
@@ -114,7 +119,7 @@ namespace WebApp.Server.Hubs
             return string.Empty;
         }
 
-        public override Task OnDisconnectedAsync(Exception exception)
+        public override Task OnDisconnectedAsync(Exception? exception)
         {
             if (exception == null && _devices.TryRemove(Context.ConnectionId, out var device))
             {
@@ -133,7 +138,7 @@ namespace WebApp.Server.Hubs
             }
 
             public void Debug(string msg) => _client.SendAsync("Debug", msg);
-            public void Error(string msg, Exception ex = null) => _client.SendAsync("Error", msg + "\n" + ex);
+            public void Error(string msg, Exception? ex = null) => _client.SendAsync("Error", msg + "\n" + ex);
             public void Info(string msg) => _client.SendAsync("Info", msg);
             public void MessageIn(SecsMessage msg, int systembyte) => _client.SendAsync("MessageIn", $"<< [0x{systembyte:X8}] {msg.ToSml()}");
             public void MessageOut(SecsMessage msg, int systembyte) => _client.SendAsync("MessageOut", $">> [0x{systembyte:X8}] {msg.ToSml()}\n");

@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using Microsoft.Toolkit.HighPerformance;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -449,14 +450,20 @@ namespace Secs4Net
                         return;
                     }
                     // Error message
-                    var headerBytes = msg.SecsItem?.GetValues<byte>();
-                    if (headerBytes is null)
+                    if (msg.SecsItem?.GetValues<byte>() is not { Length: 10 } headerBytes)
                     {
                         _logger.Warning("Can't get expected header bytes");
                     }
                     else
                     {
-                        systembyte = BitConverter.ToInt32(new[] { headerBytes[9], headerBytes[8], headerBytes[7], headerBytes[6] }, 0);
+                        Span<byte> systemBytes = stackalloc byte[4]
+                        {
+                            headerBytes[9],
+                            headerBytes[8],
+                            headerBytes[7],
+                            headerBytes[6],
+                        };
+                        systembyte = BitConverter.ToInt32(systemBytes);
                     }
                 }
 

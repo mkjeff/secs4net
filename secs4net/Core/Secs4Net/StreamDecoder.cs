@@ -71,9 +71,9 @@ namespace Secs4Net
             _previousRemainedCount = 0;
         }
 
-        internal StreamDecoder(int streamBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
+        internal StreamDecoder(int initialBufferSize, Action<MessageHeader> controlMsgHandler, Action<MessageHeader, SecsMessage> dataMsgHandler)
         {
-            _buffer = new byte[streamBufferSize];
+            _buffer = new byte[initialBufferSize];
             _bufferOffset = 0;
             _decodeIndex = 0;
             _dataMsgHandler = dataMsgHandler;
@@ -135,7 +135,7 @@ namespace Secs4Net
                     Trace.WriteLine("Get Complete Data Message with total data");
                     _dataMsgHandler(_msgHeader, new SecsMessage(_msgHeader.S, _msgHeader.F, _msgHeader.ReplyExpected)
                     {
-                        SecsItem = BufferedDecodeItem(_buffer, ref _decodeIndex),
+                        SecsItem = Item.DecodeFromFullBuffer(_buffer, ref _decodeIndex),
                     });
                     length -= (int)_messageDataLength;
                     _messageDataLength = 0;
@@ -144,7 +144,7 @@ namespace Secs4Net
                 return GetItemHeader(ref length, out need);
             }
 
-            // 2: get _format + lengthBits(2bit) 1 byte
+            // 2: get _format + _lengthByteCount(2bit) 1 byte
             int GetItemHeader(ref int length, out int need)
             {
                 if (!CheckAvailable(length, 1, out need))
@@ -152,7 +152,7 @@ namespace Secs4Net
                     return 2;
                 }
 
-                (_format, _lengthByteCount) =  GetItemFormatAndLengthByteCount(_buffer.AsSpan(), ref _decodeIndex);
+                Item.DecodeFormatAndLengthByteCount(_buffer.AsSpan(), ref _decodeIndex, out _format, out _lengthByteCount);
                 _messageDataLength--;
                 length--;
                 return GetItemLength(ref length, out need);
@@ -166,10 +166,9 @@ namespace Secs4Net
                     return 3;
                 }
 
-                _itemLength = GetDataLength(_buffer.AsSpan().Slice(_decodeIndex, _lengthByteCount));
-                Trace.WriteLineIf(_format != SecsFormat.List, $"Get format: {_format}, length: {_itemLength}");
+                Item.DecodeDataLength(_buffer.AsSpan(_decodeIndex, _lengthByteCount), ref _decodeIndex, out _itemLength);
+                Trace.WriteLine($"Get format: {_format}, length: {_itemLength}");
 
-                _decodeIndex += _lengthByteCount;
                 _messageDataLength -= _lengthByteCount;
                 length -= _lengthByteCount;
                 return GetItem(ref length, out need);
@@ -199,7 +198,7 @@ namespace Secs4Net
                         return 4;
                     }
 
-                    item = Item.Create(_format, _buffer.AsSpan(_decodeIndex, _itemLength));
+                    item = Item.DecodeNonListItem(_format, _buffer.AsSpan(_decodeIndex, _itemLength));
                     Trace.WriteLine($"Complete Item: {_format}");
 
                     _decodeIndex += _itemLength;
@@ -252,50 +251,6 @@ namespace Secs4Net
                 need = 0;
                 return true;
             }
-
-            static Item BufferedDecodeItem(Span<byte> bytes, ref int index)
-            {
-                var (format, lengthByteCount) = GetItemFormatAndLengthByteCount(bytes, ref index);
-                int dataLength = GetDataLength(bytes.Slice(index, lengthByteCount));
-                index += lengthByteCount;
-
-                if (format == SecsFormat.List)
-                {
-                    if (dataLength == 0)
-                    {
-                        return Item.L();
-                    }
-
-                    var list = new List<Item>(dataLength);
-                    for (var i = 0; i < dataLength; i++)
-                    {
-                        list.Add(BufferedDecodeItem(bytes, ref index));
-                    }
-
-                    return Item.L(list);
-                }
-                var item = Item.Create(format, bytes.Slice(index, dataLength));
-                index += dataLength;
-                return item;
-            }
-        }
-
-        private static (SecsFormat format, byte lengthByteCount) GetItemFormatAndLengthByteCount(Span<byte> bytes, ref int index)
-        {
-            var formatAndLengthByte = bytes.DangerousGetReferenceAt(index);
-            var format = (SecsFormat)(formatAndLengthByte & 0xFC);
-            var lengthByteCount = (byte)(formatAndLengthByte & 3);
-            index++;
-            return (format, lengthByteCount);
-        }
-
-        private static int GetDataLength(Span<byte> sourceBytes)
-        {
-            Span<byte> itemLengthBytes = stackalloc byte[4];
-            sourceBytes.CopyTo(itemLengthBytes);
-            itemLengthBytes.Slice(0, sourceBytes.Length).Reverse();
-            int dataLength = BitConverter.ToInt32(itemLengthBytes); // max to 3 byte dataLength
-            return dataLength;
         }
 
         /// <summary>

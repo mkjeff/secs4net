@@ -17,7 +17,7 @@ namespace SecsMessageVisuallizer.ViewModel
 
         public byte StreamNumber => _secsMsg.S;
         public byte FunctionNumber => _secsMsg.F;
-        public string Name
+        public string? Name
         {
             get { return _secsMsg.Name; }
             set

@@ -8,10 +8,9 @@ namespace SecsMessageVisuallizer
         #region IValueConverter Members
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
-            TreeView tv = value as TreeView;
-            if (tv != null) {
-                TreeViewItem tvItem =tv.ItemContainerGenerator.ContainerFromItem(tv.SelectedItem) as TreeViewItem;
-                if (tvItem != null)
+            if (value is TreeView tv)
+            {
+                if (tv.ItemContainerGenerator.ContainerFromItem(tv.SelectedItem) is TreeViewItem tvItem)
                     return tvItem.IsFocused;
             }
             return false;
