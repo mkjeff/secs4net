@@ -1,13 +1,14 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
+using Secs4Net;
+using Secs4Net.Sml;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
-using Secs4Net;
-using Secs4Net.Sml;
 
 namespace WebApp.Server.Hubs
 {
@@ -15,18 +16,18 @@ namespace WebApp.Server.Hubs
     {
         private static readonly ConcurrentDictionary<string, (SecsGem gem, ConcurrentDictionary<int, PrimaryMessageWrapper> penddingMessages)> _devices = new ConcurrentDictionary<string, (SecsGem, ConcurrentDictionary<int, PrimaryMessageWrapper>)>();
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
             if (_devices.TryRemove(Context.ConnectionId, out var device))
             {
                 device.penddingMessages.Clear();
-                device.gem.Dispose();
+                await device.gem.DisposeAsync();
             }
 
             var query = ParseQueryString(Context.GetHttpContext());
             if (query == default)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             device.penddingMessages = new ConcurrentDictionary<int, PrimaryMessageWrapper>();
@@ -36,25 +37,16 @@ namespace WebApp.Server.Hubs
             gem.ConnectionChanged += (sender, e) =>
                 caller.SendAsync(nameof(gem.ConnectionChanged), gem.State.ToString());
             gem.Logger = new DeviceLogger(caller);
-            gem.PrimaryMessageReceived += (_, primaryMessage) =>
-            {
-                if (device.penddingMessages.TryAdd(primaryMessage.MessageId, primaryMessage))
-                {
-                    caller.SendAsync(nameof(gem.PrimaryMessageReceived), primaryMessage.MessageId, primaryMessage.PrimaryMessage.ToString(), primaryMessage.PrimaryMessage.ToSml());
-                }
-            };
 
             gem.Start();
             device.gem = gem;
 
             _devices.TryAdd(Context.ConnectionId, device);
-
-            return base.OnConnectedAsync();
         }
 
         (IPAddress ip, int port, bool active) ParseQueryString(HttpContext? httpContext)
         {
-            if(httpContext == null)
+            if (httpContext == null)
             {
                 return default;
             }
@@ -97,6 +89,15 @@ namespace WebApp.Server.Hubs
             Context.Abort();
         }
 
+        public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessages(CancellationToken cancellation)
+        {
+            if (_devices.TryGetValue(Context.ConnectionId, out var device))
+            {
+                return device.gem.GetPrimaryMessageAsync(cancellation);
+            }
+            return AsyncEnumerable.Empty<PrimaryMessageWrapper>();
+        }
+
         public async Task ReplyMessage(int messageId, string sml)
         {
             if (_devices.TryGetValue(Context.ConnectionId, out var device) &&
@@ -119,14 +120,13 @@ namespace WebApp.Server.Hubs
             return string.Empty;
         }
 
-        public override Task OnDisconnectedAsync(Exception? exception)
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
             if (exception == null && _devices.TryRemove(Context.ConnectionId, out var device))
             {
-                device.gem.Dispose();
+                await device.gem.DisposeAsync();
                 device.penddingMessages.Clear();
             }
-            return base.OnDisconnectedAsync(exception);
         }
 
         sealed class DeviceLogger : ISecsGemLogger

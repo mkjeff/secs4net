@@ -198,7 +198,7 @@ namespace Secs4Net
                         return 4;
                     }
 
-                    item = Item.DecodeNonListItem(_format, _buffer.AsSpan(_decodeIndex, _itemLength));
+                    item = Item.DecodeDataItem(_format, _buffer.AsSpan(_decodeIndex, _itemLength));
                     Trace.WriteLine($"Complete Item: {_format}");
 
                     _decodeIndex += _itemLength;

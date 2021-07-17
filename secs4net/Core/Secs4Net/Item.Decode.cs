@@ -52,12 +52,12 @@ namespace Secs4Net
 
                 return L(list);
             }
-            var item = DecodeNonListItem(format, bytes.Slice(index, dataLength));
+            var item = DecodeDataItem(format, bytes.Slice(index, dataLength));
             index += dataLength;
             return item;
         }
 
-        internal static Item DecodeNonListItem(SecsFormat format, Span<byte> bytes)
+        internal static Item DecodeDataItem(SecsFormat format, Span<byte> bytes)
         {
             return format switch
             {
@@ -87,7 +87,7 @@ namespace Secs4Net
                 return values;
             }
 
-            static Item ThrowHelper(SecsFormat format) => throw new ArgumentException(@"Invalid format", nameof(format));
+            static Item ThrowHelper(SecsFormat format) => throw new ArgumentOutOfRangeException(nameof(format), format, @"Invalid format");
         }
     }
 }

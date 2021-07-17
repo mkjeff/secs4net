@@ -33,7 +33,7 @@ namespace Secs4Net
                 throw new SecsException("The message does not need to reply");
             }
 
-            if (!_secsGem.TryGetTarget(out var secsGem))
+            if (!_secsGem.TryGetTarget(out var secsGem) || secsGem.IsDisposed)
             {
                 throw new SecsException("Hsms connector loss, the message has no chance to reply via the ReplyAsync method");
             }
@@ -61,7 +61,8 @@ namespace Secs4Net
                     return false;
                 }
 
-                await secsGem.SendDataMessageAsync(replyMessage, replyMessage.S == 9 ? secsGem.NewSystemId : _header.SystemBytes);
+                int systembyte = replyMessage.S == 9 ? SystemByteGenerator.New() : _header.SystemBytes;
+                await secsGem.SendDataMessageAsync(replyMessage, systembyte, cancellation).ConfigureAwait(false);
                 SecondaryMessage = replyMessage;
                 return true;
             }
