@@ -14,7 +14,7 @@ namespace Secs4Net
 {
     [DebuggerDisplay("{GetDebugString()}")]
     [DebuggerTypeProxy(typeof(EncodedItemDebugView))]
-    public unsafe sealed partial class Item : IEquatable<Item>
+    public unsafe sealed partial class Item : IEquatable<Item>, IEnumerable<Item>
     {
         private const int DebuggerDisplayMaxCount = 20;
         private static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
@@ -49,23 +49,39 @@ namespace Secs4Net
 
         public int Count
             => Format == SecsFormat.List
-            ? Unsafe.As<IReadOnlyList<Item>>(_values).Count
+            ? Unsafe.As<IList<Item>>(_values).Count
             : Unsafe.As<Array>(_values).Length;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal IList<Item> GetListItems()
+        {
+            return Format == SecsFormat.List ? Unsafe.As<IList<Item>>(_values) : ThrowHelper();
+            static IList<Item> ThrowHelper() => throw new InvalidOperationException("The item is not a list");
+        }
+
         /// <summary>
-        /// List items
+        /// Indexer for List items
         /// </summary>
-        public IReadOnlyList<Item> Items
-            => Format != SecsFormat.List
-            ? throw new InvalidOperationException("The item is not a list")
-            : Unsafe.As<IReadOnlyList<Item>>(_values);
+        /// <exception cref="InvalidOperationException">if item is not a list</exception>
+        public Item this[int index]
+        {
+            get => GetListItems()[index];
+            set => GetListItems()[index] = value;
+        }
+
+        /// <summary>
+        /// Get the first element of item array value, equivalent to <see cref="FirstValue"/> just readonly
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public ref readonly T GetValue<T>() where T : unmanaged => ref FirstValue<T>();
 
         /// <summary>
         /// Get the first element of item array value
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public ref readonly T GetValue<T>() where T : unmanaged
+        public ref T FirstValue<T>() where T : unmanaged
         {
             var arr = GetArray();
             if (arr.Length == 0 || Buffer.ByteLength(arr) / Unsafe.SizeOf<T>() == 0)
@@ -154,7 +170,7 @@ namespace Secs4Net
 
             return target.Format switch
             {
-                SecsFormat.List => IsMatch(Unsafe.As<IReadOnlyList<Item>>(_values), Unsafe.As<IReadOnlyList<Item>>(target._values)),
+                SecsFormat.List => IsMatch(Unsafe.As<IList<Item>>(_values), Unsafe.As<IList<Item>>(target._values)),
                 SecsFormat.ASCII or SecsFormat.JIS8 => string.Equals(Unsafe.As<string>(_values), Unsafe.As<string>(target._values), StringComparison.Ordinal),
                 _ => CompareArray(Unsafe.As<Array>(_values), Unsafe.As<Array>(target._values)),
             };
@@ -166,7 +182,7 @@ namespace Secs4Net
                 return spanA.SequenceEqual(spanB);
             }
 
-            static bool IsMatch(IReadOnlyList<Item> a, IReadOnlyList<Item> b)
+            static bool IsMatch(IList<Item> a, IList<Item> b)
             {
                 for (int i = 0, count = a.Count; i < count; i++)
                 {
@@ -281,5 +297,8 @@ namespace Secs4Net
 
         public override int GetHashCode()
             => throw new NotImplementedException("Secs4Net.Item is possible a large value object. You should implement a custom IEqualityComparer<Item> for your hash logic.");
+
+        public IEnumerator<Item> GetEnumerator() => GetListItems().GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

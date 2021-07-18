@@ -8,20 +8,20 @@ namespace SecsMessageVisuallizer.ViewModel
     {
         readonly Item _secsItem;
         public SecsItemViewModel(Item item, SecsMessageViewModel secsMsg)
-            : base(secsMsg, item.Format == SecsFormat.List && item.Items.Count > 0)
+            : base(secsMsg, lazyLoadChildren: item.Format == SecsFormat.List && item.Count > 0)
         {
             _secsItem = item;
         }
 
         public SecsItemViewModel(Item item, SecsItemViewModel parentItem)
-            : base(parentItem, item.Format == SecsFormat.List && item.Items.Count > 0)
+            : base(parentItem, lazyLoadChildren: item.Format == SecsFormat.List && item.Count > 0)
         {
             _secsItem = item;
         }
 
         protected override void LoadChildren()
         {
-            foreach (Item item in _secsItem.Items)
+            foreach (Item item in _secsItem)
             {
                 base.Children.Add(new SecsItemViewModel(item, this));
             }

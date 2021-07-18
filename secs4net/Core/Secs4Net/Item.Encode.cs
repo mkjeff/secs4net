@@ -53,7 +53,7 @@ namespace Secs4Net
 
         private static void EncodeList(Item item, IBufferWriter<byte> buffer)
         {
-            var list = Unsafe.As<IReadOnlyList<Item>>(item._values);
+            var list = Unsafe.As<IList<Item>>(item._values);
             EncodeItemHeader(item.Format, list.Count, buffer);
 
             for (int i = 0; i < list.Count; i++)

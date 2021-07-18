@@ -11,13 +11,37 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
 ```cs
 try
 {
+    var s3f17 = new SecsMessage(3, 17)
+    {
+        Name = "CreateProcessJob",
+        SecsItem = L(
+            U4(0),
+            L(
+                L(
+                    A("Id"),
+                    B(0x0D),
+                    L(
+                        A("carrier id"),
+                        L(
+                            U1(1)),
+                        L(
+                            U1(1),
+                            A("recipe"),
+                            L()),
+                        Boolean(true),
+                        L()))))
+    };
+
+    //access list
+    s3f17.SecsItem[1][0][0] == A("Id");
+    s3f17.SecsItem[1][0][2].Take(1..2); // LINQ Take with range
+  
+    //access item value
+    byte b2 = s3f18.SecsItem[0].GetValue<byte>();
+    string str = s3f18.SecsItem[0].GetString();
+
     //await secondary message
     var s3f18 = await device.SendAsync(s3f17); 
-    
-    //access item value
-    byte b1 = (byte)s3f18.SecsItem.Items[0]; 
-    byte b2 = s3f18.SecsItem.Items[0].GetValue<byte>();
-    string str = s3f18.SecsItem.Items[0].GetString();
 
     // LINQ query
     var query =
@@ -80,4 +104,6 @@ var s16f15 =
                         L()))));
 ```
 
-4\. SecsMessage/Item is immutable(API level).  
+4\. Item is mutable with restrict.
+    you can only overwrite existing memory. the `Item.Count` is fix when created.
+    string Item can't be changed, coz .net string is immutable as well.

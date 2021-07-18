@@ -6,9 +6,9 @@ namespace Secs4Net
 {
     unsafe partial class Item
     {
-        public static Item L(IReadOnlyList<Item> items) => items.Count > 0 ? new Item(SecsFormat.List, items, &EncodeList) : L();
+        public static Item L(IList<Item> items) => items.Count > 0 ? new Item(SecsFormat.List, items, &EncodeList) : L();
         public static Item L(IEnumerable<Item> items) => items.Any() ? L(items.ToList()) : L();
-        public static Item L(params Item[] items) => items.Length > 0 ? L((IReadOnlyList<Item>)items) : L();
+        public static Item L(params Item[] items) => items.Length > 0 ? L((IList<Item>)items) : L();
 
         public static Item B(params byte[] value) => value.Length > 0 ? new Item(SecsFormat.Binary, value, &EncodeArray) : B();
         public static Item B(IEnumerable<byte> value) => value.Any() ? B(value.ToArray()) : B();

@@ -76,7 +76,7 @@ namespace Secs4Net.Json
             {
                 case SecsFormat.List:
                     writer.WriteStartArray();
-                    foreach (var subitem in item.Items)
+                    foreach (var subitem in item)
                     {
                         subitem.WriteTo(writer);
                     }

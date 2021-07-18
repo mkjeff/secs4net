@@ -1,5 +1,6 @@
 using FluentAssertions;
 using System;
+using System.Linq;
 using Xunit;
 using static Secs4Net.Item;
 
@@ -26,7 +27,7 @@ namespace Secs4Net.UnitTests
                     I4()
                 );
 
-            left.Equals(right).Should().BeTrue();
+            Assert.Equal(left, right);
         }
 
         [Fact]
@@ -44,11 +45,11 @@ namespace Secs4Net.UnitTests
                 L(
                     A(""),
                     B(),
-                    F4(),
+                    F8(),// diff
                     I4()
                 );
 
-            left.Equals(right).Should().BeTrue();
+            Assert.NotEqual(left, right);
         }
 
         [Fact]
@@ -162,7 +163,7 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public void Message_Encode_Decode_Should_Be_Equivalent()
+        public void Item_Encode_Decode_Should_Be_Equivalent()
         {
             var item =
                 L(
@@ -189,7 +190,55 @@ namespace Secs4Net.UnitTests
                         F8(231.00002321d, 0.2913212312d)));
 
             var item2 = Item.Decode(item.GetEncodedBytes());
-            item.Should().BeEquivalentTo(item2);
+            Assert.Equal(item, item2);
+        }
+
+        [Fact]
+        public void Item_List_Can_Be_Changed()
+        {
+            var item =
+                L(
+                    U1(122, 34),
+                    U2(34531, 23123),
+                    U4(2123513, 52451141),
+                    F4(23123.21323f, 2324.221f),
+                    Boolean(true, false, false, true),
+                    B(0x1C, 0x01, 0xFF),
+                    F8(231.00002321d, 0.2913212312d));
+
+            item[2] = Boolean(true);
+
+            Assert.Equal(Boolean(true), item[2]);
+        }
+
+        [Fact]
+        public void Item_FirstValue_Can_Be_Changed()
+        {
+            ushort original = 2134;
+            var item = U2(original);
+            item.FirstValue<byte>() = 12; // change first byte
+
+            var changed = item.GetValue<ushort>();
+            Assert.NotEqual(original, changed);
+
+            var originalBytes = BitConverter.GetBytes(original);
+            originalBytes[0] = 12; // change first byte
+
+            Assert.Equal(BitConverter.ToUInt16(originalBytes), changed);
+        }
+
+        [Fact]
+        public void Item_Values_Can_Be_Changed()
+        {
+            var original = ushort.MaxValue;
+            var item = U2(original);
+            var arr = item.GetValues<byte>();
+            arr[0] = 123;
+            arr[1] = 3;
+
+            var changed = item.GetValue<ushort>();
+            Assert.NotEqual(original, changed);
+            Assert.Equal(BitConverter.ToUInt16(arr.AsSpan()), changed);
         }
     }
 }

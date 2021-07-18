@@ -24,7 +24,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public ref readonly T this[int index] => ref Unsafe.Add(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetArrayDataReference(_array)), index);
+        public ref T this[int index] => ref Unsafe.Add(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetArrayDataReference(_array)), index);
 
         public readonly T[] ToArray() => AsSpan().ToArray();
 

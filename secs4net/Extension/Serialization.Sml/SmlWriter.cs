@@ -65,10 +65,9 @@ namespace Secs4Net.Sml
             {
                 case SecsFormat.List:
                     writer.WriteLine();
-                    var items = item.Items;
-                    for (int i = 0, count = items.Count; i < count; i++)
+                    foreach (var a in item)
                     {
-                        items[i].Write(writer, indent + SmlIndent);
+                        a.Write(writer, indent + SmlIndent);
                     }
 
                     writer.Write(indentStr);
@@ -192,10 +191,9 @@ namespace Secs4Net.Sml
             static async Task WriteListAsnc(TextWriter writer, Item item, int indent, string indentStr)
             {
                 await writer.WriteLineAsync().ConfigureAwait(false);
-                var items = item.Items;
-                for (int i = 0, count = items.Count; i < count; i++)
+                foreach (var a in item)
                 {
-                    await WriteAsync(writer, items[i], indent + SmlIndent).ConfigureAwait(false);
+                    await WriteAsync(writer, a, indent + SmlIndent).ConfigureAwait(false);
                 }
 
                 await writer.WriteAsync(indentStr).ConfigureAwait(false);
