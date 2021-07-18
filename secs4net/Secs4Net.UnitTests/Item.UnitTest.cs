@@ -6,7 +6,7 @@ using static Secs4Net.Item;
 
 namespace Secs4Net.UnitTests
 {
-    public class UnitTest1
+    public class ItemUnitTest
     {
         [Fact]
         public void Item_Equals_Should_Be_True()

@@ -3,7 +3,7 @@ using System.Buffers;
 
 namespace Secs4Net
 {
-    public sealed class SecsMessage
+    public sealed record SecsMessage
     {
         public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
 
@@ -28,6 +28,8 @@ namespace Secs4Net
         public Item? SecsItem { get; init; }
 
         public string? Name { get; set; }
+        public int Id { get; internal set; }
+        public ushort DeviceId { get; internal set; }
 
         /// <summary>
         /// constructor of SecsMessage
@@ -35,8 +37,6 @@ namespace Secs4Net
         /// <param name="s">message stream number</param>
         /// <param name="f">message function number</param>
         /// <param name="replyExpected">expect reply message</param>
-        /// <param name="name"></param>
-        /// <param name="item">root item</param>
         public SecsMessage(byte s, byte f, bool replyExpected = true)
         {
             if (s > 0b0111_1111)
@@ -49,19 +49,18 @@ namespace Secs4Net
             ReplyExpected = replyExpected;
         }
 
-        internal void EncodeTo(IBufferWriter<byte> buffer, ushort deviceId, int systemBytes)
+        internal void EncodeTo(IBufferWriter<byte> buffer)
         {
             var header = new MessageHeader
             (
-                deviceId,
+                DeviceId,
                 ReplyExpected,
                 S,
                 F,
                 MessageType.DataMessage,
-                systemBytes
+                Id
             );
             header.EncodeTo(buffer);
-            SecsItem?.EncodeTo(buffer);
         }
     }
 }

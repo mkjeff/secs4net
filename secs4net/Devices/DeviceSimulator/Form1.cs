@@ -1,9 +1,12 @@
-﻿using Secs4Net;
+﻿using Microsoft.Extensions.Options;
+using Secs4Net;
+using Secs4Net.Options;
 using Secs4Net.Sml;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Net;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace SecsDevice
@@ -13,6 +16,7 @@ namespace SecsDevice
         SecsGem? _secsGem;
         readonly ISecsGemLogger _logger;
         readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
+        CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         public Form1()
         {
@@ -30,42 +34,62 @@ namespace SecsDevice
             _logger = new SecsLogger(this);
         }
 
-        private void btnEnable_Click(object sender, EventArgs e)
+        private async void btnEnable_Click(object sender, EventArgs e)
         {
-            _secsGem?.Dispose();
-            _secsGem = new SecsGem(
-                radioActiveMode.Checked,
-                IPAddress.Parse(txtAddress.Text),
-                (int)numPort.Value,
-                (int)numBufferSize.Value)
+            if (_secsGem is not null)
+            {
+                await _secsGem.DisposeAsync();
+            }
+
+            var options = Options.Create(new SecsGemOptions
+            {
+                IsActive = radioActiveMode.Checked,
+                IpAddress = IPAddress.Parse(txtAddress.Text),
+                Port = (int)numPort.Value,
+                DecoderBufferSize = (int)numBufferSize.Value,
+                DeviceId = (ushort)numDeviceId.Value,
+            });
+
+            _secsGem = new SecsGem(options)
             {
                 Logger = _logger,
-                DeviceId = (ushort)numDeviceId.Value,
             };
 
             _secsGem.ConnectionChanged += delegate
             {
-                this.Invoke((MethodInvoker)delegate
+                base.Invoke((MethodInvoker)delegate
                 {
                     lbStatus.Text = _secsGem.State.ToString();
                 });
             };
 
-            _secsGem.PrimaryMessageReceived += PrimaryMessageReceived;
-
             btnEnable.Enabled = false;
             _secsGem.Start();
             btnDisable.Enabled = true;
+
+            try
+            {
+                await foreach (var primaryMessage in _secsGem.GetPrimaryMessageAsync(_cancellationTokenSource.Token))
+                {
+                    recvBuffer.Add(primaryMessage);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+
+            }
         }
 
-        private void PrimaryMessageReceived(object? sender, PrimaryMessageWrapper e)
+        private async void btnDisable_Click(object sender, EventArgs e)
         {
-            this.Invoke(new MethodInvoker(() => recvBuffer.Add(e)));
-        }
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            if (_secsGem is not null)
+            {
+                await _secsGem.DisposeAsync();
+            }
+            _cancellationTokenSource = new CancellationTokenSource();
 
-        private void btnDisable_Click(object sender, EventArgs e)
-        {
-            _secsGem?.Dispose();
             _secsGem = null;
             btnEnable.Enabled = true;
             btnDisable.Enabled = false;

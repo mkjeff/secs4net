@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Secs4Net
 {
-    public readonly struct MessageHeader
+    internal readonly struct MessageHeader
     {
         public readonly ushort DeviceId;
         public readonly bool ReplyExpected;
@@ -17,7 +17,7 @@ namespace Secs4Net
         public readonly int SystemBytes;
 
         internal MessageHeader(
-            ushort deviceId = default,
+            ushort deviceId,
             bool replyExpected = default,
             byte s = default,
             byte f = default,
