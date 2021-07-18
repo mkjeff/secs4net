@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Channels;
@@ -79,23 +79,24 @@ namespace Secs4Net
             _secsGem = secsGem;
         }
 
-        public async Task StartReceivedAsync(IDecoderSource socket, CancellationToken cancellation)
+        public async Task StartReceivedAsync(IDecoderSource source, CancellationToken cancellation)
         {
-            Debug.Assert(socket != null);
+            Debug.Assert(source != null);
             var dataMessageWriter = _dataMessageChannel.Writer;
             var index = 0;
             _bufferFilledIndex = 0;
             var stack = new Stack<List<Item>>(capacity: 8);
             while (true)
             {
-            Start: // 0: get total message length 4 bytes
-                await EnsureBufferAsync(socket, ref index, required: 4, cancellation).ConfigureAwait(false);
-                uint messageLength = GetMessageLength(_buffer.Slice(index, 4).Span);
+            Start: 
+                // 0: get total message length 4 bytes
+                await EnsureBufferAsync(source, ref index, required: 4, cancellation).ConfigureAwait(false);
+                uint messageLength = BinaryPrimitives.ReadUInt32BigEndian(_buffer.Slice(index, 4).Span);
                 index += 4;
                 Trace.WriteLine($"Get new message with length: {messageLength} from buffer[{index.._bufferFilledIndex}]");
 
                 // 1: get message header 10 bytes
-                await EnsureBufferAsync(socket, ref index, required: 10, cancellation).ConfigureAwait(false);
+                await EnsureBufferAsync(source, ref index, required: 10, cancellation).ConfigureAwait(false);
                 var header = MessageHeader.Decode(_buffer.Slice(index, 10).Span);
                 index += 10;
                 Trace.WriteLine($"Get message(id:{header.SystemBytes}) header from buffer[{index.._bufferFilledIndex}]");
@@ -104,16 +105,16 @@ namespace Secs4Net
                 {
                     if (header.MessageType == MessageType.DataMessage)
                     {
-                        var message = new SecsMessage(header.S, header.F, replyExpected: header.ReplyExpected)
-                        {
-                            DeviceId = header.DeviceId,
-                            Id = header.SystemBytes,
-                        };
-                        await dataMessageWriter.WriteAsync(message, cancellation).ConfigureAwait(false);
+                        await dataMessageWriter.WriteAsync(
+                            new SecsMessage(header.S, header.F, replyExpected: header.ReplyExpected)
+                            {
+                                DeviceId = header.DeviceId,
+                                Id = header.SystemBytes,
+                            }, cancellation).ConfigureAwait(false);
                     }
                     else
                     {
-                        await _controlMessageChannel.Writer.WriteAsync(header, cancellation);
+                        await _controlMessageChannel.Writer.WriteAsync(header, cancellation).ConfigureAwait(false);
                     }
                     continue;
                 }
@@ -121,24 +122,23 @@ namespace Secs4Net
                 if ((_bufferFilledIndex - index) >= messageLength - 10)
                 {
                     Trace.WriteLine($"Get data message({header.SystemBytes}) with total bytes: {messageLength} and decoded directly from buffer[{index.._bufferFilledIndex}]");
-                    var message = new SecsMessage(header.S, header.F, header.ReplyExpected)
-                    {
-                        SecsItem = Item.DecodeFromFullBuffer(_buffer.Span, ref index),
-                        DeviceId = header.DeviceId,
-                        Id = header.SystemBytes,
-                    };
-
-                    await dataMessageWriter.WriteAsync(message, cancellation).ConfigureAwait(false);
+                    await dataMessageWriter.WriteAsync(
+                        new SecsMessage(header.S, header.F, header.ReplyExpected)
+                        {
+                            SecsItem = Item.DecodeFromFullBuffer(_buffer.Span, ref index),
+                            DeviceId = header.DeviceId,
+                            Id = header.SystemBytes,
+                        }, cancellation).ConfigureAwait(false);
                     continue;
                 }
 
-            // 2: get _format + _lengthByteCount(2bit) 1 byte
             GetNewItem:
-                await EnsureBufferAsync(socket, ref index, required: 1, cancellation).ConfigureAwait(false);
+                // 2: get _format + _lengthByteCount(2bit) 1 byte
+                await EnsureBufferAsync(source, ref index, required: 1, cancellation).ConfigureAwait(false);
                 Item.DecodeFormatAndLengthByteCount(_buffer.Span, ref index, out var itemFormat, out var itemContentLengthByteCount);
 
                 // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
-                await EnsureBufferAsync(socket, ref index, required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
+                await EnsureBufferAsync(source, ref index, required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
                 Item.DecodeDataLength(_buffer.Span.Slice(index, itemContentLengthByteCount), ref index, out var itemContentLength);
 
                 // 4: get item content
@@ -159,7 +159,7 @@ namespace Secs4Net
                 }
                 else
                 {
-                    await EnsureBufferAsync(socket, ref index, required: itemContentLength, cancellation).ConfigureAwait(false);
+                    await EnsureBufferAsync(source, ref index, required: itemContentLength, cancellation).ConfigureAwait(false);
                     item = Item.DecodeDataItem(itemFormat, _buffer.Span.Slice(index, itemContentLength));
                     Trace.WriteLine($"Decoded Item[{itemFormat}], length: {itemContentLength} from buffer[{index.._bufferFilledIndex}]");
                     index += itemContentLength;
@@ -196,25 +196,18 @@ namespace Secs4Net
                 else
                 {
                     Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by streaming decoder");
-                    var message = new SecsMessage(header.S, header.F, header.ReplyExpected)
-                    {
-                        SecsItem = item,
-                        DeviceId = header.DeviceId,
-                        Id = header.SystemBytes,
-                    };
-                    await dataMessageWriter.WriteAsync(message, cancellation).ConfigureAwait(false);
+                    await dataMessageWriter.WriteAsync(
+                        new SecsMessage(header.S, header.F, header.ReplyExpected)
+                        {
+                            SecsItem = item,
+                            DeviceId = header.DeviceId,
+                            Id = header.SystemBytes,
+                        }, cancellation).ConfigureAwait(false);
                 }
-            }
-
-            static uint GetMessageLength(Span<byte> totalLengthBufer)
-            {
-                totalLengthBufer.Reverse();
-                var messageLength = BitConverter.ToUInt32(totalLengthBufer);
-                return messageLength;
             }
         }
 
-        ValueTask EnsureBufferAsync(IDecoderSource socket, ref int index, int required, CancellationToken cancellation)
+        ValueTask EnsureBufferAsync(IDecoderSource source, ref int index, int required, CancellationToken cancellation)
         {
             Debug.Assert(_bufferFilledIndex >= index);
             var remainedBufferLength = _bufferFilledIndex - index;
@@ -247,14 +240,14 @@ namespace Secs4Net
                 _bufferFilledIndex = remained.Length;
             }
 
-            return SocketReceiveAsync(socket, need, cancellation);
+            return ReadAsync(source, need, cancellation);
 
-            async ValueTask SocketReceiveAsync(IDecoderSource socket, int need, CancellationToken cancellation)
+            async ValueTask ReadAsync(IDecoderSource source, int need, CancellationToken cancellation)
             {
                 while (need > 0)
                 {
                     //_secsGem.StartT8Timer();
-                    var advance = await socket.ReadAsync(_buffer.Slice(_bufferFilledIndex), cancellation);
+                    var advance = await source.ReadAsync(_buffer.Slice(_bufferFilledIndex), cancellation);
                     //_secsGem.StopT8Timer();
                     _bufferFilledIndex += advance;
                     need -= advance;

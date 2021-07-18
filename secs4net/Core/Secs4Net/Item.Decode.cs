@@ -20,7 +20,6 @@ namespace Secs4Net
             format = (SecsFormat)(formatAndLengthByte & 0xFC);
             lengthByteCount = (byte)(formatAndLengthByte & 3);
             index++;
-            //return (format, lengthByteCount);
         }
 
         internal static void DecodeDataLength(Span<byte> sourceBytes, ref int index, out int dataLength)

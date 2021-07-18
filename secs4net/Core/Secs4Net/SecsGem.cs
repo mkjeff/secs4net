@@ -4,6 +4,7 @@ using Microsoft.Toolkit.HighPerformance.Buffers;
 using Secs4Net.Options;
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -36,9 +37,9 @@ namespace Secs4Net
         public ISecsGemLogger Logger
         {
             get => _logger;
-            set => _logger = value ?? DefaultLogger;
+            set => _logger = value ?? DefaultLogger.Instance;
         }
-        private ISecsGemLogger _logger = DefaultLogger;
+        private ISecsGemLogger _logger = DefaultLogger.Instance;
 
         /// <summary>
         /// Connection state
@@ -104,11 +105,14 @@ namespace Secs4Net
 
         private readonly Func<CancellationToken, Task> _startImpl;
         private readonly Action _stopImpl;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _cancellationTokenSource = new();
 
         private static readonly SecsMessage ControlMessage = new(0, 0);
         private static readonly byte[] ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
-        private static readonly DefaultSecsGemLogger DefaultLogger = new();
+        private sealed class DefaultLogger : ISecsGemLogger
+        {
+            public static readonly ISecsGemLogger Instance = new DefaultLogger();
+        }
 
         public SecsGem(IOptions<SecsGemOptions> secsGemOptions)
         {
@@ -158,9 +162,9 @@ namespace Secs4Net
                         }
                     } while (!connected);
 
-                    await Task.WhenAll(
-                        SendControlMessage(MessageType.SelectRequest, SystemByteGenerator.New(), cancellation),
-                        StartAsyncStreamDecoderAsync(cancellation)).ConfigureAwait(false);
+                    await Task.WhenAll(                        
+                        StartAsyncStreamDecoderAsync(cancellation),
+                        SendControlMessage(MessageType.SelectRequest, SystemByteGenerator.New(), cancellation)).ConfigureAwait(false);
                 };
 
                 _stopImpl = delegate { };
@@ -349,7 +353,7 @@ namespace Secs4Net
 #if DISABLE_TIMER
                     await token.Task.WaitAsync(cancellation).ConfigureAwait(false);
 #else
-                    await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6)).ConfigureAwait(false);
+                    await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6), cancellation).ConfigureAwait(false);
 #endif
                 }
             }
@@ -428,8 +432,7 @@ namespace Secs4Net
             msg.EncodeHeaderTo(buffer);
             msg.SecsItem?.EncodeTo(buffer);
 
-            BitConverter.TryWriteBytes(lengthBytes, buffer.WrittenCount - sizeof(int));
-            lengthBytes.Reverse();
+            BinaryPrimitives.WriteInt32BigEndian(lengthBytes, buffer.WrittenCount - sizeof(int));
         }
 
         private async ValueTask SendAsync(ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
@@ -548,9 +551,7 @@ namespace Secs4Net
                     }
                     else
                     {
-                        var systemBytes = headerBytes.AsSpan().Slice(6, 4).ToArray();
-                        Array.Reverse(systemBytes);
-                        systembyte = BitConverter.ToInt32(systemBytes);
+                        systembyte = BinaryPrimitives.ReadInt32BigEndian(headerBytes.AsSpan().Slice(6, 4));
                     }
                 }
 
@@ -593,12 +594,12 @@ namespace Secs4Net
                 MessageSent = primaryMessageMsg;
             }
 
-            internal void HandleReplyMessage(SecsMessage replyMsg)
+            public void HandleReplyMessage(SecsMessage replyMsg)
             {
                 replyMsg.Name = MessageSent.Name;
                 if (replyMsg.F == 0)
                 {
-                    SetException(new SecsException(MessageSent, Resources.SxF0));
+                    TrySetException(new SecsException(MessageSent, Resources.SxF0));
                     return;
                 }
 
@@ -607,34 +608,34 @@ namespace Secs4Net
                     switch (replyMsg.F)
                     {
                         case 1:
-                            SetException(new SecsException(MessageSent, Resources.S9F1));
+                            TrySetException(new SecsException(MessageSent, Resources.S9F1));
                             break;
                         case 3:
-                            SetException(new SecsException(MessageSent, Resources.S9F3));
+                            TrySetException(new SecsException(MessageSent, Resources.S9F3));
                             break;
                         case 5:
-                            SetException(new SecsException(MessageSent, Resources.S9F5));
+                            TrySetException(new SecsException(MessageSent, Resources.S9F5));
                             break;
                         case 7:
-                            SetException(new SecsException(MessageSent, Resources.S9F7));
+                            TrySetException(new SecsException(MessageSent, Resources.S9F7));
                             break;
                         case 9:
-                            SetException(new SecsException(MessageSent, Resources.S9F9));
+                            TrySetException(new SecsException(MessageSent, Resources.S9F9));
                             break;
                         case 11:
-                            SetException(new SecsException(MessageSent, Resources.S9F11));
+                            TrySetException(new SecsException(MessageSent, Resources.S9F11));
                             break;
                         case 13:
-                            SetException(new SecsException(MessageSent, Resources.S9F13));
+                            TrySetException(new SecsException(MessageSent, Resources.S9F13));
                             break;
                         default:
-                            SetException(new SecsException(MessageSent, Resources.S9Fy));
+                            TrySetException(new SecsException(MessageSent, Resources.S9Fy));
                             break;
                     }
                     return;
                 }
 
-                SetResult(replyMsg);
+                TrySetResult(replyMsg);
             }
         }
     }
