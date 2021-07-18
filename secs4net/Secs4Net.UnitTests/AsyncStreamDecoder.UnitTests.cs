@@ -1,11 +1,8 @@
 ﻿using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using NSubstitute;
-using NSubstitute.Core;
 using System;
 using System.Linq;
-using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using static Secs4Net.Item;
@@ -14,8 +11,13 @@ namespace Secs4Net.UnitTests
 {
     public class AsyncStreamDecoderUnitTests
     {
+        private const ushort deviceId = 1;
+        private const int systemByte = 1223;
+
         private readonly SecsMessage message = new SecsMessage(s: 1, f: 2, replyExpected: false)
         {
+            DeviceId = deviceId,
+            Id = systemByte,
             SecsItem =
             L(
                 L(),
@@ -39,16 +41,14 @@ namespace Secs4Net.UnitTests
                         Boolean(true, false, false, true),
                         B(0x1C, 0x01, 0xFF)),
                     F8(231.00002321d, 0.2913212312d)))
-            };
+        };
 
         [Fact]
         public async Task Message_Can_Decode_From_Full_Buffer_And_Equivalent()
         {
-            ushort deviceId = 1;
-            var systemByte = 1223;
 
             using var buffer = new ArrayPoolBufferWriter<byte>();
-            SecsGem.EncodeMessage(message, systemByte, deviceId, buffer);
+            SecsGem.EncodeMessage(message, buffer);
             var encodedBytes = buffer.WrittenMemory;
 
             var secsGem = Substitute.For<ISecsGem>();
@@ -64,10 +64,10 @@ namespace Secs4Net.UnitTests
                 act.Should().NotThrow();
             });
 
-            var (header, decodeMessage) = await decoder.GetDataMessages(default).FirstAsync();
+            var decodeMessage = await decoder.GetDataMessages(default).FirstAsync();
 
-            header.SystemBytes.Should().Be(systemByte);
-            header.DeviceId.Should().Be(deviceId);
+            decodeMessage.Id.Should().Be(systemByte);
+            decodeMessage.DeviceId.Should().Be(deviceId);
             decodeMessage.Should().NotBeNull();
             decodeMessage.Should().BeEquivalentTo(message, options => options.ComparingByMembers<SecsMessage>());
         }
@@ -75,11 +75,8 @@ namespace Secs4Net.UnitTests
         [Fact]
         public async Task Message_Can_Decode_From_Streaming_And_Equivalent()
         {
-            ushort deviceId = 1;
-            var systemByte = 1223;            
-
             using var buffer = new ArrayPoolBufferWriter<byte>();
-            SecsGem.EncodeMessage(message, systemByte, deviceId, buffer);
+            SecsGem.EncodeMessage(message, buffer);
             var encodedBytes = buffer.WrittenMemory;
 
             var secsGem = Substitute.For<ISecsGem>();
@@ -91,14 +88,14 @@ namespace Secs4Net.UnitTests
             var decoderSource = new MemoryDecoderSource(encodedBytes);
             _ = Task.Run(() =>
             {
-                Func<Task> act = ()=> decoder.StartReceivedAsync(decoderSource, default);
+                Func<Task> act = () => decoder.StartReceivedAsync(decoderSource, default);
                 act.Should().NotThrow();
             });
 
-            var (header, decodeMessage) = await decoder.GetDataMessages(default).FirstAsync();
+            var decodeMessage = await decoder.GetDataMessages(default).FirstAsync();
 
-            header.SystemBytes.Should().Be(systemByte);
-            header.DeviceId.Should().Be(deviceId);
+            decodeMessage.Id.Should().Be(systemByte);
+            decodeMessage.DeviceId.Should().Be(deviceId);
             decodeMessage.Should().NotBeNull();
             decodeMessage.Should().BeEquivalentTo(message, options => options.ComparingByMembers<SecsMessage>());
         }

@@ -23,7 +23,7 @@ namespace Secs4Net
             _socket = socket;
         }
 
-        public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken) 
+        public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
             => _socket.ReceiveAsync(buffer, SocketFlags.None, cancellationToken);
     }
 
@@ -55,7 +55,7 @@ namespace Secs4Net
             AllowSynchronousContinuations = true,
         });
 
-        private readonly Channel<(MessageHeader header, SecsMessage message)> _dataMessageChannel = Channel.CreateBounded<(MessageHeader header, SecsMessage message)>(new BoundedChannelOptions(capacity: 20)
+        private readonly Channel<SecsMessage> _dataMessageChannel = Channel.CreateBounded<SecsMessage>(new BoundedChannelOptions(capacity: 20)
         {
             SingleReader = false,
             SingleWriter = true,
@@ -70,7 +70,7 @@ namespace Secs4Net
         internal IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
             => _controlMessageChannel.Reader.ReadAllAsync(cancellation);
 
-        public IAsyncEnumerable<(MessageHeader header, SecsMessage message)> GetDataMessages(CancellationToken cancellation)
+        public IAsyncEnumerable<SecsMessage> GetDataMessages(CancellationToken cancellation)
             => _dataMessageChannel.Reader.ReadAllAsync(cancellation);
 
         public AsyncStreamDecoder(int initialBufferSize, ISecsGem secsGem)
@@ -104,8 +104,12 @@ namespace Secs4Net
                 {
                     if (header.MessageType == MessageType.DataMessage)
                     {
-                        var message = new SecsMessage(header.S, header.F, replyExpected: header.ReplyExpected);
-                        await dataMessageWriter.WriteAsync((header, message), cancellation).ConfigureAwait(false);
+                        var message = new SecsMessage(header.S, header.F, replyExpected: header.ReplyExpected)
+                        {
+                            DeviceId = header.DeviceId,
+                            Id = header.SystemBytes,
+                        };
+                        await dataMessageWriter.WriteAsync(message, cancellation).ConfigureAwait(false);
                     }
                     else
                     {
@@ -120,9 +124,11 @@ namespace Secs4Net
                     var message = new SecsMessage(header.S, header.F, header.ReplyExpected)
                     {
                         SecsItem = Item.DecodeFromFullBuffer(_buffer.Span, ref index),
+                        DeviceId = header.DeviceId,
+                        Id = header.SystemBytes,
                     };
 
-                    await dataMessageWriter.WriteAsync((header, message), cancellation).ConfigureAwait(false);
+                    await dataMessageWriter.WriteAsync(message, cancellation).ConfigureAwait(false);
                     continue;
                 }
 
@@ -178,8 +184,10 @@ namespace Secs4Net
                             var message = new SecsMessage(header.S, header.F, header.ReplyExpected)
                             {
                                 SecsItem = item,
+                                DeviceId = header.DeviceId,
+                                Id = header.SystemBytes,
                             };
-                            await dataMessageWriter.WriteAsync((header, message), cancellation).ConfigureAwait(false);
+                            await dataMessageWriter.WriteAsync(message, cancellation).ConfigureAwait(false);
                             goto Start;
                         }
                     }
@@ -191,8 +199,10 @@ namespace Secs4Net
                     var message = new SecsMessage(header.S, header.F, header.ReplyExpected)
                     {
                         SecsItem = item,
+                        DeviceId = header.DeviceId,
+                        Id = header.SystemBytes,
                     };
-                    await dataMessageWriter.WriteAsync((header, message), cancellation).ConfigureAwait(false);
+                    await dataMessageWriter.WriteAsync(message, cancellation).ConfigureAwait(false);
                 }
             }
 

@@ -18,6 +18,7 @@ namespace Secs4Net
 {
     public interface ISecsGem : IAsyncDisposable
     {
+        ushort DeviceId { get; }
         int T8 { get; }
         bool LinkTestEnable { get; set; }
         IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default);
@@ -323,7 +324,7 @@ namespace Secs4Net
         private async Task SendControlMessage(MessageType msgType, int systembyte, CancellationToken cancellation)
         {
             Debug.Assert(_socket != null);
-            var token = new TaskCompletionSourceToken(ControlMessage, systembyte, msgType);
+            var token = new TaskCompletionSourceToken(ControlMessage);
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
             {
                 _replyExpectedMsgs[systembyte] = token;
@@ -376,7 +377,10 @@ namespace Secs4Net
             }
 
             Debug.Assert(_socket != null);
-            var token = new TaskCompletionSourceToken(msg, systembyte, MessageType.DataMessage);
+
+            msg.DeviceId = DeviceId;
+            msg.Id = systembyte;
+            var token = new TaskCompletionSourceToken(msg);
             if (msg.ReplyExpected)
             {
                 _replyExpectedMsgs[systembyte] = token;
@@ -386,11 +390,11 @@ namespace Secs4Net
             {
                 using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: 14))
                 {
-                    EncodeMessage(msg, systembyte, DeviceId, buffer);
+                    EncodeMessage(msg, buffer);
                     await SendAsync(buffer.WrittenMemory, cancellation).ConfigureAwait(false);
                 }
 
-                _logger.MessageOut(msg, token.Id);
+                _logger.MessageOut(msg, msg.Id);
 
                 if (!msg.ReplyExpected)
                 {
@@ -415,13 +419,14 @@ namespace Secs4Net
             }
         }
 
-        internal static void EncodeMessage(SecsMessage msg, int systembyte, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
+        internal static void EncodeMessage(SecsMessage msg, ArrayPoolBufferWriter<byte> buffer)
         {
             // reserve 4 byte for total length
             var lengthSpan = buffer.GetSpan(sizeof(int)).Slice(0, sizeof(int));
             buffer.Advance(sizeof(int));
 
-            msg.EncodeTo(buffer, deviceId, systembyte);
+            msg.EncodeTo(buffer);
+            msg.SecsItem?.EncodeTo(buffer);
 
             BitConverter.TryWriteBytes(lengthSpan, buffer.WrittenCount - sizeof(int));
             lengthSpan.Reverse();
@@ -509,16 +514,15 @@ namespace Secs4Net
 
         public async IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync([EnumeratorCancellation] CancellationToken cancellation = default)
         {
-            await foreach (var (header, msg) in _decoder.GetDataMessages(cancellation))
+            await foreach (var  msg in _decoder.GetDataMessages(cancellation))
             {
-                var systembyte = header.SystemBytes;
-
-                if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
+                var systembyte = msg.Id;
+                if (msg.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
                 {
                     _logger.MessageIn(msg, systembyte);
                     _logger.Warning("Received Unrecognized Device Id Message");
                     var headerBytes = new byte[10];
-                    header.EncodeTo(new MemoryBufferWriter<byte>(headerBytes));
+                    msg.EncodeTo(new MemoryBufferWriter<byte>(headerBytes));
                     var s9f1 = new SecsMessage(9, 1, replyExpected: false)
                     {
                         Name = "Unrecognized Device Id",
@@ -534,7 +538,7 @@ namespace Secs4Net
                     {
                         //Primary message
                         _logger.MessageIn(msg, systembyte);
-                        yield return new PrimaryMessageWrapper(this, header, msg);
+                        yield return new PrimaryMessageWrapper(this, msg);
                         continue;
                     }
                     // Error message
@@ -582,15 +586,11 @@ namespace Secs4Net
         private sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
         {
             public SecsMessage MessageSent { get; }
-            public int Id { get; }
-            public MessageType MessageType { get; }
 
-            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg, int id, MessageType messageType)
+            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg)
                 : base(TaskCreationOptions.RunContinuationsAsynchronously)
             {
                 MessageSent = primaryMessageMsg;
-                Id = id;
-                MessageType = messageType;
             }
 
             internal void HandleReplyMessage(SecsMessage replyMsg)
