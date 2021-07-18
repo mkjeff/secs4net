@@ -37,7 +37,9 @@ try
     s3f17.SecsItem[1][0][2].Take(1..2); // LINQ Take with range
   
     //access item value
-    byte b2 = s3f18.SecsItem[0].GetValue<byte>();
+    byte b2 = s3f18.SecsItem[0].FirstValue<byte>(); // with different type
+    s3f18.SecsItem[0].FirstValue<byte>() = 0; // change original value 
+    
     string str = s3f18.SecsItem[0].GetString();
 
     //await secondary message
@@ -47,7 +49,7 @@ try
     var query =
         from a in s3f18.SecsItem.Items[3]
         select new {
-            num = a.GetValue<int>(),
+            num = a.FirstValue<int>(),
         };
 }
 catch(SecsException)

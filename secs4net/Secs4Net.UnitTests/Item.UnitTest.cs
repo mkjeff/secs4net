@@ -111,7 +111,7 @@ namespace Secs4Net.UnitTests
         {
             var item = I4();
 
-            Action action = () => item.GetValue<int>();
+            Action action = () => item.FirstValue<int>();
             action.Should().Throw<IndexOutOfRangeException>();
         }
 
@@ -119,7 +119,7 @@ namespace Secs4Net.UnitTests
         public void Item_GetValue_With_Downsize_Typed()
         {
             var firstSrc = short.MaxValue + 12;
-            var first = I4(firstSrc).GetValue<short>();
+            var first = I4(firstSrc).FirstValue<short>();
             first.Should().Be(unchecked((short)firstSrc));
         }
 
@@ -127,7 +127,7 @@ namespace Secs4Net.UnitTests
         public void Item_GetValue_With_Upsize_Typed()
         {
             var bytes = new byte[] { 128, 212, 231 };
-            var first = U1(bytes).GetValue<ushort>();
+            var first = U1(bytes).FirstValue<ushort>();
             first.Should().Be(BitConverter.ToUInt16(bytes));
         }
 
@@ -135,7 +135,7 @@ namespace Secs4Net.UnitTests
         public void Item_GetValue_With_Upsize_Typed_Should_Throw_Error_If_Total_Bytes_Less_Than_SizeOf_T()
         {
             var bytes = new byte[] { 128 };
-            Action action = () => U1(bytes).GetValue<ushort>();
+            Action action = () => U1(bytes).FirstValue<ushort>();
             action.Should().Throw<IndexOutOfRangeException>();
         }
 
@@ -144,13 +144,13 @@ namespace Secs4Net.UnitTests
         {
             var item = I4();
 
-            Action action = () => item.GetValueOrDefault<int>();
+            Action action = () => item.GetFirstValueOrDefault<int>();
             action.Should().NotThrow();
 
-            Action action2 = () => item.GetValueOrDefault<bool>();
+            Action action2 = () => item.GetFirstValueOrDefault<bool>();
             action2.Should().NotThrow();
 
-            item.GetValueOrDefault(4).Should().Be(4);
+            item.GetFirstValueOrDefault(4).Should().Be(4);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace Secs4Net.UnitTests
         {
             var bytes = new byte[] { 128 };
             ushort defaultValue = 11;
-            var first = U1(bytes).GetValueOrDefault(defaultValue);
+            var first = U1(bytes).GetFirstValueOrDefault(defaultValue);
             first.Should().Be(defaultValue);
         }
 
@@ -218,7 +218,7 @@ namespace Secs4Net.UnitTests
             var item = U2(original);
             item.FirstValue<byte>() = 12; // change first byte
 
-            var changed = item.GetValue<ushort>();
+            var changed = item.FirstValue<ushort>();
             Assert.NotEqual(original, changed);
 
             var originalBytes = BitConverter.GetBytes(original);
@@ -236,7 +236,7 @@ namespace Secs4Net.UnitTests
             arr[0] = 123;
             arr[1] = 3;
 
-            var changed = item.GetValue<ushort>();
+            var changed = item.FirstValue<ushort>();
             Assert.NotEqual(original, changed);
             Assert.Equal(BitConverter.ToUInt16(arr.AsSpan()), changed);
         }

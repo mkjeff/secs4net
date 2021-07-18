@@ -70,13 +70,6 @@ namespace Secs4Net
         }
 
         /// <summary>
-        /// Get the first element of item array value, equivalent to <see cref="FirstValue"/> just readonly
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public ref readonly T GetValue<T>() where T : unmanaged => ref FirstValue<T>();
-
-        /// <summary>
         /// Get the first element of item array value
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -86,11 +79,13 @@ namespace Secs4Net
             var arr = GetArray();
             if (arr.Length == 0 || Buffer.ByteLength(arr) / Unsafe.SizeOf<T>() == 0)
             {
-                throw new IndexOutOfRangeException("The item is empty");
+                ThrowHelper();
             }
 
             ref var data = ref MemoryMarshal.GetArrayDataReference(arr);
             return ref Unsafe.As<byte, T>(ref data);
+
+            static void ThrowHelper() => throw new IndexOutOfRangeException("The item is empty or data length less than sizeof(T)");
         }
 
         /// <summary>
@@ -98,7 +93,7 @@ namespace Secs4Net
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public ref readonly T GetValueOrDefault<T>(in T defaultValue = default) where T : unmanaged
+        public ref readonly T GetFirstValueOrDefault<T>(in T defaultValue = default) where T : unmanaged
         {
             var arr = GetArray();
             if (arr.Length == 0 || Buffer.ByteLength(arr) / Unsafe.SizeOf<T>() == 0)
