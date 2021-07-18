@@ -1,6 +1,5 @@
 using FluentAssertions;
 using System;
-using System.Linq;
 using Xunit;
 using static Secs4Net.Item;
 
@@ -13,7 +12,7 @@ namespace Secs4Net.UnitTests
         {
             var left =
                 L(
-                    A(""),
+                    A("A"),
                     B(),
                     F4(),
                     I4()
@@ -21,13 +20,13 @@ namespace Secs4Net.UnitTests
 
             var right =
                 L(
-                    A(""),
+                    A("A"),
                     B(),
                     F4(),
                     I4()
                 );
 
-            Assert.Equal(left, right);
+            left.Should().BeEquivalentTo(right);
         }
 
         [Fact]
@@ -37,19 +36,23 @@ namespace Secs4Net.UnitTests
                 L(
                     A("A"),
                     B(),
+                    L(
+                        B(12, 11)),
                     F4(),
                     I4()
                 );
 
             var right =
                 L(
-                    A(""),
+                    A("A"),
                     B(),
-                    F8(),// diff
+                    L(
+                        B(12, 10)), // diff
+                    F8(), // diff
                     I4()
                 );
 
-            Assert.NotEqual(left, right);
+            left.Should().NotBeEquivalentTo(right);
         }
 
         [Fact]
@@ -190,7 +193,7 @@ namespace Secs4Net.UnitTests
                         F8(231.00002321d, 0.2913212312d)));
 
             var item2 = Item.Decode(item.GetEncodedBytes());
-            Assert.Equal(item, item2);
+            item.Should().BeEquivalentTo(item2); 
         }
 
         [Fact]
@@ -207,8 +210,7 @@ namespace Secs4Net.UnitTests
                     F8(231.00002321d, 0.2913212312d));
 
             item[2] = Boolean(true);
-
-            Assert.Equal(Boolean(true), item[2]);
+            item[2].Should().BeEquivalentTo(item[2]);
         }
 
         [Fact]
@@ -224,7 +226,7 @@ namespace Secs4Net.UnitTests
             var originalBytes = BitConverter.GetBytes(original);
             originalBytes[0] = 12; // change first byte
 
-            Assert.Equal(BitConverter.ToUInt16(originalBytes), changed);
+            changed.Should().Be(BitConverter.ToUInt16(originalBytes));
         }
 
         [Fact]
@@ -237,8 +239,8 @@ namespace Secs4Net.UnitTests
             arr[1] = 3;
 
             var changed = item.FirstValue<ushort>();
-            Assert.NotEqual(original, changed);
-            Assert.Equal(BitConverter.ToUInt16(arr.AsSpan()), changed);
+            changed.Should().NotBe(original);
+            changed.Should().Be(BitConverter.ToUInt16(arr.AsSpan()));
         }
     }
 }

@@ -155,7 +155,7 @@ namespace Secs4Net
 
             if (Count != target.Count)
             {
-                return target.Count == 0;
+                return false;
             }
 
             if (Count == 0)
