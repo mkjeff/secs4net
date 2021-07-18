@@ -1,5 +1,7 @@
-﻿using Microsoft.Toolkit.HighPerformance;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
+using Secs4Net.Options;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -16,7 +18,7 @@ namespace Secs4Net
 {
     public interface ISecsGem : IAsyncDisposable
     {
-        int T8 { get; set; }
+        int T8 { get; }
         bool LinkTestEnable { get; set; }
         IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default);
         Task<SecsMessage> SendAsync(SecsMessage msg, CancellationToken cancellation = default);
@@ -42,26 +44,16 @@ namespace Secs4Net
         /// </summary>
         public ConnectionState State { get; private set; }
 
-        public ushort DeviceId { get; set; } = 0;
-        public int T3 { get; set; } = 45000;
-        public int T5 { get; set; } = 10000;
-        public int T6 { get; set; } = 5000;
-        public int T7 { get; set; } = 10000;
-        public int T8 { get; set; } = 5000;
-
-        public int LinkTestInterval
-        {
-            get => _linkTestInterval;
-            set
-            {
-                if (_linkTestEnable)
-                {
-                    _linkTestInterval = value;
-                    _timerLinkTest.Change(0, _linkTestInterval);
-                }
-            }
-        }
-        private int _linkTestInterval = 60000;
+        public ushort DeviceId { get; }
+        public int T3 { get; }
+        public int T5 { get; }
+        public int T6 { get; }
+        public int T7 { get; }
+        public int T8 { get; }
+        public int LinkTestInterval { get; }
+        public bool IsActive { get; }
+        public IPAddress IpAddress { get; }
+        public int Port { get; }
 
         public bool LinkTestEnable
         {
@@ -85,11 +77,6 @@ namespace Secs4Net
             }
         }
         private bool _linkTestEnable;
-
-        public bool IsActive { get; }
-        public IPAddress IpAddress { get; }
-        public int Port { get; }
-        public int DecoderBufferSize { get; private set; }
 
         private const int DisposalNotStarted = 0;
         private const int DisposalComplete = 1;
@@ -122,48 +109,21 @@ namespace Secs4Net
         private static readonly byte[] ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
         private static readonly DefaultSecsGemLogger DefaultLogger = new();
 
-        /// <summary>
-        /// constructor
-        /// </summary>
-        /// <param name="isActive">passive or active mode</param>
-        /// <param name="ip">if active mode it should be remote device address, otherwise local listener address</param>
-        /// <param name="port">if active mode it should be remote device listener's port</param>
-        /// <param name="receiveBufferSize">Socket receive buffer size</param>
-        public SecsGem(bool isActive, IPAddress ip, int port, int receiveBufferSize = 0x4000)
+        public SecsGem(IOptions<SecsGemOptions> secsGemOptions)
         {
-            if (port <= 0)
-            {
-                port = 0;
-            }
+            var options = secsGemOptions.Value;
+            DeviceId = options.DeviceId;
+            T3 = options.T3;
+            T5 = options.T5;
+            T6 = options.T6;
+            T7 = options.T7;
+            T8 = options.T8;
+            LinkTestInterval= options.LinkTestInterval;
 
-            _decoder = new AsyncStreamDecoder(receiveBufferSize, this);
-            IpAddress = ip;
-            Port = port;
-            IsActive = isActive;
-            DecoderBufferSize = receiveBufferSize;
-
-            _timer7 = new Timer(delegate
-            {
-                _logger.Error($"T7 Timeout: {T7 / 1000} sec.");
-                CommunicationStateChanging(ConnectionState.Retry);
-            }, null, Timeout.Infinite, Timeout.Infinite);
-
-            _timer8 = new Timer(delegate
-            {
-                _logger.Error($"T8 Timeout: {T8 / 1000} sec.");
-                CommunicationStateChanging(ConnectionState.Retry);
-            }, null, Timeout.Infinite, Timeout.Infinite);
-
-            _timerLinkTest = new Timer(async delegate
-            {
-#if !DISABLE_TIMER
-                if (State == ConnectionState.Selected)
-                {
-                    using var cts = new CancellationTokenSource(10000);
-                    await SendControlMessage(MessageType.LinkTestRequest, SystemByteGenerator.New(), cts.Token).ConfigureAwait(false);
-                }
-#endif
-            }, null, Timeout.Infinite, Timeout.Infinite);
+            _decoder = new AsyncStreamDecoder(options.DecoderBufferSize, this);
+            IpAddress = options.IpAddress ?? throw new ArgumentNullException(nameof(options.IpAddress));
+            Port = options.Port;
+            IsActive = options.IsActive;
 
             if (IsActive)
             {
@@ -249,6 +209,29 @@ namespace Secs4Net
                     }
                 };
             }
+
+            _timer7 = new Timer(delegate
+            {
+                _logger.Error($"T7 Timeout: {T7 / 1000} sec.");
+                CommunicationStateChanging(ConnectionState.Retry);
+            }, null, Timeout.Infinite, Timeout.Infinite);
+
+            _timer8 = new Timer(delegate
+            {
+                _logger.Error($"T8 Timeout: {T8 / 1000} sec.");
+                CommunicationStateChanging(ConnectionState.Retry);
+            }, null, Timeout.Infinite, Timeout.Infinite);
+
+            _timerLinkTest = new Timer(async delegate
+            {
+#if !DISABLE_TIMER
+                if (State == ConnectionState.Selected)
+                {
+                    using var cts = new CancellationTokenSource(10000);
+                    await SendControlMessage(MessageType.LinkTestRequest, SystemByteGenerator.New(), cts.Token).ConfigureAwait(false);
+                }
+#endif
+            }, null, Timeout.Infinite, Timeout.Infinite);
         }
 
         private async Task StartAsyncStreamDecoderAsync(CancellationToken cancellation)

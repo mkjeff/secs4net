@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    internal interface IDecoderSource
+    public interface IDecoderSource
     {
         public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken);
     }
 
-    internal class SocketDecoderSource : IDecoderSource
+    internal sealed class SocketDecoderSource : IDecoderSource
     {
         private readonly Socket _socket;
 
@@ -46,7 +46,7 @@ namespace Secs4Net
         }
     }
 
-    internal sealed class AsyncStreamDecoder
+    public sealed class AsyncStreamDecoder
     {
         private readonly Channel<MessageHeader> _controlMessageChannel = Channel.CreateUnbounded<MessageHeader>(new UnboundedChannelOptions
         {
@@ -57,7 +57,7 @@ namespace Secs4Net
 
         private readonly Channel<(MessageHeader header, SecsMessage message)> _dataMessageChannel = Channel.CreateBounded<(MessageHeader header, SecsMessage message)>(new BoundedChannelOptions(capacity: 20)
         {
-            SingleReader = true,
+            SingleReader = false,
             SingleWriter = true,
             AllowSynchronousContinuations = false,
             FullMode = BoundedChannelFullMode.Wait,
@@ -67,7 +67,7 @@ namespace Secs4Net
         private Memory<byte> _buffer;
         private readonly ISecsGem _secsGem;
 
-        public IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
+        internal IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
             => _controlMessageChannel.Reader.ReadAllAsync(cancellation);
 
         public IAsyncEnumerable<(MessageHeader header, SecsMessage message)> GetDataMessages(CancellationToken cancellation)

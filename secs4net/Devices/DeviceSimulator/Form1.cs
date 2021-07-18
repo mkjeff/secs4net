@@ -1,4 +1,6 @@
-﻿using Secs4Net;
+﻿using Microsoft.Extensions.Options;
+using Secs4Net;
+using Secs4Net.Options;
 using Secs4Net.Sml;
 using System;
 using System.ComponentModel;
@@ -39,14 +41,18 @@ namespace SecsDevice
                 await _secsGem.DisposeAsync();
             }
 
-            _secsGem = new SecsGem(
-                radioActiveMode.Checked,
-                IPAddress.Parse(txtAddress.Text),
-                (int)numPort.Value,
-                (int)numBufferSize.Value)
+            var options = Options.Create(new SecsGemOptions
+            {
+                IsActive = radioActiveMode.Checked,
+                IpAddress = IPAddress.Parse(txtAddress.Text),
+                Port = (int)numPort.Value,
+                DecoderBufferSize = (int)numBufferSize.Value,
+                DeviceId = (ushort)numDeviceId.Value,
+            });
+
+            _secsGem = new SecsGem(options)
             {
                 Logger = _logger,
-                DeviceId = (ushort)numDeviceId.Value,
             };
 
             _secsGem.ConnectionChanged += delegate
