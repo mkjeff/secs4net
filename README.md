@@ -45,7 +45,7 @@ try
 
     // LINQ query
     var query =
-        from a in s3f18.SecsItem.Items[3].Items
+        from a in s3f18.SecsItem.Items[3]
         select new {
             num = a.GetValue<int>(),
         };
@@ -66,7 +66,7 @@ secsGem.PrimaryMessageReceived += async (sender, messageWrapper) =>
     {
         //do something for primaryMsg
         var primaryMsg = messageWrapper.PrimaryMessage;
-	   
+       
 
         // reply secondary msg to device
         await messageWrapper.TryReplyAsync( secondaryMsg ); 
