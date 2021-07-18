@@ -49,28 +49,18 @@ namespace Secs4Net.UnitTests
 
             using var buffer = new ArrayPoolBufferWriter<byte>();
             SecsGem.EncodeMessage(message, systemByte, deviceId, buffer);
-            var encodedBytes = buffer.WrittenSpan.ToArray().AsMemory();
+            var encodedBytes = buffer.WrittenMemory;
 
             var secsGem = Substitute.For<ISecsGem>();
             secsGem.T8.Returns(10000);
 
             var decoder = new AsyncStreamDecoder(initialBufferSize: encodedBytes.Length, Substitute.For<ISecsGem>());
 
-            var socket = Substitute.For<ISocketReceiver>();
-            int recvIndex = 0;
-            socket.ReceiveAsync(Arg.Any<Memory<byte>>(), Arg.Any<SocketFlags>(), Arg.Any<CancellationToken>())
-                .Returns(call =>
-                {
-                    var recvBuffer = call.Arg<Memory<byte>>();
-                    var advance = Math.Min(recvBuffer.Length, encodedBytes.Length - recvIndex);
-                    encodedBytes.Slice(recvIndex, advance).CopyTo(recvBuffer);
-                    recvIndex += advance;
-                    return advance;
-                });
+            var decoderSource = new MemoryDecoderSource(encodedBytes);
 
-            _ = Task.Run(async () =>
+            _ = Task.Run(() =>
             {
-                Func<Task> act = () => decoder.StartReceivedAsync(socket, default);
+                Func<Task> act = () => decoder.StartReceivedAsync(decoderSource, default);
                 act.Should().NotThrow();
             });
 
@@ -90,7 +80,7 @@ namespace Secs4Net.UnitTests
 
             using var buffer = new ArrayPoolBufferWriter<byte>();
             SecsGem.EncodeMessage(message, systemByte, deviceId, buffer);
-            var encodedBytes = buffer.WrittenSpan.ToArray().AsMemory();
+            var encodedBytes = buffer.WrittenMemory;
 
             var secsGem = Substitute.For<ISecsGem>();
             secsGem.T8.Returns(10000);
@@ -98,21 +88,10 @@ namespace Secs4Net.UnitTests
             var initialBufferSize = 11;
             var decoder = new AsyncStreamDecoder(initialBufferSize, Substitute.For<ISecsGem>());
 
-            var socket = Substitute.For<ISocketReceiver>();
-            int recvIndex = 0;
-            socket.ReceiveAsync(Arg.Any<Memory<byte>>(), Arg.Any<SocketFlags>(), Arg.Any<CancellationToken>())
-                .Returns(call =>
-                {
-                    var recvBuffer = call.Arg<Memory<byte>>();
-                    var advance = Math.Min(recvBuffer.Length, encodedBytes.Length - recvIndex);
-                    encodedBytes.Slice(recvIndex, advance).CopyTo(recvBuffer);
-                    recvIndex += advance;
-                    return advance;
-                });
-
-            _ = Task.Run(async () =>
+            var decoderSource = new MemoryDecoderSource(encodedBytes);
+            _ = Task.Run(() =>
             {
-                Func<Task> act = ()=> decoder.StartReceivedAsync(socket, default);
+                Func<Task> act = ()=> decoder.StartReceivedAsync(decoderSource, default);
                 act.Should().NotThrow();
             });
 

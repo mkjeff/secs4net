@@ -9,22 +9,41 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    internal interface ISocketReceiver
+    internal interface IDecoderSource
     {
-        public ValueTask<int> ReceiveAsync(Memory<byte> buffer, SocketFlags socketFlags, CancellationToken cancellationToken);
+        public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken);
     }
 
-    internal class SocketReceiver : ISocketReceiver
+    internal class SocketDecoderSource : IDecoderSource
     {
         private readonly Socket _socket;
 
-        public SocketReceiver(Socket socket)
+        public SocketDecoderSource(Socket socket)
         {
             _socket = socket;
         }
 
-        public ValueTask<int> ReceiveAsync(Memory<byte> buffer, SocketFlags socketFlags, CancellationToken cancellationToken) 
-            => _socket.ReceiveAsync(buffer, socketFlags, cancellationToken);
+        public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken) 
+            => _socket.ReceiveAsync(buffer, SocketFlags.None, cancellationToken);
+    }
+
+    public class MemoryDecoderSource : IDecoderSource
+    {
+        private readonly ReadOnlyMemory<byte> _source;
+        private int _index;
+
+        public MemoryDecoderSource(ReadOnlyMemory<byte> source)
+        {
+            _source = source;
+        }
+
+        public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
+            var advance = Math.Min(buffer.Length, _source.Length - _index);
+            _source.Slice(_index, advance).CopyTo(buffer);
+            _index += advance;
+            return ValueTask.FromResult(advance);
+        }
     }
 
     internal sealed class AsyncStreamDecoder
@@ -60,7 +79,7 @@ namespace Secs4Net
             _secsGem = secsGem;
         }
 
-        public async Task StartReceivedAsync(ISocketReceiver socket, CancellationToken cancellation)
+        public async Task StartReceivedAsync(IDecoderSource socket, CancellationToken cancellation)
         {
             Debug.Assert(socket != null);
             var dataMessageWriter = _dataMessageChannel.Writer;
@@ -185,7 +204,7 @@ namespace Secs4Net
             }
         }
 
-        ValueTask EnsureBufferAsync(ISocketReceiver socket, ref int index, int required, CancellationToken cancellation)
+        ValueTask EnsureBufferAsync(IDecoderSource socket, ref int index, int required, CancellationToken cancellation)
         {
             Debug.Assert(_bufferFilledIndex >= index);
             var remainedBufferLength = _bufferFilledIndex - index;
@@ -220,12 +239,12 @@ namespace Secs4Net
 
             return SocketReceiveAsync(socket, need, cancellation);
 
-            async ValueTask SocketReceiveAsync(ISocketReceiver socket, int need, CancellationToken cancellation)
+            async ValueTask SocketReceiveAsync(IDecoderSource socket, int need, CancellationToken cancellation)
             {
                 while (need > 0)
                 {
                     //_secsGem.StartT8Timer();
-                    var advance = await socket.ReceiveAsync(_buffer.Slice(_bufferFilledIndex), SocketFlags.None, cancellation);
+                    var advance = await socket.ReadAsync(_buffer.Slice(_bufferFilledIndex), cancellation);
                     //_secsGem.StopT8Timer();
                     _bufferFilledIndex += advance;
                     need -= advance;

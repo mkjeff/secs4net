@@ -257,7 +257,7 @@ namespace Secs4Net
             {
                 CommunicationStateChanging(ConnectionState.Connected);
                 Debug.Assert(_socket != null);
-                await _decoder.StartReceivedAsync(new SocketReceiver(_socket), cancellation).ConfigureAwait(false);
+                await _decoder.StartReceivedAsync(new SocketDecoderSource(_socket), cancellation).ConfigureAwait(false);
             }
             catch (SocketException ex)
             {
