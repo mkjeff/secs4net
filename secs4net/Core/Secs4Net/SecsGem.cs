@@ -119,7 +119,7 @@ namespace Secs4Net
             T6 = options.T6;
             T7 = options.T7;
             T8 = options.T8;
-            LinkTestInterval= options.LinkTestInterval;
+            LinkTestInterval = options.LinkTestInterval;
 
             _decoder = new AsyncStreamDecoder(options.DecoderBufferSize, this);
             IpAddress = options.IpAddress ?? throw new ArgumentNullException(nameof(options.IpAddress));
@@ -514,7 +514,7 @@ namespace Secs4Net
 
         public async IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync([EnumeratorCancellation] CancellationToken cancellation = default)
         {
-            await foreach (var  msg in _decoder.GetDataMessages(cancellation))
+            await foreach (var msg in _decoder.GetDataMessages(cancellation))
             {
                 var systembyte = msg.Id;
                 if (msg.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)

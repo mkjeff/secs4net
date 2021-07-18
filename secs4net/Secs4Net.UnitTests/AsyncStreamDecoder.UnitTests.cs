@@ -69,7 +69,7 @@ namespace Secs4Net.UnitTests
             decodeMessage.Id.Should().Be(systemByte);
             decodeMessage.DeviceId.Should().Be(deviceId);
             decodeMessage.Should().NotBeNull();
-            decodeMessage.Should().BeEquivalentTo(message, options => options.ComparingByMembers<SecsMessage>());
+            Assert.Equal(message, decodeMessage);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace Secs4Net.UnitTests
             decodeMessage.Id.Should().Be(systemByte);
             decodeMessage.DeviceId.Should().Be(deviceId);
             decodeMessage.Should().NotBeNull();
-            decodeMessage.Should().BeEquivalentTo(message, options => options.ComparingByMembers<SecsMessage>());
+            Assert.Equal(message, decodeMessage);
         }
     }
 }

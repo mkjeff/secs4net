@@ -60,18 +60,17 @@ catch(SecsException)
     // device reply S9Fx
 }
 ```
-2\. Handle primary message from device
+2\. Handle primary message via async-stream
 ```cs
-secsGem.PrimaryMessageReceived += async (sender, messageWrapper) => 
+await foreach (var primaryMessage in _secsGem.GetPrimaryMessageAsync(cancellationToken))
 {
     try 
     {
         //do something for primaryMsg
-        var primaryMsg = messageWrapper.PrimaryMessage;
-       
-
+        var primaryMsg = primaryMessage.PrimaryMessage;
+      
         // reply secondary msg to device
-        await messageWrapper.TryReplyAsync( secondaryMsg ); 
+        await primaryMessage.TryReplyAsync( secondaryMsg ); 
     }
     catch (Exception ex) 
     {
