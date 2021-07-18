@@ -82,8 +82,12 @@ namespace SecsDevice
 
         private async void btnDisable_Click(object sender, EventArgs e)
         {
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
+            if (!_cancellationTokenSource.IsCancellationRequested)
+            {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+            }
+
             if (_secsGem is not null)
             {
                 await _secsGem.DisposeAsync();
@@ -100,10 +104,10 @@ namespace SecsDevice
 
         private async void btnSendPrimary_Click(object sender, EventArgs e)
         {
-            if (_secsGem?.State != ConnectionState.Selected)
+            if (string.IsNullOrWhiteSpace(txtSendPrimary.Text)|| _secsGem?.State != ConnectionState.Selected)
+            {
                 return;
-            if (string.IsNullOrWhiteSpace(txtSendPrimary.Text))
-                return;
+            }
 
             try
             {
@@ -124,11 +128,11 @@ namespace SecsDevice
 
         private async void btnReplySecondary_Click(object sender, EventArgs e)
         {
-            if (lstUnreplyMsg.SelectedItem is not PrimaryMessageWrapper recv)
+            if (lstUnreplyMsg.SelectedItem is not PrimaryMessageWrapper recv
+                || string.IsNullOrWhiteSpace(txtReplySeconary.Text))
+            {
                 return;
-
-            if (string.IsNullOrWhiteSpace(txtReplySeconary.Text))
-                return;
+            }
 
             await recv.TryReplyAsync(txtReplySeconary.Text.ToSecsMessage());
             recvBuffer.Remove(recv);
@@ -138,9 +142,11 @@ namespace SecsDevice
         private async void btnReplyS9F7_Click(object sender, EventArgs e)
         {
             if (lstUnreplyMsg.SelectedItem is not PrimaryMessageWrapper recv)
+            {
                 return;
+            }
 
-            await recv.TryReplyAsync(null);
+            await recv.TryReplyAsync();
 
             recvBuffer.Remove(recv);
             txtRecvPrimary.Clear();

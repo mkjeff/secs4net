@@ -388,7 +388,7 @@ namespace Secs4Net
 
             try
             {
-                using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: 14))
+                using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: 256))
                 {
                     EncodeMessage(msg, buffer);
                     await SendAsync(buffer.WrittenMemory, cancellation).ConfigureAwait(false);
@@ -422,14 +422,14 @@ namespace Secs4Net
         internal static void EncodeMessage(SecsMessage msg, ArrayPoolBufferWriter<byte> buffer)
         {
             // reserve 4 byte for total length
-            var lengthSpan = buffer.GetSpan(sizeof(int)).Slice(0, sizeof(int));
+            var lengthBytes = buffer.GetSpan(sizeof(int)).Slice(0, sizeof(int));
             buffer.Advance(sizeof(int));
 
-            msg.EncodeTo(buffer);
+            msg.EncodeHeaderTo(buffer);
             msg.SecsItem?.EncodeTo(buffer);
 
-            BitConverter.TryWriteBytes(lengthSpan, buffer.WrittenCount - sizeof(int));
-            lengthSpan.Reverse();
+            BitConverter.TryWriteBytes(lengthBytes, buffer.WrittenCount - sizeof(int));
+            lengthBytes.Reverse();
         }
 
         private async ValueTask SendAsync(ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
@@ -522,7 +522,7 @@ namespace Secs4Net
                     _logger.MessageIn(msg, systembyte);
                     _logger.Warning("Received Unrecognized Device Id Message");
                     var headerBytes = new byte[10];
-                    msg.EncodeTo(new MemoryBufferWriter<byte>(headerBytes));
+                    msg.EncodeHeaderTo(new MemoryBufferWriter<byte>(headerBytes));
                     var s9f1 = new SecsMessage(9, 1, replyExpected: false)
                     {
                         Name = "Unrecognized Device Id",

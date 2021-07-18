@@ -49,18 +49,14 @@ namespace Secs4Net
             ReplyExpected = replyExpected;
         }
 
-        internal void EncodeTo(IBufferWriter<byte> buffer)
-        {
-            var header = new MessageHeader
-            (
+        internal void EncodeHeaderTo(IBufferWriter<byte> buffer) 
+            => new MessageHeader(
                 DeviceId,
                 ReplyExpected,
                 S,
                 F,
                 MessageType.DataMessage,
                 Id
-            );
-            header.EncodeTo(buffer);
-        }
+                ).EncodeTo(buffer);
     }
 }

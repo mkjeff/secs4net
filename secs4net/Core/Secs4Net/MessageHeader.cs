@@ -36,10 +36,10 @@ namespace Secs4Net
         {
             var span = buffer.GetSpan(sizeHint: 10);
             BinaryPrimitives.WriteUInt16BigEndian(span, DeviceId);
-            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(2), (byte)(S | (ReplyExpected ? 0b1000_0000 : 0)));
-            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(3), F);
-            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(4), (byte)0);
-            Unsafe.WriteUnaligned(ref span.DangerousGetReferenceAt(5), (byte)MessageType);
+            span.DangerousGetReferenceAt(2) = (byte)(S | (ReplyExpected ? 0b1000_0000 : 0));
+            span.DangerousGetReferenceAt(3) = F;
+            span.DangerousGetReferenceAt(4) = (byte)0;
+            span.DangerousGetReferenceAt(5) = (byte)MessageType;
             BinaryPrimitives.WriteInt32BigEndian(span.Slice(6), SystemBytes);
             buffer.Advance(10);
         }

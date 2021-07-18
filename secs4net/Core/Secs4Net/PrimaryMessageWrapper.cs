@@ -23,7 +23,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="replyMessage">Reply S9F7 if parameter is null</param>
         /// <returns>true, if reply success.</returns>
-        public async Task<bool> TryReplyAsync(SecsMessage? replyMessage, CancellationToken cancellation = default)
+        public async Task<bool> TryReplyAsync(SecsMessage? replyMessage = null, CancellationToken cancellation = default)
         {
             if (!PrimaryMessage.ReplyExpected)
             {
@@ -39,7 +39,7 @@ namespace Secs4Net
             {
                 var headerBytes = new byte[10];
                 var buffer = new MemoryBufferWriter<byte>(headerBytes);
-                PrimaryMessage.EncodeTo(buffer);
+                PrimaryMessage.EncodeHeaderTo(buffer);
 
                 replyMessage = new SecsMessage(9, 7, replyExpected: false)
                 {
