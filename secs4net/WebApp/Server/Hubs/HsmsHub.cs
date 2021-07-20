@@ -1,14 +1,7 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Secs4Net;
 using Secs4Net.Sml;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace WebApp.Server.Hubs
 {
@@ -129,20 +122,22 @@ namespace WebApp.Server.Hubs
         //            }
         //        }
 
-        //        sealed class DeviceLogger : ISecsGemLogger
-        //        {
-        //            private readonly IClientProxy _client;
-        //            public DeviceLogger(IClientProxy client)
-        //            {
-        //                _client = client;
-        //            }
+    }
 
-        //            public void Debug(string msg) => _client.SendAsync("Debug", msg);
-        //            public void Error(string msg, Exception? ex = null) => _client.SendAsync("Error", msg + "\n" + ex);
-        //            public void Info(string msg) => _client.SendAsync("Info", msg);
-        //            public void MessageIn(SecsMessage msg, int systembyte) => _client.SendAsync("MessageIn", $"<< [0x{systembyte:X8}] {msg.ToSml()}");
-        //            public void MessageOut(SecsMessage msg, int systembyte) => _client.SendAsync("MessageOut", $">> [0x{systembyte:X8}] {msg.ToSml()}\n");
-        //            public void Warning(string msg) => _client.SendAsync("Warning", msg);
-        //        }
+    internal sealed class DeviceLogger : ISecsGemLogger
+    {
+        private readonly IHubContext<HsmsHub> _hubContext;
+
+        public DeviceLogger(IHubContext<HsmsHub> hubContext)
+        {
+            _hubContext = hubContext;
+        }
+
+        public void Debug(string msg) => _hubContext.Clients.All.SendAsync("Debug", msg);
+        public void Error(string msg, Exception? ex = null) => _hubContext.Clients.All.SendAsync("Error", msg + "\n" + ex);
+        public void Info(string msg) => _hubContext.Clients.All.SendAsync("Info", msg);
+        public void MessageIn(SecsMessage msg, int systembyte) => _hubContext.Clients.All.SendAsync("MessageIn", $"<< [0x{systembyte:X8}] {msg.ToSml()}");
+        public void MessageOut(SecsMessage msg, int systembyte) => _hubContext.Clients.All.SendAsync("MessageOut", $">> [0x{systembyte:X8}] {msg.ToSml()}\n");
+        public void Warning(string msg) => _hubContext.Clients.All.SendAsync("Warning", msg);
     }
 }

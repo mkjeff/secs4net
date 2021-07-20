@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Secs4Net;
 using System.Linq;
 using WebApp.Server.Hubs;
 
@@ -31,6 +32,12 @@ namespace WebApp.Server
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+
+            services.Configure<SecsGemOptions>(Configuration.GetSection("secs4net"));
+            services.AddSingleton<IHsmsConnection, HsmsConnection>();
+            services.AddHostedService(s => (IHostedService)s.GetRequiredService<HsmsConnection>());
+            services.AddSingleton<ISecsGem, SecsGem>();
+            services.AddSingleton<ISecsGemLogger, DeviceLogger>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
