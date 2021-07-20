@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    public sealed class HsmsConnector : IHsmsConnector, IAsyncDisposable
+    public sealed class HsmsConnection : BackgroundService, IHsmsConnection, IAsyncDisposable
     {
         public event EventHandler<ConnectionState>? ConnectionChanged;
         public int T5 { get; }
@@ -71,10 +71,11 @@ namespace Secs4Net
         private readonly Timer _timerLinkTest;
         private readonly ConcurrentDictionary<int, TaskCompletionSource> _replyExpectedMsgs = new();
         private readonly Memory<byte> _socketReceiveBuffer;
-        public PipeDecoder PipeDecoder { get; }
-        private CancellationToken _cancellationTokenForStart;
 
-        public HsmsConnector(IOptions<SecsGemOptions> secsGemOptions, ISecsGemLogger logger)
+        public PipeDecoder PipeDecoder { get; }
+        private CancellationToken _stoppingToken;
+
+        public HsmsConnection(IOptions<SecsGemOptions> secsGemOptions, ISecsGemLogger logger)
         {
             var pipe = new Pipe();
             PipeDecoder = new PipeDecoder(pipe.Reader, pipe.Writer);
@@ -187,6 +188,19 @@ namespace Secs4Net
             }
         }
 
+        private async Task StartDecoderAsync(CancellationToken cancellation)
+        {
+            try
+            {
+                await PipeDecoder.StartAsync(cancellation).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!cancellation.IsCancellationRequested)
+            {
+                _logger.Error("Unexpected exception on StartAsyncStreamDecoderAsync", ex);
+                Reconnect();
+            }
+        }
+
         private void Disconnect()
         {
             _timer7.Change(Timeout.Infinite, Timeout.Infinite);
@@ -209,15 +223,17 @@ namespace Secs4Net
             _socket = null;
         }
 
-        private Task? _startTask;
-        public Task Start(CancellationToken cancellation)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (_startTask is not null)
-            {
-                return _startTask;
-            }
-            _cancellationTokenForStart = cancellation;
-            return _startTask = _startImpl(_cancellationTokenForStart);
+            _stoppingToken = stoppingToken;
+            _ = AsyncHelper.LongRunningAsync(() =>
+                HandleControlMessagesAsync(_stoppingToken), _stoppingToken);
+
+            _ = AsyncHelper.LongRunningAsync(() =>
+                StartDecoderAsync(_stoppingToken), _stoppingToken);
+
+            _ = AsyncHelper.LongRunningAsync(() => _startImpl(stoppingToken), stoppingToken);
+            return Task.CompletedTask;
         }
 
         public void Reconnect()
@@ -254,7 +270,7 @@ namespace Secs4Net
                     }
 
                     Disconnect();
-                    _startTask = Task.Run(() => _startImpl(_cancellationTokenForStart));
+                    Task.Run(() => _startImpl(_stoppingToken));
                     break;
             }
         }
@@ -269,8 +285,8 @@ namespace Secs4Net
             }
         }
 
-        Task IHsmsConnector.HandleControlMessagesAsync(IAsyncEnumerable<MessageHeader> controlMessages, CancellationToken cancellation)
-            => controlMessages
+        private Task HandleControlMessagesAsync(CancellationToken cancellation)
+            => PipeDecoder.GetControlMessages(cancellation)
             .ForEachAwaitWithCancellationAsync(async (header, ct) =>
             {
                 var systembyte = header.SystemBytes;
@@ -416,17 +432,17 @@ namespace Secs4Net
             }
         }
 
-        ValueTask<int> IEncodedBuffer.WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        public ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             Debug.Assert(_socket != null);
             return _socket.SendAsync(buffer, SocketFlags.None, cancellationToken);
         }
 
-        internal static async ValueTask SendAsync(IHsmsConnector connector, ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
+        internal static async ValueTask SendAsync(IHsmsConnection connector, ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
         {
             do
             {
-                var length = await connector.WriteAsync(bytesToTransfer, cancellation).ConfigureAwait(false);
+                var length = await connector.SendAsync(bytesToTransfer, cancellation).ConfigureAwait(false);
                 bytesToTransfer = bytesToTransfer.Slice(length);
             } while (!bytesToTransfer.IsEmpty);
         }

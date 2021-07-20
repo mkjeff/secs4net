@@ -1,9 +1,5 @@
 ﻿namespace Secs4Net
 {
-
-    /// <summary>
-    /// The enumeration of SECS item value format 
-    /// </summary>
     public enum SecsFormat : byte
     {
         List = 0b_0000_00_00,

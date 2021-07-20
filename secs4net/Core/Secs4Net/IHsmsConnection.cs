@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    public interface IHsmsConnector : IEncodedBuffer
+    public interface IHsmsConnection
     {
-        event EventHandler<ConnectionState>? ConnectionChanged;
+        public event EventHandler<ConnectionState>? ConnectionChanged;
         int T5 => 10000;
         int T7 => 10000;
         int T8 => 5000;
@@ -18,12 +17,9 @@ namespace Secs4Net
         IPAddress IpAddress => IPAddress.Loopback;
         int Port => -1;
         string DeviceIpAddress => string.Empty;
-
         PipeDecoder PipeDecoder { get; }
 
         void Reconnect() { }
-        Task Start(CancellationToken cancellation) => Task.CompletedTask;
-
-        internal Task HandleControlMessagesAsync(IAsyncEnumerable<MessageHeader> controlMessages, CancellationToken cancellation) => Task.CompletedTask;
+        public ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
     }
 }

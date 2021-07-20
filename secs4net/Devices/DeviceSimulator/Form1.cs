@@ -13,7 +13,7 @@ namespace SecsDevice
     public partial class Form1 : Form
     {
         SecsGem? _secsGem;
-        HsmsConnector? _connector;
+        HsmsConnection? _connector;
         readonly ISecsGemLogger _logger;
         readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
         CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -52,7 +52,7 @@ namespace SecsDevice
                 DeviceId = (ushort)numDeviceId.Value,
             });
 
-            _connector = new HsmsConnector(options, _logger);
+            _connector = new HsmsConnection(options, _logger);
             _secsGem = new SecsGem(options, _connector, _logger);
 
             _connector.ConnectionChanged += delegate
@@ -64,7 +64,7 @@ namespace SecsDevice
             };
 
             btnEnable.Enabled = false;
-            await _connector.Start(CancellationToken.None);
+            await _connector.StartAsync(_cancellationTokenSource.Token);
             btnDisable.Enabled = true;
 
             try

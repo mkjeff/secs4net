@@ -35,7 +35,7 @@ namespace Secs4Net
         private const int DisposalComplete = 1;
         private int _disposeStage;
         private readonly ISecsGemLogger _logger;
-        private readonly IHsmsConnector _hsmsConnector;
+        private readonly IHsmsConnection _hsmsConnector;
 
         public ushort DeviceId { get; }
         public int T3 { get; }
@@ -52,7 +52,7 @@ namespace Secs4Net
         private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new();
         private readonly CancellationTokenSource _cancellationTokenSourceForDecoderLoop = new();
 
-        public SecsGem(IOptions<SecsGemOptions> secsGemOptions, IHsmsConnector hsmsConnector, ISecsGemLogger logger)
+        public SecsGem(IOptions<SecsGemOptions> secsGemOptions, IHsmsConnection hsmsConnector, ISecsGemLogger logger)
         {
             var options = secsGemOptions.Value;
             DeviceId = options.DeviceId;
@@ -61,15 +61,9 @@ namespace Secs4Net
             _hsmsConnector = hsmsConnector;
             _logger = logger;
 
-            var cancellation = _cancellationTokenSourceForDecoderLoop.Token;
-            _ = AsyncHelper.LongRunningAsync(() =>
-                _hsmsConnector.HandleControlMessagesAsync(_hsmsConnector.PipeDecoder.GetControlMessages(cancellation), cancellation));
-            
+            var cancellation = _cancellationTokenSourceForDecoderLoop.Token;         
             _ = AsyncHelper.LongRunningAsync(() =>
                 StartDataMessagesConsumer(_hsmsConnector.PipeDecoder.GetDataMessages(cancellation), cancellation), cancellation);
-
-            _ = AsyncHelper.LongRunningAsync(() =>
-                StartAsyncStreamDecoderAsync(_hsmsConnector.PipeDecoder, cancellation), cancellation);
         }
 
         internal async Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, CancellationToken cancellation)
@@ -92,7 +86,7 @@ namespace Secs4Net
                 using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: 256))
                 {
                     EncodeMessage(msg, buffer);
-                    await HsmsConnector.SendAsync(_hsmsConnector, buffer.WrittenMemory, cancellation).ConfigureAwait(false);
+                    await HsmsConnection.SendAsync(_hsmsConnector, buffer.WrittenMemory, cancellation).ConfigureAwait(false);
                 }
 
                 _logger.MessageOut(msg, msg.Id);
@@ -137,19 +131,6 @@ namespace Secs4Net
 
         public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)
             => _primaryMessageChannel.Reader.ReadAllAsync(cancellation);
-
-        private async Task StartAsyncStreamDecoderAsync(PipeDecoder decoder, CancellationToken cancellation)
-        {
-            try
-            {
-                await decoder.StartAsync(cancellation).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (!cancellation.IsCancellationRequested)
-            {
-                _logger.Error("Unexpected exception on StartAsyncStreamDecoderAsync", ex);
-                _hsmsConnector.Reconnect();
-            }
-        }
 
         private async Task StartDataMessagesConsumer(IAsyncEnumerable<SecsMessage> messages, CancellationToken cancellation)
         {

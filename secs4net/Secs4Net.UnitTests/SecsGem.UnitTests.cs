@@ -13,15 +13,15 @@ namespace Secs4Net.UnitTests
 {
     public class SecsGemUnitTests
     {
-        private readonly IHsmsConnector connector1;
-        private readonly IHsmsConnector connector2;
+        private readonly IHsmsConnection connector1;
+        private readonly IHsmsConnection connector2;
 
         public SecsGemUnitTests()
         {
             var pipe1 = new Pipe();
             var pipe2 = new Pipe();
-            connector1 = new InMemoryConnector(new PipeDecoder(pipe1.Reader, input: pipe2.Writer));
-            connector2 = new InMemoryConnector(new PipeDecoder(pipe2.Reader, input: pipe1.Writer));
+            connector1 = new PipeConnection(new PipeDecoder(pipe1.Reader, input: pipe2.Writer));
+            connector2 = new PipeConnection(new PipeDecoder(pipe2.Reader, input: pipe1.Writer));
         }
 
         [Fact]
