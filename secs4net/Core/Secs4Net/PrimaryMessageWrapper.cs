@@ -30,7 +30,7 @@ namespace Secs4Net
                 throw new SecsException("The message does not need to reply");
             }
 
-            if (!_secsGem.TryGetTarget(out var secsGem) || secsGem.IsDisposed)
+            if (!_secsGem.TryGetTarget(out var secsGem))
             {
                 throw new SecsException("Hsms connector loss, the message has no chance to reply via the ReplyAsync method");
             }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using Secs4Net;
-using Secs4Net.Options;
 using Secs4Net.Sml;
 using System;
 using System.ComponentModel;
@@ -14,6 +13,7 @@ namespace SecsDevice
     public partial class Form1 : Form
     {
         SecsGem? _secsGem;
+        HsmsConnector? _connector;
         readonly ISecsGemLogger _logger;
         readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
         CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -36,9 +36,11 @@ namespace SecsDevice
 
         private async void btnEnable_Click(object sender, EventArgs e)
         {
-            if (_secsGem is not null)
+            _secsGem?.Dispose();
+
+            if (_connector is not null)
             {
-                await _secsGem.DisposeAsync();
+                await _connector.DisposeAsync();
             }
 
             var options = Options.Create(new SecsGemOptions
@@ -46,25 +48,23 @@ namespace SecsDevice
                 IsActive = radioActiveMode.Checked,
                 IpAddress = IPAddress.Parse(txtAddress.Text),
                 Port = (int)numPort.Value,
-                DecoderBufferSize = (int)numBufferSize.Value,
+                SocketReceiveBufferSize = (int)numBufferSize.Value,
                 DeviceId = (ushort)numDeviceId.Value,
             });
 
-            _secsGem = new SecsGem(options)
-            {
-                Logger = _logger,
-            };
+            _connector = new HsmsConnector(options, _logger);
+            _secsGem = new SecsGem(options, _connector, _logger);
 
-            _secsGem.ConnectionChanged += delegate
+            _connector.ConnectionChanged += delegate
             {
                 base.Invoke((MethodInvoker)delegate
                 {
-                    lbStatus.Text = _secsGem.State.ToString();
+                    lbStatus.Text = _connector.State.ToString();
                 });
             };
 
             btnEnable.Enabled = false;
-            _secsGem.Start();
+            await _connector.Start(CancellationToken.None);
             btnDisable.Enabled = true;
 
             try
@@ -87,11 +87,11 @@ namespace SecsDevice
                 _cancellationTokenSource.Cancel();
                 _cancellationTokenSource.Dispose();
             }
-
-            if (_secsGem is not null)
+            if (_connector is not null)
             {
-                await _secsGem.DisposeAsync();
+                await _connector.DisposeAsync();
             }
+            _secsGem?.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
 
             _secsGem = null;
@@ -104,7 +104,7 @@ namespace SecsDevice
 
         private async void btnSendPrimary_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtSendPrimary.Text)|| _secsGem?.State != ConnectionState.Selected)
+            if (_secsGem is null || string.IsNullOrWhiteSpace(txtSendPrimary.Text) || _connector?.State != ConnectionState.Selected)
             {
                 return;
             }

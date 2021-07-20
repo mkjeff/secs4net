@@ -1,5 +1,6 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -8,33 +9,28 @@ namespace Secs4Net
 {
     partial class Item
     {
-        public static Item Decode(Span<byte> bytes)
+        internal static void DecodeFormatAndLengthByteCount(byte formatAndLengthByte, out SecsFormat format, out byte lengthByteCount)
         {
-            var index = 0;
-            return DecodeFromFullBuffer(bytes, ref index);
-        }
-
-        internal static void DecodeFormatAndLengthByteCount(Span<byte> bytes, ref int index, out SecsFormat format, out byte lengthByteCount)
-        {
-            var formatAndLengthByte = bytes.DangerousGetReferenceAt(index);
             format = (SecsFormat)(formatAndLengthByte & 0xFC);
             lengthByteCount = (byte)(formatAndLengthByte & 3);
-            index++;
         }
 
-        internal static void DecodeDataLength(Span<byte> sourceBytes, ref int index, out int dataLength)
+        internal static void DecodeDataLength(in ReadOnlySequence<byte> sourceBytes, out int dataLength)
         {
             Span<byte> itemLengthBytes = stackalloc byte[4];
             sourceBytes.CopyTo(itemLengthBytes);
-            itemLengthBytes.Slice(0, sourceBytes.Length).Reverse();
+            itemLengthBytes.Slice(0, (int)sourceBytes.Length).Reverse();
             dataLength = BitConverter.ToInt32(itemLengthBytes); // max to 3 byte dataLength
-            index += sourceBytes.Length;
         }
 
-        internal static Item DecodeFromFullBuffer(Span<byte> bytes, ref int index)
+        internal static Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
         {
-            DecodeFormatAndLengthByteCount(bytes, ref index, out var format, out var lengthByteCount);
-            DecodeDataLength(bytes.Slice(index, lengthByteCount), ref index, out var dataLength);
+            DecodeFormatAndLengthByteCount(bytes.FirstSpan[0], out var format, out var lengthByteCount);
+            bytes = bytes.Slice(1);
+
+            var dataLengthSeq = bytes.Slice(0, lengthByteCount);
+            DecodeDataLength(dataLengthSeq, out var dataLength);
+            bytes = bytes.Slice(dataLengthSeq.End);
 
             if (format == SecsFormat.List)
             {
@@ -46,17 +42,19 @@ namespace Secs4Net
                 var list = new List<Item>(dataLength);
                 for (var i = 0; i < dataLength; i++)
                 {
-                    list.Add(DecodeFromFullBuffer(bytes, ref index));
+                    list.Add(DecodeFromFullBuffer(ref bytes));
                 }
 
                 return L(list);
             }
-            var item = DecodeDataItem(format, bytes.Slice(index, dataLength));
-            index += dataLength;
+
+            var dataItemBytes = bytes.Slice(0, dataLength);
+            var item = DecodeDataItem(format, dataItemBytes);
+            bytes = bytes.Slice(dataItemBytes.End);
             return item;
         }
 
-        internal static Item DecodeDataItem(SecsFormat format, Span<byte> bytes)
+        internal static Item DecodeDataItem(SecsFormat format, in ReadOnlySequence<byte> bytes)
         {
             return format switch
             {
@@ -77,12 +75,13 @@ namespace Secs4Net
                 _ => ThrowHelper(format),
             };
 
-            static T[] Decode<T>(Span<byte> bytes) where T : unmanaged
+            static T[] Decode<T>(in ReadOnlySequence<byte> bytes) where T : unmanaged
             {
                 var elmSize = Unsafe.SizeOf<T>();
-                bytes.Reverse(elmSize);
                 var values = new T[bytes.Length / elmSize];
+                var valueAsBytesSpan = values.AsSpan().AsBytes();
                 bytes.CopyTo(values.AsSpan().AsBytes());
+                valueAsBytesSpan.Reverse(elmSize);
                 return values;
             }
 

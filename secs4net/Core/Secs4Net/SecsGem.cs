@@ -1,386 +1,83 @@
 ﻿using Microsoft.Extensions.Options;
-using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using Secs4Net.Options;
 using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
+using System.IO.Pipelines;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    public interface ISecsGem : IAsyncDisposable
+    public interface ISecsGem
     {
-        ushort DeviceId { get; }
-        int T8 { get; }
-        bool LinkTestEnable { get; set; }
+        /// <summary>
+        /// Get async-stream of primary messages
+        /// </summary>
+        /// <param name="cancellation"></param>
         IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default);
-        Task<SecsMessage> SendAsync(SecsMessage msg, CancellationToken cancellation = default);
-        void Start();
-        internal void StopT8Timer();
-        internal void StartT8Timer();
-        event EventHandler<ConnectionState>? ConnectionChanged;
-    }
-
-    public sealed class SecsGem : ISecsGem
-    {
-        public event EventHandler<ConnectionState>? ConnectionChanged;
-
-        public ISecsGemLogger Logger
-        {
-            get => _logger;
-            set => _logger = value ?? DefaultLogger.Instance;
-        }
-        private ISecsGemLogger _logger = DefaultLogger.Instance;
 
         /// <summary>
-        /// Connection state
+        /// Asynchronously send message to device.
         /// </summary>
-        public ConnectionState State { get; private set; }
+        /// <param name="msg">primary message</param>
+        /// <returns>secondary message</returns>
+        Task<SecsMessage> SendAsync(SecsMessage msg, CancellationToken cancellation = default);
+    }
 
-        public ushort DeviceId { get; }
-        public int T3 { get; }
-        public int T5 { get; }
-        public int T6 { get; }
-        public int T7 { get; }
-        public int T8 { get; }
-        public int LinkTestInterval { get; }
-        public bool IsActive { get; }
-        public IPAddress IpAddress { get; }
-        public int Port { get; }
-
-        public bool LinkTestEnable
-        {
-            get => _linkTestEnable;
-            set
-            {
-                if (_linkTestEnable == value)
-                {
-                    return;
-                }
-
-                _linkTestEnable = value;
-                if (_linkTestEnable)
-                {
-                    _timerLinkTest.Change(0, LinkTestInterval);
-                }
-                else
-                {
-                    _timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
-                }
-            }
-        }
-        private bool _linkTestEnable;
-
+    public sealed class SecsGem : ISecsGem, IDisposable
+    {
         private const int DisposalNotStarted = 0;
         private const int DisposalComplete = 1;
         private int _disposeStage;
+        private readonly ISecsGemLogger _logger;
+        private readonly IHsmsConnector _hsmsConnector;
 
-        public bool IsDisposed
-            => Interlocked.CompareExchange(ref _disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
+        public ushort DeviceId { get; }
+        public int T3 { get; }
 
-        /// <summary>
-        /// remote device endpoint address
-        /// </summary>
-        public string DeviceIpAddress
-            => IsActive
-            ? IpAddress.ToString()
-            : ((IPEndPoint?)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
+        private readonly Channel<PrimaryMessageWrapper> _primaryMessageChannel = Channel
+            .CreateBounded<PrimaryMessageWrapper>(new BoundedChannelOptions(capacity: 16)
+            {
+                SingleReader = false,
+                SingleWriter = true,
+                AllowSynchronousContinuations = false,
+                FullMode = BoundedChannelFullMode.Wait,
+            });
 
-        private Socket? _socket;
-
-        private readonly AsyncStreamDecoder _decoder;
         private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new();
-        private readonly Timer _timer7;
-        private readonly Timer _timer8;
-        private readonly Timer _timerLinkTest;
+        private readonly CancellationTokenSource _cancellationTokenSourceForDecoderLoop = new();
 
-        private readonly Func<CancellationToken, Task> _startImpl;
-        private readonly Action _stopImpl;
-        private CancellationTokenSource _cancellationTokenSource = new();
-
-        private static readonly SecsMessage ControlMessage = new(0, 0);
-        private static readonly byte[] ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
-        private sealed class DefaultLogger : ISecsGemLogger
-        {
-            public static readonly ISecsGemLogger Instance = new DefaultLogger();
-        }
-
-        public SecsGem(IOptions<SecsGemOptions> secsGemOptions)
+        public SecsGem(IOptions<SecsGemOptions> secsGemOptions, IHsmsConnector hsmsConnector, ISecsGemLogger logger)
         {
             var options = secsGemOptions.Value;
             DeviceId = options.DeviceId;
             T3 = options.T3;
-            T5 = options.T5;
-            T6 = options.T6;
-            T7 = options.T7;
-            T8 = options.T8;
-            LinkTestInterval = options.LinkTestInterval;
 
-            _decoder = new AsyncStreamDecoder(options.DecoderBufferSize, this);
-            IpAddress = options.IpAddress ?? throw new ArgumentNullException(nameof(options.IpAddress));
-            Port = options.Port;
-            IsActive = options.IsActive;
+            _hsmsConnector = hsmsConnector;
+            _logger = logger;
 
-            if (IsActive)
-            {
-                _startImpl = async cancellation =>
-                {
-                    var connected = false;
-                    do
-                    {
-                        if (IsDisposed)
-                        {
-                            return;
-                        }
+            var cancellation = _cancellationTokenSourceForDecoderLoop.Token;
+            _ = AsyncHelper.LongRunningAsync(() =>
+                _hsmsConnector.HandleControlMessagesAsync(_hsmsConnector.PipeDecoder.GetControlMessages(cancellation), cancellation));
+            
+            _ = AsyncHelper.LongRunningAsync(() =>
+                StartDataMessagesConsumer(_hsmsConnector.PipeDecoder.GetDataMessages(cancellation), cancellation), cancellation);
 
-                        CommunicationStateChanging(ConnectionState.Connecting);
-                        try
-                        {
-                            if (IsDisposed)
-                            {
-                                return;
-                            }
-
-                            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                            await _socket.ConnectAsync(IpAddress, Port, cancellation).ConfigureAwait(false);
-                            connected = true;
-                        }
-                        catch (Exception ex) when (!IsDisposed)
-                        {
-                            _logger.Error(ex.Message);
-                            _logger.Info($"Start T5 Timer: {T5 / 1000} sec.");
-                            await Task.Delay(T5, cancellation).ConfigureAwait(false);
-                        }
-                    } while (!connected);
-
-                    await Task.WhenAll(                        
-                        StartAsyncStreamDecoderAsync(cancellation),
-                        SendControlMessage(MessageType.SelectRequest, SystemByteGenerator.New(), cancellation)).ConfigureAwait(false);
-                };
-
-                _stopImpl = delegate { };
-            }
-            else
-            {
-                var server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                server.Bind(new IPEndPoint(IpAddress, Port));
-                server.Listen(0);
-
-                _startImpl = async cancellation =>
-                {
-                    var connected = false;
-                    do
-                    {
-                        if (IsDisposed)
-                        {
-                            return;
-                        }
-
-                        CommunicationStateChanging(ConnectionState.Connecting);
-                        try
-                        {
-                            _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
-                            connected = true;
-                        }
-                        catch (Exception ex)
-                        {
-                            if (IsDisposed)
-                            {
-                                return;
-                            }
-
-                            _logger.Error(ex.Message);
-                            await Task.Delay(2000, cancellation).ConfigureAwait(false);
-                        }
-                    } while (!connected);
-
-                    await StartAsyncStreamDecoderAsync(cancellation).ConfigureAwait(false);
-                };
-
-                _stopImpl = delegate
-                {
-                    if (IsDisposed)
-                    {
-                        server.Dispose();
-                    }
-                };
-            }
-
-            _timer7 = new Timer(delegate
-            {
-                _logger.Error($"T7 Timeout: {T7 / 1000} sec.");
-                CommunicationStateChanging(ConnectionState.Retry);
-            }, null, Timeout.Infinite, Timeout.Infinite);
-
-            _timer8 = new Timer(delegate
-            {
-                _logger.Error($"T8 Timeout: {T8 / 1000} sec.");
-                CommunicationStateChanging(ConnectionState.Retry);
-            }, null, Timeout.Infinite, Timeout.Infinite);
-
-            _timerLinkTest = new Timer(async delegate
-            {
-#if !DISABLE_TIMER
-                if (State == ConnectionState.Selected)
-                {
-                    using var cts = new CancellationTokenSource(10000);
-                    await SendControlMessage(MessageType.LinkTestRequest, SystemByteGenerator.New(), cts.Token).ConfigureAwait(false);
-                }
-#endif
-            }, null, Timeout.Infinite, Timeout.Infinite);
-        }
-
-        private async Task StartAsyncStreamDecoderAsync(CancellationToken cancellation)
-        {
-            try
-            {
-                CommunicationStateChanging(ConnectionState.Connected);
-                Debug.Assert(_socket != null);
-                await _decoder.StartReceivedAsync(new SocketDecoderSource(_socket), cancellation).ConfigureAwait(false);
-            }
-            catch (SocketException ex)
-            {
-                _logger.Error($"Socket error occurred on StartSocketReceive:{ex.Message}, ErrorCode:{ex.SocketErrorCode}", ex);
-                CommunicationStateChanging(ConnectionState.Retry);
-            }
-            catch (Exception ex) when (!cancellation.IsCancellationRequested && _socket is not null && !IsDisposed)
-            {
-                _logger.Error("Unexpected exception on StartSocketReceive", ex);
-                CommunicationStateChanging(ConnectionState.Retry);
-            }
-        }
-
-        private Task StartControlMessageConsumerAsync(CancellationToken cancellation)
-            => _decoder.GetControlMessages(cancellation)
-            .ForEachAwaitWithCancellationAsync(async (header, ct) =>
-            {
-                var systembyte = header.SystemBytes;
-                if ((byte)header.MessageType % 2 == 0)
-                {
-                    if (_replyExpectedMsgs.TryGetValue(systembyte, out var ar))
-                    {
-                        ar.SetResult(ControlMessage);
-                    }
-                    else
-                    {
-                        _logger.Warning("Received Unexpected Control Message: " + header.MessageType);
-                        return;
-                    }
-                }
-
-                _logger.Info("Receive Control message: " + header.MessageType);
-                switch (header.MessageType)
-                {
-                    case MessageType.SelectRequest:
-                        await SendControlMessage(MessageType.SelectResponse, systembyte, ct).ConfigureAwait(false);
-                        CommunicationStateChanging(ConnectionState.Selected);
-                        break;
-                    case MessageType.SelectResponse:
-                        switch (header.F)
-                        {
-                            case 0:
-                                CommunicationStateChanging(ConnectionState.Selected);
-                                break;
-                            case 1:
-                                _logger.Error("Communication Already Active.");
-                                break;
-                            case 2:
-                                _logger.Error("Connection Not Ready.");
-                                break;
-                            case 3:
-                                _logger.Error("Connection Exhaust.");
-                                break;
-                            default:
-                                _logger.Error("Connection Status Is Unknown.");
-                                break;
-                        }
-                        break;
-                    case MessageType.LinkTestRequest:
-                        await SendControlMessage(MessageType.LinkTestResponse, systembyte, ct).ConfigureAwait(false);
-                        break;
-                    case MessageType.SeperateRequest:
-                        CommunicationStateChanging(ConnectionState.Retry);
-                        break;
-                }
-            }, cancellation);
-
-        void ISecsGem.StopT8Timer()
-        {
-            _logger.Debug($"Stop T8 Timer: {T8 / 1000} sec.");
-            _timer8.Change(Timeout.Infinite, Timeout.Infinite);
-        }
-
-        void ISecsGem.StartT8Timer()
-        {
-            _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
-            _timer8.Change(T8, Timeout.Infinite);
-        }
-
-        private async Task SendControlMessage(MessageType msgType, int systembyte, CancellationToken cancellation)
-        {
-            Debug.Assert(_socket != null);
-            var token = new TaskCompletionSourceToken(ControlMessage);
-            if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
-            {
-                _replyExpectedMsgs[systembyte] = token;
-            }
-
-            try
-            {
-                using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: 14))
-                {
-                    buffer.Write(ControlMessageLengthBytes);
-                    new MessageHeader(
-                        deviceId: 0xFFFF,
-                        messageType: msgType,
-                        systemBytes: systembyte).EncodeTo(buffer);
-
-                    await SendAsync(buffer.WrittenMemory, cancellation).ConfigureAwait(false);
-                }
-
-                _logger.Info("Sent Control Message: " + msgType);
-                if (_replyExpectedMsgs.ContainsKey(systembyte))
-                {
-#if DISABLE_TIMER
-                    await token.Task.WaitAsync(cancellation).ConfigureAwait(false);
-#else
-                    await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6), cancellation).ConfigureAwait(false);
-#endif
-                }
-            }
-            catch (SocketException)
-            {
-                CommunicationStateChanging(ConnectionState.Retry);
-                throw;
-            }
-            catch (TimeoutException)
-            {
-                _logger.Error($"T6 Timeout[id=0x{systembyte:X8}]: {T6 / 1000} sec.");
-                CommunicationStateChanging(ConnectionState.Retry);
-            }
-            finally
-            {
-                _replyExpectedMsgs.TryRemove(systembyte, out _);
-            }
+            _ = AsyncHelper.LongRunningAsync(() =>
+                StartAsyncStreamDecoderAsync(_hsmsConnector.PipeDecoder, cancellation), cancellation);
         }
 
         internal async Task<SecsMessage> SendDataMessageAsync(SecsMessage msg, int systembyte, CancellationToken cancellation)
         {
-            if (State != ConnectionState.Selected)
+            if (_hsmsConnector.State != ConnectionState.Selected)
             {
                 throw new SecsException("Device is not selected");
             }
-
-            Debug.Assert(_socket != null);
 
             msg.DeviceId = DeviceId;
             msg.Id = systembyte;
@@ -395,7 +92,7 @@ namespace Secs4Net
                 using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: 256))
                 {
                     EncodeMessage(msg, buffer);
-                    await SendAsync(buffer.WrittenMemory, cancellation).ConfigureAwait(false);
+                    await HsmsConnector.SendAsync(_hsmsConnector, buffer.WrittenMemory, cancellation).ConfigureAwait(false);
                 }
 
                 _logger.MessageOut(msg, msg.Id);
@@ -409,7 +106,7 @@ namespace Secs4Net
             }
             catch (SocketException)
             {
-                CommunicationStateChanging(ConnectionState.Retry);
+                _hsmsConnector.Reconnect();
                 throw;
             }
             catch (TimeoutException)
@@ -435,89 +132,28 @@ namespace Secs4Net
             BinaryPrimitives.WriteInt32BigEndian(lengthBytes, buffer.WrittenCount - sizeof(int));
         }
 
-        private async ValueTask SendAsync(ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
-        {
-            do
-            {
-                Debug.Assert(_socket != null);
-                var length = await _socket.SendAsync(bytesToTransfer, SocketFlags.None, cancellation).ConfigureAwait(false);
-                bytesToTransfer = bytesToTransfer.Slice(length);
-            } while (!bytesToTransfer.IsEmpty);
-        }
-
-        internal void CommunicationStateChanging(ConnectionState newState)
-        {
-            State = newState;
-            ConnectionChanged?.Invoke(this, State);
-
-            switch (State)
-            {
-                case ConnectionState.Selected:
-#if !DISABLE_TIMER
-                    _timer7.Change(Timeout.Infinite, Timeout.Infinite);
-                    _logger.Info("Stop T7 Timer");
-#endif
-                    break;
-                case ConnectionState.Connected:
-#if !DISABLE_TIMER
-                    _logger.Info($"Start T7 Timer: {T7 / 1000} sec.");
-                    _timer7.Change(T7, Timeout.Infinite);
-#endif
-                    break;
-                case ConnectionState.Retry:
-                    if (IsDisposed)
-                    {
-                        return;
-                    }
-
-                    Reset();
-                    Start();
-                    break;
-            }
-        }
-
-        private void Reset()
-        {
-            _timer7.Change(Timeout.Infinite, Timeout.Infinite);
-            _timer8.Change(Timeout.Infinite, Timeout.Infinite);
-            _timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
-            _replyExpectedMsgs.Clear();
-            _stopImpl.Invoke();
-
-            if (_socket is null)
-            {
-                return;
-            }
-
-            if (_socket.Connected)
-            {
-                _socket.Shutdown(SocketShutdown.Both);
-            }
-
-            _socket.Dispose();
-            _socket = null;
-        }
-
-        public void Start()
-        {
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = new CancellationTokenSource();
-            Task.Factory.StartNew(() => StartControlMessageConsumerAsync(_cancellationTokenSource.Token), TaskCreationOptions.LongRunning).Unwrap();
-            Task.Factory.StartNew(() => _startImpl(_cancellationTokenSource.Token), TaskCreationOptions.LongRunning).Unwrap();
-        }
-
-        /// <summary>
-        /// Asynchronously send message to device .
-        /// </summary>
-        /// <param name="msg">primary message</param>
-        /// <returns>secondary message</returns>
         public Task<SecsMessage> SendAsync(SecsMessage msg, CancellationToken cancellation = default)
             => SendDataMessageAsync(msg, SystemByteGenerator.New(), cancellation);
 
-        public async IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync([EnumeratorCancellation] CancellationToken cancellation = default)
+        public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)
+            => _primaryMessageChannel.Reader.ReadAllAsync(cancellation);
+
+        private async Task StartAsyncStreamDecoderAsync(PipeDecoder decoder, CancellationToken cancellation)
         {
-            await foreach (var msg in _decoder.GetDataMessages(cancellation))
+            try
+            {
+                await decoder.StartAsync(cancellation).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!cancellation.IsCancellationRequested)
+            {
+                _logger.Error("Unexpected exception on StartAsyncStreamDecoderAsync", ex);
+                _hsmsConnector.Reconnect();
+            }
+        }
+
+        private async Task StartDataMessagesConsumer(IAsyncEnumerable<SecsMessage> messages, CancellationToken cancellation)
+        {
+            await foreach (var msg in messages)
             {
                 var systembyte = msg.Id;
                 if (msg.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
@@ -541,7 +177,7 @@ namespace Secs4Net
                     {
                         //Primary message
                         _logger.MessageIn(msg, systembyte);
-                        yield return new PrimaryMessageWrapper(this, msg);
+                        await _primaryMessageChannel.Writer.WriteAsync(new PrimaryMessageWrapper(this, msg), cancellation).ConfigureAwait(false);
                         continue;
                     }
                     // Error message
@@ -564,24 +200,16 @@ namespace Secs4Net
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
             if (Interlocked.Exchange(ref _disposeStage, DisposalComplete) != DisposalNotStarted)
             {
                 return;
             }
 
-            _cancellationTokenSource.Cancel();
-            ConnectionChanged = null;
-            if (State == ConnectionState.Selected)
-            {
-                await SendControlMessage(MessageType.SeperateRequest, SystemByteGenerator.New(), CancellationToken.None).ConfigureAwait(false);
-            }
-
-            Reset();
-            _timer7.Dispose();
-            _timer8.Dispose();
-            _timerLinkTest.Dispose();
+            _cancellationTokenSourceForDecoderLoop.Cancel();
+            _cancellationTokenSourceForDecoderLoop.Dispose();
+            _replyExpectedMsgs.Clear();
         }
 
         private sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>

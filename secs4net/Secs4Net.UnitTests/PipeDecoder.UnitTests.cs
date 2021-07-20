@@ -1,7 +1,8 @@
 ﻿using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using NSubstitute;
+using Secs4Net.UnitTests.Extensions;
 using System;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -9,7 +10,7 @@ using static Secs4Net.Item;
 
 namespace Secs4Net.UnitTests
 {
-    public class AsyncStreamDecoderUnitTests
+    public class PipeDecoderUnitTests
     {
         private const ushort deviceId = 1;
         private const int systemByte = 1223;
@@ -81,21 +82,17 @@ namespace Secs4Net.UnitTests
         [Fact]
         public async Task Message_Can_Decode_From_Full_Buffer_And_Equivalent()
         {
-
             using var buffer = new ArrayPoolBufferWriter<byte>();
             SecsGem.EncodeMessage(message, buffer);
             var encodedBytes = buffer.WrittenMemory;
 
-            var secsGem = Substitute.For<ISecsGem>();
-            secsGem.T8.Returns(10000);
-
-            var decoder = new AsyncStreamDecoder(initialBufferSize: encodedBytes.Length, Substitute.For<ISecsGem>());
-
-            var decoderSource = new MemoryDecoderSource(encodedBytes);
+            var pipe = new Pipe();
+            var decoder = new PipeDecoder(pipe.Reader, pipe.Writer);
+            await decoder.Input.WriteAsync(encodedBytes);
 
             _ = Task.Run(() =>
             {
-                Func<Task> act = () => decoder.StartReceivedAsync(decoderSource, default);
+                Func<Task> act = () => decoder.StartAsync(default);
                 act.Should().NotThrow();
             });
 
@@ -112,18 +109,23 @@ namespace Secs4Net.UnitTests
         {
             using var buffer = new ArrayPoolBufferWriter<byte>();
             SecsGem.EncodeMessage(message, buffer);
-            var encodedBytes = buffer.WrittenMemory;
+            var encodedBytes = buffer.WrittenMemory.ToArray();
 
-            var secsGem = Substitute.For<ISecsGem>();
-            secsGem.T8.Returns(10000);
+            var pipe = new Pipe();
+            var decoder = new PipeDecoder(pipe.Reader, pipe.Writer);
 
-            var initialBufferSize = 11;
-            var decoder = new AsyncStreamDecoder(initialBufferSize, Substitute.For<ISecsGem>());
+            _ = Task.Run(async () =>
+            {
+                foreach (var chunk in encodedBytes.Chunk(11))
+                {
+                    await Task.Delay(1000); //simulate slow producer
+                    await decoder.Input.WriteAsync(chunk);
+                }
+            });
 
-            var decoderSource = new MemoryDecoderSource(encodedBytes);
             _ = Task.Run(() =>
             {
-                Func<Task> act = () => decoder.StartReceivedAsync(decoderSource, default);
+                Func<Task> act = () => decoder.StartAsync(default);
                 act.Should().NotThrow();
             });
 

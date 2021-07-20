@@ -3,10 +3,9 @@ using FluentAssertions.Equivalency;
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 using System;
-using System.IO;
 using System.Linq;
 
-namespace Secs4Net.UnitTests
+namespace Secs4Net.UnitTests.Extensions
 {
     public static class ItemExtensions
     {
@@ -79,7 +78,8 @@ namespace Secs4Net.UnitTests
                 Execute.Assertion
                     .ForCondition(_notBeEquivalent)
                     .BecauseOf(context.Because, context.BecauseArgs)
-                    .FailWith($"Expected {path + ".Format"} to be {expectation.Format}, but found {subject.Format}");
+                    .FailWith("Expected {0} to be {1}, but found {2}",
+                        path + ".Format", expectation.Format, subject.Format);
 
                 return false;
             }
@@ -89,7 +89,8 @@ namespace Secs4Net.UnitTests
                 Execute.Assertion
                     .ForCondition(_notBeEquivalent)
                     .BecauseOf(context.Because, context.BecauseArgs)
-                    .FailWith($"Expected {path + ".Count"} to be {expectation.Count}, but found {subject.Count}");
+                    .FailWith("Expected {0} to be {1}, but found {2}",
+                        path + ".Count", expectation.Count, subject.Count);
                 return false;
             }
 
@@ -98,7 +99,9 @@ namespace Secs4Net.UnitTests
                 return true;
             }
 
+#pragma warning disable CS8524 // The switch expression does not handle some values of its input type (it is not exhaustive) involving an unnamed enum value.
             return expectation.Format switch
+#pragma warning restore CS8524 // The switch expression does not handle some values of its input type (it is not exhaustive) involving an unnamed enum value.
             {
                 SecsFormat.List => IsMatchList(path, subject, expectation, context),
                 SecsFormat.ASCII or SecsFormat.JIS8 => IsMatchStringItem(path, subject, expectation, context),
@@ -128,7 +131,10 @@ namespace Secs4Net.UnitTests
                 Execute.Assertion
                     .ForCondition(_notBeEquivalent)
                     .BecauseOf(context.Because, context.BecauseArgs)
-                    .FailWith($"Expected {path + ".GetString()"} to be \"{expectationString}\", but found \"{subjectString}\"");                return false;
+                    .FailWith("Expected {0} to be {1}, but found {2}",
+                        path + ".GetString()", expectationString, subjectString);
+
+                return false;
             }
 
             bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, IEquivalencyValidationContext context) where T : unmanaged

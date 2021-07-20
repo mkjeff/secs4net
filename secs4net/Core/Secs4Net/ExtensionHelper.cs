@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
     public static class SecsExtension
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         internal static void Reverse(this Span<byte> bytes, int offSet)
         {
             if (offSet <= 1)

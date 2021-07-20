@@ -39,7 +39,7 @@ try
     //access item value
     byte b2 = s3f18.SecsItem[0].FirstValue<byte>(); // with different type
     s3f18.SecsItem[0].FirstValue<byte>() = 0; // change original value 
-    
+    s3f18.SecsItem[0].GetFirstValueOrDefault<byte>(fallbackValue); 
     string str = s3f18.SecsItem[0].GetString();
 
     //await secondary message
@@ -62,15 +62,15 @@ catch(SecsException)
 ```
 2\. Handle primary message via async-stream
 ```cs
-await foreach (var primaryMessage in _secsGem.GetPrimaryMessageAsync(cancellationToken))
+await foreach (var e in _secsGem.GetPrimaryMessageAsync(cancellationToken))
 {
     try 
     {
         //do something for primaryMsg
-        var primaryMsg = primaryMessage.PrimaryMessage;
+        var primaryMsg = e.PrimaryMessage;
       
         // reply secondary msg to device
-        await primaryMessage.TryReplyAsync( secondaryMsg ); 
+        await e.TryReplyAsync( secondaryMsg ); 
     }
     catch (Exception ex) 
     {
@@ -93,18 +93,18 @@ var s16f15 =
                     A(pj.Id),
                     B(0x0D),
                     L(from carrier in pj.Carriers select
-                    L(
-                        A(carrier.Id),
-                        L(from slotInfo in carrier.SlotMap select
-                            U1(slotInfo.SlotNo)))),
                         L(
-                            U1(1),
-                            A(pj.RecipeId),
-                            L()),
-                        Boolean(true),
-                        L()))));
+                            A(carrier.Id),
+                            L(from slotInfo in carrier.SlotMap select
+                                U1(slotInfo.SlotNo)))),
+                            L(
+                                U1(1),
+                                A(pj.RecipeId),
+                                L()),
+                            Boolean(true),
+                            L()))));
 ```
 
 4\. Item is mutable with restrict.
     you can only overwrite existing memory. the `Item.Count` is fix when created.
-    string Item can't be changed, coz .net string is immutable as well.
+    string Item can't be changed, coz .net `string` is immutable as well.

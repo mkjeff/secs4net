@@ -49,7 +49,7 @@ namespace Secs4Net
             ReplyExpected = replyExpected;
         }
 
-        internal void EncodeHeaderTo(IBufferWriter<byte> buffer) 
+        public void EncodeHeaderTo(IBufferWriter<byte> buffer) 
             => new MessageHeader(
                 DeviceId,
                 ReplyExpected,

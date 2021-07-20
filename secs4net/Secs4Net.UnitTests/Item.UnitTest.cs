@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Secs4Net.UnitTests.Extensions;
 using System;
+using System.Buffers;
 using Xunit;
 using static Secs4Net.Item;
 
@@ -192,8 +194,10 @@ namespace Secs4Net.UnitTests
                             B(0x1C, 0x01, 0xFF)),
                         F8(231.00002321d, 0.2913212312d)));
 
-            var item2 = Item.Decode(item.GetEncodedBytes());
-            item.Should().BeEquivalentTo(item2); 
+            var encodedBytes = new ReadOnlySequence<byte>(item.GetEncodedBytes());
+            var item2 = DecodeFromFullBuffer(ref encodedBytes);
+            encodedBytes.IsEmpty.Should().BeTrue();
+            item.Should().BeEquivalentTo(item2);
         }
 
         [Fact]

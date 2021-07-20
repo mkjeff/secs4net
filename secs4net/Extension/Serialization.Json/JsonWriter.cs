@@ -44,17 +44,10 @@ namespace Secs4Net.Json
         {
             jwtr.WriteStartObject();
 
-            jwtr.WritePropertyName(nameof(msg.S));
-            jwtr.WriteNumberValue(msg.S);
-
-            jwtr.WritePropertyName(nameof(msg.F));
-            jwtr.WriteNumberValue(msg.S);
-
-            jwtr.WritePropertyName(nameof(msg.ReplyExpected));
-            jwtr.WriteBooleanValue(msg.ReplyExpected);
-
-            jwtr.WritePropertyName(nameof(msg.Name));
-            jwtr.WriteStringValue(msg.Name);
+            jwtr.WriteNumber(nameof(msg.S),msg.S);
+            jwtr.WriteNumber(nameof(msg.F), msg.S);
+            jwtr.WriteBoolean(nameof(msg.ReplyExpected), msg.ReplyExpected);
+            jwtr.WriteString(nameof(msg.Name), msg.Name);
 
             if (msg.SecsItem != null)
             {

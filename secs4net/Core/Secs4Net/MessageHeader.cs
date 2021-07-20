@@ -32,6 +32,7 @@ namespace Secs4Net
             SystemBytes = systemBytes;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EncodeTo(IBufferWriter<byte> buffer)
         {
             var span = buffer.GetSpan(sizeHint: 10);
@@ -44,6 +45,7 @@ namespace Secs4Net
             buffer.Advance(10);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static MessageHeader Decode(ReadOnlySpan<byte> buffer)
         {
             ref var head = ref MemoryMarshal.GetReference(buffer);

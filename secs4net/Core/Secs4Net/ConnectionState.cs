@@ -5,6 +5,6 @@ namespace Secs4Net
         Connecting,
         Connected,
         Selected,
-        Retry
+        Retry,
     }
 }

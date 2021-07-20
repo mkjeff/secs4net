@@ -2,7 +2,7 @@
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 
-namespace Secs4Net.UnitTests
+namespace Secs4Net.UnitTests.Extensions
 {
     public static class SecsMessageExtensions
     {
@@ -23,7 +23,9 @@ namespace Secs4Net.UnitTests
             if (!Subject.Equals(expectation))
             {
                 new ObjectAssertions(Subject).BeEquivalentTo(expectation,
-                    options => options.ComparingByMembers<SecsMessage>().Excluding(a => a.SecsItem),
+                    options => options.ComparingByMembers<SecsMessage>()
+                        .Excluding(a => a.SecsItem)
+                        .Excluding(a => a.Name),
                     because, becauseArgs);
 
                 if (Subject.SecsItem is not null)
