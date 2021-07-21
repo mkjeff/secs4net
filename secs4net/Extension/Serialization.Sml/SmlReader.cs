@@ -10,11 +10,11 @@ namespace Secs4Net.Sml
 {
     public static class SmlReader
     {
-        public static IEnumerable<SecsMessage> ToSecsMessages(this TextReader reader)
+        public static async IAsyncEnumerable<SecsMessage> ToSecsMessages(this TextReader reader)
         {
             while (reader.Peek() != -1)
             {
-                yield return reader.ToSecsMessage();
+                yield return await reader.ToSecsMessageAsync();
             }
         }
 
@@ -27,24 +27,10 @@ namespace Secs4Net.Sml
         public static async Task<SecsMessage> ToSecsMessageAsync(this TextReader sr)
         {
             var line = await sr.ReadLineAsync();
+            var (name, s, f, replyExpected) = ParseFirstLine(line);
+            
             var stack = new Stack<List<Item>>();
             Item? rootItem = null;
-
-            // Parse First Line
-            Debug.Assert(line != null);
-            int i = line.IndexOf(':');
-            var name = line.Substring(0, i);
-
-            i = line.IndexOf("'S", i + 1, StringComparison.Ordinal) + 2;
-            int j = line.IndexOf('F', i);
-            var s = byte.Parse(line.AsSpan()[i..j]);
-
-            i = line.IndexOf('\'', j);
-            var f = byte.Parse(line.AsSpan()[(j + 1)..i]);
-
-            var replyExpected = line.IndexOf('W', i) != -1;
-
-
             while ((line = await sr.ReadLineAsync()) != null && ParseItem(line, stack, ref rootItem))
             {
             }
@@ -54,28 +40,43 @@ namespace Secs4Net.Sml
                 Name = name,
                 SecsItem = rootItem,
             };
+
+            static (string name, byte s, byte f, bool replyExpected) ParseFirstLine(ReadOnlySpan<char> line)
+            {
+                // Parse First Line
+                int i = line.IndexOf(':');
+
+                var name = i > 0 ? line.Slice(0, i).ToString() : string.Empty;
+                line = line[name.Length..];
+                i = line.IndexOf("'S", StringComparison.Ordinal) + 2;
+                int j = line.IndexOf('F');
+                var s = byte.Parse(line[i..j]);
+                line = line[(j + 1)..];
+                i = line.IndexOf('\'');
+                var f = byte.Parse(line[0..i]);
+                var replyExpected = line[i..].IndexOf('W') != -1;
+                return (name, s, f, replyExpected);
+            }
         }
 
         public static SecsMessage ToSecsMessage(this TextReader sr)
         {
-            var line = sr.ReadLine();
-            Debug.Assert(line != null);
-            #region Parse First Line
-
+            ReadOnlySpan<char> line = sr.ReadLine();
+            // Parse First Line
             int i = line.IndexOf(':');
 
-            var name = line.Substring(0, i);
+            var name = i > 0 ? line.Slice(0, i).ToString() : string.Empty;
 
-            i = line.IndexOf("'S", i + 1, StringComparison.Ordinal) + 2;
-            int j = line.IndexOf('F', i);
-            var s = byte.Parse(line.AsSpan()[i..j]);
+            line = line[name.Length..];
+            i = line.IndexOf("'S", StringComparison.Ordinal) + 2;
+            int j = line.IndexOf('F');
+            var s = byte.Parse(line[i..j]);
 
-            i = line.IndexOf('\'', j);
-            var f = byte.Parse(line.AsSpan()[(j + 1)..i]);
+            line = line[(j + 1)..];
+            i = line.IndexOf('\'');
+            var f = byte.Parse(line[0..i]);
 
-            var replyExpected = line.IndexOf('W', i) != -1;
-
-            #endregion
+            var replyExpected = line[i..].IndexOf('W') != -1;
 
             Item? rootItem = null;
             var stack = new Stack<List<Item>>();

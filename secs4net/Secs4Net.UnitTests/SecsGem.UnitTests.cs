@@ -54,7 +54,7 @@ namespace Secs4Net.UnitTests
             });
 
             var reply = await secsGem1.SendAsync(ping, cts.Token);
-            reply.Should().BeEquivalentTo(pong);
+            reply.Should().NotBeNull().And.BeEquivalentTo(pong);
         }
 
         [Fact]
@@ -131,13 +131,15 @@ namespace Secs4Net.UnitTests
                 }
             });
 
+            var receiver = Substitute.For<Action>();
             Func<Task> sendAsync = async () =>
             {
                 var reply = await secsGem1.SendAsync(ping, cts.Token);
-                reply.Should().NotBeEquivalentTo(pong);
+                receiver();
             };
 
             sendAsync.Should().Throw<SecsException>().WithMessage(Resources.T3Timeout);
+            receiver.DidNotReceive();
         }
     }
 }

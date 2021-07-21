@@ -6,12 +6,12 @@ namespace Secs4Net.UnitTests.Extensions
 {
     public static class SecsMessageExtensions
     {
-        public static SecsMessageAssertions Should(this SecsMessage instance) => new SecsMessageAssertions(instance);
+        public static SecsMessageAssertions Should(this SecsMessage? instance) => new SecsMessageAssertions(instance);
     }
 
-    public sealed class SecsMessageAssertions : ReferenceTypeAssertions<SecsMessage, SecsMessageAssertions>
+    public sealed class SecsMessageAssertions : ReferenceTypeAssertions<SecsMessage?, SecsMessageAssertions>
     {
-        public SecsMessageAssertions(SecsMessage instance)
+        public SecsMessageAssertions(SecsMessage? instance)
         {
             Subject = instance;
         }
@@ -20,7 +20,7 @@ namespace Secs4Net.UnitTests.Extensions
 
         public AndConstraint<SecsMessageAssertions> BeEquivalentTo(SecsMessage expectation, string because = "", params object[] becauseArgs)
         {
-            if (!Subject.Equals(expectation))
+            if (!expectation.Equals(Subject))
             {
                 new ObjectAssertions(Subject).BeEquivalentTo(expectation,
                     options => options.ComparingByMembers<SecsMessage>()
@@ -28,7 +28,7 @@ namespace Secs4Net.UnitTests.Extensions
                         .Excluding(a => a.Name),
                     because, becauseArgs);
 
-                if (Subject.SecsItem is not null)
+                if (Subject?.SecsItem is not null)
                 {
                     Subject.SecsItem.Should().BeEquivalentTo(expectation.SecsItem);
                 }
@@ -45,7 +45,7 @@ namespace Secs4Net.UnitTests.Extensions
 
         public AndConstraint<SecsMessageAssertions> NotBeEquivalentTo(SecsMessage expectation, string because = "", params object[] becauseArgs)
         {
-            if (Subject.Equals(expectation))
+            if (expectation.Equals(Subject))
             {
                 new ObjectAssertions(Subject).NotBeEquivalentTo(expectation,
                     options => options.Excluding(a => a.SecsItem),

@@ -421,7 +421,7 @@ namespace Secs4Net
             _timerLinkTest.Dispose();
         }
 
-        public async Task StartScoketReceiveLoopAsync(CancellationToken cancellationToken)
+        private async Task StartScoketReceiveLoopAsync(CancellationToken cancellationToken)
         {
             var writer = PipeDecoder.Input;
             while (true)

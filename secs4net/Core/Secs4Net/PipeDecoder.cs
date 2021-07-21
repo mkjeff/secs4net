@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using Microsoft.Toolkit.HighPerformance;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -76,12 +77,7 @@ namespace Secs4Net
                     reader.AdvanceTo(messageHaderSeq.End);
                     if (header.MessageType == MessageType.DataMessage)
                     {
-                        await dataMessageWriter.WriteAsync(
-                            new SecsMessage(header.S, header.F, replyExpected: header.ReplyExpected)
-                            {
-                                DeviceId = header.DeviceId,
-                                Id = header.SystemBytes,
-                            }, cancellation).ConfigureAwait(false);
+                        await ProduceDataMessageAsync(dataMessageWriter, header, item: null, cancellation).ConfigureAwait(false);
                     }
                     else
                     {
@@ -96,14 +92,7 @@ namespace Secs4Net
                     Trace.WriteLine($"Get data message({header.SystemBytes}) with total bytes: {messageLength} and decoded directly");
                     var completedItem = Item.DecodeFromFullBuffer(ref remainedBuffer);
                     reader.AdvanceTo(remainedBuffer.End);
-
-                    await dataMessageWriter.WriteAsync(
-                        new SecsMessage(header.S, header.F, header.ReplyExpected)
-                        {
-                            SecsItem = completedItem,
-                            DeviceId = header.DeviceId,
-                            Id = header.SystemBytes,
-                        }, cancellation).ConfigureAwait(false);
+                    await ProduceDataMessageAsync(dataMessageWriter, header, completedItem, cancellation).ConfigureAwait(false);
                     continue;
                 }
                 reader.AdvanceTo(messageHaderSeq.End);
@@ -111,7 +100,7 @@ namespace Secs4Net
             GetNewItem:
                 // 2: get _format + _lengthByteCount(2bit) 1 byte
                 buffer = await EnsureBufferAsync(required: 1, cancellation: cancellation).ConfigureAwait(false);
-                Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan[0], out var itemFormat, out var itemContentLengthByteCount);
+                Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
                 reader.AdvanceTo(buffer.GetPosition(1));
 
                 // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
@@ -149,7 +138,7 @@ namespace Secs4Net
                 {
                     var list = stack.Peek();
                     list.Add(item);
-                    while (list.Count == list.Capacity) //stack unwind when all Items of List has decoded
+                    while (list.Count == list.Capacity) //stack unwind when all List's Items has decoded
                     {
                         item = Item.L(stack.Pop());
                         //Trace.WriteLine($"Unwind List[{item.Count}]");
@@ -161,13 +150,7 @@ namespace Secs4Net
                         else
                         {
                             Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by stream decoded");
-                            var message = new SecsMessage(header.S, header.F, header.ReplyExpected)
-                            {
-                                SecsItem = item,
-                                DeviceId = header.DeviceId,
-                                Id = header.SystemBytes,
-                            };
-                            await dataMessageWriter.WriteAsync(message, cancellation).ConfigureAwait(false);
+                            await ProduceDataMessageAsync(dataMessageWriter, header, item, cancellation).ConfigureAwait(false);
                             goto Start;
                         }
                     }
@@ -175,23 +158,24 @@ namespace Secs4Net
                 }
                 else
                 {
-                    Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by streaming decoder");
-                    await dataMessageWriter.WriteAsync(
-                        new SecsMessage(header.S, header.F, header.ReplyExpected)
-                        {
-                            SecsItem = item,
-                            DeviceId = header.DeviceId,
-                            Id = header.SystemBytes,
-                        }, cancellation).ConfigureAwait(false);
+                    Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by stream decoded");
+                    await ProduceDataMessageAsync(dataMessageWriter, header, item, cancellation).ConfigureAwait(false);
                 }
             }
+
+            static ValueTask ProduceDataMessageAsync(ChannelWriter<SecsMessage> messageWriter, MessageHeader header, Item? item, CancellationToken cancellation)
+                => messageWriter.WriteAsync(new SecsMessage(header.S, header.F, header.ReplyExpected)
+                {
+                    SecsItem = item,
+                    DeviceId = header.DeviceId,
+                    Id = header.SystemBytes,
+                }, cancellation);
         }
 
-        async ValueTask<ReadOnlySequence<byte>> EnsureBufferAsync(long required, CancellationToken cancellation)
+        async ValueTask<ReadOnlySequence<byte>> EnsureBufferAsync(int required, CancellationToken cancellation)
         {
             while (true)
             {
-                cancellation.ThrowIfCancellationRequested();
                 //_secsGem.StartT8Timer();
                 var result = await _reader.ReadAsync(cancellation);
                 //_secsGem.StopT8Timer();

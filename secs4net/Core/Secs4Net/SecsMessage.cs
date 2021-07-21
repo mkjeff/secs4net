@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Generic;
 
 namespace Secs4Net
 {
-    public sealed record SecsMessage
+    public sealed class SecsMessage : IDisposable
     {
         public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
 
@@ -49,7 +50,23 @@ namespace Secs4Net
             ReplyExpected = replyExpected;
         }
 
-        public void EncodeHeaderTo(IBufferWriter<byte> buffer) 
+        public bool Equals(SecsMessage? other)
+        {
+            if (other is null)
+            {
+                return false;
+            }
+
+            // exclude Name property
+            return S == other.S
+                && F == other.F
+                && ReplyExpected == other.ReplyExpected
+                && Id == other.Id
+                && DeviceId == other.DeviceId
+                && EqualityComparer<Item>.Default.Equals(SecsItem, other.SecsItem);
+        }
+
+        public void EncodeHeaderTo(IBufferWriter<byte> buffer)
             => new MessageHeader(
                 DeviceId,
                 ReplyExpected,
@@ -58,5 +75,13 @@ namespace Secs4Net
                 MessageType.DataMessage,
                 Id
                 ).EncodeTo(buffer);
+        ~SecsMessage()
+            => Dispose();
+
+        public void Dispose()
+        {
+            SecsItem?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

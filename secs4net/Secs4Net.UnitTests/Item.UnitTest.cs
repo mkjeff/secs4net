@@ -1,7 +1,9 @@
 using FluentAssertions;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using Secs4Net.UnitTests.Extensions;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using Xunit;
 using static Secs4Net.Item;
 
@@ -55,6 +57,145 @@ namespace Secs4Net.UnitTests
                 );
 
             left.Should().NotBeEquivalentTo(right);
+        }
+
+        [Fact]
+        public void ItemWithOwner_Can_Compare_With_ItemWithOwner()
+        {
+            using var left = I2(CreateMemoryOwner<short>(1, 2, 3));
+
+            using var right = I2(CreateMemoryOwner<short>(1, 2, 3));
+
+            left.Should().BeEquivalentTo(right);
+
+            static MemoryOwner<T> CreateMemoryOwner<T>(T a1, T a2, T a3)
+            {
+                var leftOwner = MemoryOwner<T>.Allocate(3);
+                leftOwner.Span[0] = a1;
+                leftOwner.Span[1] = a2;
+                leftOwner.Span[2] = a3;
+                return leftOwner;
+            }
+        }
+
+        [Fact]
+        public void ItemWithOwner_Can_Compare_With_Item()
+        {
+            using var left = I2(CreateMemoryOwner<short>(1, 2, 3));
+
+            using var right = I2(1, 2, 3);
+
+            left.Should().BeEquivalentTo(right);
+
+            static MemoryOwner<T> CreateMemoryOwner<T>(T a1, T a2, T a3)
+            {
+                var leftOwner = MemoryOwner<T>.Allocate(3);
+                leftOwner.Span[0] = a1;
+                leftOwner.Span[1] = a2;
+                leftOwner.Span[2] = a3;
+                return leftOwner;
+            }
+        }
+
+        [Fact]
+        public void Item_Can_Get_Internal_Values_With_Proper_Method()
+        {
+            var str = "I am a string";
+            using (var stringItem = A(str))
+            {
+                stringItem.GetString().Should().Be(str);
+                stringItem.Count.Should().Be(str.Length);
+            }
+
+            var arr = new short[3] { 2314, 4214, 4221 };
+            using (var arrayItem = I2(arr))
+            {
+                arrayItem.GetValues<short>().ToArray().Should().BeEquivalentTo(arr);
+                arrayItem.FirstValue<short>().Should().Be(arr[0]);
+                arrayItem.FirstValueOrDefault<short>(21).Should().NotBe(21).And.Be(arr[0]);
+            }
+
+            var list = new List<Item> {
+                A(str),
+                I2(arr),
+            };
+            using (var listItem = L(list))
+            {
+                listItem[0].Should().BeEquivalentTo(A(str));
+                listItem[1].Should().BeEquivalentTo(I2(arr));
+
+                Action getEnumerator = () =>
+                {
+                    foreach (var item in listItem)
+                    {
+
+                    }
+                };
+                getEnumerator.Should().NotThrow();
+            }
+        }
+
+        [Fact]
+        public void Item_Throw_Not_Supported_Exception_With_Format_Unmatch()
+        {
+            using (var stringItem = A())
+            {
+                Action stringItemAccessIndexer = () => _ = stringItem[0];
+                stringItemAccessIndexer.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage("Item", stringItem.Format));
+
+                Action stringItemGetEnumerator = () => stringItem.GetEnumerator();
+                stringItemGetEnumerator.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetEnumerator), stringItem.Format));
+
+                Action stringItemFirstValue = () => stringItem.FirstValue<byte>();
+                stringItemFirstValue.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.FirstValue), stringItem.Format));
+
+                Action stringItemFirstValueOrDefault = () => stringItem.FirstValueOrDefault<byte>();
+                stringItemFirstValueOrDefault.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.FirstValueOrDefault), stringItem.Format));
+
+                Action stringItemGetValues = () => stringItem.GetValues<byte>();
+                stringItemGetValues.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetValues), stringItem.Format));
+            }
+
+            using (var arrayItem = Boolean())
+            {
+                Action arrayItemGetString = () => arrayItem.GetString();
+                arrayItemGetString.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetString), arrayItem.Format));
+
+                Action arrayItemAccessIndexer = () => _ = arrayItem[0];
+                arrayItemAccessIndexer.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage("Item", arrayItem.Format));
+
+                Action arrayItemGetEnumerator = () => arrayItem.GetEnumerator();
+                arrayItemGetEnumerator.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetEnumerator), arrayItem.Format));
+            }
+
+            using (var listItem = L())
+            {
+                Action listItemGetString = () => listItem.GetString();
+                listItemGetString.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetString), listItem.Format));
+
+                Action listItemFirstValue = () => listItem.FirstValue<byte>();
+                listItemFirstValue.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.FirstValue), listItem.Format));
+
+                Action listItemFirstValueOrDefault = () => listItem.FirstValueOrDefault<byte>();
+                listItemFirstValueOrDefault.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.FirstValueOrDefault), listItem.Format));
+
+                Action listItemGetValues = () => listItem.GetValues<byte>();
+                listItemGetValues.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetValues), listItem.Format));
+            }
+            static string CreateNotSupportedMessage(string memberName, SecsFormat format)
+                => $"{memberName} is not supported, coz the {nameof(Item.Format)} is {format}";
         }
 
         [Fact]
@@ -149,13 +290,13 @@ namespace Secs4Net.UnitTests
         {
             var item = I4();
 
-            Action action = () => item.GetFirstValueOrDefault<int>();
+            Action action = () => item.FirstValueOrDefault<int>();
             action.Should().NotThrow();
 
-            Action action2 = () => item.GetFirstValueOrDefault<bool>();
+            Action action2 = () => item.FirstValueOrDefault<bool>();
             action2.Should().NotThrow();
 
-            item.GetFirstValueOrDefault(4).Should().Be(4);
+            item.FirstValueOrDefault(4).Should().Be(4);
         }
 
         [Fact]
@@ -163,7 +304,7 @@ namespace Secs4Net.UnitTests
         {
             var bytes = new byte[] { 128 };
             ushort defaultValue = 11;
-            var first = U1(bytes).GetFirstValueOrDefault(defaultValue);
+            var first = U1(bytes).FirstValueOrDefault(defaultValue);
             first.Should().Be(defaultValue);
         }
 
@@ -201,7 +342,7 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public void Item_List_Can_Be_Changed()
+        public void List_Item_Slot_Can_Be_Changed()
         {
             var item =
                 L(
@@ -213,6 +354,11 @@ namespace Secs4Net.UnitTests
                     B(0x1C, 0x01, 0xFF),
                     F8(231.00002321d, 0.2913212312d));
 
+            // be careful this operation
+            // the original Item will not be managed by any List
+            // so manually invoke Dispose method if you need.
+            var oldItem = item[2];
+            oldItem.Dispose();
             item[2] = Boolean(true);
             item[2].Should().BeEquivalentTo(item[2]);
         }
@@ -246,5 +392,6 @@ namespace Secs4Net.UnitTests
             changed.Should().NotBe(original);
             changed.Should().Be(BitConverter.ToUInt16(arr.AsSpan()));
         }
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -6,17 +7,17 @@ namespace Secs4Net
 {
     public readonly struct ValueArray<T>
     {
-        private readonly Array _array;
-        private readonly int _length;
+        private readonly Memory<byte> _array;
+        public readonly int _length;
 
-        internal ValueArray(Array src)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal ValueArray(Memory<byte> src)
         {
             _array = src;
-            _length = Buffer.ByteLength(_array) / Unsafe.SizeOf<T>();
+            _length = src.Length / Unsafe.SizeOf<T>();
         }
 
         public readonly bool IsEmpty => _length == 0;
-
         public readonly int Length => _length;
 
         /// <summary>
@@ -24,10 +25,12 @@ namespace Secs4Net
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public ref T this[int index] => ref Unsafe.Add(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetArrayDataReference(_array)), index);
+        public ref T this[int index] => ref Unsafe.Add(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReferenceAt(0)), index);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T[] ToArray() => AsSpan().ToArray();
 
-        public readonly ReadOnlySpan<T> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetArrayDataReference(_array)), _length);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReadOnlySpan<T> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReferenceAt(0)), _length);
     }
 }

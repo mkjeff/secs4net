@@ -98,10 +98,7 @@ namespace Secs4Net.UnitTests
 
             var decodeMessage = await decoder.GetDataMessages(default).FirstAsync();
 
-            decodeMessage.Id.Should().Be(systemByte);
-            decodeMessage.DeviceId.Should().Be(deviceId);
-            decodeMessage.Should().NotBeNull();
-            decodeMessage.Should().BeEquivalentTo(message);
+            decodeMessage.Should().NotBeNull().And.BeEquivalentTo(message);
         }
 
         [Fact]
@@ -131,10 +128,7 @@ namespace Secs4Net.UnitTests
 
             var decodeMessage = await decoder.GetDataMessages(default).FirstAsync();
 
-            decodeMessage.Id.Should().Be(systemByte);
-            decodeMessage.DeviceId.Should().Be(deviceId);
-            decodeMessage.Should().NotBeNull();
-            Assert.Equal(message, decodeMessage);
+            decodeMessage.Should().NotBeNull().And.BeEquivalentTo(message);
         }
     }
 }

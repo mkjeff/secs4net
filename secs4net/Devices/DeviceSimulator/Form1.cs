@@ -112,7 +112,7 @@ namespace SecsDevice
             try
             {
                 var reply = await _secsGem.SendAsync(txtSendPrimary.Text.ToSecsMessage());
-                txtRecvSecondary.Text = reply.ToSml();
+                txtRecvSecondary.Text = reply!.ToSml();
             }
             catch (SecsException ex)
             {
