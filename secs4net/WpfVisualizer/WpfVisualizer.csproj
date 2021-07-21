@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Secs4Net\Secs4Net.csproj" />
-    <ProjectReference Include="..\Extension\Serialization.Json\Secs4Net.Json.csproj" />
+    <ProjectReference Include="..\Extension\Secs4Net.Json\Secs4Net.Json.csproj" />
   </ItemGroup>
 
   <ItemGroup>

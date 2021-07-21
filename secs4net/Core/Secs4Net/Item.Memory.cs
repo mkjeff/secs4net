@@ -8,10 +8,10 @@ namespace Secs4Net
 {
     partial class Item
     {
-        private class ValueArrayItem<T> : Item where T : unmanaged
+        private class MemoryItem<T> : Item where T : unmanaged
         {
             private readonly Memory<T> _value;
-            public unsafe ValueArrayItem(SecsFormat format, Memory<T> value) : base(format, value.Length)
+            public unsafe MemoryItem(SecsFormat format, Memory<T> value) : base(format, value.Length)
             {
                 _value = value;
             }
