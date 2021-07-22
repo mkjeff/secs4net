@@ -14,6 +14,7 @@ namespace Secs4Net
         public int T7 { get; init; } = 10000;
         public int T8 { get; init; } = 5000;
         public int LinkTestInterval { get; init; } = 60000;
-        public int SocketReceiveBufferSize { get; init; } = 0x4000;
+        public int SocketReceiveBufferSize { get; init; } = 65535;
+        public int SocketSendBufferInitialSize { get; init; } = 65535;
     }
 }

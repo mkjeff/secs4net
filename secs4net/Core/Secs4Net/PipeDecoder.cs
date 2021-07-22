@@ -1,4 +1,5 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
+using PooledAwait;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -172,7 +173,7 @@ namespace Secs4Net
                 }, cancellation);
         }
 
-        async ValueTask<ReadOnlySequence<byte>> EnsureBufferAsync(int required, CancellationToken cancellation)
+        async PooledValueTask<ReadOnlySequence<byte>> EnsureBufferAsync(int required, CancellationToken cancellation)
         {
             while (true)
             {

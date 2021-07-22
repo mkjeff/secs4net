@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Buffers;
+using PooledAwait;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Channels;
@@ -24,7 +26,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="message">primary message</param>
         /// <returns>Secondary message, or null if <paramref name="message"/>'s ReplyExpected is false</returns>
-        Task<SecsMessage?> SendAsync(SecsMessage message, CancellationToken cancellation = default);
+        ValueTask<SecsMessage?> SendAsync(SecsMessage message, CancellationToken cancellation = default);
     }
 
     public sealed class SecsGem : ISecsGem, IDisposable
@@ -47,45 +49,56 @@ namespace Secs4Net
                 FullMode = BoundedChannelFullMode.Wait,
             });
 
-        private readonly ConcurrentDictionary<int, TaskCompletionSourceToken> _replyExpectedMsgs = new();
-        private readonly CancellationTokenSource _cancellationTokenSourceForDecoderLoop = new();
+        private readonly ConcurrentDictionary<int, (SecsMessage primary, ValueTaskCompletionSource<SecsMessage> completeSource)> _replyExpectedMsgs = new();
+        private readonly CancellationTokenSource _cancellationSourceForDataMessageProcessing = new();
+        private int _recentlyMaxEncodedByteLength;
 
         public SecsGem(IOptions<SecsGemOptions> secsGemOptions, IHsmsConnection hsmsConnector, ISecsGemLogger logger)
         {
             var options = secsGemOptions.Value;
             DeviceId = options.DeviceId;
             T3 = options.T3;
+            _recentlyMaxEncodedByteLength = options.SocketSendBufferInitialSize;
 
             _hsmsConnector = hsmsConnector;
             _logger = logger;
 
-            var cancellation = _cancellationTokenSourceForDecoderLoop.Token;
             _ = AsyncHelper.LongRunningAsync(() =>
-                StartDataMessagesConsumer(_hsmsConnector.PipeDecoder.GetDataMessages(cancellation), cancellation), cancellation);
+                _hsmsConnector.PipeDecoder.GetDataMessages(_cancellationSourceForDataMessageProcessing.Token)
+                    .ForEachAwaitWithCancellationAsync(ProcessDataMessageAsync, _cancellationSourceForDataMessageProcessing.Token), _cancellationSourceForDataMessageProcessing.Token);
         }
 
-        internal async Task<SecsMessage?> SendDataMessageAsync(SecsMessage msg, int systembyte, CancellationToken cancellation)
+        internal async PooledValueTask<SecsMessage?> SendDataMessageAsync(SecsMessage message, int systembyte, CancellationToken cancellation)
         {
             if (_hsmsConnector.State != ConnectionState.Selected)
             {
                 throw new SecsException("Device is not selected");
             }
 
-            msg.DeviceId = DeviceId;
-            msg.Id = systembyte;
-            var token = new TaskCompletionSourceToken(msg);
-            if (msg.ReplyExpected)
+            message.DeviceId = DeviceId;
+            message.Id = systembyte;
+            var token = ValueTaskCompletionSource<SecsMessage>.Create();
+            if (message.ReplyExpected)
             {
-                _replyExpectedMsgs[systembyte] = token;
+                _replyExpectedMsgs[systembyte] = (message, token);
             }
 
             try
             {
-                await EncodeAndSendMessageAsync(msg, cancellation).ConfigureAwait(false);
+                using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: _recentlyMaxEncodedByteLength))
+                {
+                    EncodeMessage(message, buffer);
+                    await HsmsConnection.SendAsync(_hsmsConnector, buffer.WrittenMemory, cancellation).ConfigureAwait(false);
 
-                _logger.MessageOut(msg, msg.Id);
+                    if (buffer.WrittenCount > _recentlyMaxEncodedByteLength)
+                    {
+                        _recentlyMaxEncodedByteLength = buffer.WrittenCount;
+                    }
+                }
 
-                if (!msg.ReplyExpected)
+                _logger.MessageOut(message, message.Id);
+
+                if (!message.ReplyExpected)
                 {
                     return null;
                 }
@@ -100,18 +113,11 @@ namespace Secs4Net
             catch (TimeoutException)
             {
                 _logger.Error($"T3 Timeout[id=0x{systembyte:X8}]: {T3 / 1000} sec.");
-                throw new SecsException(msg, Resources.T3Timeout);
+                throw new SecsException(message, Resources.T3Timeout);
             }
             finally
             {
                 _replyExpectedMsgs.TryRemove(systembyte, out _);
-            }
-
-            async Task EncodeAndSendMessageAsync(SecsMessage msg, CancellationToken cancellation)
-            {
-                using var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: 256);
-                EncodeMessage(msg, buffer);
-                await HsmsConnection.SendAsync(_hsmsConnector, buffer.WrittenMemory, cancellation).ConfigureAwait(false);
             }
         }
 
@@ -127,15 +133,15 @@ namespace Secs4Net
             BinaryPrimitives.WriteInt32BigEndian(lengthBytes, buffer.WrittenCount - sizeof(int));
         }
 
-        public Task<SecsMessage?> SendAsync(SecsMessage msg, CancellationToken cancellation = default)
-            => SendDataMessageAsync(msg, SystemByteGenerator.New(), cancellation);
+        public ValueTask<SecsMessage?> SendAsync(SecsMessage message, CancellationToken cancellation = default)
+            => SendDataMessageAsync(message, SystemByteGenerator.New(), cancellation);
 
         public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)
             => _primaryMessageChannel.Reader.ReadAllAsync(cancellation);
 
-        private async Task StartDataMessagesConsumer(IAsyncEnumerable<SecsMessage> messages, CancellationToken cancellation)
+        async Task ProcessDataMessageAsync(SecsMessage msg, CancellationToken cancellation)
         {
-            await foreach (var msg in messages)
+            try
             {
                 var systembyte = msg.Id;
                 if (msg.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
@@ -150,7 +156,7 @@ namespace Secs4Net
                         SecsItem = Item.B(headerBytes),
                     };
                     await SendDataMessageAsync(s9f1, SystemByteGenerator.New(), cancellation).ConfigureAwait(false);
-                    continue;
+                    return;
                 }
 
                 if (msg.F % 2 != 0)
@@ -160,16 +166,17 @@ namespace Secs4Net
                         //Primary message
                         _logger.MessageIn(msg, systembyte);
                         await _primaryMessageChannel.Writer.WriteAsync(new PrimaryMessageWrapper(this, msg), cancellation).ConfigureAwait(false);
-                        continue;
+                        return;
                     }
                     // Error message
-                    if (msg.SecsItem?.GetValues<byte>() is not { Length: 10 } headerBytes)
+                    if (msg.SecsItem is { Format: not SecsFormat.List or SecsFormat.ASCII or SecsFormat.JIS8 } dataItem
+                        && dataItem.GetValues<byte>() is { Length: >= 10 } headerBytes)
                     {
-                        _logger.Warning("Can't get expected header bytes");
+                        systembyte = BinaryPrimitives.ReadInt32BigEndian(headerBytes.AsSpan().Slice(6, 4));
                     }
                     else
                     {
-                        systembyte = BinaryPrimitives.ReadInt32BigEndian(headerBytes.AsSpan().Slice(6, 4));
+                        _logger.Warning("Received S9Fy without primary message's header bytes.");
                     }
                 }
 
@@ -177,8 +184,12 @@ namespace Secs4Net
                 _logger.MessageIn(msg, systembyte);
                 if (_replyExpectedMsgs.TryGetValue(systembyte, out var token))
                 {
-                    token.HandleReplyMessage(msg);
+                    token.completeSource.HandleReplyMessage(token.primary, msg);
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Unhandled exception occurred when processing data message", msg, ex);
             }
         }
 
@@ -189,64 +200,9 @@ namespace Secs4Net
                 return;
             }
 
-            _cancellationTokenSourceForDecoderLoop.Cancel();
-            _cancellationTokenSourceForDecoderLoop.Dispose();
+            _cancellationSourceForDataMessageProcessing.Cancel();
+            _cancellationSourceForDataMessageProcessing.Dispose();
             _replyExpectedMsgs.Clear();
-        }
-
-        private sealed class TaskCompletionSourceToken : TaskCompletionSource<SecsMessage>
-        {
-            public SecsMessage MessageSent { get; }
-
-            internal TaskCompletionSourceToken(SecsMessage primaryMessageMsg)
-                : base(TaskCreationOptions.RunContinuationsAsynchronously)
-            {
-                MessageSent = primaryMessageMsg;
-            }
-
-            public void HandleReplyMessage(SecsMessage replyMsg)
-            {
-                replyMsg.Name = MessageSent.Name;
-                if (replyMsg.F == 0)
-                {
-                    TrySetException(new SecsException(MessageSent, Resources.SxF0));
-                    return;
-                }
-
-                if (replyMsg.S == 9)
-                {
-                    switch (replyMsg.F)
-                    {
-                        case 1:
-                            TrySetException(new SecsException(MessageSent, Resources.S9F1));
-                            break;
-                        case 3:
-                            TrySetException(new SecsException(MessageSent, Resources.S9F3));
-                            break;
-                        case 5:
-                            TrySetException(new SecsException(MessageSent, Resources.S9F5));
-                            break;
-                        case 7:
-                            TrySetException(new SecsException(MessageSent, Resources.S9F7));
-                            break;
-                        case 9:
-                            TrySetException(new SecsException(MessageSent, Resources.S9F9));
-                            break;
-                        case 11:
-                            TrySetException(new SecsException(MessageSent, Resources.S9F11));
-                            break;
-                        case 13:
-                            TrySetException(new SecsException(MessageSent, Resources.S9F13));
-                            break;
-                        default:
-                            TrySetException(new SecsException(MessageSent, Resources.S9Fy));
-                            break;
-                    }
-                    return;
-                }
-
-                TrySetResult(replyMsg);
-            }
         }
     }
 }

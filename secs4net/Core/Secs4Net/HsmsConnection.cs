@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Buffers;
+using PooledAwait;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -287,7 +288,11 @@ namespace Secs4Net
 
         private Task HandleControlMessagesAsync(CancellationToken cancellation)
             => _pipeDecoder.GetControlMessages(cancellation)
-            .ForEachAwaitWithCancellationAsync(async (header, ct) =>
+            .ForEachAwaitWithCancellationAsync(ProcessControlMessageAsync, cancellation);
+
+        private async Task ProcessControlMessageAsync(MessageHeader header, CancellationToken ct)
+        {
+            try
             {
                 var systembyte = header.SystemBytes;
                 if ((byte)header.MessageType % 2 == 0)
@@ -337,7 +342,12 @@ namespace Secs4Net
                         CommunicationStateChanging(ConnectionState.Retry);
                         break;
                 }
-            }, cancellation);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Unhandled exception occurred when processing control message: " + header.ToString(), ex);
+            }
+        }
 
         private static readonly ReadOnlyMemory<byte> ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
         private async Task SendControlMessage(MessageType msgType, int systembyte, CancellationToken cancellation = default)
@@ -438,7 +448,7 @@ namespace Secs4Net
             return _socket.SendAsync(buffer, SocketFlags.None, cancellationToken);
         }
 
-        internal static async ValueTask SendAsync(IHsmsConnection connector, ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
+        internal static async PooledValueTask SendAsync(IHsmsConnection connector, ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
         {
             do
             {

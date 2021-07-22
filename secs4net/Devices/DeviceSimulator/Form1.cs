@@ -195,12 +195,13 @@ namespace SecsDevice
                 });
             }
 
-            public void Error(string msg, Exception? ex = null)
+            public void Error(string msg, SecsMessage? message, Exception? ex)
             {
                 _form.Invoke((MethodInvoker)delegate
                 {
                     _form.richTextBox1.SelectionColor = Color.Red;
                     _form.richTextBox1.AppendText($"{msg}\n");
+                    _form.richTextBox1.AppendText($"{message?.ToSml()}\n");
                     _form.richTextBox1.SelectionColor = Color.Gray;
                     _form.richTextBox1.AppendText($"{ex}\n");
                 });

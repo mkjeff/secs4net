@@ -75,8 +75,6 @@ namespace Secs4Net
                 MessageType.DataMessage,
                 Id
                 ).EncodeTo(buffer);
-        ~SecsMessage()
-            => Dispose();
 
         public void Dispose()
         {

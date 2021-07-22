@@ -14,7 +14,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="count">List item count or value bytes length</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
+        private protected static void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
         {
             var lengthSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<int, byte>(ref count), sizeof(int));
             if (count <= 0xff)
@@ -52,7 +52,7 @@ namespace Secs4Net
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static void EncodeEmptyItem(SecsFormat format, IBufferWriter<byte> buffer)
+        private protected static void EncodeEmptyItem(SecsFormat format, IBufferWriter<byte> buffer)
         {
             var span = buffer.GetSpan(sizeHint: 2);
             span.DangerousGetReferenceAt(0) = (byte)((byte)format | 1);

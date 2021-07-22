@@ -32,6 +32,11 @@ namespace Secs4Net
             SystemBytes = systemBytes;
         }
 
+        public override string ToString()
+        {
+            return $"DeviceId={DeviceId}, S={S}, ReplyExpected={ReplyExpected}, F={F}, MessageType={MessageType}, SystemBytes={SystemBytes}";
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EncodeTo(IBufferWriter<byte> buffer)
         {
