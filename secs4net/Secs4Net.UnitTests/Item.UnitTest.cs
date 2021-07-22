@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
+using Newtonsoft.Json.Linq;
 using Secs4Net.UnitTests.Extensions;
 using System;
 using System.Buffers;
@@ -118,6 +119,8 @@ namespace Secs4Net.UnitTests
             var list = new List<Item> {
                 A(str),
                 I2(arr),
+                U2(),
+                Boolean(),
             };
             using (var listItem = L(list))
             {
@@ -132,17 +135,27 @@ namespace Secs4Net.UnitTests
                     }
                 };
                 getEnumerator.Should().NotThrow();
+
+                L(listItem[1..^1]).Should().BeEquivalentTo(L(I2(arr), U2()));
+
+                var range = 2..5;
+                Action sliceOutOfRange = () => _ = listItem[range];
+                sliceOutOfRange.Should().Throw<IndexOutOfRangeException>().WithMessage($"Item.Count is {listItem.Count}, but Slice(start: {range.Start.Value}, length: {range.End.Value - range.Start.Value})");
             }
         }
 
         [Fact]
         public void Item_Throw_Not_Supported_Exception_With_Format_Unmatch()
         {
-            using (var stringItem = A())
+            using (var stringItem = A("string"))
             {
                 Action stringItemAccessIndexer = () => _ = stringItem[0];
                 stringItemAccessIndexer.Should().Throw<NotSupportedException>()
                     .WithMessage(CreateNotSupportedMessage("Item", stringItem.Format));
+
+                Action stringItemAccessRange = () => _ = stringItem[1..];
+                stringItemAccessRange.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.Slice), stringItem.Format));
 
                 Action stringItemGetEnumerator = () => stringItem.GetEnumerator();
                 stringItemGetEnumerator.Should().Throw<NotSupportedException>()
@@ -167,9 +180,13 @@ namespace Secs4Net.UnitTests
                 arrayItemGetString.Should().Throw<NotSupportedException>()
                     .WithMessage(CreateNotSupportedMessage(nameof(Item.GetString), arrayItem.Format));
 
-                Action arrayItemAccessIndexer = () => _ = arrayItem[0];
+                Action arrayItemAccessIndexer = () => _ = arrayItem[^1];
                 arrayItemAccessIndexer.Should().Throw<NotSupportedException>()
                     .WithMessage(CreateNotSupportedMessage("Item", arrayItem.Format));
+
+                Action arrayItemAccessRange = () => _ = arrayItem[0..^0];
+                arrayItemAccessRange.Should().Throw<NotSupportedException>()
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.Slice), arrayItem.Format));
 
                 Action arrayItemGetEnumerator = () => arrayItem.GetEnumerator();
                 arrayItemGetEnumerator.Should().Throw<NotSupportedException>()
@@ -253,7 +270,29 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public void Item_Get_GetValue_Should_Throw_Error_If_Is_Empty()
+        public void Item_GetValues_ValueArray_Can_Index_Great_Than_Length()
+        {
+            var source = new int[] { 1, 2, 3, 4, 5 };
+
+            // up size from int to long
+            var itemArray = I4(source).GetValues<long>();
+
+            Action indexGreatThanValueArrayLength = () =>
+            {
+                var value = itemArray[itemArray.Length + 1];
+            };
+
+            indexGreatThanValueArrayLength.Should().NotThrow();
+
+            Action indexGreatThanSpanLength = () =>
+            {
+                var value = itemArray.AsSpan()[itemArray.Length + 1];
+            };
+            indexGreatThanSpanLength.Should().Throw<IndexOutOfRangeException>();
+        }
+
+        [Fact]
+        public void Item_FirstValue_Should_Throw_Error_If_Is_Empty()
         {
             var item = I4();
 
@@ -262,7 +301,7 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public void Item_GetValue_With_Downsize_Typed()
+        public void Item_FirstValue_With_Downsize_Typed()
         {
             var firstSrc = short.MaxValue + 12;
             var first = I4(firstSrc).FirstValue<short>();
@@ -270,7 +309,7 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public void Item_GetValue_With_Upsize_Typed()
+        public void Item_FirstValue_With_Upsize_Typed()
         {
             var bytes = new byte[] { 128, 212, 231 };
             var first = U1(bytes).FirstValue<ushort>();
@@ -278,7 +317,7 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public void Item_GetValue_With_Upsize_Typed_Should_Throw_Error_If_Total_Bytes_Less_Than_SizeOf_T()
+        public void Item_FirstValue_With_Upsize_Typed_Should_Throw_Error_If_Total_Bytes_Less_Than_SizeOf_T()
         {
             var bytes = new byte[] { 128 };
             Action action = () => U1(bytes).FirstValue<ushort>();
@@ -286,7 +325,7 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public void Item_GetValueOrDefault_Should_Not_Throw_Error_If_Is_Empty()
+        public void Item_FirstValueOrDefault_Should_Not_Throw_Error_If_Is_Empty()
         {
             var item = I4();
 
@@ -300,7 +339,7 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public void Item_GetValueOrDefault_With_Upsize_Typed_Should_Return_Default_Value_If_Total_Bytes_Less_Than_SizeOf_T()
+        public void Item_FirstValueOrDefault_With_Upsize_Typed_Should_Return_Default_Value_If_Total_Bytes_Less_Than_SizeOf_T()
         {
             var bytes = new byte[] { 128 };
             ushort defaultValue = 11;

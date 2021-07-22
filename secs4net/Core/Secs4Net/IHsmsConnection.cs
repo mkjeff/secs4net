@@ -15,11 +15,10 @@ namespace Secs4Net
         ConnectionState State { get; }
         bool IsActive => false;
         IPAddress IpAddress => IPAddress.Loopback;
-        int Port => -1;
+        int Port => 0;
         string DeviceIpAddress => string.Empty;
-        PipeDecoder PipeDecoder { get; }
-
         void Reconnect() { }
-        public ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
+        internal ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
+        internal PipeDecoder PipeDecoder { get; }
     }
 }

@@ -6,19 +6,20 @@ namespace Secs4Net
 {
     public sealed class PipeConnection : IHsmsConnection
     {
-        public event EventHandler<ConnectionState>? ConnectionChanged;
+        event EventHandler<ConnectionState>? IHsmsConnection.ConnectionChanged { add { } remove { } }
         public ConnectionState State => ConnectionState.Selected;
-        public PipeDecoder PipeDecoder { get; }
+        PipeDecoder IHsmsConnection.PipeDecoder => _decoder;
+        private readonly PipeDecoder _decoder;
         public PipeConnection(PipeDecoder pipeDecoder)
         {
-            PipeDecoder = pipeDecoder;
-            AsyncHelper.LongRunningAsync(() => PipeDecoder.StartAsync(CancellationToken.None));
+            _decoder = pipeDecoder;
+            AsyncHelper.LongRunningAsync(() => _decoder.StartAsync(CancellationToken.None));
         }
 
-        public async ValueTask<int> SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
+        async ValueTask<int> IHsmsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
         {
             // assume the 'PipeDecoder.Input' here is another connector's input
-            var result = await PipeDecoder.Input.WriteAsync(source, cancellationToken);
+            var result = await _decoder.Input.WriteAsync(source, cancellationToken);
             return source.Length;
         }
     }

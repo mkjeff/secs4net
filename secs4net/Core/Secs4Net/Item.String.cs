@@ -17,7 +17,7 @@ namespace Secs4Net
 
             public override void EncodeTo(IBufferWriter<byte> buffer)
             {
-                if (Count == 0)
+                if (_value.Length == 0)
                 {
                     EncodeEmptyItem(Format, buffer);
                     return;
@@ -26,7 +26,7 @@ namespace Secs4Net
                 var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
                 var bytelength = encoder.GetByteCount(_value);
                 EncodeItemHeader(Format, bytelength, buffer);
-                var span = buffer.GetSpan(sizeHint: bytelength).Slice(0, bytelength);
+                var span = buffer.GetSpan(bytelength).Slice(0, bytelength);
                 buffer.Advance(encoder.GetBytes(_value, span));
             }
         }

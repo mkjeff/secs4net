@@ -49,11 +49,22 @@ namespace Secs4Net
         /// You can invoke <see cref="Dispose"/> method on the original item by yourself or till the GC collects it.
         /// </summary>
         /// <exception cref="InvalidOperationException">When the item's <see cref="Format"/> is not <see cref="SecsFormat.List"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public virtual Item this[int index]
         {
             get => throw CreateNotSupportException();
             set => throw CreateNotSupportException();
         }
+
+        /// <summary>
+        /// Forms a slice out of the current List starting at a specified index for a specified length.
+        /// </summary>
+        /// <param name="start">The index at which to begin this slice.</param>
+        /// <param name="length">The desired length for the slice</param>
+        /// <exception cref="InvalidOperationException">When the item's <see cref="Format"/> is not <see cref="SecsFormat.List"/></exception>
+        /// <exception cref="IndexOutOfRangeException"></exception>
+        public virtual IEnumerable<Item> Slice(int start, int length) 
+            => throw CreateNotSupportException();
 
         private Exception CreateNotSupportException([CallerMemberName] string? memberName = null)
             => new NotSupportedException($"{memberName} is not supported, coz the {nameof(Format)} is {Format}");
@@ -220,9 +231,6 @@ namespace Secs4Net
         /// Encode item to SECS binary format
         /// </summary>
         public abstract void EncodeTo(IBufferWriter<byte> buffer);
-
-        public override int GetHashCode()
-            => throw new NotImplementedException("Secs4Net.Item is possible a large value object. You should implement a custom IEqualityComparer<Item> for your hash logic.");
 
         public virtual IEnumerator<Item> GetEnumerator()
             => throw CreateNotSupportException();

@@ -1,5 +1,7 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Secs4Net
 {
@@ -19,11 +21,20 @@ namespace Secs4Net
                 set => _value[index] = value;
             }
 
+            public override IEnumerable<Item> Slice(int start, int length)
+            {
+                if (start < 0 || start + length > _value.Count)
+                {
+                    throw new IndexOutOfRangeException($"Item.Count is {_value.Count}, but Slice(start: {start}, length: {length})");
+                }
+                return _value.Skip(start).Take(length);
+            }
+
             public override IEnumerator<Item> GetEnumerator() => _value.GetEnumerator();
 
             public override void EncodeTo(IBufferWriter<byte> buffer)
             {
-                if (Count == 0)
+                if (_value.Count == 0)
                 {
                     EncodeEmptyItem(Format, buffer);
                     return;

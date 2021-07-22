@@ -21,16 +21,17 @@ namespace Secs4Net
         public readonly int Length => _length;
 
         /// <summary>
-        /// Note: this operation will not valid the bound range of array. You need to make sure the parameter <paramref name="index"/> is valid before accessing
+        /// Note: This operation is faster because of bypassing index boundary validation.
+        /// You need to make sure the parameter <paramref name="index"/> is less than <see cref="Length"/> before accessing.
+        /// A safer, but slower option is using <see cref="ReadOnlySpan{T}"/> returns from <see cref="AsSpan"/> method.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public ref T this[int index] => ref Unsafe.Add(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReferenceAt(0)), index);
+        public ref T this[int index] => ref Unsafe.Add(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReference()), index);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T[] ToArray() => AsSpan().ToArray();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReadOnlySpan<T> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReferenceAt(0)), _length);
+        public readonly ReadOnlySpan<T> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReference()), _length);
     }
 }

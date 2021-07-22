@@ -43,7 +43,7 @@ namespace Secs4Net
 
             public sealed override void EncodeTo(IBufferWriter<byte> buffer)
             {
-                if (Count == 0)
+                if (_value.IsEmpty)
                 {
                     EncodeEmptyItem(Format, buffer);
                     return;
@@ -52,7 +52,7 @@ namespace Secs4Net
                 var bytes = _value.Span.AsBytes();
                 var byteLength = bytes.Length;
                 EncodeItemHeader(Format, byteLength, buffer);
-                var span = buffer.GetSpan(sizeHint: byteLength).Slice(0, byteLength);
+                var span = buffer.GetSpan(byteLength).Slice(0, byteLength);
                 bytes.CopyTo(span);
                 span.Reverse(Unsafe.SizeOf<T>());
                 buffer.Advance(byteLength);

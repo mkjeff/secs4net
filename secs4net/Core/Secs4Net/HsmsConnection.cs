@@ -72,13 +72,14 @@ namespace Secs4Net
         private readonly ConcurrentDictionary<int, TaskCompletionSource> _replyExpectedMsgs = new();
         private readonly Memory<byte> _socketReceiveBuffer;
 
-        public PipeDecoder PipeDecoder { get; }
+        PipeDecoder IHsmsConnection.PipeDecoder => _pipeDecoder;
+        private readonly PipeDecoder _pipeDecoder;
         private CancellationToken _stoppingToken;
 
         public HsmsConnection(IOptions<SecsGemOptions> secsGemOptions, ISecsGemLogger logger)
         {
             var pipe = new Pipe();
-            PipeDecoder = new PipeDecoder(pipe.Reader, pipe.Writer);
+            _pipeDecoder = new PipeDecoder(pipe.Reader, pipe.Writer);
             _logger = logger;
             var options = secsGemOptions.Value;
             T5 = options.T5;
@@ -192,7 +193,7 @@ namespace Secs4Net
         {
             try
             {
-                await PipeDecoder.StartAsync(cancellation).ConfigureAwait(false);
+                await _pipeDecoder.StartAsync(cancellation).ConfigureAwait(false);
             }
             catch (Exception ex) when (!cancellation.IsCancellationRequested)
             {
@@ -226,14 +227,13 @@ namespace Secs4Net
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _stoppingToken = stoppingToken;
-            _ = AsyncHelper.LongRunningAsync(() =>
-                HandleControlMessagesAsync(_stoppingToken), _stoppingToken);
 
-            _ = AsyncHelper.LongRunningAsync(() =>
-                StartDecoderAsync(_stoppingToken), _stoppingToken);
-
-            _ = AsyncHelper.LongRunningAsync(() => _startImpl(stoppingToken), stoppingToken);
-            return Task.CompletedTask;
+            return Task.WhenAll(
+                AsyncHelper.LongRunningAsync(() =>
+                    HandleControlMessagesAsync(_stoppingToken), _stoppingToken),
+                AsyncHelper.LongRunningAsync(() =>
+                    StartDecoderAsync(_stoppingToken), _stoppingToken),
+                AsyncHelper.LongRunningAsync(() => _startImpl(stoppingToken), stoppingToken));
         }
 
         public void Reconnect()
@@ -286,7 +286,7 @@ namespace Secs4Net
         }
 
         private Task HandleControlMessagesAsync(CancellationToken cancellation)
-            => PipeDecoder.GetControlMessages(cancellation)
+            => _pipeDecoder.GetControlMessages(cancellation)
             .ForEachAwaitWithCancellationAsync(async (header, ct) =>
             {
                 var systembyte = header.SystemBytes;
@@ -423,7 +423,7 @@ namespace Secs4Net
 
         private async Task StartScoketReceiveLoopAsync(CancellationToken cancellationToken)
         {
-            var writer = PipeDecoder.Input;
+            var writer = _pipeDecoder.Input;
             while (true)
             {
                 Debug.Assert(_socket != null);
@@ -432,7 +432,7 @@ namespace Secs4Net
             }
         }
 
-        public ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        ValueTask<int> IHsmsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             Debug.Assert(_socket != null);
             return _socket.SendAsync(buffer, SocketFlags.None, cancellationToken);
