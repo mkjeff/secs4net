@@ -6,9 +6,9 @@ namespace Secs4Net
 {
     public sealed class PipeConnection : IHsmsConnection
     {
-        event EventHandler<ConnectionState>? IHsmsConnection.ConnectionChanged { add { } remove { } }
-        public ConnectionState State => ConnectionState.Selected;
+        bool IHsmsConnection.LinkTestEnabled { get; set; }
         PipeDecoder IHsmsConnection.PipeDecoder => _decoder;
+
         private readonly PipeDecoder _decoder;
         public PipeConnection(PipeDecoder pipeDecoder)
         {

@@ -46,7 +46,7 @@ namespace SecsDevice
             var options = Options.Create(new SecsGemOptions
             {
                 IsActive = radioActiveMode.Checked,
-                IpAddress = IPAddress.Parse(txtAddress.Text),
+                IpAddress = txtAddress.Text,
                 Port = (int)numPort.Value,
                 SocketReceiveBufferSize = (int)numBufferSize.Value,
                 DeviceId = (ushort)numDeviceId.Value,

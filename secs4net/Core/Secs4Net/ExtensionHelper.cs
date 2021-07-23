@@ -1,13 +1,14 @@
 ﻿using PooledAwait;
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Secs4Net
 {
     internal static class SecsExtension
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static void Reverse(this Span<byte> bytes, int offSet)
+        internal static void Reverse(this Span<byte> bytes, int offSet)
         {
             if (offSet <= 1)
             {
@@ -20,8 +21,17 @@ namespace Secs4Net
             }
         }
 
+        internal static async PooledValueTask SendAllAsync(this IHsmsConnection connector, ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
+        {
+            do
+            {
+                var length = await connector.SendAsync(bytesToTransfer, cancellation).ConfigureAwait(false);
+                bytesToTransfer = bytesToTransfer[length..];
+            } while (!bytesToTransfer.IsEmpty);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void HandleReplyMessage(this ValueTaskCompletionSource<SecsMessage> source, SecsMessage primaryMessage, SecsMessage secondaryMessage)
+        internal static void HandleReplyMessage(this ValueTaskCompletionSource<SecsMessage> source, SecsMessage primaryMessage, SecsMessage secondaryMessage)
         {
             secondaryMessage.Name = primaryMessage.Name;
             if (secondaryMessage.F == 0)

@@ -38,7 +38,7 @@ namespace Secs4Net
             _input = input;
         }
 
-        internal IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
+        public IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
             => _controlMessageChannel.Reader.ReadAllAsync(cancellation);
 
         public IAsyncEnumerable<SecsMessage> GetDataMessages(CancellationToken cancellation)
@@ -150,7 +150,7 @@ namespace Secs4Net
                         }
                         else
                         {
-                            Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by stream decoded");
+                            Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by data chunked");
                             await ProduceDataMessageAsync(dataMessageWriter, header, item, cancellation).ConfigureAwait(false);
                             goto Start;
                         }
@@ -159,7 +159,7 @@ namespace Secs4Net
                 }
                 else
                 {
-                    Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by stream decoded");
+                    Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by data chunked");
                     await ProduceDataMessageAsync(dataMessageWriter, header, item, cancellation).ConfigureAwait(false);
                 }
             }

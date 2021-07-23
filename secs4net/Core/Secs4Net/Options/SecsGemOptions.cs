@@ -6,7 +6,7 @@ namespace Secs4Net
     {
         public ushort DeviceId { get; init; }
         public bool IsActive { get; init; }
-        public IPAddress? IpAddress { get; init; }
+        public string IpAddress { get; init; }
         public int Port { get; init; }
         public int T3 { get; init; } = 45000;
         public int T5 { get; init; } = 10000;

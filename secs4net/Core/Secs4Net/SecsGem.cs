@@ -16,7 +16,7 @@ namespace Secs4Net
     public interface ISecsGem
     {
         /// <summary>
-        /// Get async-stream of primary messages
+        /// Get primary messages as async-stream
         /// </summary>
         /// <param name="cancellation"></param>
         IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default);
@@ -25,7 +25,7 @@ namespace Secs4Net
         /// Asynchronously send message to device.
         /// </summary>
         /// <param name="message">primary message</param>
-        /// <returns>Secondary message, or null if <paramref name="message"/>'s ReplyExpected is false</returns>
+        /// <returns>Secondary message, or null if <paramref name="message" />'s <see cref="SecsMessage.ReplyExpected">ReplyExpected</see> is <see langword="false" /> </returns>
         ValueTask<SecsMessage?> SendAsync(SecsMessage message, CancellationToken cancellation = default);
     }
 
@@ -65,7 +65,7 @@ namespace Secs4Net
 
             _ = AsyncHelper.LongRunningAsync(() =>
                 _hsmsConnector.PipeDecoder.GetDataMessages(_cancellationSourceForDataMessageProcessing.Token)
-                    .ForEachAwaitWithCancellationAsync(ProcessDataMessageAsync, _cancellationSourceForDataMessageProcessing.Token), _cancellationSourceForDataMessageProcessing.Token);
+                    .ForEachAwaitWithCancellationAsync(ProcessDataMessageAsync, _cancellationSourceForDataMessageProcessing.Token));
         }
 
         internal async PooledValueTask<SecsMessage?> SendDataMessageAsync(SecsMessage message, int systembyte, CancellationToken cancellation)
@@ -88,7 +88,7 @@ namespace Secs4Net
                 using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: _recentlyMaxEncodedByteLength))
                 {
                     EncodeMessage(message, buffer);
-                    await HsmsConnection.SendAsync(_hsmsConnector, buffer.WrittenMemory, cancellation).ConfigureAwait(false);
+                    await _hsmsConnector.SendAllAsync(buffer.WrittenMemory, cancellation).ConfigureAwait(false);
 
                     if (buffer.WrittenCount > _recentlyMaxEncodedByteLength)
                     {
@@ -176,7 +176,7 @@ namespace Secs4Net
                     }
                     else
                     {
-                        _logger.Warning("Received S9Fy without primary message's header bytes.");
+                        _logger.Warning("Received S9Fy message without primary message's header bytes.");
                     }
                 }
 

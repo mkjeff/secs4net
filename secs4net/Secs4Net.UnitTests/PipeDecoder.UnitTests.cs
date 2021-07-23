@@ -88,7 +88,6 @@ namespace Secs4Net.UnitTests
 
             var pipe = new Pipe();
             var decoder = new PipeDecoder(pipe.Reader, pipe.Writer);
-            await decoder.Input.WriteAsync(encodedBytes);
 
             _ = Task.Run(() =>
             {
@@ -96,6 +95,7 @@ namespace Secs4Net.UnitTests
                 act.Should().NotThrow();
             });
 
+            await decoder.Input.WriteAsync(encodedBytes);
             var decodeMessage = await decoder.GetDataMessages(default).FirstAsync();
 
             decodeMessage.Should().NotBeNull().And.BeEquivalentTo(message);
@@ -111,19 +111,19 @@ namespace Secs4Net.UnitTests
             var pipe = new Pipe();
             var decoder = new PipeDecoder(pipe.Reader, pipe.Writer);
 
-            _ = Task.Run(async () =>
-            {
-                foreach (var chunk in encodedBytes.Chunk(11))
-                {
-                    await Task.Delay(1000); //simulate slow producer
-                    await decoder.Input.WriteAsync(chunk);
-                }
-            });
-
             _ = Task.Run(() =>
             {
                 Func<Task> act = () => decoder.StartAsync(default);
                 act.Should().NotThrow();
+            });
+
+            _ = Task.Run(async () =>
+            {
+                foreach (var chunk in encodedBytes.Chunk(11))
+                {
+                    await Task.Delay(1000); //simulate a slow connection
+                    await decoder.Input.WriteAsync(chunk);
+                }
             });
 
             var decodeMessage = await decoder.GetDataMessages(default).FirstAsync();

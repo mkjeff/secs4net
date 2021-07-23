@@ -23,7 +23,7 @@ namespace Secs4Net
         public int T7 { get; }
         public int T8 { get; }
         public int LinkTestInterval { get; }
-        public bool LinkTestEnable
+        public bool LinkTestEnabled
         {
             get => _linkTestEnable;
             set
@@ -56,11 +56,12 @@ namespace Secs4Net
             ? IpAddress.ToString()
             : ((IPEndPoint?)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
 
+        PipeDecoder IHsmsConnection.PipeDecoder => _pipeDecoder;
+
         private Socket? _socket;
         private const int DisposalNotStarted = 0;
         private const int DisposalComplete = 1;
         private int _disposeStage;
-        private readonly ISecsGemLogger _logger;
 
         public bool IsDisposed
             => Interlocked.CompareExchange(ref _disposeStage, DisposalComplete, DisposalComplete) == DisposalComplete;
@@ -72,15 +73,17 @@ namespace Secs4Net
         private readonly Timer _timerLinkTest;
         private readonly ConcurrentDictionary<int, TaskCompletionSource> _replyExpectedMsgs = new();
         private readonly Memory<byte> _socketReceiveBuffer;
-
-        PipeDecoder IHsmsConnection.PipeDecoder => _pipeDecoder;
+        private readonly ISecsGemLogger _logger;
         private readonly PipeDecoder _pipeDecoder;
+        private readonly Pipe _pipe;
         private CancellationToken _stoppingToken;
+        private CancellationTokenSource? _cancellationTokenSourceForPipeDecoder;
 
         public HsmsConnection(IOptions<SecsGemOptions> secsGemOptions, ISecsGemLogger logger)
         {
             var pipe = new Pipe();
             _pipeDecoder = new PipeDecoder(pipe.Reader, pipe.Writer);
+            _pipe = pipe;
             _logger = logger;
             var options = secsGemOptions.Value;
             T5 = options.T5;
@@ -88,7 +91,7 @@ namespace Secs4Net
             T7 = options.T7;
             T8 = options.T8;
             LinkTestInterval = options.LinkTestInterval;
-            IpAddress = options.IpAddress ?? throw new ArgumentNullException(nameof(options.IpAddress));
+            IpAddress = IPAddress.Parse(options.IpAddress);
             Port = options.Port;
             IsActive = options.IsActive;
             _socketReceiveBuffer = new byte[options.SocketReceiveBufferSize];
@@ -190,25 +193,12 @@ namespace Secs4Net
             }
         }
 
-        private async Task StartDecoderAsync(CancellationToken cancellation)
-        {
-            try
-            {
-                await _pipeDecoder.StartAsync(cancellation).ConfigureAwait(false);
-            }
-            catch (Exception ex) when (!cancellation.IsCancellationRequested)
-            {
-                _logger.Error("Unexpected exception on StartAsyncStreamDecoderAsync", ex);
-                Reconnect();
-            }
-        }
-
         private void Disconnect()
         {
             _timer7.Change(Timeout.Infinite, Timeout.Infinite);
             _timer8.Change(Timeout.Infinite, Timeout.Infinite);
             _timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
-            TryStopSocketReceiveLoop();
+            StopPipeDecoder(ref _cancellationTokenSourceForPipeDecoder);
             _stopImpl.Invoke();
 
             if (_socket is null)
@@ -228,19 +218,56 @@ namespace Secs4Net
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _stoppingToken = stoppingToken;
+            var longRunningTask = AsyncHelper.LongRunningAsync(() => HandleControlMessagesAsync(_stoppingToken), _stoppingToken);
+            Start(_stoppingToken);
+            return longRunningTask;
+        }
 
-            return Task.WhenAll(
-                AsyncHelper.LongRunningAsync(() =>
-                    HandleControlMessagesAsync(_stoppingToken), _stoppingToken),
-                AsyncHelper.LongRunningAsync(() =>
-                    StartDecoderAsync(_stoppingToken), _stoppingToken),
-                AsyncHelper.LongRunningAsync(() => _startImpl(stoppingToken), stoppingToken));
+        private void Start(CancellationToken cancellation)
+        {
+            _pipe.Reader.Complete();
+            _pipe.Writer.Complete();
+            _pipe.Reset();
+            _ = AsyncHelper.LongRunningAsync(() => _startImpl(cancellation), cancellation);
+        }
+
+        private async Task StartPipeDecoderConsumerAsync(CancellationToken cancellation)
+        {
+            try
+            {
+                await _pipeDecoder.StartAsync(cancellation).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!cancellation.IsCancellationRequested)
+            {
+                _logger.Error("Unexpected exception on StartAsyncStreamDecoderAsync", ex);
+                Reconnect();
+            }
+        }
+
+        private async Task StartPipeDecoderProducerAsync(CancellationToken cancellationToken)
+        {
+            var writer = _pipeDecoder.Input;
+            while (true)
+            {
+                Debug.Assert(_socket != null);
+                var count = await _socket.ReceiveAsync(_socketReceiveBuffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+                await writer.WriteAsync(_socketReceiveBuffer.Slice(0, count), cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private void StopPipeDecoder(ref CancellationTokenSource? cancellationTokenSource)
+        {
+            if (cancellationTokenSource is { IsCancellationRequested: false })
+            {
+                cancellationTokenSource.Cancel();
+                cancellationTokenSource.Dispose();
+                cancellationTokenSource = null;
+            }
         }
 
         public void Reconnect()
             => CommunicationStateChanging(ConnectionState.Retry);
 
-        private CancellationTokenSource? _cancellationTokenSourceForSocketReceiveLoop;
         private void CommunicationStateChanging(ConnectionState newState)
         {
             State = newState;
@@ -256,10 +283,11 @@ namespace Secs4Net
                     break;
                 case ConnectionState.Connected:
 #if !DISABLE_TIMER
-                    TryStopSocketReceiveLoop();
-                    _cancellationTokenSourceForSocketReceiveLoop = new CancellationTokenSource();
-                    _ = AsyncHelper.LongRunningAsync(() =>
-                        StartScoketReceiveLoopAsync(_cancellationTokenSourceForSocketReceiveLoop.Token), _cancellationTokenSourceForSocketReceiveLoop.Token);
+                    _cancellationTokenSourceForPipeDecoder = new CancellationTokenSource();
+                    var cancellation = _cancellationTokenSourceForPipeDecoder.Token;
+                    _ = AsyncHelper.LongRunningAsync(() => Task.WhenAll(
+                        StartPipeDecoderConsumerAsync(cancellation), 
+                        StartPipeDecoderProducerAsync(cancellation)), cancellation);
                     _logger.Info($"Start T7 Timer: {T7 / 1000} sec.");
                     _timer7.Change(T7, Timeout.Infinite);
 #endif
@@ -271,18 +299,8 @@ namespace Secs4Net
                     }
 
                     Disconnect();
-                    Task.Run(() => _startImpl(_stoppingToken));
+                    Start(_stoppingToken);
                     break;
-            }
-        }
-
-        private void TryStopSocketReceiveLoop()
-        {
-            if (_cancellationTokenSourceForSocketReceiveLoop is not null && !_cancellationTokenSourceForSocketReceiveLoop.IsCancellationRequested)
-            {
-                _cancellationTokenSourceForSocketReceiveLoop.Cancel();
-                _cancellationTokenSourceForSocketReceiveLoop.Dispose();
-                _cancellationTokenSourceForSocketReceiveLoop = null;
             }
         }
 
@@ -361,7 +379,7 @@ namespace Secs4Net
             try
             {
                 var buffer = EncodeControlMessage(msgType, systembyte);
-                await SendAsync(this, buffer, cancellation).ConfigureAwait(false);
+                await this.SendAllAsync(buffer, cancellation).ConfigureAwait(false);
 
                 _logger.Info("Sent Control Message: " + msgType);
                 if (_replyExpectedMsgs.ContainsKey(systembyte))
@@ -431,30 +449,10 @@ namespace Secs4Net
             _timerLinkTest.Dispose();
         }
 
-        private async Task StartScoketReceiveLoopAsync(CancellationToken cancellationToken)
-        {
-            var writer = _pipeDecoder.Input;
-            while (true)
-            {
-                Debug.Assert(_socket != null);
-                var count = await _socket.ReceiveAsync(_socketReceiveBuffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
-                await writer.WriteAsync(_socketReceiveBuffer.Slice(0, count), cancellationToken).ConfigureAwait(false);
-            }
-        }
-
         ValueTask<int> IHsmsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             Debug.Assert(_socket != null);
             return _socket.SendAsync(buffer, SocketFlags.None, cancellationToken);
-        }
-
-        internal static async PooledValueTask SendAsync(IHsmsConnection connector, ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
-        {
-            do
-            {
-                var length = await connector.SendAsync(bytesToTransfer, cancellation).ConfigureAwait(false);
-                bytesToTransfer = bytesToTransfer.Slice(length);
-            } while (!bytesToTransfer.IsEmpty);
         }
     }
 }

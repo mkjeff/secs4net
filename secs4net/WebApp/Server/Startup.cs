@@ -33,11 +33,7 @@ namespace WebApp.Server
                     new[] { "application/octet-stream" });
             });
 
-            services.Configure<SecsGemOptions>(Configuration.GetSection("secs4net"));
-            services.AddSingleton<IHsmsConnection, HsmsConnection>();
-            services.AddHostedService(s => (IHostedService)s.GetRequiredService<HsmsConnection>());
-            services.AddSingleton<ISecsGem, SecsGem>();
-            services.AddSingleton<ISecsGemLogger, DeviceLogger>();
+            services.AddSecs4Net<DeviceLogger>(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
