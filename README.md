@@ -3,7 +3,7 @@
 ### Note: This project is just an implementation reference. 
 
 About the v2, it is almost done. but it is hard to be compatible with v1.
-.net core is the mainstream already, opposite .net framework stop on the maintainacee stage.  That's why `2.0.0-RC01` was deprecated and no more continued. 
+.net core is the mainstream already, opposite .net framework stuck on the maintenance stage.
 
 As mention above, as an implementation reference, I would try to keep the source code is clean and easy to understanding. Product support is not my goal coz I'm not in this industry for a long time.
 
