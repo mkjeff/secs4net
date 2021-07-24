@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,7 +8,6 @@ namespace Secs4Net
     public sealed class PipeConnection : IHsmsConnection
     {
         bool IHsmsConnection.LinkTestEnabled { get; set; }
-        PipeDecoder IHsmsConnection.PipeDecoder => _decoder;
 
         private readonly PipeDecoder _decoder;
         public PipeConnection(PipeDecoder pipeDecoder)
@@ -22,5 +22,8 @@ namespace Secs4Net
             var result = await _decoder.Input.WriteAsync(source, cancellationToken);
             return source.Length;
         }
+
+        IAsyncEnumerable<SecsMessage> IHsmsConnection.GetDataMessages(CancellationToken cancellation)
+            => _decoder.GetDataMessages(cancellation);
     }
 }

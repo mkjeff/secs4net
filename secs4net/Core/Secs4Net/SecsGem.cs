@@ -64,7 +64,7 @@ namespace Secs4Net
             _logger = logger;
 
             _ = AsyncHelper.LongRunningAsync(() =>
-                _hsmsConnector.PipeDecoder.GetDataMessages(_cancellationSourceForDataMessageProcessing.Token)
+                _hsmsConnector.GetDataMessages(_cancellationSourceForDataMessageProcessing.Token)
                     .ForEachAwaitWithCancellationAsync(ProcessDataMessageAsync, _cancellationSourceForDataMessageProcessing.Token));
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,7 +44,7 @@ namespace Secs4Net
         bool LinkTestEnabled { get; set; }
 
         void Reconnect() { }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -51,6 +52,6 @@ namespace Secs4Net
         /// <param name="cancellationToken"></param>
         /// <returns>The number of bytes sent to</returns>
         internal ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
-        internal PipeDecoder PipeDecoder { get; }
+        internal IAsyncEnumerable<SecsMessage> GetDataMessages(CancellationToken cancellation);
     }
 }

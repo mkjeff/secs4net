@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using PooledAwait;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Linq;
@@ -55,8 +55,6 @@ namespace Secs4Net
             => IsActive
             ? IpAddress.ToString()
             : ((IPEndPoint?)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
-
-        PipeDecoder IHsmsConnection.PipeDecoder => _pipeDecoder;
 
         private Socket? _socket;
         private const int DisposalNotStarted = 0;
@@ -225,9 +223,6 @@ namespace Secs4Net
 
         private void Start(CancellationToken cancellation)
         {
-            _pipe.Reader.Complete();
-            _pipe.Writer.Complete();
-            _pipe.Reset();
             _ = AsyncHelper.LongRunningAsync(() => _startImpl(cancellation), cancellation);
         }
 
@@ -237,21 +232,37 @@ namespace Secs4Net
             {
                 await _pipeDecoder.StartAsync(cancellation).ConfigureAwait(false);
             }
-            catch (Exception ex) when (!cancellation.IsCancellationRequested)
+            catch (Exception ex)
             {
+                if (cancellation.IsCancellationRequested)
+                {
+                    return;
+                }
                 _logger.Error("Unexpected exception on StartAsyncStreamDecoderAsync", ex);
                 Reconnect();
             }
         }
 
-        private async Task StartPipeDecoderProducerAsync(CancellationToken cancellationToken)
+        private async Task StartPipeDecoderProducerAsync(CancellationToken cancellation)
         {
             var writer = _pipeDecoder.Input;
-            while (true)
+            try
             {
-                Debug.Assert(_socket != null);
-                var count = await _socket.ReceiveAsync(_socketReceiveBuffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
-                await writer.WriteAsync(_socketReceiveBuffer.Slice(0, count), cancellationToken).ConfigureAwait(false);
+                while (true)
+                {
+                    Debug.Assert(_socket != null);
+                    var count = await _socket.ReceiveAsync(_socketReceiveBuffer, SocketFlags.None, cancellation).ConfigureAwait(false);
+                    await writer.WriteAsync(_socketReceiveBuffer.Slice(0, count), cancellation).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (cancellation.IsCancellationRequested)
+                {
+                    return;
+                }
+                _logger.Error("Unhandled exception occurred on PipeDecoder producer", ex);
+                Reconnect();
             }
         }
 
@@ -262,6 +273,9 @@ namespace Secs4Net
                 cancellationTokenSource.Cancel();
                 cancellationTokenSource.Dispose();
                 cancellationTokenSource = null;
+                _pipe.Reader.Complete();
+                _pipe.Writer.Complete();
+                _pipe.Reset();
             }
         }
 
@@ -286,7 +300,7 @@ namespace Secs4Net
                     _cancellationTokenSourceForPipeDecoder = new CancellationTokenSource();
                     var cancellation = _cancellationTokenSourceForPipeDecoder.Token;
                     _ = AsyncHelper.LongRunningAsync(() => Task.WhenAll(
-                        StartPipeDecoderConsumerAsync(cancellation), 
+                        StartPipeDecoderConsumerAsync(cancellation),
                         StartPipeDecoderProducerAsync(cancellation)), cancellation);
                     _logger.Info($"Start T7 Timer: {T7 / 1000} sec.");
                     _timer7.Change(T7, Timeout.Infinite);
@@ -304,9 +318,15 @@ namespace Secs4Net
             }
         }
 
-        private Task HandleControlMessagesAsync(CancellationToken cancellation)
-            => _pipeDecoder.GetControlMessages(cancellation)
-            .ForEachAwaitWithCancellationAsync(ProcessControlMessageAsync, cancellation);
+        private async Task HandleControlMessagesAsync(CancellationToken cancellation)
+        {
+            try
+            {
+                await _pipeDecoder.GetControlMessages(cancellation)
+                          .ForEachAwaitWithCancellationAsync(ProcessControlMessageAsync, cancellation);
+            }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+        }
 
         private async Task ProcessControlMessageAsync(MessageHeader header, CancellationToken ct)
         {
@@ -454,5 +474,8 @@ namespace Secs4Net
             Debug.Assert(_socket != null);
             return _socket.SendAsync(buffer, SocketFlags.None, cancellationToken);
         }
+
+        IAsyncEnumerable<SecsMessage> IHsmsConnection.GetDataMessages(CancellationToken cancellation)
+            => _pipeDecoder.GetDataMessages(cancellation);
     }
 }

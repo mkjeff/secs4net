@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Secs4Net;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,13 +39,24 @@ namespace DeviceWorkerService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await foreach (var m in _secsGem.GetPrimaryMessageAsync(stoppingToken))
+            try
             {
-                _logger.LogInformation($"Received primary message: {m.PrimaryMessage.ToString()}");
-                await m.TryReplyAsync(new SecsMessage(m.PrimaryMessage.S, (byte)(m.PrimaryMessage.F + 1))
+                await foreach (var m in _secsGem.GetPrimaryMessageAsync(stoppingToken))
                 {
-                    SecsItem = m.PrimaryMessage.SecsItem,
-                });
+                    _logger.LogInformation($"Received primary message: {m.PrimaryMessage.ToString()}");
+                    await m.TryReplyAsync(new SecsMessage(m.PrimaryMessage.S, (byte)(m.PrimaryMessage.F + 1))
+                    {
+                        SecsItem = m.PrimaryMessage.SecsItem,
+                    }, stoppingToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (stoppingToken.IsCancellationRequested)
+                {
+                    return;
+                }
+                _logger.LogError(ex, "Unhandled exception occurred on primary messages processing");
             }
         }
     }
