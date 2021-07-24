@@ -18,7 +18,23 @@ Note: Secs4net will only support .net6.0+ starting from v2.
 SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to communicate with SEMI standard compatible device.  
 
 **Getting started**
-1. Send message to device
+1. Install nuget package
+2. Configure .NET dependency injection
+   ```cs
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // "secs4net" configuration section in the appsettings.json
+        //  "secs4net": {
+        //    "DeviceId": 0,
+        //    "IsActive": true,
+        //    "IpAddress": "127.0.0.1",
+        //    "Port": 5000
+        //  }  
+        services.AddSecs4Net<DeviceLogger>(Configuration); 
+    }
+   ```    
+3. Inject `ISecsGem` into your service/controller class
+4. Basic usage
     ```cs
     try
     {
@@ -73,27 +89,20 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
         // device reply S9Fx
     }
     ```
-2. Handle primary messages
+5. Handle primary messages
     ```cs
     await foreach (var e in secsGem.GetPrimaryMessageAsync(cancellationToken))
-    {
-        try 
-        {        
-            using var primaryMsg = e.PrimaryMessage;
-            //do something for primary message
+    {     
+        using var primaryMsg = e.PrimaryMessage;
+        //do something for primary message
 
-            // reply secondary message to device
-            using var secondaryMsg = ...
-            await e.TryReplyAsync(secondaryMsg); 
-        }
-        catch (Exception ex) 
-        {
-
-        }
+        // reply secondary message to device
+        using var secondaryMsg = new SecsMessage(...);
+        await e.TryReplyAsync(secondaryMsg); 
     };
     ```
 
-3. Item construction is LINQ friendly
+6. creating `Item` via LINQ
 
     ```cs
     using static Secs4Net.Item;
@@ -104,14 +113,20 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
             Name = "CreateProcessJob",
             SecsItem = L(
                 U4(0),
-                L(from pj in tx.ProcessJobs select
+                L(
+                    from pj in tx.ProcessJobs 
+                    select
                     L(
                         A(pj.Id),
                         B(0x0D),
-                        L(from carrier in pj.Carriers select
+                        L(
+                            from carrier in pj.Carriers 
+                            select
                             L(
                                 A(carrier.Id),
-                                L(from slotInfo in carrier.SlotMap select
+                                L(
+                                    from slotInfo in carrier.SlotMap 
+                                    select
                                     U1(slotInfo.SlotNo)))),
                                 L(
                                     U1(1),
@@ -121,13 +136,13 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
                                 L()))));
     ```
 
-4. Item is mutable with restrict.
+7. `Item` is mutable with restrict.
     > Basic rule: The `Item.Count` has been fixed already while the item is created.
     
     That means you can only overwrite values on allocated memory. 
     e.q. A List item can override a sub-item via index operator but can't add/remove the sub-item. String Item still immutable, coz C# `string` is immutable as well.
 
-5. Reuse pooled array for large item values
+8. Reuse pooled array for large item values
 
     All unmanaged data Item can created from `IMemoryOwner<T>`.
 

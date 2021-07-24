@@ -47,14 +47,13 @@ namespace DeviceWorkerService
                     _logger.LogInformation($"Received primary message: {primaryMessage.ToString()}");
                     try
                     {
-                        
                         using var secondaryMessage = new SecsMessage(primaryMessage.S, (byte)(primaryMessage.F + 1))
                         {
-                            SecsItem = primaryMessage.SecsItem,                          
+                            SecsItem = primaryMessage.SecsItem,
                         };
                         await _secsGem.SendAsync(secondaryMessage, stoppingToken);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         _logger.LogError(ex, "Exception occurred when processing primary message");
                     }

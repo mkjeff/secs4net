@@ -26,7 +26,7 @@ namespace Secs4Net
         /// </summary>
         /// <param name="message">primary message</param>
         /// <returns>Secondary message, or null if <paramref name="message" />'s <see cref="SecsMessage.ReplyExpected">ReplyExpected</see> is <see langword="false" /> </returns>
-        ValueTask<SecsMessage?> SendAsync(SecsMessage message, CancellationToken cancellation = default);
+        ValueTask<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default);
     }
 
     public sealed class SecsGem : ISecsGem, IDisposable
@@ -68,7 +68,7 @@ namespace Secs4Net
                     .ForEachAwaitWithCancellationAsync(ProcessDataMessageAsync, _cancellationSourceForDataMessageProcessing.Token));
         }
 
-        internal async PooledValueTask<SecsMessage?> SendDataMessageAsync(SecsMessage message, int systembyte, CancellationToken cancellation)
+        internal async PooledValueTask<SecsMessage> SendDataMessageAsync(SecsMessage message, int systembyte, CancellationToken cancellation)
         {
             if (_hsmsConnector.State != ConnectionState.Selected)
             {
@@ -100,7 +100,7 @@ namespace Secs4Net
 
                 if (!message.ReplyExpected)
                 {
-                    return null;
+                    return null!;
                 }
 
                 return await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T3), cancellation).ConfigureAwait(false);
@@ -133,7 +133,7 @@ namespace Secs4Net
             BinaryPrimitives.WriteInt32BigEndian(lengthBytes, buffer.WrittenCount - sizeof(int));
         }
 
-        public ValueTask<SecsMessage?> SendAsync(SecsMessage message, CancellationToken cancellation = default)
+        public ValueTask<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default)
             => SendDataMessageAsync(message, SystemByteGenerator.New(), cancellation);
 
         public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)

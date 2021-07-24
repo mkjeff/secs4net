@@ -46,10 +46,7 @@ namespace Secs4Net
         void Reconnect() { }
 
         /// <summary>
-        /// 
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns>The number of bytes sent to</returns>
         internal ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
         internal IAsyncEnumerable<SecsMessage> GetDataMessages(CancellationToken cancellation);
