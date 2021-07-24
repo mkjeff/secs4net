@@ -15,6 +15,15 @@ namespace Secs4Net
                 _value = value;
             }
 
+            public override void Dispose()
+            {
+                for (int i = 0; i < _value.Count; i++)
+                {
+                    _value[i].Dispose();
+                }
+                GC.SuppressFinalize(this);
+            }
+
             public override Item this[int index]
             {
                 get => _value[index];

@@ -8,12 +8,7 @@ namespace DeviceWorkerService
     internal sealed class DeviceLogger : ISecsGemLogger
     {
         private readonly ILogger<DeviceLogger> _logger;
-
-        public DeviceLogger(ILogger<DeviceLogger> logger)
-        {
-            _logger = logger;
-        }
-
+        public DeviceLogger(ILogger<DeviceLogger> logger) => _logger = logger;
         public void MessageIn(SecsMessage msg, int systembyte) => _logger.LogTrace($"<-- [0x{systembyte:X8}] {msg.ToSml()}");
         public void MessageOut(SecsMessage msg, int systembyte) => _logger.LogTrace($"--> [0x{systembyte:X8}] {msg.ToSml()}");
         public void Debug(string msg) => _logger.LogDebug(msg);

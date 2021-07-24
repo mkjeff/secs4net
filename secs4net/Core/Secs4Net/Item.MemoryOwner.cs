@@ -1,5 +1,5 @@
-﻿using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
+﻿using System;
+using System.Buffers;
 
 namespace Secs4Net
 {
@@ -7,8 +7,8 @@ namespace Secs4Net
     {
         private sealed class MemoryOwnerItem<T> : MemoryItem<T> where T : unmanaged
         {
-            private readonly MemoryOwner<T> _owner;
-            internal MemoryOwnerItem(SecsFormat format, MemoryOwner<T> memoryOwner) : base(format, memoryOwner.Memory)
+            private readonly IMemoryOwner<T> _owner;
+            internal MemoryOwnerItem(SecsFormat format, IMemoryOwner<T> memoryOwner) : base(format, memoryOwner.Memory)
             {
                 _owner = memoryOwner;
             }

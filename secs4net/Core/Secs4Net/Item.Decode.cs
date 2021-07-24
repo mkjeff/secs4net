@@ -174,7 +174,7 @@ namespace Secs4Net
             {
                 var elmSize = Unsafe.SizeOf<T>();
                 var values = MemoryOwner<T>.Allocate((int)(bytes.Length / elmSize));
-                var valueAsBytesSpan = values.Memory.Span.AsBytes();
+                var valueAsBytesSpan = values.Span.AsBytes();
                 bytes.CopyTo(valueAsBytesSpan);
                 valueAsBytesSpan.Reverse(elmSize);
                 return values;

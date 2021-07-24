@@ -43,11 +43,21 @@ namespace DeviceWorkerService
             {
                 await foreach (var m in _secsGem.GetPrimaryMessageAsync(stoppingToken))
                 {
-                    _logger.LogInformation($"Received primary message: {m.PrimaryMessage.ToString()}");
-                    await m.TryReplyAsync(new SecsMessage(m.PrimaryMessage.S, (byte)(m.PrimaryMessage.F + 1))
+                    using var primaryMessage = m.PrimaryMessage;
+                    _logger.LogInformation($"Received primary message: {primaryMessage.ToString()}");
+                    try
                     {
-                        SecsItem = m.PrimaryMessage.SecsItem,
-                    }, stoppingToken);
+                        
+                        using var secondaryMessage = new SecsMessage(primaryMessage.S, (byte)(primaryMessage.F + 1))
+                        {
+                            SecsItem = primaryMessage.SecsItem,                          
+                        };
+                        await _secsGem.SendAsync(secondaryMessage, stoppingToken);
+                    }
+                    catch(Exception ex)
+                    {
+                        _logger.LogError(ex, "Exception occurred when processing primary message");
+                    }
                 }
             }
             catch (Exception ex)

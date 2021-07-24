@@ -48,7 +48,7 @@ namespace Secs4Net
         /// So, it has no chance to be Disposed along with the List's Dispose method.
         /// You can invoke <see cref="Dispose"/> method on the original item by yourself or till the GC collects it.
         /// </summary>
-        /// <exception cref="InvalidOperationException">When the item's <see cref="Format"/> is not <see cref="SecsFormat.List"/></exception>
+        /// <exception cref="NotSupportedException">When the item's <see cref="Format"/> is not <see cref="SecsFormat.List"/></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public virtual Item this[int index]
         {
@@ -61,12 +61,12 @@ namespace Secs4Net
         /// </summary>
         /// <param name="start">The index at which to begin this slice.</param>
         /// <param name="length">The desired length for the slice</param>
-        /// <exception cref="InvalidOperationException">When the item's <see cref="Format"/> is not <see cref="SecsFormat.List"/></exception>
+        /// <exception cref="NotSupportedException">When the item's <see cref="Format"/> is not <see cref="SecsFormat.List"/></exception>
         /// <exception cref="IndexOutOfRangeException"></exception>
-        public virtual IEnumerable<Item> Slice(int start, int length) 
+        public virtual IEnumerable<Item> Slice(int start, int length)
             => throw CreateNotSupportException();
 
-        private Exception CreateNotSupportException([CallerMemberName] string? memberName = null)
+        private NotSupportedException CreateNotSupportException([CallerMemberName] string? memberName = null)
             => new NotSupportedException($"{memberName} is not supported, coz the {nameof(Format)} is {Format}");
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Secs4Net
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="IndexOutOfRangeException">When item is empty or data length less than sizeof(<typeparamref name="T"/>)</exception>
-        /// <exception cref="InvalidOperationException">when the item's <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
+        /// <exception cref="NotSupportedException">when the item's <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
         public virtual ref T FirstValue<T>() where T : unmanaged
             => throw CreateNotSupportException();
 
@@ -84,14 +84,14 @@ namespace Secs4Net
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        /// <exception cref="InvalidOperationException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
+        /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
         public virtual ref readonly T FirstValueOrDefault<T>(in T defaultValue = default) where T : unmanaged
             => throw CreateNotSupportException();
 
         /// <summary>
         /// Get item value array wrapper
         /// </summary>
-        /// <exception cref="InvalidOperationException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
+        /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
         public virtual ValueArray<T> GetValues<T>() where T : unmanaged
             => throw CreateNotSupportException();
 
@@ -99,7 +99,7 @@ namespace Secs4Net
         /// Get item string value
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="InvalidOperationException">when the <see cref="Format"/> is not <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
+        /// <exception cref="NotSupportedException">when the <see cref="Format"/> is not <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
         public virtual string GetString()
             => throw CreateNotSupportException();
 
@@ -239,14 +239,6 @@ namespace Secs4Net
 
         public virtual void Dispose()
         {
-            if (Format == SecsFormat.List)
-            {
-                for (int i = 0; i < Count; i++)
-                {
-                    this[i].Dispose();
-                }
-            }
-            GC.SuppressFinalize(this);
         }
 
         internal byte[] GetEncodedBytes()
