@@ -13,8 +13,8 @@ namespace Secs4Net.UnitTests
 {
     public class SecsGemUnitTests
     {
-        private readonly IHsmsConnection connector1;
-        private readonly IHsmsConnection connector2;
+        private readonly ISecsConnection connector1;
+        private readonly ISecsConnection connector2;
 
         public SecsGemUnitTests()
         {

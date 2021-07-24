@@ -35,7 +35,7 @@ namespace Secs4Net
         private const int DisposalComplete = 1;
         private int _disposeStage;
         private readonly ISecsGemLogger _logger;
-        private readonly IHsmsConnection _hsmsConnector;
+        private readonly ISecsConnection _hsmsConnector;
 
         public ushort DeviceId { get; }
         public int T3 { get; }
@@ -53,7 +53,7 @@ namespace Secs4Net
         private readonly CancellationTokenSource _cancellationSourceForDataMessageProcessing = new();
         private int _recentlyMaxEncodedByteLength;
 
-        public SecsGem(IOptions<SecsGemOptions> secsGemOptions, IHsmsConnection hsmsConnector, ISecsGemLogger logger)
+        public SecsGem(IOptions<SecsGemOptions> secsGemOptions, ISecsConnection hsmsConnector, ISecsGemLogger logger)
         {
             var options = secsGemOptions.Value;
             DeviceId = options.DeviceId;

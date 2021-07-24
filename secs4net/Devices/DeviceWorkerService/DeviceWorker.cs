@@ -10,10 +10,10 @@ namespace DeviceWorkerService
     internal sealed class DeviceWorker : BackgroundService
     {
         private readonly ILogger<DeviceWorker> _logger;
-        private readonly IHsmsConnection _hsmsConnection;
+        private readonly ISecsConnection _hsmsConnection;
         private readonly ISecsGem _secsGem;
 
-        public DeviceWorker(ILogger<DeviceWorker> logger, IHsmsConnection hsmsConnection, ISecsGem secsGem)
+        public DeviceWorker(ILogger<DeviceWorker> logger, ISecsConnection hsmsConnection, ISecsGem secsGem)
         {
             _logger = logger;
             _hsmsConnection = hsmsConnection;

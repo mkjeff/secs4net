@@ -21,7 +21,7 @@ namespace Secs4Net
             }
         }
 
-        internal static async PooledValueTask SendAllAsync(this IHsmsConnection connector, ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
+        internal static async PooledValueTask SendAllAsync(this ISecsConnection connector, ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
         {
             do
             {

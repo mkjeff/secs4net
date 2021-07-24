@@ -8,10 +8,10 @@ namespace Secs4Net
         public static IServiceCollection AddSecs4Net<T>(this IServiceCollection services, IConfiguration configuration) where T : class, ISecsGemLogger
         {
             services.Configure<SecsGemOptions>(configuration.GetSection("secs4net"));
-            services.AddSingleton<IHsmsConnection, HsmsConnection>();
+            services.AddSingleton<ISecsConnection, HsmsConnection>();
             services.AddSingleton<ISecsGem, SecsGem>();
             services.AddSingleton<ISecsGemLogger, T>();
-            services.AddHostedService(s => (HsmsConnection)s.GetRequiredService<IHsmsConnection>());
+            services.AddHostedService(s => (HsmsConnection)s.GetRequiredService<ISecsConnection>());
             return services;
         }
     }

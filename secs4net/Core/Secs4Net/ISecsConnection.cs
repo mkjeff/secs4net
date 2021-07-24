@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    public interface IHsmsConnection
+    public interface ISecsConnection
     {
         public event EventHandler<ConnectionState>? ConnectionChanged { add { } remove { } }
 

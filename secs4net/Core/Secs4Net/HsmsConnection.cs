@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    public sealed class HsmsConnection : BackgroundService, IHsmsConnection, IAsyncDisposable
+    public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncDisposable
     {
         public event EventHandler<ConnectionState>? ConnectionChanged;
         public int T5 { get; }
@@ -469,13 +469,13 @@ namespace Secs4Net
             _timerLinkTest.Dispose();
         }
 
-        ValueTask<int> IHsmsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        ValueTask<int> ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             Debug.Assert(_socket != null);
             return _socket.SendAsync(buffer, SocketFlags.None, cancellationToken);
         }
 
-        IAsyncEnumerable<SecsMessage> IHsmsConnection.GetDataMessages(CancellationToken cancellation)
+        IAsyncEnumerable<SecsMessage> ISecsConnection.GetDataMessages(CancellationToken cancellation)
             => _pipeDecoder.GetDataMessages(cancellation);
     }
 }
