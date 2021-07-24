@@ -17,6 +17,7 @@ Note: Secs4net will only support .net6.0+ starting from v2.
 
 SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to communicate with SEMI standard compatible device.  
 
+**Getting started**
 1. Send message to device
     ```cs
     try
@@ -46,16 +47,18 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
         s3f17.SecsItem[1][0][0] == A("Id"); 
         s3f17.SecsItem[1][0][2].Take(1..2); // LINQ Take with range syntax
     
-        //access item value
+        //access unmanaged arry item
         byte b2 = s3f17.SecsItem[0].FirstValue<byte>(); // with different type
         s3f17.SecsItem[0].FirstValue<byte>() = 0; // change original value 
         s3f17.SecsItem[0].GetFirstValueOrDefault<byte>(fallbackValueWhenItemIsEmpty); 
+
+        // access string item
         string str = s3f17.SecsItem[1][0][0].GetString(); // str = "Id"
 
         //await secondary message
         var s3f18 = await secsGem.SendAsync(s3f17); 
 
-        // LINQ query
+        // process message with LINQ
         var query =
             from a in s3f18.SecsItem[3]
             select new {
