@@ -10,7 +10,7 @@ As mention above, as an implementation reference, I would try to keep the source
 
 If you already use secs4net in your product and can't migrate your system to `.NET 6.0`. I'd recommend using the fork version from [@TiltonJH](https://github.com/TiltonJH/secs4net).
 
-[![NuGet](https://img.shields.io/nuget/v/secs4net.svg)](https://www.nuget.org/packages/secs4net/)
+[![NuGet](https://img.shields.io/nuget/vpre/secs4net.svg)](https://www.nuget.org/packages/Secs4Net/2.0.0-rc2)
 
 **Project Description**  
 Note: Secs4net will only support .net6.0+ starting from v2.
@@ -19,6 +19,7 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
 
 **Getting started**
 1. Install nuget package
+    > dotnet add package Secs4Net --version 2.0.0-rc2
 2. Configure .NET dependency injection
    ```cs
     public void ConfigureServices(IServiceCollection services)
