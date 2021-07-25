@@ -5,11 +5,12 @@
     <PackageId>Secs4Net</PackageId>
     <Copyright>Copyright © secs4net 2021</Copyright>
     <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
-    <Version>2.0.0</Version>
+    <Version>2.0.0-rc2</Version>
     <Authors>mkjeff</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,10 +24,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-preview.6.*" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.6.21352.12" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.6.*" />
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.0.2" />
-    <PackageReference Include="System.IO.Pipelines" Version="6.0.0-preview.6.21352.12" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0-preview.6.21352.12" />
+    <PackageReference Include="System.IO.Pipelines" Version="6.0.0-preview.6.*" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0-preview.6.*" />
     <PackageReference Include="PooledAwait" Version="1.0.49" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
   </ItemGroup>
