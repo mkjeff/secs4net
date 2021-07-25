@@ -14,8 +14,9 @@ namespace Secs4Net
         /// <summary>
         /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the IP address will be treated remote device's IP address, 
         /// opposite the connection will bind on this IP address as Passive mode.
+        /// Default value is "127.0.0.1"
         /// </summary>
-        public string? IpAddress { get; init; }
+        public string IpAddress { get; init; } = "127.0.0.1";
 
         /// <summary>
         /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the port number will be treated remote device's TCP port number, 

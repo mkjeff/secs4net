@@ -58,7 +58,7 @@ namespace Secs4Net
             {
             Start:
                 // 0: get total message length 4 bytes
-                buffer = await EnsureBufferAsync(required: 4, cancellation: cancellation).ConfigureAwait(false);
+                buffer = await EnsureBufferAsync(required: 4, cancellation).ConfigureAwait(false);
                 var totalLengthSeq = buffer.Slice(buffer.Start, 4);
                 totalLengthSeq.CopyTo(totalLengthBytes);
                 uint messageLength = BinaryPrimitives.ReadUInt32BigEndian(totalLengthBytes);
@@ -67,7 +67,7 @@ namespace Secs4Net
                 Trace.WriteLine($"Get new message with length: {messageLength}");
 
                 // 1: get message header 10 bytes
-                buffer = await EnsureBufferAsync(required: 10, cancellation: cancellation).ConfigureAwait(false);
+                buffer = await EnsureBufferAsync(required: 10, cancellation).ConfigureAwait(false);
                 var messageHaderSeq = buffer.Slice(buffer.Start, 10);
                 messageHaderSeq.CopyTo(messageHeaderBytes);
                 var header = MessageHeader.Decode(messageHeaderBytes);
@@ -100,12 +100,12 @@ namespace Secs4Net
 
             GetNewItem:
                 // 2: get _format + _lengthByteCount(2bit) 1 byte
-                buffer = await EnsureBufferAsync(required: 1, cancellation: cancellation).ConfigureAwait(false);
+                buffer = await EnsureBufferAsync(required: 1, cancellation).ConfigureAwait(false);
                 Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
                 reader.AdvanceTo(buffer.GetPosition(1));
 
                 // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
-                buffer = await EnsureBufferAsync(required: itemContentLengthByteCount, cancellation: cancellation).ConfigureAwait(false);
+                buffer = await EnsureBufferAsync(required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
                 var itemContentLengthBytes = buffer.Slice(0, itemContentLengthByteCount);
                 Item.DecodeDataLength(itemContentLengthBytes, out var itemContentLength);
                 reader.AdvanceTo(itemContentLengthBytes.End);
@@ -128,7 +128,7 @@ namespace Secs4Net
                 }
                 else
                 {
-                    buffer = await EnsureBufferAsync(required: itemContentLength, cancellation: cancellation).ConfigureAwait(false);
+                    buffer = await EnsureBufferAsync(required: itemContentLength, cancellation).ConfigureAwait(false);
                     var itemDataBytes = buffer.Slice(0, itemContentLength);
                     item = Item.DecodeDataItem(itemFormat, itemDataBytes);
                     reader.AdvanceTo(itemDataBytes.End);
@@ -177,9 +177,9 @@ namespace Secs4Net
         {
             while (true)
             {
-                //_secsGem.StartT8Timer();
+                //StartT8Timer();
                 var result = await _reader.ReadAsync(cancellation);
-                //_secsGem.StopT8Timer();
+                //StopT8Timer();
                 var buffer = result.Buffer;
 
                 if (buffer.Length >= required)

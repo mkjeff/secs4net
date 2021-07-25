@@ -79,7 +79,7 @@ namespace Secs4Net
 
         public HsmsConnection(IOptions<SecsGemOptions> secsGemOptions, ISecsGemLogger logger)
         {
-            var pipe = new Pipe();
+            var pipe = new Pipe(new PipeOptions(useSynchronizationContext: false));
             _pipeDecoder = new PipeDecoder(pipe.Reader, pipe.Writer);
             _pipe = pipe;
             _logger = logger;
