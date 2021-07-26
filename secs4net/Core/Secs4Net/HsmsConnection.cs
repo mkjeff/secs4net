@@ -216,7 +216,7 @@ namespace Secs4Net
             _socket = null;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected sealed override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _stoppingToken = stoppingToken;
             var longRunningTask = AsyncHelper.LongRunningAsync(() => HandleControlMessagesAsync(_stoppingToken), _stoppingToken);

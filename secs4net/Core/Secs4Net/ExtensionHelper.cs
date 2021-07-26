@@ -1,7 +1,8 @@
-﻿using PooledAwait;
+﻿using Microsoft.Toolkit.HighPerformance;
+using PooledAwait;
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading;
+using System.Text;
 
 namespace Secs4Net
 {
@@ -65,6 +66,60 @@ namespace Secs4Net
 
             source.TrySetResult(secondaryMessage);
         }
+
+        internal static StringBuilder AppendArray<T>(this StringBuilder sb, ValueArray<T> arrary, int maxCount) where T : unmanaged
+        {
+            if (arrary.IsEmpty)
+            {
+                return sb;
+            }
+
+            var len = Math.Min(arrary.Length, maxCount);
+            for (int i = 0; i < len - 1; i++)
+            {
+                sb.Append(arrary[i].ToString()).Append(' ');
+            }
+
+            sb.Append(arrary[len - 1]);
+            if (len < arrary.Length)
+            {
+                sb.Append(" ...");
+            }
+
+            return sb;
+        }
+
+        internal static StringBuilder AppendBinary(this StringBuilder sb, ReadOnlySpan<byte> array, int maxCount)
+        {
+            if (array.IsEmpty)
+            {
+                return sb;
+            }
+
+            var len = Math.Min(array.Length, maxCount);
+            for (int i = 0; i < len - 1; i++)
+            {
+                AppendHexChars(sb, array.DangerousGetReferenceAt(i));
+                sb.Append(' ');
+            }
+
+            AppendHexChars(sb, array.DangerousGetReferenceAt(len - 1));
+            if (len < array.Length)
+            {
+                sb.Append(" ...");
+            }
+
+            return sb;
+
+            static void AppendHexChars(StringBuilder sb, byte num)
+            {
+                var hex1 = Math.DivRem(num, 0x10, out var hex0);
+                sb.Append(GetHexChar(hex1)).Append(GetHexChar(hex0));
+            }
+
+            static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
+        }
+
     }
 
 }

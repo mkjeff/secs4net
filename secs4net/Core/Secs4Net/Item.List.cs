@@ -14,7 +14,7 @@ namespace Secs4Net
             public ListItem(SecsFormat format, IList<Item> value) : base(format, value.Count) 
                 => _value = value;
 
-            public override void Dispose()
+            public sealed override void Dispose()
             {
                 for (int i = 0; i < _value.Count; i++)
                 {
@@ -23,13 +23,13 @@ namespace Secs4Net
                 GC.SuppressFinalize(this);
             }
 
-            public override Item this[int index]
+            public sealed override Item this[int index]
             {
                 get => _value[index];
                 set => _value[index] = value;
             }
 
-            public override IEnumerable<Item> Slice(int start, int length)
+            public sealed override IEnumerable<Item> Slice(int start, int length)
             {
                 if (start < 0 || start + length > _value.Count)
                 {
@@ -38,9 +38,9 @@ namespace Secs4Net
                 return _value.Skip(start).Take(length);
             }
 
-            public override IEnumerator<Item> GetEnumerator() => _value.GetEnumerator();
+            public sealed override IEnumerator<Item> GetEnumerator() => _value.GetEnumerator();
 
-            public override void EncodeTo(IBufferWriter<byte> buffer)
+            public sealed override void EncodeTo(IBufferWriter<byte> buffer)
             {
                 if (_value.Count == 0)
                 {

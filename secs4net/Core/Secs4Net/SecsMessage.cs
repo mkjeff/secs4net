@@ -6,7 +6,7 @@ namespace Secs4Net
 {
     public sealed class SecsMessage : IDisposable
     {
-        public override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
+        public sealed override string ToString() => $"'S{S}F{F}' {(ReplyExpected ? "W" : string.Empty)} {Name ?? string.Empty}";
 
         /// <summary>
         /// message stream number

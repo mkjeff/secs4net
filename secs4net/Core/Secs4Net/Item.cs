@@ -1,5 +1,4 @@
-﻿using Microsoft.Toolkit.HighPerformance;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -43,6 +42,11 @@ namespace Secs4Net
         }
 
         /// <summary>
+        /// Encode the item to SECS binary format
+        /// </summary>
+        public abstract void EncodeTo(IBufferWriter<byte> buffer);
+
+        /// <summary>
         /// Indexer of List items.
         /// Be carefule of setter operation. Since the original slot will be overridden.
         /// So, it has no chance to be Disposed along with the List's Dispose method.
@@ -67,7 +71,7 @@ namespace Secs4Net
             => throw CreateNotSupportException();
 
         private NotSupportedException CreateNotSupportException([CallerMemberName] string? memberName = null)
-            => new NotSupportedException($"{memberName} is not supported, coz the {nameof(Format)} is {Format}");
+            => new NotSupportedException($"{memberName} is not supported, since the item's {nameof(Format)} is {Format}");
 
         /// <summary>
         /// Get the first element of item array value
@@ -103,41 +107,50 @@ namespace Secs4Net
         public virtual string GetString()
             => throw CreateNotSupportException();
 
+        public virtual IEnumerator<Item> GetEnumerator()
+            => throw CreateNotSupportException();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public virtual void Dispose()
+        {
+        }
+
         public sealed override bool Equals(object? obj)
             => Equals(obj as Item);
 
         public bool Equals(Item? other)
-            => other is not null && IsMatch(other);
+            => other is not null && IsMatch(this, other);
 
-        private bool IsMatch(Item target)
+        private static bool IsMatch(Item left, Item right)
         {
-            if (Format != target.Format)
+            if (left.Format != right.Format)
             {
                 return false;
             }
 
-            if (Count != target.Count)
+            if (left.Count != right.Count)
             {
                 return false;
             }
 
-            if (Count == 0)
+            if (left.Count == 0)
             {
                 return true;
             }
 
-            return Format switch
+            return left.Format switch
             {
-                SecsFormat.List => IsMatch(this, target),
-                SecsFormat.ASCII or SecsFormat.JIS8 => string.Equals(GetString(), target.GetString(), StringComparison.Ordinal),
-                _ => GetValues<byte>().AsSpan().SequenceEqual(target.GetValues<byte>().AsSpan()),
+                SecsFormat.List => IsListMatch(left, right),
+                SecsFormat.ASCII or SecsFormat.JIS8 => string.Equals(left.GetString(), right.GetString(), StringComparison.Ordinal),
+                _ => left.GetValues<byte>().AsBytes().SequenceEqual(right.GetValues<byte>().AsBytes()),
             };
 
-            static bool IsMatch(Item listA, Item listB)
+            static bool IsListMatch(Item listLeft, Item listRight)
             {
-                for (int i = 0, count = listA.Count; i < count; i++)
+                for (int i = 0, count = listLeft.Count; i < count; i++)
                 {
-                    if (!listA[i].IsMatch(listB[i]))
+                    if (!IsMatch(listLeft[i], listRight[i]))
                     {
                         return false;
                     }
@@ -156,89 +169,20 @@ namespace Secs4Net
             {
                 SecsFormat.List => sb.Append("...").ToString(),
                 SecsFormat.ASCII or SecsFormat.JIS8 => sb.Append(GetString()).ToString(),
-                SecsFormat.Binary => AppendBinary(sb, GetValues<byte>()).ToString(),
-                SecsFormat.Boolean => AppendArray(sb, GetValues<bool>()).ToString(),
-                SecsFormat.I1 => AppendArray(sb, GetValues<sbyte>()).ToString(),
-                SecsFormat.I2 => AppendArray(sb, GetValues<short>()).ToString(),
-                SecsFormat.I4 => AppendArray(sb, GetValues<int>()).ToString(),
-                SecsFormat.I8 => AppendArray(sb, GetValues<long>()).ToString(),
-                SecsFormat.U1 => AppendArray(sb, GetValues<byte>()).ToString(),
-                SecsFormat.U2 => AppendArray(sb, GetValues<ushort>()).ToString(),
-                SecsFormat.U4 => AppendArray(sb, GetValues<uint>()).ToString(),
-                SecsFormat.U8 => AppendArray(sb, GetValues<ulong>()).ToString(),
-                SecsFormat.F4 => AppendArray(sb, GetValues<float>()).ToString(),
-                SecsFormat.F8 => AppendArray(sb, GetValues<double>()).ToString(),
+                SecsFormat.Binary => sb.AppendBinary(GetValues<byte>().AsBytes(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.Boolean => sb.AppendArray(GetValues<bool>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.I1 => sb.AppendArray(GetValues<sbyte>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.I2 => sb.AppendArray(GetValues<short>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.I4 => sb.AppendArray(GetValues<int>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.I8 => sb.AppendArray(GetValues<long>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.U1 => sb.AppendArray(GetValues<byte>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.U2 => sb.AppendArray(GetValues<ushort>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.U4 => sb.AppendArray(GetValues<uint>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.U8 => sb.AppendArray(GetValues<ulong>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.F4 => sb.AppendArray(GetValues<float>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.F8 => sb.AppendArray(GetValues<double>(), DebuggerDisplayMaxCount).ToString(),
                 _ => sb.ToString(),
             };
-
-            static StringBuilder AppendArray<T>(StringBuilder sb, ValueArray<T> src) where T : unmanaged
-            {
-                var arrary = src.AsSpan();
-                if (arrary.IsEmpty)
-                {
-                    return sb;
-                }
-
-                var len = Math.Min(arrary.Length, DebuggerDisplayMaxCount);
-                for (int i = 0; i < len - 1; i++)
-                {
-                    sb.Append(arrary.DangerousGetReferenceAt(i).ToString()).Append(' ');
-                }
-
-                sb.Append(arrary.DangerousGetReferenceAt(len - 1));
-                if (len < arrary.Length)
-                {
-                    sb.Append(" ...");
-                }
-
-                return sb;
-            }
-
-            static StringBuilder AppendBinary(StringBuilder sb, ValueArray<byte> src)
-            {
-                var array = src.AsSpan();
-                if (array.IsEmpty)
-                {
-                    return sb;
-                }
-
-                var len = Math.Min(array.Length, DebuggerDisplayMaxCount);
-                for (int i = 0; i < len - 1; i++)
-                {
-                    AppendHexChars(sb, array.DangerousGetReferenceAt(i));
-                    sb.Append(' ');
-                }
-
-                AppendHexChars(sb, array.DangerousGetReferenceAt(len - 1));
-                if (len < array.Length)
-                {
-                    sb.Append(" ...");
-                }
-
-                return sb;
-
-                static void AppendHexChars(StringBuilder sb, byte num)
-                {
-                    var hex1 = Math.DivRem(num, 0x10, out var hex0);
-                    sb.Append(GetHexChar(hex1)).Append(GetHexChar(hex0));
-                }
-
-                static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
-            }
-        }
-
-        /// <summary>
-        /// Encode the item to SECS binary format
-        /// </summary>
-        public abstract void EncodeTo(IBufferWriter<byte> buffer);
-
-        public virtual IEnumerator<Item> GetEnumerator()
-            => throw CreateNotSupportException();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public virtual void Dispose()
-        {
         }
 
         internal byte[] GetEncodedBytes()

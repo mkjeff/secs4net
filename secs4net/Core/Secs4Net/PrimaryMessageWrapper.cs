@@ -71,6 +71,6 @@ namespace Secs4Net
             }
         }
 
-        public override string ToString() => PrimaryMessage.ToString();
+        public sealed override string ToString() => PrimaryMessage.ToString();
     }
 }

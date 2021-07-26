@@ -12,10 +12,10 @@ namespace Secs4Net
             public StringItem(SecsFormat format, string value) : base(format, value.Length) 
                 => _value = value;
 
-            public override string GetString() 
+            public sealed override string GetString() 
                 => _value;
 
-            public override void EncodeTo(IBufferWriter<byte> buffer)
+            public sealed override void EncodeTo(IBufferWriter<byte> buffer)
             {
                 if (_value.Length == 0)
                 {
