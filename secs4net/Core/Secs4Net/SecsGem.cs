@@ -103,18 +103,28 @@ namespace Secs4Net
                     return null!;
                 }
 
+#if NET
                 return await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T3), cancellation).ConfigureAwait(false);
+#else
+                if (await Task.WhenAny(token.Task, Task.Delay(T3, cancellation)) != token.Task)
+                {
+                    throw new SecsException(message, Resources.T3Timeout);
+                }
+                return token.Task.Result;
+#endif
             }
             catch (SocketException)
             {
                 _hsmsConnector.Reconnect();
                 throw;
             }
+#if NET
             catch (TimeoutException)
             {
                 _logger.Error($"T3 Timeout[id=0x{systembyte:X8}]: {T3 / 1000} sec.");
                 throw new SecsException(message, Resources.T3Timeout);
             }
+#endif
             finally
             {
                 _replyExpectedMsgs.TryRemove(systembyte, out _);

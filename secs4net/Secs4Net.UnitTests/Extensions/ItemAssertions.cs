@@ -4,6 +4,7 @@ using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Secs4Net.UnitTests.Extensions
 {
@@ -137,13 +138,25 @@ namespace Secs4Net.UnitTests.Extensions
                 return false;
             }
 
-            bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, IEquivalencyValidationContext context) where T : unmanaged
+            unsafe bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, IEquivalencyValidationContext context)
+#if NET
+                where T : unmanaged
+#else
+                where T : unmanaged, IEquatable<T>
+#endif
             {
+#if NET
                 if (subject.GetValues<T>().AsSpan().SequenceEqual(expectation.GetValues<T>().AsSpan()))
                 {
                     return true;
                 }
-
+#else
+                var expectationArray = expectation.GetValues<T>();
+                if (subject.GetValues<T>().AsSpan().SequenceEqual(new ReadOnlySpan<T>(Unsafe.AsPointer(ref expectationArray[0]), expectationArray.Length)))
+                {
+                    return true;
+                }
+#endif
                 Execute.Assertion
                     .ForCondition(_notBeEquivalent)
                     .BecauseOf(context.Because, context.BecauseArgs)

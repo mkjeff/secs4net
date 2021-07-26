@@ -101,6 +101,7 @@ namespace Secs4Net.UnitTests
             decodeMessage.Should().NotBeNull().And.BeEquivalentTo(message);
         }
 
+#if NET
         [Fact]
         public async Task Message_Can_Decode_From_Streaming_And_Equivalent()
         {
@@ -130,5 +131,6 @@ namespace Secs4Net.UnitTests
 
             decodeMessage.Should().NotBeNull().And.BeEquivalentTo(message);
         }
+#endif
     }
 }

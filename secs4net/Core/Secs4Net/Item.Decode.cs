@@ -28,7 +28,11 @@ namespace Secs4Net
 
         internal static Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
         {
-            DecodeFormatAndLengthByteCount(bytes.FirstSpan[0], out var format, out var lengthByteCount);
+#if NET
+            DecodeFormatAndLengthByteCount(bytes.FirstSpan.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
+#else
+            DecodeFormatAndLengthByteCount(bytes.First.Span.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
+#endif
             bytes = bytes.Slice(1);
 
             var dataLengthSeq = bytes.Slice(0, lengthByteCount);
@@ -60,19 +64,27 @@ namespace Secs4Net
 
         internal static Item DecodeDataItem(SecsFormat format, in ReadOnlySequence<byte> bytes)
         {
-            var length = bytes.Length; 
+            var length = bytes.Length;
             return format switch
             {
                 SecsFormat.ASCII => length switch
                 {
                     0 => A(),
+#if NET
                     > 512 => A(Encoding.ASCII.GetString(bytes)),
+#else
+                    > 512 => A(Encoding.ASCII.GetString(bytes.ToArray())),
+#endif
                     _ => A(DecodeStringWithPooled(bytes, Encoding.ASCII)),
                 },
                 SecsFormat.JIS8 => length switch
                 {
                     0 => J(),
+#if NET
                     > 512 => J(Jis8Encoding.GetString(bytes)),
+#else
+                    > 512 => J(Jis8Encoding.GetString(bytes.ToArray())),
+#endif
                     _ => J(DecodeStringWithPooled(bytes, Jis8Encoding)),
                 },
                 SecsFormat.Boolean => length switch

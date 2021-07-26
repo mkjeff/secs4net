@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -27,11 +28,19 @@ namespace Secs4Net.Sml
         public static async Task<SecsMessage> ToSecsMessageAsync(this TextReader sr)
         {
             var line = await sr.ReadLineAsync();
+#if NET
             var (name, s, f, replyExpected) = ParseFirstLine(line);
-            
+#else
+            var (name, s, f, replyExpected) = ParseFirstLine(line.AsSpan());
+#endif
+
             var stack = new Stack<List<Item>>();
             Item? rootItem = null;
+#if NET
             while ((line = await sr.ReadLineAsync()) != null && ParseItem(line, stack, ref rootItem))
+#else
+            while ((line = await sr.ReadLineAsync()) != null && ParseItem(line.AsSpan(), stack, ref rootItem))
+#endif
             {
             }
 
@@ -48,12 +57,24 @@ namespace Secs4Net.Sml
 
                 var name = i > 0 ? line.Slice(0, i).ToString() : string.Empty;
                 line = line[name.Length..];
+#if NET
                 i = line.IndexOf("'S", StringComparison.Ordinal) + 2;
+#else
+                i = line.IndexOf("'S".AsSpan()) + 2;
+#endif
                 int j = line.IndexOf('F');
+#if NET
                 var s = byte.Parse(line[i..j]);
+#else
+                var s = byte.Parse(line[i..j].ToString());
+#endif
                 line = line[(j + 1)..];
                 i = line.IndexOf('\'');
+#if NET
                 var f = byte.Parse(line[0..i]);
+#else
+                var f = byte.Parse(line[0..i].ToString());
+#endif
                 var replyExpected = line[i..].IndexOf('W') != -1;
                 return (name, s, f, replyExpected);
             }
@@ -61,26 +82,46 @@ namespace Secs4Net.Sml
 
         public static SecsMessage ToSecsMessage(this TextReader sr)
         {
+#if NET
             ReadOnlySpan<char> line = sr.ReadLine();
+#else
+            ReadOnlySpan<char> line = sr.ReadLine().AsSpan();
+#endif
             // Parse First Line
             int i = line.IndexOf(':');
 
             var name = i > 0 ? line.Slice(0, i).ToString() : string.Empty;
 
             line = line[name.Length..];
+#if NET
             i = line.IndexOf("'S", StringComparison.Ordinal) + 2;
+#else
+            i = line.IndexOf("'S".AsSpan()) + 2;
+#endif
             int j = line.IndexOf('F');
+#if NET
             var s = byte.Parse(line[i..j]);
+#else
+            var s = byte.Parse(line[i..j].ToString());
+#endif
 
             line = line[(j + 1)..];
             i = line.IndexOf('\'');
+#if NET
             var f = byte.Parse(line[0..i]);
+#else
+            var f = byte.Parse(line[0..i].ToString());
+#endif
 
             var replyExpected = line[i..].IndexOf('W') != -1;
 
             Item? rootItem = null;
             var stack = new Stack<List<Item>>();
+#if NET
             while ((line = sr.ReadLine()) != null && ParseItem(line, stack, ref rootItem))
+#else
+            while ((line = sr.ReadLine().AsSpan()) != null && ParseItem(line, stack, ref rootItem))
+#endif
             {
             }
 
@@ -124,7 +165,7 @@ namespace Secs4Net.Sml
             Debug.Assert(indexSizeL != -1);
             var format = line[indexItemL..indexSizeL].Trim();
 
-            if (format.Equals("L", StringComparison.Ordinal))
+            if (format[0] == 'L')
             {
                 stack.Push(new List<Item>());
             }
@@ -150,11 +191,18 @@ namespace Secs4Net.Sml
         }
 
         private static byte HexByteParser(ReadOnlySpan<char> str)
+#if NET
             => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
             ? byte.Parse(str, System.Globalization.NumberStyles.HexNumber)
             : byte.Parse(str);
+#else
+            => str.StartsWith("0x".AsSpan())
+            ? byte.Parse(str.ToString(), System.Globalization.NumberStyles.HexNumber)
+            : byte.Parse(str.ToString());
+#endif
 
         private static readonly (Func<Item>, Func<byte[], Item>, SpanFunc<char, byte>) BinaryParser = (B, B, HexByteParser);
+#if NET
         private static readonly (Func<Item>, Func<sbyte[], Item>, SpanFunc<char, sbyte>) I1Parser = (I1, I1, static span => sbyte.Parse(span));
         private static readonly (Func<Item>, Func<short[], Item>, SpanFunc<char, short>) I2Parser = (I2, I2, static span => short.Parse(span));
         private static readonly (Func<Item>, Func<int[], Item>, SpanFunc<char, int>) I4Parser = (I4, I4, static span => int.Parse(span));
@@ -166,6 +214,19 @@ namespace Secs4Net.Sml
         private static readonly (Func<Item>, Func<float[], Item>, SpanFunc<char, float>) F4Parser = (F4, F4, static span => float.Parse(span));
         private static readonly (Func<Item>, Func<double[], Item>, SpanFunc<char, double>) F8Parser = (F8, F8, static span => double.Parse(span));
         private static readonly (Func<Item>, Func<bool[], Item>, SpanFunc<char, bool>) BoolParser = (Boolean, Boolean, bool.Parse);
+#else
+        private static readonly (Func<Item>, Func<sbyte[], Item>, SpanFunc<char, sbyte>) I1Parser = (I1, I1, static span => sbyte.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<short[], Item>, SpanFunc<char, short>) I2Parser = (I2, I2, static span => short.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<int[], Item>, SpanFunc<char, int>) I4Parser = (I4, I4, static span => int.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<long[], Item>, SpanFunc<char, long>) I8Parser = (I8, I8, static span => long.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<byte[], Item>, SpanFunc<char, byte>) U1Parser = (U1, U1, static span => byte.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<ushort[], Item>, SpanFunc<char, ushort>) U2Parser = (U2, U2, static span => ushort.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<uint[], Item>, SpanFunc<char, uint>) U4Parser = (U4, U4, static span => uint.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<ulong[], Item>, SpanFunc<char, ulong>) U8Parser = (U8, U8, static span => ulong.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<float[], Item>, SpanFunc<char, float>) F4Parser = (F4, F4, static span => float.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<double[], Item>, SpanFunc<char, double>) F8Parser = (F8, F8, static span => double.Parse(span.ToString()));
+        private static readonly (Func<Item>, Func<bool[], Item>, SpanFunc<char, bool>) BoolParser = (Boolean, Boolean, static span => bool.Parse(span.ToString()));
+#endif
         private static readonly (Func<Item>, Func<string, Item>) AParser = (A, A);
         private static readonly (Func<Item>, Func<string, Item>) JParser = (J, J);
 
@@ -212,6 +273,10 @@ namespace Secs4Net.Sml
         }
 
         public static Item Create(this SecsFormat format, string smlValue)
+#if NET
             => Create(format.ToSml(), smlValue);
+#else
+            => Create(format.ToSml(), smlValue.AsSpan());
+#endif
     }
 }

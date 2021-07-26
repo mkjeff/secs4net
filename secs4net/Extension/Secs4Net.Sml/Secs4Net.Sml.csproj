@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <Version>2.0.0</Version>
     <PackageId>Secs4Net.Sml</PackageId>
     <Product>Secs4Net.Sml</Product>
@@ -9,6 +9,14 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\netstandard.common\Channel.Extensions.cs" Link="net20\Channel.Extensions.cs" />
+    <Compile Include="..\..\netstandard.common\IsExternalInit.cs" Link="net20\IsExternalInit.cs" />
+    <Compile Include="..\..\netstandard.common\NullableAttributes.cs" Link="net20\NullableAttributes.cs" />
+    <Compile Include="..\..\netstandard.common\Range.cs" Link="net20\Range.cs" />
+    <Compile Include="..\..\netstandard.common\SkipLocalsInit.cs" Link="net20\SkipLocalsInit.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj" />

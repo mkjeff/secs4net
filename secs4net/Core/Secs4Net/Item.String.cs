@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
 using System.Text;
 
 namespace Secs4Net
@@ -24,10 +25,19 @@ namespace Secs4Net
                 }
 
                 var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
+#if NET
                 var bytelength = encoder.GetByteCount(_value);
                 EncodeItemHeader(Format, bytelength, buffer);
                 var span = buffer.GetSpan(bytelength).Slice(0, bytelength);
                 buffer.Advance(encoder.GetBytes(_value, span));
+#else
+                Span<byte> valueBytes=  encoder.GetBytes(_value);
+                var bytelength = valueBytes.Length;
+                EncodeItemHeader(Format, bytelength, buffer);
+                var span = buffer.GetSpan(bytelength);
+                valueBytes.CopyTo(span);
+                buffer.Advance(bytelength);
+#endif
             }
         }
     }

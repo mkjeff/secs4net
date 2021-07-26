@@ -31,8 +31,13 @@ namespace Secs4Net
 
         public readonly T[] ToArray() => AsSpan().ToArray();
 
+#if NET
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Span<T> AsSpan() => MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReference()), _length);
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe readonly Span<T> AsSpan() => new Span<T>(Unsafe.AsPointer(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReference())), _length);
+#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly Span<byte> AsBytes() => _array.Span;

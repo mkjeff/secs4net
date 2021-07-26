@@ -72,7 +72,11 @@ namespace Secs4Net
         private readonly Timer _timer8;
         private readonly Timer _timerLinkTest;
         private readonly ConcurrentDictionary<int, ValueTaskCompletionSource<MessageType>> _replyExpectedMsgs = new();
+#if NET
         private readonly Memory<byte> _socketReceiveBuffer;
+#else
+        private readonly byte[] _socketReceiveBuffer;
+#endif
         private readonly ISecsGemLogger _logger;
         private readonly PipeDecoder _pipeDecoder;
         private readonly Pipe _pipe;
@@ -136,7 +140,12 @@ namespace Secs4Net
                         try
                         {
                             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+#if NET
                             await socket.ConnectAsync(IpAddress, Port, cancellation).ConfigureAwait(false);
+#else
+                            socket.Connect(IpAddress, Port);
+#endif
+
                             _socket = socket;
                             CommunicationStateChanging(ConnectionState.Connected);
                             connected = true;
@@ -173,7 +182,11 @@ namespace Secs4Net
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
+#if NET
                             _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
+#else
+                            _socket = server.Accept();
+#endif
                             CommunicationStateChanging(ConnectionState.Connected);
                             connected = true;
                         }
@@ -247,6 +260,7 @@ namespace Secs4Net
             }
         }
 
+
         private async Task StartPipeDecoderProducerAsync(CancellationToken cancellation)
         {
             var writer = _pipeDecoder.Input;
@@ -255,8 +269,13 @@ namespace Secs4Net
                 while (true)
                 {
                     Debug.Assert(_socket != null);
+#if NET
                     var count = await _socket.ReceiveAsync(_socketReceiveBuffer, SocketFlags.None, cancellation).ConfigureAwait(false);
                     await writer.WriteAsync(_socketReceiveBuffer.Slice(0, count), cancellation).ConfigureAwait(false);
+#else
+                    var count = _socket!.Receive(_socketReceiveBuffer);
+                    await writer.WriteAsync(_socketReceiveBuffer.AsMemory().Slice(0, count), cancellation).ConfigureAwait(false);
+#endif
                 }
             }
             catch (Exception ex)
@@ -408,14 +427,24 @@ namespace Secs4Net
                 _logger.Info("Sent Control Message: " + msgType);
                 if (_replyExpectedMsgs.ContainsKey(systembyte))
                 {
+#if NET
                     await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6), cancellation).ConfigureAwait(false);
+#else
+                    if (await Task.WhenAny(token.Task, Task.Delay(T6, cancellation)).ConfigureAwait(false) != token.Task)
+                    {
+                        _logger.Error($"T6 Timeout[id=0x{systembyte:X8}]: {T6 / 1000} sec.");
+                        CommunicationStateChanging(ConnectionState.Retry);
+                    }
+#endif
                 }
             }
+#if NET
             catch (TimeoutException)
             {
                 _logger.Error($"T6 Timeout[id=0x{systembyte:X8}]: {T6 / 1000} sec.");
                 CommunicationStateChanging(ConnectionState.Retry);
             }
+#endif
             catch (Exception ex)
             {
                 _logger.Error($"Unknown exception occurred when send control messages", ex);
@@ -469,6 +498,7 @@ namespace Secs4Net
             _timerLinkTest.Dispose();
         }
 
+#if NET
         async ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             Debug.Assert(_socket != null);
@@ -486,6 +516,20 @@ namespace Secs4Net
                 _sendLock.Release();
             }
         }
+#else
+        ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
+        {
+            if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(buffer, out var arr))
+            {
+                throw new InvalidOperationException();
+            }
+            var e = new SocketAsyncEventArgs();
+            e.SetBuffer(arr.Array, arr.Offset, arr.Count);
+            Debug.Assert(_socket != null);
+            _ = _socket!.SendAsync(e);
+            return default;
+        }
+#endif
 
         IAsyncEnumerable<SecsMessage> ISecsConnection.GetDataMessages(CancellationToken cancellation)
             => _pipeDecoder.GetDataMessages(cancellation);

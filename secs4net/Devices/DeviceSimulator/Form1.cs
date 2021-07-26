@@ -215,6 +215,18 @@ namespace SecsDevice
                     _form.richTextBox1.AppendText($"{msg}\n");
                 });
             }
+
+#if NET472
+            public void Error(string msg)
+            {
+                Error(msg, null, null);
+            }
+
+            public void Error(string msg, Exception ex)
+            {
+                Error(msg, null, ex);
+            }
+#endif
         }
     }
 }

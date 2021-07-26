@@ -9,6 +9,7 @@ namespace Secs4Net
     public sealed class PipeConnection : ISecsConnection
     {
         private readonly PipeDecoder _decoder;
+
         public PipeConnection(PipeDecoder pipeDecoder)
         {
             _decoder = pipeDecoder;

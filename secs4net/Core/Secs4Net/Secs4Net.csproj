@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <PackageId>Secs4Net</PackageId>
     <Copyright>Copyright © secs4net 2021</Copyright>
     <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
@@ -10,6 +10,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -23,13 +24,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\netstandard.common\Channel.Extensions.cs" Link="net20\Channel.Extensions.cs" />
+    <Compile Include="..\..\netstandard.common\IsExternalInit.cs" Link="net20\IsExternalInit.cs" />
+    <Compile Include="..\..\netstandard.common\NullableAttributes.cs" Link="net20\NullableAttributes.cs" />
+    <Compile Include="..\..\netstandard.common\Range.cs" Link="net20\Range.cs" />
+    <Compile Include="..\..\netstandard.common\SkipLocalsInit.cs" Link="net20\SkipLocalsInit.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-preview.6.*" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.6.*" />
-    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.0.2" />
     <PackageReference Include="System.IO.Pipelines" Version="6.0.0-preview.6.*" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0-preview.6.*" />
+    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.0.2" />
     <PackageReference Include="PooledAwait" Version="1.0.49" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+    <PackageReference Include="System.Threading.Channels" Version="5.0.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
   </ItemGroup>
 
   <ItemGroup>

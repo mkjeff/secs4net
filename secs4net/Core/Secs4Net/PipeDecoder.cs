@@ -101,7 +101,11 @@ namespace Secs4Net
             GetNewItem:
                 // 2: get _format + _lengthByteCount(2bit) 1 byte
                 buffer = await EnsureBufferAsync(required: 1, cancellation).ConfigureAwait(false);
+#if NET
                 Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
+#else
+                Item.DecodeFormatAndLengthByteCount(buffer.First.Span.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
+#endif
                 reader.AdvanceTo(buffer.GetPosition(1));
 
                 // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte

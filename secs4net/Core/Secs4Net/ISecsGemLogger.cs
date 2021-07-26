@@ -1,10 +1,14 @@
 ﻿using System;
+#if NET
 using System.Diagnostics;
+#endif
 
 namespace Secs4Net
 {
+
     public interface ISecsGemLogger
     {
+#if NET
         void MessageIn(SecsMessage msg, int systembyte) => Trace.WriteLine($"<-- [0x{systembyte:X8}] {msg}");
         void MessageOut(SecsMessage msg, int systembyte) => Trace.WriteLine($"--> [0x{systembyte:X8}] {msg}");
         void Debug(string msg) => Trace.WriteLine(msg);
@@ -13,5 +17,15 @@ namespace Secs4Net
         void Error(string msg) => Error(msg, message: null, ex: null);
         void Error(string msg, Exception ex) => Error(msg, message:null, ex);
         void Error(string msg, SecsMessage? message, Exception? ex) => Trace.TraceError($"{msg} {message}\n {ex}");
+#else
+        void MessageIn(SecsMessage msg, int systembyte);
+        void MessageOut(SecsMessage msg, int systembyte);
+        void Debug(string msg);
+        void Info(string msg);
+        void Warning(string msg);
+        void Error(string msg);
+        void Error(string msg, Exception ex);
+        void Error(string msg, SecsMessage? message, Exception? ex);
+#endif
     }
 }

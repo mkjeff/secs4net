@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using Newtonsoft.Json.Linq;
 using Secs4Net.UnitTests.Extensions;
 using System;
 using System.Buffers;
@@ -313,7 +312,11 @@ namespace Secs4Net.UnitTests
         {
             var bytes = new byte[] { 128, 212, 231 };
             var first = U1(bytes).FirstValue<ushort>();
+#if NET
             first.Should().Be(BitConverter.ToUInt16(bytes));
+#else
+            first.Should().Be(BitConverter.ToUInt16(bytes, 0));
+#endif
         }
 
         [Fact]
@@ -415,7 +418,11 @@ namespace Secs4Net.UnitTests
             var originalBytes = BitConverter.GetBytes(original);
             originalBytes[0] = 12; // change first byte
 
+#if NET
             changed.Should().Be(BitConverter.ToUInt16(originalBytes));
+#else
+            changed.Should().Be(BitConverter.ToUInt16(originalBytes, 0));
+#endif
         }
 
         [Fact]
@@ -429,7 +436,11 @@ namespace Secs4Net.UnitTests
 
             var changed = item.FirstValue<ushort>();
             changed.Should().NotBe(original);
+#if NET
             changed.Should().Be(BitConverter.ToUInt16(arr.AsSpan()));
+#else
+            changed.Should().Be(BitConverter.ToUInt16(arr.ToArray(), 0));
+#endif
         }
 
     }
