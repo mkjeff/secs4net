@@ -212,7 +212,7 @@ namespace Secs4Net.UnitTests
                     .WithMessage(CreateNotSupportedMessage(nameof(Item.GetValues), listItem.Format));
             }
             static string CreateNotSupportedMessage(string memberName, SecsFormat format)
-                => $"{memberName} is not supported, coz the {nameof(Item.Format)} is {format}";
+                => $"{memberName} is not supported, since the item's {nameof(Item.Format)} is {format}";
         }
 
         [Fact]

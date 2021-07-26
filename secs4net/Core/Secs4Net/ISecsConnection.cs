@@ -8,29 +8,29 @@ namespace Secs4Net
 {
     public interface ISecsConnection
     {
-        public event EventHandler<ConnectionState>? ConnectionChanged { add { } remove { } }
+        public event EventHandler<ConnectionState>? ConnectionChanged;
 
         /// <summary>
         /// Connection state
         /// </summary>
-        ConnectionState State => ConnectionState.Selected;
+        ConnectionState State { get; }
 
         /// <summary>
         /// Is Active or Passive mode
         /// </summary>
-        bool IsActive => false;
+        bool IsActive { get; }
 
         /// <summary>
         /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the IP address will be treated remote device's IP address, 
         /// opposite the connection will bind on this IP address as Passive mode.
         /// </summary>
-        IPAddress IpAddress => IPAddress.Loopback;
+        IPAddress IpAddress { get; }
 
         /// <summary>
         /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the port number will be treated remote device's TCP port number, 
         /// opposite the connection will bind on the port number as Passive mode.
         /// </summary>
-        int Port => 0;
+        int Port { get; }
 
         /// <summary>
         /// Remote device's IP address.<br/>
@@ -39,11 +39,11 @@ namespace Secs4Net
         /// when <see cref="State">State</see> is <see cref="ConnectionState.Connected">Connected</see> or <see cref="ConnectionState.Selected">Connected</see>, 
         /// otherwise, return "N/A"
         /// </summary>
-        string DeviceIpAddress => string.Empty;
+        string DeviceIpAddress { get; }
 
         bool LinkTestEnabled { get; set; }
 
-        void Reconnect() { }
+        void Reconnect();
 
         /// <summary>
         /// </summary>

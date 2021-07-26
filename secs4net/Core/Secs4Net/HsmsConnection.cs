@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Buffers;
+using PooledAwait;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -70,7 +71,7 @@ namespace Secs4Net
         private readonly Timer _timer7;
         private readonly Timer _timer8;
         private readonly Timer _timerLinkTest;
-        private readonly ConcurrentDictionary<int, TaskCompletionSource> _replyExpectedMsgs = new();
+        private readonly ConcurrentDictionary<int, ValueTaskCompletionSource<MessageType>> _replyExpectedMsgs = new();
         private readonly Memory<byte> _socketReceiveBuffer;
         private readonly ISecsGemLogger _logger;
         private readonly PipeDecoder _pipeDecoder;
@@ -340,7 +341,7 @@ namespace Secs4Net
                 {
                     if (_replyExpectedMsgs.TryGetValue(systembyte, out var ar))
                     {
-                        ar.TrySetResult();
+                        ar.TrySetResult(header.MessageType);
                     }
                     else
                     {
@@ -393,7 +394,7 @@ namespace Secs4Net
         private static readonly ReadOnlyMemory<byte> ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
         private async Task SendControlMessage(MessageType msgType, int systembyte, CancellationToken cancellation = default)
         {
-            var token = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var token = ValueTaskCompletionSource<MessageType>.Create();
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
             {
                 _replyExpectedMsgs[systembyte] = token;
@@ -407,11 +408,7 @@ namespace Secs4Net
                 _logger.Info("Sent Control Message: " + msgType);
                 if (_replyExpectedMsgs.ContainsKey(systembyte))
                 {
-#if DISABLE_TIMER
-                    await token.Task.WaitAsync(cancellation).ConfigureAwait(false);
-#else
                     await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6), cancellation).ConfigureAwait(false);
-#endif
                 }
             }
             catch (TimeoutException)

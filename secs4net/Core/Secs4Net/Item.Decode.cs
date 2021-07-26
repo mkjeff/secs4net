@@ -23,7 +23,7 @@ namespace Secs4Net
             Span<byte> itemLengthBytes = stackalloc byte[4];
             sourceBytes.CopyTo(itemLengthBytes);
             itemLengthBytes.Slice(0, (int)sourceBytes.Length).Reverse();
-            dataLength = BitConverter.ToInt32(itemLengthBytes); // max to 3 byte dataLength
+            dataLength = Unsafe.ReadUnaligned<int>(ref itemLengthBytes.DangerousGetReference()); // max to 3 byte dataLength
         }
 
         internal static Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)

@@ -8,7 +8,7 @@ namespace Secs4Net
 {
     internal static class SecsExtension
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void Reverse(this Span<byte> bytes, int offSet)
         {
             if (offSet <= 1)

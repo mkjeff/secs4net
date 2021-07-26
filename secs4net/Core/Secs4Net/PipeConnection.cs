@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,8 +8,6 @@ namespace Secs4Net
 {
     public sealed class PipeConnection : ISecsConnection
     {
-        bool ISecsConnection.LinkTestEnabled { get; set; }
-
         private readonly PipeDecoder _decoder;
         public PipeConnection(PipeDecoder pipeDecoder)
         {
@@ -24,5 +23,14 @@ namespace Secs4Net
 
         IAsyncEnumerable<SecsMessage> ISecsConnection.GetDataMessages(CancellationToken cancellation)
             => _decoder.GetDataMessages(cancellation);
+
+        bool ISecsConnection.LinkTestEnabled { get; set; }
+        ConnectionState ISecsConnection.State { get; } = ConnectionState.Selected;
+        bool ISecsConnection.IsActive { get; }
+        IPAddress ISecsConnection.IpAddress { get; } = IPAddress.Any;
+        int ISecsConnection.Port { get; }
+        string ISecsConnection.DeviceIpAddress { get; } = string.Empty;
+        void ISecsConnection.Reconnect() { }
+        event EventHandler<ConnectionState>? ISecsConnection.ConnectionChanged { add { } remove { } }
     }
 }
