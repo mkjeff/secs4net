@@ -5,7 +5,7 @@
     <PackageId>Secs4Net</PackageId>
     <Copyright>Copyright © secs4net 2021</Copyright>
     <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
-    <Version>2.0.0-rc2</Version>
+    <Version>2.0.0-rc3</Version>
     <Authors>mkjeff</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
