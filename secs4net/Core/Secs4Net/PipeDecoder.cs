@@ -187,7 +187,7 @@ namespace Secs4Net
                     Trace.WriteLine($"Decoder readed bytes count:{buffer.Length}");
                     return buffer;
                 }
-                _reader.AdvanceTo(buffer.Start, buffer.End);
+                _reader.AdvanceTo(consumed: buffer.Start, examined: buffer.End);
             }
         }
     }

@@ -36,7 +36,7 @@ namespace Secs4Net
         public SecsFormat Format { get; }
         public int Count { get; }
 
-        internal Item(SecsFormat format, int count)
+        private protected Item(SecsFormat format, int count)
         {
             Format = format;
             Count = count;
@@ -103,7 +103,7 @@ namespace Secs4Net
         public virtual string GetString()
             => throw CreateNotSupportException();
 
-        public override bool Equals(object? obj)
+        public sealed override bool Equals(object? obj)
             => Equals(obj as Item);
 
         public bool Equals(Item? other)
@@ -147,7 +147,7 @@ namespace Secs4Net
             }
         }
 
-        public override string ToString() => $"{Format}[{Count}]";
+        public sealed override string ToString() => $"{Format}[{Count}]";
 
         private string GetDebugString()
         {
@@ -228,7 +228,7 @@ namespace Secs4Net
         }
 
         /// <summary>
-        /// Encode item to SECS binary format
+        /// Encode the item to SECS binary format
         /// </summary>
         public abstract void EncodeTo(IBufferWriter<byte> buffer);
 

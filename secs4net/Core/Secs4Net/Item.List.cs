@@ -10,10 +10,9 @@ namespace Secs4Net
         private sealed class ListItem : Item
         {
             private readonly IList<Item> _value;
-            public unsafe ListItem(SecsFormat format, IList<Item> value) : base(format, value.Count)
-            {
-                _value = value;
-            }
+
+            public ListItem(SecsFormat format, IList<Item> value) : base(format, value.Count) 
+                => _value = value;
 
             public override void Dispose()
             {

@@ -21,15 +21,6 @@ namespace Secs4Net
             }
         }
 
-        internal static async PooledValueTask SendAllAsync(this ISecsConnection connector, ReadOnlyMemory<byte> bytesToTransfer, CancellationToken cancellation)
-        {
-            do
-            {
-                var length = await connector.SendAsync(bytesToTransfer, cancellation).ConfigureAwait(false);
-                bytesToTransfer = bytesToTransfer[length..];
-            } while (!bytesToTransfer.IsEmpty);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void HandleReplyMessage(this ValueTaskCompletionSource<SecsMessage> source, SecsMessage primaryMessage, SecsMessage secondaryMessage)
         {

@@ -11,14 +11,13 @@ namespace Secs4Net
         private class MemoryItem<T> : Item where T : unmanaged
         {
             private readonly Memory<T> _value;
-            public unsafe MemoryItem(SecsFormat format, Memory<T> value) : base(format, value.Length)
-            {
-                _value = value;
-            }
+
+            public MemoryItem(SecsFormat format, Memory<T> value) : base(format, value.Length) 
+                => _value = value;
 
             public sealed override ref TResult FirstValue<TResult>()
             {
-                if (_value.Length == 0 || _value.AsBytes().Length < Unsafe.SizeOf<TResult>())
+                if (_value.Length == 0 || _value.Length * Unsafe.SizeOf<T>() < Unsafe.SizeOf<TResult>())
                 {
                     ThrowHelper();
                 }
@@ -31,7 +30,7 @@ namespace Secs4Net
 
             public sealed override ref readonly TResult FirstValueOrDefault<TResult>(in TResult defaultValue = default)
             {
-                if (_value.Length == 0 || _value.AsBytes().Length < Unsafe.SizeOf<TResult>())
+                if (_value.Length == 0 || _value.Length * Unsafe.SizeOf<T>() < Unsafe.SizeOf<TResult>())
                 {
                     return ref defaultValue;
                 }
@@ -49,11 +48,11 @@ namespace Secs4Net
                     return;
                 }
 
-                var bytes = _value.Span.AsBytes();
-                var byteLength = bytes.Length;
+                var valueAsBytes = _value.Span.AsBytes();
+                var byteLength = valueAsBytes.Length;
                 EncodeItemHeader(Format, byteLength, buffer);
                 var span = buffer.GetSpan(byteLength).Slice(0, byteLength);
-                bytes.CopyTo(span);
+                valueAsBytes.CopyTo(span);
                 span.Reverse(Unsafe.SizeOf<T>());
                 buffer.Advance(byteLength);
             }

@@ -8,12 +8,12 @@ namespace Secs4Net
         private sealed class StringItem : Item
         {
             private readonly string _value;
-            public unsafe StringItem(SecsFormat format, string value) : base(format, value.Length)
-            {
-                _value = value;
-            }
 
-            public override string GetString() => _value;
+            public StringItem(SecsFormat format, string value) : base(format, value.Length) 
+                => _value = value;
+
+            public override string GetString() 
+                => _value;
 
             public override void EncodeTo(IBufferWriter<byte> buffer)
             {

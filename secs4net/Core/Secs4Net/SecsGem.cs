@@ -16,17 +16,17 @@ namespace Secs4Net
     public interface ISecsGem
     {
         /// <summary>
-        /// Get primary messages as async-stream
+        /// Get primary messages from async-stream
         /// </summary>
         /// <param name="cancellation"></param>
         IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default);
 
         /// <summary>
-        /// Asynchronously send message to device.
+        /// Send a message to device asynchronously and get reply message.
         /// </summary>
         /// <param name="message">primary message</param>
         /// <returns>Secondary message, or null if <paramref name="message" />'s <see cref="SecsMessage.ReplyExpected">ReplyExpected</see> is <see langword="false" /> </returns>
-        ValueTask<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default);
+        Task<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default);
     }
 
     public sealed class SecsGem : ISecsGem, IDisposable
@@ -68,7 +68,7 @@ namespace Secs4Net
                     .ForEachAwaitWithCancellationAsync(ProcessDataMessageAsync, _cancellationSourceForDataMessageProcessing.Token));
         }
 
-        internal async PooledValueTask<SecsMessage> SendDataMessageAsync(SecsMessage message, int systembyte, CancellationToken cancellation)
+        internal async PooledTask<SecsMessage> SendDataMessageAsync(SecsMessage message, int systembyte, CancellationToken cancellation)
         {
             if (_hsmsConnector.State != ConnectionState.Selected)
             {
@@ -88,7 +88,7 @@ namespace Secs4Net
                 using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: _recentlyMaxEncodedByteLength))
                 {
                     EncodeMessage(message, buffer);
-                    await _hsmsConnector.SendAllAsync(buffer.WrittenMemory, cancellation).ConfigureAwait(false);
+                    await _hsmsConnector.SendAsync(buffer.WrittenMemory, cancellation).ConfigureAwait(false);
 
                     if (buffer.WrittenCount > _recentlyMaxEncodedByteLength)
                     {
@@ -133,13 +133,13 @@ namespace Secs4Net
             BinaryPrimitives.WriteInt32BigEndian(lengthBytes, buffer.WrittenCount - sizeof(int));
         }
 
-        public ValueTask<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default)
+        public Task<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default)
             => SendDataMessageAsync(message, SystemByteGenerator.New(), cancellation);
 
         public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)
             => _primaryMessageChannel.Reader.ReadAllAsync(cancellation);
 
-        async Task ProcessDataMessageAsync(SecsMessage msg, CancellationToken cancellation)
+        private async Task ProcessDataMessageAsync(SecsMessage msg, CancellationToken cancellation)
         {
             try
             {

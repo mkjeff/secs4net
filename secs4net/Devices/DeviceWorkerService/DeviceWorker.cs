@@ -51,7 +51,7 @@ namespace DeviceWorkerService
                         {
                             SecsItem = primaryMessage.SecsItem,
                         };
-                        await _secsGem.SendAsync(secondaryMessage, stoppingToken);
+                        await m.TryReplyAsync(secondaryMessage, stoppingToken);
                     }
                     catch (Exception ex)
                     {

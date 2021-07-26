@@ -10,6 +10,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -74,6 +75,8 @@ namespace Secs4Net
         private readonly ISecsGemLogger _logger;
         private readonly PipeDecoder _pipeDecoder;
         private readonly Pipe _pipe;
+        private readonly SemaphoreSlim _sendLock = new SemaphoreSlim(1);
+
         private CancellationToken _stoppingToken;
         private CancellationTokenSource? _cancellationTokenSourceForPipeDecoder;
 
@@ -328,7 +331,7 @@ namespace Secs4Net
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }
 
-        private async Task ProcessControlMessageAsync(MessageHeader header, CancellationToken ct)
+        private async Task ProcessControlMessageAsync(MessageHeader header, CancellationToken cancellation)
         {
             try
             {
@@ -350,7 +353,7 @@ namespace Secs4Net
                 switch (header.MessageType)
                 {
                     case MessageType.SelectRequest:
-                        await SendControlMessage(MessageType.SelectResponse, systembyte, ct).ConfigureAwait(false);
+                        await SendControlMessage(MessageType.SelectResponse, systembyte, cancellation).ConfigureAwait(false);
                         CommunicationStateChanging(ConnectionState.Selected);
                         break;
                     case MessageType.SelectResponse:
@@ -374,7 +377,7 @@ namespace Secs4Net
                         }
                         break;
                     case MessageType.LinkTestRequest:
-                        await SendControlMessage(MessageType.LinkTestResponse, systembyte, ct).ConfigureAwait(false);
+                        await SendControlMessage(MessageType.LinkTestResponse, systembyte, cancellation).ConfigureAwait(false);
                         break;
                     case MessageType.SeperateRequest:
                         CommunicationStateChanging(ConnectionState.Retry);
@@ -399,7 +402,7 @@ namespace Secs4Net
             try
             {
                 var buffer = EncodeControlMessage(msgType, systembyte);
-                await this.SendAllAsync(buffer, cancellation).ConfigureAwait(false);
+                await Unsafe.As<ISecsConnection>(this).SendAsync(buffer, cancellation).ConfigureAwait(false);
 
                 _logger.Info("Sent Control Message: " + msgType);
                 if (_replyExpectedMsgs.ContainsKey(systembyte))
@@ -469,10 +472,22 @@ namespace Secs4Net
             _timerLinkTest.Dispose();
         }
 
-        ValueTask<int> ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        async ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
         {
             Debug.Assert(_socket != null);
-            return _socket.SendAsync(buffer, SocketFlags.None, cancellationToken);
+            await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                do
+                {
+                    var length = await _socket.SendAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+                    buffer = buffer[length..];
+                } while (!buffer.IsEmpty);
+            }
+            finally
+            {
+                _sendLock.Release();
+            }
         }
 
         IAsyncEnumerable<SecsMessage> ISecsConnection.GetDataMessages(CancellationToken cancellation)

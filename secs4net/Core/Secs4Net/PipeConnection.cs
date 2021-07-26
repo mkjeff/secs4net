@@ -16,11 +16,10 @@ namespace Secs4Net
             AsyncHelper.LongRunningAsync(() => _decoder.StartAsync(CancellationToken.None));
         }
 
-        async ValueTask<int> ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
+        async ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
         {
             // assume the 'PipeDecoder.Input' here is another connector's input
-            var result = await _decoder.Input.WriteAsync(source, cancellationToken);
-            return source.Length;
+            _ = await _decoder.Input.WriteAsync(source, cancellationToken);
         }
 
         IAsyncEnumerable<SecsMessage> ISecsConnection.GetDataMessages(CancellationToken cancellation)

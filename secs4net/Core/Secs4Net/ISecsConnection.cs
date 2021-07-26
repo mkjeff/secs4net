@@ -48,7 +48,7 @@ namespace Secs4Net
         /// <summary>
         /// </summary>
         /// <returns>The number of bytes sent to</returns>
-        internal ValueTask<int> SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
+        internal ValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
         internal IAsyncEnumerable<SecsMessage> GetDataMessages(CancellationToken cancellation);
     }
 }

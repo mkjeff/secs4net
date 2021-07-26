@@ -151,6 +151,7 @@ namespace Secs4Net
             };
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [SkipLocalsInit]
             static T[] Decode<T>(in ReadOnlySequence<byte> bytes) where T : unmanaged
             {
                 var elmSize = Unsafe.SizeOf<T>();
