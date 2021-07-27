@@ -48,7 +48,7 @@ namespace Secs4Net
 
         /// <summary>
         /// Indexer of List items.
-        /// Be carefule of setter operation. Since the original slot will be overridden.
+        /// Be careful of setter operation. Since the original slot will be overridden.
         /// So, it has no chance to be Disposed along with the List's Dispose method.
         /// You can invoke <see cref="Dispose"/> method on the original item by yourself or till the GC collects it.
         /// </summary>
