@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Secs4Net
+﻿namespace Secs4Net
 {
     public record SecsGemOptions
     {
@@ -14,15 +12,16 @@ namespace Secs4Net
         /// <summary>
         /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the IP address will be treated remote device's IP address, 
         /// opposite the connection will bind on this IP address as Passive mode.
-        /// Default value is "127.0.0.1"
+        /// Default value is "127.0.0.1".
         /// </summary>
         public string IpAddress { get; init; } = "127.0.0.1";
 
         /// <summary>
         /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the port number will be treated remote device's TCP port number, 
         /// opposite the connection will bind on the port number as Passive mode.
+        /// Default value is 5000.
         /// </summary>
-        public int Port { get; init; }
+        public int Port { get; init; } = 5000;
 
         /// <summary>
         /// Configure the timeout interval in milliseconds between the primary message sent till to receive the secondary message.
@@ -61,15 +60,15 @@ namespace Secs4Net
         public int LinkTestInterval { get; init; } = 60000;
 
         /// <summary>
-        /// Configure the buffer size in bytes used for the <see cref="System.Net.Sockets.Socket.ReceiveAsync(Memory{byte}, System.Net.Sockets.SocketFlags, System.Threading.CancellationToken)">Socket.ReceiveAsync</see> receiving.
-        /// Default value is 65535 bytes.
+        /// Configure a value that specifies the size of the receive buffer of the System.Net.Sockets.Socket.
+        /// Default value is 8192 bytes.
         /// </summary>
-        public int SocketReceiveBufferSize { get; init; } = 65535;
+        public int SocketReceiveBufferSize { get; init; } = 8192;
 
         /// <summary>
         /// Configure the initial buffer size in bytes for the <see cref="SecsMessage"/> encoding.
-        /// Default value is 65535 bytes.
+        /// Default value is 4096 bytes.
         /// </summary>
-        public int SocketSendBufferInitialSize { get; init; } = 65535;
+        public int EncodeBufferInitialSize { get; init; } = 4096;
     }
 }

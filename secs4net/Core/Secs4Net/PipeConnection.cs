@@ -9,6 +9,7 @@ namespace Secs4Net
     public sealed class PipeConnection : ISecsConnection
     {
         private readonly PipeDecoder _decoder;
+
         public PipeConnection(PipeDecoder pipeDecoder)
         {
             _decoder = pipeDecoder;
@@ -17,11 +18,10 @@ namespace Secs4Net
 
         async ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
         {
-            // assume the 'PipeDecoder.Input' here is another connector's input
-            _ = await _decoder.Input.WriteAsync(source, cancellationToken);
+            _ = await _decoder.Input.WriteAsync(source, cancellationToken).ConfigureAwait(false);
         }
 
-        IAsyncEnumerable<SecsMessage> ISecsConnection.GetDataMessages(CancellationToken cancellation)
+        IAsyncEnumerable<(MessageHeader header, Item? rootItem)> ISecsConnection.GetDataMessages(CancellationToken cancellation)
             => _decoder.GetDataMessages(cancellation);
 
         bool ISecsConnection.LinkTestEnabled { get; set; }

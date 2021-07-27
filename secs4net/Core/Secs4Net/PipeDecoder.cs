@@ -5,6 +5,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -14,7 +15,8 @@ namespace Secs4Net
     public sealed class PipeDecoder
     {
         private readonly PipeReader _reader;
-        private readonly PipeWriter _input;
+        internal PipeWriter Input { get; }
+
         private readonly Channel<MessageHeader> _controlMessageChannel = Channel
             .CreateUnbounded<MessageHeader>(new UnboundedChannelOptions
             {
@@ -23,10 +25,10 @@ namespace Secs4Net
                 AllowSynchronousContinuations = true,
             });
 
-        private readonly Channel<SecsMessage> _dataMessageChannel = Channel
-            .CreateBounded<SecsMessage>(new BoundedChannelOptions(capacity: 32)
+        private readonly Channel<(MessageHeader header, Item? rootItem)> _dataMessageChannel = Channel
+            .CreateBounded<(MessageHeader header, Item? rootItem)>(new BoundedChannelOptions(capacity: 32)
             {
-                SingleReader = false,
+                SingleReader = true,
                 SingleWriter = true,
                 AllowSynchronousContinuations = false,
                 FullMode = BoundedChannelFullMode.Wait,
@@ -35,16 +37,14 @@ namespace Secs4Net
         public PipeDecoder(PipeReader reader, PipeWriter input)
         {
             _reader = reader;
-            _input = input;
+            Input = input;
         }
 
         public IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
             => _controlMessageChannel.Reader.ReadAllAsync(cancellation);
 
-        public IAsyncEnumerable<SecsMessage> GetDataMessages(CancellationToken cancellation)
+        public IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation)
             => _dataMessageChannel.Reader.ReadAllAsync(cancellation);
-
-        internal PipeWriter Input => _input;
 
         public async Task StartAsync(CancellationToken cancellation)
         {
@@ -78,7 +78,7 @@ namespace Secs4Net
                     reader.AdvanceTo(messageHaderSeq.End);
                     if (header.MessageType == MessageType.DataMessage)
                     {
-                        await ProduceDataMessageAsync(dataMessageWriter, header, item: null, cancellation).ConfigureAwait(false);
+                        await dataMessageWriter.WriteAsync((header, rootItem: null), cancellation).ConfigureAwait(false);
                     }
                     else
                     {
@@ -90,10 +90,10 @@ namespace Secs4Net
                 var remainedBuffer = buffer.Slice(messageHaderSeq.End);
                 if (remainedBuffer.Length >= messageLength - 10)
                 {
-                    Trace.WriteLine($"Get data message({header.SystemBytes}) with total bytes: {messageLength} and decoded directly");
+                    Trace.WriteLine($"Get data message(id:{header.SystemBytes}) with total bytes: {messageLength} and decoded directly");
                     var completedItem = Item.DecodeFromFullBuffer(ref remainedBuffer);
-                    reader.AdvanceTo(remainedBuffer.End);
-                    await ProduceDataMessageAsync(dataMessageWriter, header, completedItem, cancellation).ConfigureAwait(false);
+                    reader.AdvanceTo(remainedBuffer.Start);
+                    await dataMessageWriter.WriteAsync((header, completedItem), cancellation).ConfigureAwait(false);
                     continue;
                 }
                 reader.AdvanceTo(messageHaderSeq.End);
@@ -150,8 +150,8 @@ namespace Secs4Net
                         }
                         else
                         {
-                            Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by data chunked");
-                            await ProduceDataMessageAsync(dataMessageWriter, header, item, cancellation).ConfigureAwait(false);
+                            Trace.WriteLine($"Get data message(id:{header.SystemBytes}) decoded by data chunked");
+                            await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
                             goto Start;
                         }
                     }
@@ -159,26 +159,19 @@ namespace Secs4Net
                 }
                 else
                 {
-                    Trace.WriteLine($"Get data message({header.SystemBytes}) decoded by data chunked");
-                    await ProduceDataMessageAsync(dataMessageWriter, header, item, cancellation).ConfigureAwait(false);
+                    Trace.WriteLine($"Get data message(id:{header.SystemBytes}) decoded by data chunked");
+                    await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
                 }
             }
-
-            static ValueTask ProduceDataMessageAsync(ChannelWriter<SecsMessage> messageWriter, MessageHeader header, Item? item, CancellationToken cancellation)
-                => messageWriter.WriteAsync(new SecsMessage(header.S, header.F, header.ReplyExpected)
-                {
-                    SecsItem = item,
-                    DeviceId = header.DeviceId,
-                    Id = header.SystemBytes,
-                }, cancellation);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         async PooledValueTask<ReadOnlySequence<byte>> EnsureBufferAsync(int required, CancellationToken cancellation)
         {
             while (true)
             {
                 //StartT8Timer();
-                var result = await _reader.ReadAsync(cancellation);
+                var result = await _reader.ReadAsync(cancellation).ConfigureAwait(false);
                 //StopT8Timer();
                 var buffer = result.Buffer;
 
