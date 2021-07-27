@@ -75,8 +75,6 @@ namespace Secs4Net
                 throw new SecsException("Device is not selected");
             }
 
-            message.DeviceId = DeviceId;
-            message.Id = systembyte;
             var token = ValueTaskCompletionSource<SecsMessage>.Create();
             if (message.ReplyExpected)
             {
@@ -87,7 +85,7 @@ namespace Secs4Net
             {
                 using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: _recentlyMaxEncodedByteLength))
                 {
-                    EncodeMessage(message, buffer);
+                    EncodeMessage(message, systembyte, DeviceId, buffer);
                     await _hsmsConnector.SendAsync(buffer.WrittenMemory, cancellation).ConfigureAwait(false);
 
                     if (buffer.WrittenCount > _recentlyMaxEncodedByteLength)
@@ -96,7 +94,7 @@ namespace Secs4Net
                     }
                 }
 
-                _logger.MessageOut(message, message.Id);
+                _logger.MessageOut(message, systembyte);
 
                 if (!message.ReplyExpected)
                 {
@@ -121,13 +119,18 @@ namespace Secs4Net
             }
         }
 
-        internal static void EncodeMessage(SecsMessage msg, ArrayPoolBufferWriter<byte> buffer)
+        internal static void EncodeMessage(SecsMessage msg, int id, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
         {
             // reserve 4 byte for total length
             var lengthBytes = buffer.GetSpan(sizeof(int)).Slice(0, sizeof(int));
             buffer.Advance(sizeof(int));
-
-            msg.EncodeHeaderTo(buffer);
+            new MessageHeader(
+                deviceId,
+                msg.ReplyExpected,
+                msg.S,
+                msg.F,
+                MessageType.DataMessage,
+                id).EncodeTo(buffer);
             msg.SecsItem?.EncodeTo(buffer);
 
             BinaryPrimitives.WriteInt32BigEndian(lengthBytes, buffer.WrittenCount - sizeof(int));
@@ -139,17 +142,23 @@ namespace Secs4Net
         public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)
             => _primaryMessageChannel.Reader.ReadAllAsync(cancellation);
 
-        private async Task ProcessDataMessageAsync(SecsMessage msg, CancellationToken cancellation)
+        private async Task ProcessDataMessageAsync((MessageHeader header, Item? rootItem) data, CancellationToken cancellation)
         {
+            var (header, rootItem) = data;
+            var systembyte = header.SystemBytes;
+            var msg = new SecsMessage(header.S, header.F, header.ReplyExpected)
+            {
+                SecsItem = rootItem,
+            };
+
             try
             {
-                var systembyte = msg.Id;
-                if (msg.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
+                if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
                 {
                     _logger.MessageIn(msg, systembyte);
                     _logger.Warning("Received Unrecognized Device Id Message");
                     var headerBytes = new byte[10];
-                    msg.EncodeHeaderTo(new MemoryBufferWriter<byte>(headerBytes));
+                    header.EncodeTo(new MemoryBufferWriter<byte>(headerBytes));
                     var s9f1 = new SecsMessage(9, 1, replyExpected: false)
                     {
                         Name = "Unrecognized Device Id",
@@ -165,7 +174,7 @@ namespace Secs4Net
                     {
                         //Primary message
                         _logger.MessageIn(msg, systembyte);
-                        await _primaryMessageChannel.Writer.WriteAsync(new PrimaryMessageWrapper(this, msg), cancellation).ConfigureAwait(false);
+                        await _primaryMessageChannel.Writer.WriteAsync(new PrimaryMessageWrapper(this, msg, systembyte), cancellation).ConfigureAwait(false);
                         return;
                     }
                     // Error message

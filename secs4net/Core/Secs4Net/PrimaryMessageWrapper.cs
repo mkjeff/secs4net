@@ -10,12 +10,14 @@ namespace Secs4Net
         private readonly SemaphoreSlim _semaphoreSlim = new(initialCount: 1);
         private readonly WeakReference<SecsGem> _secsGem;
         public SecsMessage PrimaryMessage { get; }
+        public int Id { get; }
         public SecsMessage? SecondaryMessage { get; private set; }
 
-        internal PrimaryMessageWrapper(SecsGem secsGem, SecsMessage primaryMessage)
+        internal PrimaryMessageWrapper(SecsGem secsGem, SecsMessage primaryMessage, int id)
         {
             _secsGem = new WeakReference<SecsGem>(secsGem);
             PrimaryMessage = primaryMessage;
+            Id = id;
         }
 
         /// <summary>
@@ -39,8 +41,13 @@ namespace Secs4Net
             {
                 var headerBytes = new byte[10];
                 var buffer = new MemoryBufferWriter<byte>(headerBytes);
-                PrimaryMessage.EncodeHeaderTo(buffer);
-
+                new MessageHeader(
+                    secsGem.DeviceId,
+                    PrimaryMessage.ReplyExpected,
+                    PrimaryMessage.S,
+                    PrimaryMessage.F,
+                    MessageType.DataMessage,
+                    Id).EncodeTo(buffer);
                 replyMessage = new SecsMessage(9, 7, replyExpected: false)
                 {
                     Name = "Unknown Message",
@@ -60,7 +67,7 @@ namespace Secs4Net
                     return false;
                 }
 
-                int systembyte = replyMessage.S == 9 ? SystemByteGenerator.New() : PrimaryMessage.Id;
+                int systembyte = replyMessage.S == 9 ? SystemByteGenerator.New() : Id;
                 await secsGem.SendDataMessageAsync(replyMessage, systembyte, cancellation).ConfigureAwait(false);
                 SecondaryMessage = replyMessage;
                 return true;

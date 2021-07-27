@@ -80,7 +80,7 @@ namespace Secs4Net
                 sb.Append(arrary[i].ToString()).Append(' ');
             }
 
-            sb.Append(arrary[len - 1]);
+            sb.Append(arrary[len - 1].ToString());
             if (len < arrary.Length)
             {
                 sb.Append(" ...");

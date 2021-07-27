@@ -12,13 +12,8 @@ namespace Secs4Net.UnitTests
 {
     public class PipeDecoderUnitTests
     {
-        private const ushort deviceId = 1;
-        private const int systemByte = 1223;
-
         private readonly SecsMessage message = new SecsMessage(s: 1, f: 2, replyExpected: false)
         {
-            DeviceId = deviceId,
-            Id = systemByte,
             SecsItem =
             L(
                 L(),
@@ -49,8 +44,6 @@ namespace Secs4Net.UnitTests
         {
             var subject = new SecsMessage(s: 1, f: 2, replyExpected: false)
             {
-                DeviceId = deviceId,
-                Id = systemByte,
                 SecsItem =
                     L(
                         L(),
@@ -83,7 +76,7 @@ namespace Secs4Net.UnitTests
         public async Task Message_Can_Decode_From_Full_Buffer_And_Equivalent()
         {
             using var buffer = new ArrayPoolBufferWriter<byte>();
-            SecsGem.EncodeMessage(message, buffer);
+            SecsGem.EncodeMessage(message, id: 123, deviceId: 0, buffer);
             var encodedBytes = buffer.WrittenMemory;
 
             var pipe = new Pipe();
@@ -96,8 +89,11 @@ namespace Secs4Net.UnitTests
             });
 
             await decoder.Input.WriteAsync(encodedBytes);
-            var decodeMessage = await decoder.GetDataMessages(default).FirstAsync();
-
+            var (header, item) = await decoder.GetDataMessages(default).FirstAsync();
+            var decodeMessage = new SecsMessage(header.S, header.F, header.ReplyExpected)
+            {
+                SecsItem = item,
+            };
             decodeMessage.Should().NotBeNull().And.BeEquivalentTo(message);
         }
 
@@ -105,7 +101,7 @@ namespace Secs4Net.UnitTests
         public async Task Message_Can_Decode_From_Streaming_And_Equivalent()
         {
             using var buffer = new ArrayPoolBufferWriter<byte>();
-            SecsGem.EncodeMessage(message, buffer);
+            SecsGem.EncodeMessage(message, id: 123, deviceId: 0, buffer);
             var encodedBytes = buffer.WrittenMemory.ToArray();
 
             var pipe = new Pipe();
@@ -126,8 +122,11 @@ namespace Secs4Net.UnitTests
                 }
             });
 
-            var decodeMessage = await decoder.GetDataMessages(default).FirstAsync();
-
+            var (header, item) = await decoder.GetDataMessages(default).FirstAsync();
+            var decodeMessage = new SecsMessage(header.S, header.F, header.ReplyExpected)
+            {
+                SecsItem = item,
+            };
             decodeMessage.Should().NotBeNull().And.BeEquivalentTo(message);
         }
     }

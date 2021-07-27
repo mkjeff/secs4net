@@ -29,8 +29,6 @@ namespace Secs4Net
         public Item? SecsItem { get; init; }
 
         public string? Name { get; set; }
-        public int Id { get; internal set; }
-        public ushort DeviceId { get; internal set; }
 
         /// <summary>
         /// constructor of SecsMessage
@@ -61,20 +59,8 @@ namespace Secs4Net
             return S == other.S
                 && F == other.F
                 && ReplyExpected == other.ReplyExpected
-                && Id == other.Id
-                && DeviceId == other.DeviceId
                 && EqualityComparer<Item>.Default.Equals(SecsItem, other.SecsItem);
         }
-
-        public void EncodeHeaderTo(IBufferWriter<byte> buffer)
-            => new MessageHeader(
-                DeviceId,
-                ReplyExpected,
-                S,
-                F,
-                MessageType.DataMessage,
-                Id
-                ).EncodeTo(buffer);
 
         public void Dispose()
         {

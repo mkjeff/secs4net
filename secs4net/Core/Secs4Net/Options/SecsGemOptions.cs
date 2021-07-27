@@ -14,15 +14,16 @@ namespace Secs4Net
         /// <summary>
         /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the IP address will be treated remote device's IP address, 
         /// opposite the connection will bind on this IP address as Passive mode.
-        /// Default value is "127.0.0.1"
+        /// Default value is "127.0.0.1".
         /// </summary>
         public string IpAddress { get; init; } = "127.0.0.1";
 
         /// <summary>
         /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the port number will be treated remote device's TCP port number, 
         /// opposite the connection will bind on the port number as Passive mode.
+        /// Default value is 5000.
         /// </summary>
-        public int Port { get; init; }
+        public int Port { get; init; } = 5000;
 
         /// <summary>
         /// Configure the timeout interval in milliseconds between the primary message sent till to receive the secondary message.
@@ -64,12 +65,12 @@ namespace Secs4Net
         /// Configure the buffer size in bytes used for the <see cref="System.Net.Sockets.Socket.ReceiveAsync(Memory{byte}, System.Net.Sockets.SocketFlags, System.Threading.CancellationToken)">Socket.ReceiveAsync</see> receiving.
         /// Default value is 65535 bytes.
         /// </summary>
-        public int SocketReceiveBufferSize { get; init; } = 65535;
+        public int SocketReceiveBufferSize { get; init; } = 8192;
 
         /// <summary>
         /// Configure the initial buffer size in bytes for the <see cref="SecsMessage"/> encoding.
         /// Default value is 65535 bytes.
         /// </summary>
-        public int SocketSendBufferInitialSize { get; init; } = 65535;
+        public int SocketSendBufferInitialSize { get; init; } = 8192;
     }
 }

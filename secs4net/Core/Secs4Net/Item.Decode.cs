@@ -28,7 +28,7 @@ namespace Secs4Net
 
         internal static Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
         {
-            DecodeFormatAndLengthByteCount(bytes.FirstSpan[0], out var format, out var lengthByteCount);
+            DecodeFormatAndLengthByteCount(bytes.FirstSpan.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
             bytes = bytes.Slice(1);
 
             var dataLengthSeq = bytes.Slice(0, lengthByteCount);
