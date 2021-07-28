@@ -43,7 +43,7 @@ namespace Secs4Net.Json
             jwtr.WriteValue(msg.S);
 
             jwtr.WritePropertyName(nameof(msg.F));
-            jwtr.WriteValue(msg.S);
+            jwtr.WriteValue(msg.F);
 
             jwtr.WritePropertyName(nameof(msg.ReplyExpected));
             jwtr.WriteValue(msg.ReplyExpected);
