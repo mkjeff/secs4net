@@ -58,7 +58,7 @@ namespace Secs4Net
             var options = secsGemOptions.Value;
             DeviceId = options.DeviceId;
             T3 = options.T3;
-            _recentlyMaxEncodedByteLength = options.SocketSendBufferInitialSize;
+            _recentlyMaxEncodedByteLength = options.EncodeBufferInitialSize;
 
             _hsmsConnector = hsmsConnector;
             _logger = logger;
@@ -205,9 +205,17 @@ namespace Secs4Net
                 {
                     token.completeSource.HandleReplyMessage(token.primary, msg);
                 }
+                else
+                {
+                    _logger.Warning($"Received unexpected secondary message[0x{systembyte:X8}]. Maybe T3 timeout.");
+                }
             }
             catch (Exception ex)
             {
+                if (cancellation.IsCancellationRequested)
+                {
+                    return;
+                }
                 _logger.Error("Unhandled exception occurred when processing data message", msg, ex);
             }
         }

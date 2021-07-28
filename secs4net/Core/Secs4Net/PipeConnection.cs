@@ -19,7 +19,7 @@ namespace Secs4Net
 
         async ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
         {
-            await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _sendLock.WaitAsync(cancellationToken);
             try
             {
                 _ = await _decoder.Input.WriteAsync(source, cancellationToken).ConfigureAwait(false);

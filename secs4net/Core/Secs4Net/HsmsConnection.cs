@@ -72,12 +72,10 @@ namespace Secs4Net
         private readonly Timer _timer8;
         private readonly Timer _timerLinkTest;
         private readonly ConcurrentDictionary<int, ValueTaskCompletionSource<MessageType>> _replyExpectedMsgs = new();
-#if NET
-        //private readonly Memory<byte> _socketReceiveBuffer;
-#else
+        private readonly int _socketReceiveBufferSize;
+#if NETSTANDARD
         private readonly byte[] _socketReceiveBuffer;
 #endif
-        private readonly int _socketReceiveBufferSize;
         private readonly ISecsGemLogger _logger;
         private readonly PipeDecoder _pipeDecoder;
         private readonly Pipe _pipe;
@@ -85,6 +83,7 @@ namespace Secs4Net
 
         private CancellationToken _stoppingToken;
         private CancellationTokenSource? _cancellationTokenSourceForPipeDecoder;
+        private readonly CancellationTokenSource _cancellationSourceForControlMessageProcessing = new();
 
         public HsmsConnection(IOptions<SecsGemOptions> secsGemOptions, ISecsGemLogger logger)
         {
@@ -102,10 +101,11 @@ namespace Secs4Net
             Port = options.Port;
             IsActive = options.IsActive;
             _socketReceiveBufferSize = options.SocketReceiveBufferSize;
-            //_socketReceiveBuffer = new byte[options.SocketReceiveBufferSize];
 #if NETSTANDARD
             _socketReceiveBuffer = new byte[_socketReceiveBufferSize];
 #endif
+
+            _ = AsyncHelper.LongRunningAsync(() => HandleControlMessagesAsync(_cancellationSourceForControlMessageProcessing.Token), _cancellationSourceForControlMessageProcessing.Token);
 
             _timer7 = new Timer(delegate
             {
@@ -146,7 +146,13 @@ namespace Secs4Net
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
-                            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+                            {
+#if NET
+                                Blocking = false,
+#endif
+                                ReceiveBufferSize = _socketReceiveBufferSize,
+                            };
 #if NET
                             await socket.ConnectAsync(IpAddress, Port, cancellation).ConfigureAwait(false);
 #else
@@ -154,7 +160,6 @@ namespace Secs4Net
 #endif
 
                             _socket = socket;
-                            _socket.ReceiveBufferSize = _socketReceiveBufferSize;
                             CommunicationStateChanging(ConnectionState.Connected);
                             connected = true;
                         }
@@ -173,7 +178,12 @@ namespace Secs4Net
             }
             else
             {
-                var server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                var server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+                {
+#if NET
+                    Blocking = false,
+#endif
+                };
                 server.Bind(new IPEndPoint(IpAddress, Port));
                 server.Listen(0);
 
@@ -192,6 +202,7 @@ namespace Secs4Net
                         {
 #if NET
                             _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
+                            _socket.Blocking = false;
 #else
                             _socket = server.Accept();
 #endif
@@ -242,9 +253,8 @@ namespace Secs4Net
         protected sealed override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _stoppingToken = stoppingToken;
-            var longRunningTask = AsyncHelper.LongRunningAsync(() => HandleControlMessagesAsync(_stoppingToken), _stoppingToken);
             Start(_stoppingToken);
-            return longRunningTask;
+            return Task.CompletedTask;
         }
 
         private void Start(CancellationToken cancellation)
@@ -279,12 +289,10 @@ namespace Secs4Net
                 {
                     Debug.Assert(_socket != null);
 #if NET
-                    var memory = decoderInput.GetMemory(_socketReceiveBufferSize);
-                    var count = await _socket.ReceiveAsync(memory, SocketFlags.Partial, cancellation);
+                    var memory = decoderInput.GetMemory(_socket.ReceiveBufferSize);
+                    var count = await _socket.ReceiveAsync(memory, SocketFlags.None, cancellation).ConfigureAwait(false);
                     decoderInput.Advance(count);
-                    await decoderInput.FlushAsync(cancellation);
-                    //var count = await _socket.ReceiveAsync(_socketReceiveBuffer, SocketFlags.None, cancellation);
-                    //var flushResult = await decoderInput.WriteAsync(_socketReceiveBuffer.Slice(0, count), cancellation).ConfigureAwait(false);
+                    await decoderInput.FlushAsync(cancellation).ConfigureAwait(false);
 #else
                     var count = _socket!.Receive(_socketReceiveBuffer);
                     await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory().Slice(0, count), cancellation).ConfigureAwait(false);
@@ -335,9 +343,8 @@ namespace Secs4Net
 #if !DISABLE_TIMER
                     _cancellationTokenSourceForPipeDecoder = new CancellationTokenSource();
                     var cancellation = _cancellationTokenSourceForPipeDecoder.Token;
-                    _ = AsyncHelper.LongRunningAsync(() => Task.WhenAll(
-                        StartPipeDecoderConsumerAsync(cancellation),
-                        StartPipeDecoderProducerAsync(cancellation)), cancellation);
+                    _ = AsyncHelper.LongRunningAsync(() => StartPipeDecoderConsumerAsync(cancellation), cancellation);
+                    _ = AsyncHelper.LongRunningAsync(() => StartPipeDecoderProducerAsync(cancellation), cancellation);
                     _logger.Info($"Start T7 Timer: {T7 / 1000} sec.");
                     _timer7.Change(T7, Timeout.Infinite);
 #endif
@@ -506,6 +513,8 @@ namespace Secs4Net
             }
 
             Disconnect();
+            _cancellationSourceForControlMessageProcessing.Cancel();
+            _cancellationSourceForControlMessageProcessing.Dispose();
             _timer7.Dispose();
             _timer8.Dispose();
             _timerLinkTest.Dispose();
@@ -520,7 +529,8 @@ namespace Secs4Net
             {
                 do
                 {
-                    var length = await _socket.SendAsync(buffer, SocketFlags.Partial, cancellationToken).ConfigureAwait(false);
+                    var length = await _socket.SendAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+                    //Trace.WriteLine($"Socket sent {length} bytes.");
                     buffer = buffer[length..];
                 } while (!buffer.IsEmpty);
             }
@@ -536,10 +546,8 @@ namespace Secs4Net
             {
                 throw new InvalidOperationException();
             }
-            var e = new SocketAsyncEventArgs();
-            e.SetBuffer(arr.Array, arr.Offset, arr.Count);
-            Debug.Assert(_socket != null);
-            _ = _socket!.SendAsync(e);
+            var count = _socket!.Send(arr.Array, arr.Offset, arr.Count, SocketFlags.None);
+            Debug.Assert(count == arr.Count);
             return default;
         }
 #endif

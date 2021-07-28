@@ -45,7 +45,7 @@ namespace Secs4Net.Json
             jwtr.WriteStartObject();
 
             jwtr.WriteNumber(nameof(msg.S),msg.S);
-            jwtr.WriteNumber(nameof(msg.F), msg.S);
+            jwtr.WriteNumber(nameof(msg.F), msg.F);
             jwtr.WriteBoolean(nameof(msg.ReplyExpected), msg.ReplyExpected);
             jwtr.WriteString(nameof(msg.Name), msg.Name);
 

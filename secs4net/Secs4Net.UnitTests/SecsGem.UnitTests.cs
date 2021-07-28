@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using Secs4Net.UnitTests.Extensions;
 using System;
+using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Threading;
@@ -18,8 +19,12 @@ namespace Secs4Net.UnitTests
 
         public SecsGemUnitTests()
         {
-            var pipe1 = new Pipe();
-            var pipe2 = new Pipe();
+            var pipe1 = new Pipe(new PipeOptions(
+                readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, 
+                useSynchronizationContext: false));
+            var pipe2 = new Pipe(new PipeOptions(
+                readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline,
+                useSynchronizationContext: false));
             connector1 = new PipeConnection(new PipeDecoder(pipe1.Reader, input: pipe2.Writer));
             connector2 = new PipeConnection(new PipeDecoder(pipe2.Reader, input: pipe1.Writer));
         }
@@ -140,6 +145,67 @@ namespace Secs4Net.UnitTests
 
             sendAsync.Should().Throw<SecsException>().WithMessage(Resources.T3Timeout);
             receiver.DidNotReceive();
+        }
+
+        [Fact]
+        public void SecsGem_SendAsync_With_A_Large_Number_Of_Messages_At_Once()
+        {
+            var options1 = Options.Create(new SecsGemOptions
+            {
+                IsActive = true,
+                DeviceId = 0,
+                T3 = 60000,
+            });
+
+            var options2 = Options.Create(new SecsGemOptions
+            {
+                IsActive = false,
+                DeviceId = 0,
+                T3 = 60000,
+            });
+
+            //var hsmsConn1 = new HsmsConnection(options1, Substitute.For<ISecsGemLogger>());
+            //var hsmsConn2 = new HsmsConnection(options2, Substitute.For<ISecsGemLogger>());
+            var secsGem1 = new SecsGem(options1, connector1, Substitute.For<ISecsGemLogger>());
+            var secsGem2 = new SecsGem(options2, connector2, Substitute.For<ISecsGemLogger>());
+            using var cts = new CancellationTokenSource();
+
+
+            //_ = hsmsConn1.StartAsync(cts.Token);
+            //_ = hsmsConn2.StartAsync(cts.Token);
+
+            //SpinWait.SpinUntil(() => hsmsConn1.State == ConnectionState.Selected && hsmsConn2.State == ConnectionState.Selected);
+
+            var ping = new SecsMessage(s: 1, f: 13)
+            {
+                SecsItem = A("Ping"),
+            };
+            var pong = new SecsMessage(s: 1, f: 14, replyExpected: false)
+            {
+                SecsItem = A("Pong"),
+            };
+
+            _ = AsyncHelper.LongRunningAsync(async () =>
+            {
+                await foreach (var a in secsGem2.GetPrimaryMessageAsync(cts.Token))
+                {
+                    await a.TryReplyAsync(pong);
+                }
+            });
+
+            var sendCount = 10000;
+
+            Func<Task> sendAsync = async () =>
+            {
+                var totalTasks = new List<Task<SecsMessage>>(capacity: sendCount);
+                for (var g = 0; g < sendCount; g++)
+                {
+                    totalTasks.Add(secsGem1.SendAsync(ping, cts.Token).AsTask());
+                }
+                await Task.WhenAll(totalTasks.ToArray());
+            };
+
+            sendAsync.Should().NotThrow();
         }
     }
 }

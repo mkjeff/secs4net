@@ -5,6 +5,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -91,7 +92,7 @@ namespace Secs4Net
                 {
                     Trace.WriteLine($"Get data message(id:{header.SystemBytes}) with total bytes: {messageLength} and decoded directly");
                     var completedItem = Item.DecodeFromFullBuffer(ref remainedBuffer);
-                    reader.AdvanceTo(remainedBuffer.End);
+                    reader.AdvanceTo(remainedBuffer.Start);
                     await dataMessageWriter.WriteAsync((header, completedItem), cancellation).ConfigureAwait(false);
                     continue;
                 }
@@ -168,6 +169,7 @@ namespace Secs4Net
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         async PooledValueTask<ReadOnlySequence<byte>> EnsureBufferAsync(int required, CancellationToken cancellation)
         {
             while (true)

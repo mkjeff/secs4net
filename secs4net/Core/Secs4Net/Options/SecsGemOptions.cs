@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Secs4Net
+﻿namespace Secs4Net
 {
     public record SecsGemOptions
     {
@@ -62,15 +60,15 @@ namespace Secs4Net
         public int LinkTestInterval { get; init; } = 60000;
 
         /// <summary>
-        /// Configure the buffer size in bytes used for the <see cref="System.Net.Sockets.Socket.ReceiveAsync(Memory{byte}, System.Net.Sockets.SocketFlags, System.Threading.CancellationToken)">Socket.ReceiveAsync</see> receiving.
-        /// Default value is 65535 bytes.
+        /// Configure a value that specifies the size of the receive buffer of the System.Net.Sockets.Socket.
+        /// Default value is 8192 bytes.
         /// </summary>
         public int SocketReceiveBufferSize { get; init; } = 8192;
 
         /// <summary>
         /// Configure the initial buffer size in bytes for the <see cref="SecsMessage"/> encoding.
-        /// Default value is 65535 bytes.
+        /// Default value is 4096 bytes.
         /// </summary>
-        public int SocketSendBufferInitialSize { get; init; } = 8192;
+        public int EncodeBufferInitialSize { get; init; } = 4096;
     }
 }
