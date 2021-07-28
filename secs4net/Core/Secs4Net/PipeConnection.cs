@@ -8,6 +8,7 @@ namespace Secs4Net
 {
     public sealed class PipeConnection : ISecsConnection
     {
+        private readonly SemaphoreSlim _sendLock = new(initialCount: 1);
         private readonly PipeDecoder _decoder;
 
         public PipeConnection(PipeDecoder pipeDecoder)
@@ -18,7 +19,15 @@ namespace Secs4Net
 
         async ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
         {
-            _ = await _decoder.Input.WriteAsync(source, cancellationToken).ConfigureAwait(false);
+            await _sendLock.WaitAsync(cancellationToken);
+            try
+            {
+                _ = await _decoder.Input.WriteAsync(source, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _sendLock.Release();
+            }
         }
 
         IAsyncEnumerable<(MessageHeader header, Item? rootItem)> ISecsConnection.GetDataMessages(CancellationToken cancellation)
