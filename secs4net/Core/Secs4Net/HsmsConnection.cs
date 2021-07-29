@@ -156,7 +156,7 @@ namespace Secs4Net
 #if NET
                             await socket.ConnectAsync(IpAddress, Port, cancellation).ConfigureAwait(false);
 #else
-                            socket.Connect(IpAddress, Port);
+                            await socket.ConnectAsync(IpAddress, Port).WithCancellation(cancellation).ConfigureAwait(false);
 #endif
 
                             _socket = socket;
@@ -204,7 +204,7 @@ namespace Secs4Net
                             _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
                             _socket.Blocking = false;
 #else
-                            _socket = server.Accept();
+                            _socket = await server.AcceptAsync().WithCancellation(cancellation).ConfigureAwait(false);
 #endif
                             _socket.ReceiveBufferSize = _socketReceiveBufferSize;
                             CommunicationStateChanging(ConnectionState.Connected);

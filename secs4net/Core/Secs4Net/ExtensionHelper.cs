@@ -3,6 +3,8 @@ using PooledAwait;
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Secs4Net
 {
@@ -120,6 +122,41 @@ namespace Secs4Net
             static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
         }
 
+        public static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // This disposes the registration as soon as one of the tasks trigger
+            using (cancellationToken.Register(state => ((TaskCompletionSource<object>)state).TrySetResult(null!), tcs))
+            {
+                var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
+                if (resultTask == tcs.Task)
+                {
+                    // Operation cancelled
+                    throw new OperationCanceledException(cancellationToken);
+                }
+
+                await task;
+            }
+        }
+
+        public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // This disposes the registration as soon as one of the tasks trigger
+            using (cancellationToken.Register(state => ((TaskCompletionSource<object>)state).TrySetResult(null!), tcs))
+            {
+                var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
+                if (resultTask == tcs.Task)
+                {
+                    // Operation cancelled
+                    throw new OperationCanceledException(cancellationToken);
+                }
+
+                return await task;
+            }
+        }
     }
 
 }
