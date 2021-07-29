@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,11 +12,11 @@ namespace Secs4Net
         private readonly SemaphoreSlim _sendLock = new(initialCount: 1);
         private readonly PipeDecoder _decoder;
 
-        public PipeConnection(PipeDecoder pipeDecoder)
-        {
-            _decoder = pipeDecoder;
-            AsyncHelper.LongRunningAsync(() => _decoder.StartAsync(CancellationToken.None));
-        }
+        public PipeConnection(PipeReader decoderReader, PipeWriter decoderInput) 
+            => _decoder = new PipeDecoder(decoderReader, decoderInput);
+
+        public Task StartAsync(CancellationToken cancellation) 
+            => AsyncHelper.LongRunningAsync(() => _decoder.StartAsync(cancellation), cancellation);
 
         async ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
         {
@@ -34,7 +35,7 @@ namespace Secs4Net
             => _decoder.GetDataMessages(cancellation);
 
         bool ISecsConnection.LinkTestEnabled { get; set; }
-        ConnectionState ISecsConnection.State { get; } = ConnectionState.Selected;
+        public ConnectionState State { get; } = ConnectionState.Selected;
         bool ISecsConnection.IsActive { get; }
         IPAddress ISecsConnection.IpAddress { get; } = IPAddress.Any;
         int ISecsConnection.Port { get; }
