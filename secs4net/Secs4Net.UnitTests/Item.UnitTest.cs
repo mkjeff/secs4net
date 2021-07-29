@@ -424,6 +424,8 @@ namespace Secs4Net.UnitTests
             var original = ushort.MaxValue;
             var item = U2(original);
             var arr = item.GetValues<byte>();
+
+            arr.Length.Should().Be(2);
             arr[0] = 123;
             arr[1] = 3;
 
@@ -431,6 +433,5 @@ namespace Secs4Net.UnitTests
             changed.Should().NotBe(original);
             changed.Should().Be(BitConverter.ToUInt16(arr.AsSpan()));
         }
-
     }
 }

@@ -48,34 +48,39 @@ namespace Secs4Net
 
         public async Task StartAsync(CancellationToken cancellation)
         {
-            var reader = _reader;
             var dataMessageWriter = _dataMessageChannel.Writer;
             var stack = new Stack<List<Item>>(capacity: 8);
             var totalLengthBytes = new byte[4];
             var messageHeaderBytes = new byte[10];
-            ReadOnlySequence<byte> buffer;
+            // PipeReader peek first
+            var buffer = await PipeReadAsync(required: 4, cancellation).ConfigureAwait(false);
             while (true)
             {
             Start:
                 // 0: get total message length 4 bytes
-                buffer = await EnsureBufferAsync(required: 4, cancellation).ConfigureAwait(false);
+                if (IsBufferInsufficient(ref buffer, required: 4))
+                {
+                    buffer = await PipeReadAsync(required: 4, cancellation).ConfigureAwait(false);
+                }
                 var totalLengthSeq = buffer.Slice(buffer.Start, 4);
                 totalLengthSeq.CopyTo(totalLengthBytes);
                 uint messageLength = BinaryPrimitives.ReadUInt32BigEndian(totalLengthBytes);
-                reader.AdvanceTo(totalLengthSeq.End);
-
+                buffer = buffer.Slice(totalLengthSeq.End);
                 Trace.WriteLine($"Get new message with length: {messageLength}");
 
                 // 1: get message header 10 bytes
-                buffer = await EnsureBufferAsync(required: 10, cancellation).ConfigureAwait(false);
+                if (IsBufferInsufficient(ref buffer, required: 10))
+                {
+                    buffer = await PipeReadAsync(required: 10, cancellation).ConfigureAwait(false);
+                }
                 var messageHaderSeq = buffer.Slice(buffer.Start, 10);
                 messageHaderSeq.CopyTo(messageHeaderBytes);
                 var header = MessageHeader.Decode(messageHeaderBytes);
+                buffer = buffer.Slice(messageHaderSeq.End);
                 Trace.WriteLine($"Get message(id:{header.SystemBytes}) header");
 
                 if (messageLength == 10) // only message header
                 {
-                    reader.AdvanceTo(messageHaderSeq.End);
                     if (header.MessageType == MessageType.DataMessage)
                     {
                         await dataMessageWriter.WriteAsync((header, rootItem: null), cancellation).ConfigureAwait(false);
@@ -87,28 +92,31 @@ namespace Secs4Net
                     continue;
                 }
 
-                var remainedBuffer = buffer.Slice(messageHaderSeq.End);
-                if (remainedBuffer.Length >= messageLength - 10)
+                if (buffer.Length >= messageLength - 10)
                 {
                     Trace.WriteLine($"Get data message(id:{header.SystemBytes}) with total bytes: {messageLength} and decoded directly");
-                    var completedItem = Item.DecodeFromFullBuffer(ref remainedBuffer);
-                    reader.AdvanceTo(remainedBuffer.Start);
+                    var completedItem = Item.DecodeFromFullBuffer(ref buffer);
                     await dataMessageWriter.WriteAsync((header, completedItem), cancellation).ConfigureAwait(false);
                     continue;
                 }
-                reader.AdvanceTo(messageHaderSeq.End);
 
             GetNewItem:
                 // 2: get _format + _lengthByteCount(2bit) 1 byte
-                buffer = await EnsureBufferAsync(required: 1, cancellation).ConfigureAwait(false);
+                if (IsBufferInsufficient(ref buffer, required: 1))
+                {
+                    buffer = await PipeReadAsync(required: 1, cancellation).ConfigureAwait(false);
+                }
                 Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
-                reader.AdvanceTo(buffer.GetPosition(1));
+                buffer = buffer.Slice(1);
 
                 // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
-                buffer = await EnsureBufferAsync(required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
+                if (IsBufferInsufficient(ref buffer, required: itemContentLengthByteCount))
+                {
+                    buffer = await PipeReadAsync(required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
+                }
                 var itemContentLengthBytes = buffer.Slice(0, itemContentLengthByteCount);
                 Item.DecodeDataLength(itemContentLengthBytes, out var itemContentLength);
-                reader.AdvanceTo(itemContentLengthBytes.End);
+                buffer = buffer.Slice(itemContentLengthBytes.End);
 
                 // 4: get item content
                 Item item;
@@ -128,10 +136,13 @@ namespace Secs4Net
                 }
                 else
                 {
-                    buffer = await EnsureBufferAsync(required: itemContentLength, cancellation).ConfigureAwait(false);
+                    if (IsBufferInsufficient(ref buffer, required: itemContentLength))
+                    {
+                        buffer = await PipeReadAsync(required: itemContentLength, cancellation).ConfigureAwait(false);
+                    }
                     var itemDataBytes = buffer.Slice(0, itemContentLength);
                     item = Item.DecodeDataItem(itemFormat, itemDataBytes);
-                    reader.AdvanceTo(itemDataBytes.End);
+                    buffer = buffer.Slice(itemDataBytes.End);
                     Trace.WriteLine($"Decoded Item[{itemFormat}], length: {itemContentLength}");
                 }
 
@@ -165,8 +176,32 @@ namespace Secs4Net
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsBufferInsufficient(ref ReadOnlySequence<byte> remainedBuffer, int required)
+        {
+            if (remainedBuffer.Length >= required)
+            {
+                return false;
+            }
+
+            _reader.AdvanceTo(remainedBuffer.Start);
+            if (_reader.TryRead(out var result))
+            {
+                remainedBuffer = result.Buffer;
+                if (result.Buffer.Length >= required)
+                {
+                    return false;
+                }
+                else
+                {
+                    _reader.AdvanceTo(consumed: remainedBuffer.Start, examined: remainedBuffer.End);
+                }
+            }
+            return true;
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
-        async PooledValueTask<ReadOnlySequence<byte>> EnsureBufferAsync(int required, CancellationToken cancellation)
+        async PooledValueTask<ReadOnlySequence<byte>> PipeReadAsync(int required, CancellationToken cancellation)
         {
             while (true)
             {

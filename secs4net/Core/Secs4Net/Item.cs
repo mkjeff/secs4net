@@ -56,8 +56,8 @@ namespace Secs4Net
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public virtual Item this[int index]
         {
-            get => throw CreateNotSupportException();
-            set => throw CreateNotSupportException();
+            get => throw CreateNotSupportException(Format);
+            set => throw CreateNotSupportException(Format);
         }
 
         /// <summary>
@@ -68,10 +68,11 @@ namespace Secs4Net
         /// <exception cref="NotSupportedException">When the item's <see cref="Format"/> is not <see cref="SecsFormat.List"/></exception>
         /// <exception cref="IndexOutOfRangeException"></exception>
         public virtual IEnumerable<Item> Slice(int start, int length)
-            => throw CreateNotSupportException();
+            => throw CreateNotSupportException(Format);
 
-        private NotSupportedException CreateNotSupportException([CallerMemberName] string? memberName = null)
-            => new NotSupportedException($"{memberName} is not supported, since the item's {nameof(Format)} is {Format}");
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static NotSupportedException CreateNotSupportException(SecsFormat format, [CallerMemberName] string? memberName = null)
+            => new($"{memberName} is not supported, since the item's {nameof(Format)} is {format}");
 
         /// <summary>
         /// Get the first element of item array value
@@ -81,7 +82,7 @@ namespace Secs4Net
         /// <exception cref="IndexOutOfRangeException">When item is empty or data length less than sizeof(<typeparamref name="T"/>)</exception>
         /// <exception cref="NotSupportedException">when the item's <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
         public virtual ref T FirstValue<T>() where T : unmanaged
-            => throw CreateNotSupportException();
+            => throw CreateNotSupportException(Format);
 
         /// <summary>
         /// Get the first element of item array value
@@ -90,14 +91,14 @@ namespace Secs4Net
         /// <returns></returns>
         /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
         public virtual ref readonly T FirstValueOrDefault<T>(in T defaultValue = default) where T : unmanaged
-            => throw CreateNotSupportException();
+            => throw CreateNotSupportException(Format);
 
         /// <summary>
         /// Get item value array wrapper
         /// </summary>
         /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
         public virtual ValueArray<T> GetValues<T>() where T : unmanaged
-            => throw CreateNotSupportException();
+            => throw CreateNotSupportException(Format);
 
         /// <summary>
         /// Get item string value
@@ -105,10 +106,10 @@ namespace Secs4Net
         /// <returns></returns>
         /// <exception cref="NotSupportedException">when the <see cref="Format"/> is not <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
         public virtual string GetString()
-            => throw CreateNotSupportException();
+            => throw CreateNotSupportException(Format);
 
         public virtual IEnumerator<Item> GetEnumerator()
-            => throw CreateNotSupportException();
+            => throw CreateNotSupportException(Format);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 

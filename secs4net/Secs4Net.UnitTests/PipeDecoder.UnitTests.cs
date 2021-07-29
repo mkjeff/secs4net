@@ -73,10 +73,15 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public async Task Message_Can_Decode_From_Full_Buffer_And_Equivalent()
+        public async Task Message_Can_Decode_From_Full_Buffer()
         {
+            var messageIds = Enumerable.Range(start: 10001, count: 4).ToArray();
             using var buffer = new ArrayPoolBufferWriter<byte>();
-            SecsGem.EncodeMessage(message, id: 123, deviceId: 0, buffer);
+
+            foreach (var id in messageIds)
+            {
+                SecsGem.EncodeMessage(message, id, deviceId: 0, buffer);
+            }
             var encodedBytes = buffer.WrittenMemory;
 
             var pipe = new Pipe();
@@ -89,19 +94,36 @@ namespace Secs4Net.UnitTests
             });
 
             await decoder.Input.WriteAsync(encodedBytes);
-            var (header, item) = await decoder.GetDataMessages(default).FirstAsync();
-            var decodeMessage = new SecsMessage(header.S, header.F, header.ReplyExpected)
+
+            var decodeMessages = await decoder.GetDataMessages(default)
+                .Take(messageIds.Length)
+                .Select(m => new
+                {
+                    Id = m.header.SystemBytes,
+                    Message = new SecsMessage(m.header.S, m.header.F, m.header.ReplyExpected)
+                    {
+                        SecsItem = m.rootItem,
+                    },
+                })
+                .ToListAsync();
+
+            foreach (var (id, index) in messageIds.Select((a, index) => (a, index)))
             {
-                SecsItem = item,
-            };
-            decodeMessage.Should().NotBeNull().And.BeEquivalentTo(message);
+                decodeMessages[index].Id.Should().Be(id);
+                decodeMessages[index].Message.Should().BeEquivalentTo(message);
+            }
         }
 
         [Fact]
-        public async Task Message_Can_Decode_From_Streaming_And_Equivalent()
+        public async Task Message_Can_Decode_From_Chunked_Sequence()
         {
+            var messageIds = Enumerable.Range(start: 10001, count: 4).ToArray();
             using var buffer = new ArrayPoolBufferWriter<byte>();
-            SecsGem.EncodeMessage(message, id: 123, deviceId: 0, buffer);
+
+            foreach (var id in messageIds)
+            {
+                SecsGem.EncodeMessage(message, id, deviceId: 0, buffer);
+            }
             var encodedBytes = buffer.WrittenMemory.ToArray();
 
             var pipe = new Pipe();
@@ -115,19 +137,30 @@ namespace Secs4Net.UnitTests
 
             _ = Task.Run(async () =>
             {
-                foreach (var chunk in encodedBytes.Chunk(11))
+                foreach (var chunk in encodedBytes.Chunk(23))
                 {
-                    await Task.Delay(1000); //simulate a slow connection
+                    await Task.Delay(200); //simulate a slow connection
                     await decoder.Input.WriteAsync(chunk);
                 }
             });
 
-            var (header, item) = await decoder.GetDataMessages(default).FirstAsync();
-            var decodeMessage = new SecsMessage(header.S, header.F, header.ReplyExpected)
+            var decodeMessages = await decoder.GetDataMessages(default)
+                .Take(messageIds.Length)
+                .Select(m => new
+                {
+                    Id = m.header.SystemBytes,
+                    Message = new SecsMessage(m.header.S, m.header.F, m.header.ReplyExpected)
+                    {
+                        SecsItem = m.rootItem,
+                    },
+                })
+                .ToListAsync();
+
+            foreach (var (id, index) in messageIds.Select((a, index) => (a, index)))
             {
-                SecsItem = item,
-            };
-            decodeMessage.Should().NotBeNull().And.BeEquivalentTo(message);
+                decodeMessages[index].Id.Should().Be(id);
+                decodeMessages[index].Message.Should().BeEquivalentTo(message);
+            }
         }
     }
 }
