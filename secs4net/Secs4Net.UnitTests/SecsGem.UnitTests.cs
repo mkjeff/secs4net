@@ -14,19 +14,19 @@ namespace Secs4Net.UnitTests
 {
     public class SecsGemUnitTests
     {
-        private readonly ISecsConnection connector1;
-        private readonly ISecsConnection connector2;
+        private readonly PipeConnection connector1;
+        private readonly PipeConnection connector2;
 
         public SecsGemUnitTests()
         {
             var pipe1 = new Pipe(new PipeOptions(
-                readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, 
+                //readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline,
                 useSynchronizationContext: false));
             var pipe2 = new Pipe(new PipeOptions(
-                readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline,
+                //readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline,
                 useSynchronizationContext: false));
-            connector1 = new PipeConnection(new PipeDecoder(pipe1.Reader, input: pipe2.Writer));
-            connector2 = new PipeConnection(new PipeDecoder(pipe2.Reader, input: pipe1.Writer));
+            connector1 = new PipeConnection(decoderReader: pipe1.Reader, decoderInput: pipe2.Writer);
+            connector2 = new PipeConnection(decoderReader: pipe2.Reader, decoderInput: pipe1.Writer);
         }
 
         [Fact]
@@ -51,6 +51,8 @@ namespace Secs4Net.UnitTests
             };
 
             using var cts = new CancellationTokenSource();
+            _ = connector1.StartAsync(cts.Token);
+            _ = connector2.StartAsync(cts.Token);
             _ = Task.Run(async () =>
             {
                 var msg = await secsGem2.GetPrimaryMessageAsync(cts.Token).FirstAsync(cts.Token);
@@ -84,6 +86,8 @@ namespace Secs4Net.UnitTests
             };
 
             using var cts = new CancellationTokenSource();
+            _ = connector1.StartAsync(cts.Token);
+            _ = connector2.StartAsync(cts.Token);
 
             var receiver = Substitute.For<Action<SecsMessage>>();
             _ = Task.Run(async () =>
@@ -176,27 +180,27 @@ namespace Secs4Net.UnitTests
 
             SpinWait.SpinUntil(() => connector1.State == ConnectionState.Selected && connector1.State == ConnectionState.Selected);
 
-            var ping = new SecsMessage(s: 1, f: 13)
-            {
-                SecsItem = A("Ping"),
-            };
-            var pong = new SecsMessage(s: 1, f: 14, replyExpected: false)
-            {
-                SecsItem = A("Pong"),
-            };
-
             _ = AsyncHelper.LongRunningAsync(async () =>
             {
+                var pong = new SecsMessage(s: 1, f: 14, replyExpected: false)
+                {
+                    SecsItem = A("Pong"),
+                };
+
                 await foreach (var a in secsGem2.GetPrimaryMessageAsync(cts.Token))
                 {
                     await a.TryReplyAsync(pong);
                 }
             });
 
-            var sendCount = 10000;
-
             Func<Task> sendAsync = async () =>
             {
+                var ping = new SecsMessage(s: 1, f: 13)
+                {
+                    SecsItem = A("Ping"),
+                };
+
+                var sendCount = 10000;
                 var totalTasks = new List<Task<SecsMessage>>(capacity: sendCount);
                 for (var g = 0; g < sendCount; g++)
                 {

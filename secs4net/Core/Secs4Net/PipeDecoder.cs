@@ -53,14 +53,14 @@ namespace Secs4Net
             var totalLengthBytes = new byte[4];
             var messageHeaderBytes = new byte[10];
             // PipeReader peek first
-            var buffer = await PipeReadAsync(required: 4, cancellation).ConfigureAwait(false);
+            var buffer = await PipeReadAsync(_reader, required: 4, cancellation).ConfigureAwait(false);
             while (true)
             {
             Start:
                 // 0: get total message length 4 bytes
-                if (IsBufferInsufficient(ref buffer, required: 4))
+                if (IsBufferInsufficient(_reader, ref buffer, required: 4))
                 {
-                    buffer = await PipeReadAsync(required: 4, cancellation).ConfigureAwait(false);
+                    buffer = await PipeReadAsync(_reader, required: 4, cancellation).ConfigureAwait(false);
                 }
                 var totalLengthSeq = buffer.Slice(buffer.Start, 4);
                 totalLengthSeq.CopyTo(totalLengthBytes);
@@ -69,9 +69,9 @@ namespace Secs4Net
                 Trace.WriteLine($"Get new message with length: {messageLength}");
 
                 // 1: get message header 10 bytes
-                if (IsBufferInsufficient(ref buffer, required: 10))
+                if (IsBufferInsufficient(_reader, ref buffer, required: 10))
                 {
-                    buffer = await PipeReadAsync(required: 10, cancellation).ConfigureAwait(false);
+                    buffer = await PipeReadAsync(_reader, required: 10, cancellation).ConfigureAwait(false);
                 }
                 var messageHaderSeq = buffer.Slice(buffer.Start, 10);
                 messageHaderSeq.CopyTo(messageHeaderBytes);
@@ -95,16 +95,16 @@ namespace Secs4Net
                 if (buffer.Length >= messageLength - 10)
                 {
                     Trace.WriteLine($"Get data message(id:{header.SystemBytes}) with total bytes: {messageLength} and decoded directly");
-                    var completedItem = Item.DecodeFromFullBuffer(ref buffer);
-                    await dataMessageWriter.WriteAsync((header, completedItem), cancellation).ConfigureAwait(false);
+                    var rootItem = Item.DecodeFromFullBuffer(ref buffer);
+                    await dataMessageWriter.WriteAsync((header, rootItem), cancellation).ConfigureAwait(false);
                     continue;
                 }
 
             GetNewItem:
                 // 2: get _format + _lengthByteCount(2bit) 1 byte
-                if (IsBufferInsufficient(ref buffer, required: 1))
+                if (IsBufferInsufficient(_reader, ref buffer, required: 1))
                 {
-                    buffer = await PipeReadAsync(required: 1, cancellation).ConfigureAwait(false);
+                    buffer = await PipeReadAsync(_reader, required: 1, cancellation).ConfigureAwait(false);
                 }
 #if NET
                 Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
@@ -114,9 +114,9 @@ namespace Secs4Net
                 buffer = buffer.Slice(1);
 
                 // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
-                if (IsBufferInsufficient(ref buffer, required: itemContentLengthByteCount))
+                if (IsBufferInsufficient(_reader, ref buffer, required: itemContentLengthByteCount))
                 {
-                    buffer = await PipeReadAsync(required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
+                    buffer = await PipeReadAsync(_reader, required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
                 }
                 var itemContentLengthBytes = buffer.Slice(0, itemContentLengthByteCount);
                 Item.DecodeDataLength(itemContentLengthBytes, out var itemContentLength);
@@ -140,9 +140,9 @@ namespace Secs4Net
                 }
                 else
                 {
-                    if (IsBufferInsufficient(ref buffer, required: itemContentLength))
+                    if (IsBufferInsufficient(_reader, ref buffer, required: itemContentLength))
                     {
-                        buffer = await PipeReadAsync(required: itemContentLength, cancellation).ConfigureAwait(false);
+                        buffer = await PipeReadAsync(_reader, required: itemContentLength, cancellation).ConfigureAwait(false);
                     }
                     var itemDataBytes = buffer.Slice(0, itemContentLength);
                     item = Item.DecodeDataItem(itemFormat, itemDataBytes);
@@ -181,45 +181,63 @@ namespace Secs4Net
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsBufferInsufficient(ref ReadOnlySequence<byte> remainedBuffer, int required)
+        private static bool IsBufferInsufficient(PipeReader reader, ref ReadOnlySequence<byte> remainedBuffer, int required)
         {
             if (remainedBuffer.Length >= required)
             {
                 return false;
             }
 
-            _reader.AdvanceTo(remainedBuffer.Start);
-            if (_reader.TryRead(out var result))
+            reader.AdvanceTo(remainedBuffer.Start);
+            return !PipeTryRead(reader, required, ref remainedBuffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool PipeTryRead(PipeReader reader, int required, ref ReadOnlySequence<byte> buffer)
+        {
+            if (reader.TryRead(out var result))
             {
-                remainedBuffer = result.Buffer;
-                if (result.Buffer.Length >= required)
+                buffer = result.Buffer;
+                if (buffer.Length >= required)
                 {
-                    return false;
+                    return true;
                 }
                 else
                 {
-                    _reader.AdvanceTo(consumed: remainedBuffer.Start, examined: remainedBuffer.End);
+                    reader.AdvanceTo(consumed: buffer.Start, examined: buffer.End);
                 }
             }
-            return true;
+
+            return false;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        async PooledValueTask<ReadOnlySequence<byte>> PipeReadAsync(int required, CancellationToken cancellation)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ValueTask<ReadOnlySequence<byte>> PipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
         {
-            while (true)
+            ReadOnlySequence<byte> buffer = ReadOnlySequence<byte>.Empty;
+            if (PipeTryRead(reader, required, ref buffer))
             {
-                //StartT8Timer();
-                var result = await _reader.ReadAsync(cancellation).ConfigureAwait(false);
-                //StopT8Timer();
-                var buffer = result.Buffer;
+                return ValueTask.FromResult(buffer);
+            }
 
-                if (buffer.Length >= required)
+            return SlowPipeReadAsync(reader, required, cancellation);
+            
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            static async PooledValueTask<ReadOnlySequence<byte>> SlowPipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
+            {
+                while (true)
                 {
-                    Trace.WriteLine($"Decoder readed bytes count:{buffer.Length}");
-                    return buffer;
+                    //StartT8Timer();
+                    var result = await reader.ReadAsync(cancellation).ConfigureAwait(false);
+                    //StopT8Timer();
+                    var buffer = result.Buffer;
+
+                    if (buffer.Length >= required)
+                    {
+                        return buffer;
+                    }
+                    reader.AdvanceTo(consumed: buffer.Start, examined: buffer.End);
                 }
-                _reader.AdvanceTo(consumed: buffer.Start, examined: buffer.End);
             }
         }
     }
