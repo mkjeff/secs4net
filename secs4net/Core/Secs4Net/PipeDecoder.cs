@@ -217,7 +217,11 @@ namespace Secs4Net
             ReadOnlySequence<byte> buffer = ReadOnlySequence<byte>.Empty;
             if (PipeTryRead(reader, required, ref buffer))
             {
+#if NET
                 return ValueTask.FromResult(buffer);
+#else
+                return new ValueTask<ReadOnlySequence<byte>>(buffer);
+#endif
             }
 
             return SlowPipeReadAsync(reader, required, cancellation);

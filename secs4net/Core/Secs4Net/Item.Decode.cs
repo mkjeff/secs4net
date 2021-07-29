@@ -72,7 +72,7 @@ namespace Secs4Net
 #if NET
                     > 512 => A(Encoding.ASCII.GetString(bytes)),
 #else
-                    > 512 => A(Encoding.ASCII.GetString(bytes.ToArray())),
+                    > 512 => A(DecodeString(bytes, Encoding.ASCII)),
 #endif
                     _ => A(DecodeStringWithPooled(bytes, Encoding.ASCII)),
                 },
@@ -82,7 +82,7 @@ namespace Secs4Net
 #if NET
                     > 512 => J(Jis8Encoding.GetString(bytes)),
 #else
-                    > 512 => J(Jis8Encoding.GetString(bytes.ToArray())),
+                    > 512 => J(DecodeString(bytes, Jis8Encoding)),
 #endif
                     _ => J(DecodeStringWithPooled(bytes, Jis8Encoding)),
                 },
@@ -172,6 +172,15 @@ namespace Secs4Net
                 valueAsBytesSpan.Reverse(elmSize);
                 return values;
             }
+
+#if NETSTANDARD
+            static unsafe string DecodeString(in ReadOnlySequence<byte> bytes, Encoding encoding)
+            {
+                using var spanOwner = SpanOwner<byte>.Allocate((int)bytes.Length);
+                bytes.CopyTo(spanOwner.Span);
+                return encoding.GetString((byte*) Unsafe.AsPointer(ref spanOwner.Span.DangerousGetReference()), spanOwner.Span.Length);
+            }
+#endif
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static string DecodeStringWithPooled(in ReadOnlySequence<byte> bytes, Encoding encoding)

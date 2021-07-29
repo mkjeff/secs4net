@@ -114,7 +114,6 @@ namespace Secs4Net.UnitTests
             }
         }
 
-#if NET
         [Fact]
         public async Task Message_Can_Decode_From_Chunked_Sequence()
         {
@@ -163,6 +162,5 @@ namespace Secs4Net.UnitTests
                 decodeMessages[index].Message.Should().BeEquivalentTo(message);
             }
         }
-#endif
     }
 }

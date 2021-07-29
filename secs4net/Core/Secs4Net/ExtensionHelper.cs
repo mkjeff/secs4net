@@ -122,12 +122,13 @@ namespace Secs4Net
             static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
         }
 
-        public static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
+#if NETSTANDARD
+        internal static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // This disposes the registration as soon as one of the tasks trigger
-            using (cancellationToken.Register(state => ((TaskCompletionSource<object>)state).TrySetResult(null!), tcs))
+            using (cancellationToken.Register(state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
             {
                 var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
                 if (resultTask == tcs.Task)
@@ -140,12 +141,12 @@ namespace Secs4Net
             }
         }
 
-        public static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
+        internal static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // This disposes the registration as soon as one of the tasks trigger
-            using (cancellationToken.Register(state => ((TaskCompletionSource<object>)state).TrySetResult(null!), tcs))
+            using (cancellationToken.Register(state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
             {
                 var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
                 if (resultTask == tcs.Task)
@@ -157,6 +158,6 @@ namespace Secs4Net
                 return await task;
             }
         }
+#endif
     }
-
 }

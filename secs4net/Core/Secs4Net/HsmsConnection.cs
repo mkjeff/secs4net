@@ -148,9 +148,7 @@ namespace Secs4Net
                         {
                             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
                             {
-#if NET
                                 Blocking = false,
-#endif
                                 ReceiveBufferSize = _socketReceiveBufferSize,
                             };
 #if NET
@@ -180,9 +178,7 @@ namespace Secs4Net
             {
                 var server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
                 {
-#if NET
                     Blocking = false,
-#endif
                 };
                 server.Bind(new IPEndPoint(IpAddress, Port));
                 server.Listen(0);
@@ -202,10 +198,10 @@ namespace Secs4Net
                         {
 #if NET
                             _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
-                            _socket.Blocking = false;
 #else
                             _socket = await server.AcceptAsync().WithCancellation(cancellation).ConfigureAwait(false);
 #endif
+                            _socket.Blocking = false;
                             _socket.ReceiveBufferSize = _socketReceiveBufferSize;
                             CommunicationStateChanging(ConnectionState.Connected);
                             connected = true;
@@ -289,12 +285,12 @@ namespace Secs4Net
                 {
                     Debug.Assert(_socket != null);
 #if NET
-                    var memory = decoderInput.GetMemory(_socket.ReceiveBufferSize);
+                    var memory = decoderInput.GetMemory(_socketReceiveBufferSize);
                     var count = await _socket.ReceiveAsync(memory, SocketFlags.None, cancellation).ConfigureAwait(false);
                     decoderInput.Advance(count);
                     await decoderInput.FlushAsync(cancellation).ConfigureAwait(false);
 #else
-                    var count = _socket!.Receive(_socketReceiveBuffer);
+                    var count = await _socket.ReceiveAsync(new ArraySegment<byte>(_socketReceiveBuffer), SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false); ;
                     await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory().Slice(0, count), cancellation).ConfigureAwait(false);
 #endif
                 }
@@ -521,15 +517,15 @@ namespace Secs4Net
         }
 
 #if NET
-        async ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+        async PooledValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
         {
-            Debug.Assert(_socket != null);
-            await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
             try
             {
                 do
                 {
-                    var length = await _socket.SendAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+                    Debug.Assert(_socket != null);
+                    var length = await _socket.SendAsync(buffer, SocketFlags.None, cancellation).ConfigureAwait(false);
                     //Trace.WriteLine($"Socket sent {length} bytes.");
                     buffer = buffer[length..];
                 } while (!buffer.IsEmpty);
@@ -540,15 +536,27 @@ namespace Secs4Net
             }
         }
 #else
-        ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
+        async PooledValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
         {
             if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(buffer, out var arr))
             {
                 throw new InvalidOperationException();
             }
-            var count = _socket!.Send(arr.Array, arr.Offset, arr.Count, SocketFlags.None);
-            Debug.Assert(count == arr.Count);
-            return default;
+            await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
+            try
+            {
+                do
+                {
+                    Debug.Assert(_socket != null);
+                    var length = await _socket.SendAsync(arr, SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false);
+                    arr = new ArraySegment<byte>(arr.Array, arr.Offset + length, arr.Count - length);
+                    //Trace.WriteLine($"Socket sent {length} bytes.");
+                } while (arr.Count > 0);
+            }
+            finally
+            {
+                _sendLock.Release();
+            }
         }
 #endif
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PooledAwait;
+using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
@@ -18,9 +19,9 @@ namespace Secs4Net
         public Task StartAsync(CancellationToken cancellation) 
             => AsyncHelper.LongRunningAsync(() => _decoder.StartAsync(cancellation), cancellation);
 
-        async ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
+        async PooledValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken)
         {
-            await _sendLock.WaitAsync(cancellationToken);
+            await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 _ = await _decoder.Input.WriteAsync(source, cancellationToken).ConfigureAwait(false);
