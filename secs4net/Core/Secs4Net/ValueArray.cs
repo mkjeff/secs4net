@@ -17,8 +17,17 @@ namespace Secs4Net
             _length = src.Length / Unsafe.SizeOf<T>();
         }
 
-        public readonly bool IsEmpty => _length == 0;
-        public readonly int Length => _length;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _length == 0;
+        }
+
+        public readonly int Length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _length;
+        }
 
         /// <summary>
         /// Note: This operation is faster because of bypassing index boundary validation.
@@ -27,7 +36,11 @@ namespace Secs4Net
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public ref T this[int index] => ref Unsafe.Add(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReference()), index);
+        public ref T this[int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref Unsafe.Add(ref Unsafe.As<byte, T>(ref _array.Span.DangerousGetReference()), index);
+        }
 
         public readonly T[] ToArray() => AsSpan().ToArray();
 

@@ -14,8 +14,8 @@ namespace Secs4Net
     {
         internal static void DecodeFormatAndLengthByteCount(byte formatAndLengthByte, out SecsFormat format, out byte lengthByteCount)
         {
-            format = (SecsFormat)(formatAndLengthByte & 0xFC);
-            lengthByteCount = (byte)(formatAndLengthByte & 3);
+            format = (SecsFormat)(formatAndLengthByte & 0b11111100);
+            lengthByteCount = (byte)(formatAndLengthByte & 0b00000011);
         }
 
         internal static void DecodeDataLength(in ReadOnlySequence<byte> sourceBytes, out int dataLength)
@@ -33,9 +33,8 @@ namespace Secs4Net
 #else
             DecodeFormatAndLengthByteCount(bytes.First.Span.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
 #endif
-            bytes = bytes.Slice(1);
 
-            var dataLengthSeq = bytes.Slice(0, lengthByteCount);
+            var dataLengthSeq = bytes.Slice(1, lengthByteCount);
             DecodeDataLength(dataLengthSeq, out var dataLength);
             bytes = bytes.Slice(dataLengthSeq.End);
 

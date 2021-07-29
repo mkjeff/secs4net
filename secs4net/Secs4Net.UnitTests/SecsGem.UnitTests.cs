@@ -164,17 +164,17 @@ namespace Secs4Net.UnitTests
                 T3 = 60000,
             });
 
-            //var hsmsConn1 = new HsmsConnection(options1, Substitute.For<ISecsGemLogger>());
-            //var hsmsConn2 = new HsmsConnection(options2, Substitute.For<ISecsGemLogger>());
+            var connector1 = new HsmsConnection(options1, Substitute.For<ISecsGemLogger>());
+            var connector2 = new HsmsConnection(options2, Substitute.For<ISecsGemLogger>());
             var secsGem1 = new SecsGem(options1, connector1, Substitute.For<ISecsGemLogger>());
             var secsGem2 = new SecsGem(options2, connector2, Substitute.For<ISecsGemLogger>());
+
             using var cts = new CancellationTokenSource();
 
+            _ = connector1.StartAsync(cts.Token);
+            _ = connector2.StartAsync(cts.Token);
 
-            //_ = hsmsConn1.StartAsync(cts.Token);
-            //_ = hsmsConn2.StartAsync(cts.Token);
-
-            //SpinWait.SpinUntil(() => hsmsConn1.State == ConnectionState.Selected && hsmsConn2.State == ConnectionState.Selected);
+            SpinWait.SpinUntil(() => connector1.State == ConnectionState.Selected && connector1.State == ConnectionState.Selected);
 
             var ping = new SecsMessage(s: 1, f: 13)
             {
