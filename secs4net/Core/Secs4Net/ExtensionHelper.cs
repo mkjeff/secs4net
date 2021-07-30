@@ -193,6 +193,14 @@ namespace Secs4Net
                 return await task;
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe int GetBytes(this Encoding encoding, string str, Span<byte> span)
+        {
+            var chars = (char*)Unsafe.AsPointer(ref str.AsSpan().DangerousGetReference());
+            var bytes = (byte*)Unsafe.AsPointer(ref span.DangerousGetReference());
+            return encoding.GetBytes(chars, str.Length, bytes, span.Length);
+        }
 #endif
     }
 }
