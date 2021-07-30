@@ -68,7 +68,7 @@ namespace Secs4Net
                     .ForEachAwaitWithCancellationAsync(ProcessDataMessageAsync, _cancellationSourceForDataMessageProcessing.Token));
         }
 
-        internal async PooledValueTask<SecsMessage> SendDataMessageAsync(SecsMessage message, int systembyte, CancellationToken cancellation)
+        internal async PooledValueTask<SecsMessage> SendDataMessageAsync(SecsMessage message, int id, CancellationToken cancellation)
         {
             if (_hsmsConnector.State != ConnectionState.Selected)
             {
@@ -78,14 +78,14 @@ namespace Secs4Net
             var token = ValueTaskCompletionSource<SecsMessage>.Create();
             if (message.ReplyExpected)
             {
-                _replyExpectedMsgs[systembyte] = (message, token);
+                _replyExpectedMsgs[id] = (message, token);
             }
 
             try
             {
                 using (var buffer = new ArrayPoolBufferWriter<byte>(initialCapacity: _recentlyMaxEncodedByteLength))
                 {
-                    EncodeMessage(message, systembyte, DeviceId, buffer);
+                    EncodeMessage(message, id, DeviceId, buffer);
                     await _hsmsConnector.SendAsync(buffer.WrittenMemory, cancellation).ConfigureAwait(false);
 
                     if (buffer.WrittenCount > _recentlyMaxEncodedByteLength)
@@ -94,7 +94,7 @@ namespace Secs4Net
                     }
                 }
 
-                _logger.MessageOut(message, systembyte);
+                _logger.MessageOut(message, id);
 
                 if (!message.ReplyExpected)
                 {
@@ -110,12 +110,12 @@ namespace Secs4Net
             }
             catch (TimeoutException)
             {
-                _logger.Error($"T3 Timeout[id=0x{systembyte:X8}]: {T3 / 1000} sec.");
+                _logger.Error($"T3 Timeout[id=0x{id:X8}]: {T3 / 1000} sec.");
                 throw new SecsException(message, Resources.T3Timeout);
             }
             finally
             {
-                _replyExpectedMsgs.TryRemove(systembyte, out _);
+                _replyExpectedMsgs.TryRemove(id, out _);
             }
         }
 
@@ -137,7 +137,7 @@ namespace Secs4Net
         }
 
         public ValueTask<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default)
-            => SendDataMessageAsync(message, SystemByteGenerator.New(), cancellation);
+            => SendDataMessageAsync(message, MessageIdGenerator.NewId(), cancellation);
 
         public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)
             => _primaryMessageChannel.Reader.ReadAllAsync(cancellation);
@@ -145,7 +145,6 @@ namespace Secs4Net
         private async Task ProcessDataMessageAsync((MessageHeader header, Item? rootItem) data, CancellationToken cancellation)
         {
             var (header, rootItem) = data;
-            var systembyte = header.SystemBytes;
             var msg = new SecsMessage(header.S, header.F, header.ReplyExpected)
             {
                 SecsItem = rootItem,
@@ -155,7 +154,7 @@ namespace Secs4Net
             {
                 if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
                 {
-                    _logger.MessageIn(msg, systembyte);
+                    _logger.MessageIn(msg, header.Id);
                     _logger.Warning("Received Unrecognized Device Id Message");
                     var headerBytes = new byte[10];
                     header.EncodeTo(new MemoryBufferWriter<byte>(headerBytes));
@@ -164,24 +163,25 @@ namespace Secs4Net
                         Name = "Unrecognized Device Id",
                         SecsItem = Item.B(headerBytes),
                     };
-                    await SendDataMessageAsync(s9f1, SystemByteGenerator.New(), cancellation).ConfigureAwait(false);
+                    await SendDataMessageAsync(s9f1, MessageIdGenerator.NewId(), cancellation).ConfigureAwait(false);
                     return;
                 }
 
+                var id = header.Id;
                 if (msg.F % 2 != 0)
                 {
                     if (msg.S != 9)
                     {
                         //Primary message
-                        _logger.MessageIn(msg, systembyte);
-                        await _primaryMessageChannel.Writer.WriteAsync(new PrimaryMessageWrapper(this, msg, systembyte), cancellation).ConfigureAwait(false);
+                        _logger.MessageIn(msg, header.Id);
+                        await _primaryMessageChannel.Writer.WriteAsync(new PrimaryMessageWrapper(this, msg, id), cancellation).ConfigureAwait(false);
                         return;
                     }
                     // Error message
                     if (msg.SecsItem is { Format: not SecsFormat.List or SecsFormat.ASCII or SecsFormat.JIS8 } dataItem
-                        && dataItem.GetValues<byte>() is { Length: >= 10 } headerBytes)
+                        && dataItem.GetReadOnlyMemory<byte>() is { Length: >= 10 } headerBytes)
                     {
-                        systembyte = BinaryPrimitives.ReadInt32BigEndian(headerBytes.AsSpan().Slice(6, 4));
+                        id = BinaryPrimitives.ReadInt32BigEndian(headerBytes.Span.Slice(6, 4));
                     }
                     else
                     {
@@ -190,14 +190,14 @@ namespace Secs4Net
                 }
 
                 // Secondary message
-                _logger.MessageIn(msg, systembyte);
-                if (_replyExpectedMsgs.TryGetValue(systembyte, out var token))
+                _logger.MessageIn(msg, id);
+                if (_replyExpectedMsgs.TryGetValue(id, out var token))
                 {
                     token.completeSource.HandleReplyMessage(token.primary, msg);
                 }
                 else
                 {
-                    _logger.Warning($"Received unexpected secondary message[0x{systembyte:X8}]. Maybe T3 timeout.");
+                    _logger.Warning($"Received unexpected secondary message[0x{id:X8}]. Maybe T3 timeout.");
                 }
             }
             catch (Exception ex)

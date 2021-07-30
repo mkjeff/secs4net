@@ -25,20 +25,24 @@ namespace Secs4Net
                 return ref Unsafe.As<T, TResult>(ref _value.Span.DangerousGetReferenceAt(0));
 
                 [DoesNotReturn]
-                static void ThrowHelper() => throw new IndexOutOfRangeException("The item is empty or data length less than sizeof(T)");
+                static void ThrowHelper() => throw new IndexOutOfRangeException($"The item is empty or data length less than sizeof({typeof(T).Name})");
             }
 
-            public sealed override ref readonly TResult FirstValueOrDefault<TResult>(in TResult defaultValue = default)
+            public sealed override ref readonly TResult FirstValueOrDefault<TResult>(TResult defaultValue = default)
             {
                 if (_value.Length == 0 || _value.Length * Unsafe.SizeOf<T>() < Unsafe.SizeOf<TResult>())
                 {
-                    return ref defaultValue;
+                    return ref new ReadOnlyRef<TResult>(defaultValue).Value;
                 }
 
                 return ref Unsafe.As<T, TResult>(ref _value.Span.DangerousGetReferenceAt(0));
             }
 
-            public sealed override ValueArray<TResult> GetValues<TResult>() => new(_value.AsBytes());
+            public sealed override Memory<TResult> GetMemory<TResult>() 
+                => _value.Cast<T, TResult>();
+
+            public sealed override ReadOnlyMemory<TResult> GetReadOnlyMemory<TResult>()
+                => _value.Cast<T, TResult>();
 
             public sealed override void EncodeTo(IBufferWriter<byte> buffer)
             {
@@ -56,6 +60,9 @@ namespace Secs4Net
                 span.Reverse(Unsafe.SizeOf<T>());
                 buffer.Advance(byteLength);
             }
+
+            private protected sealed override bool IsEquals(Item other)
+                => base.IsEquals(other) && _value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other)._value.Span);
         }
     }
 }

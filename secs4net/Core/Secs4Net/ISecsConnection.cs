@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PooledAwait;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -48,7 +49,7 @@ namespace Secs4Net
         /// <summary>
         /// </summary>
         /// <returns>The number of bytes sent to</returns>
-        internal ValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
+        internal PooledValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation);
         internal IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation);
     }
 }

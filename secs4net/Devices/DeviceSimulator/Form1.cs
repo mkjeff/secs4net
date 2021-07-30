@@ -159,21 +159,21 @@ namespace SecsDevice
             {
                 _form = form;
             }
-            public void MessageIn(SecsMessage msg, int systembyte)
+            public void MessageIn(SecsMessage msg, int id)
             {
                 _form.Invoke((MethodInvoker)delegate
                 {
                     _form.richTextBox1.SelectionColor = Color.Black;
-                    _form.richTextBox1.AppendText($"<-- [0x{systembyte:X8}] {msg.ToSml()}\n");
+                    _form.richTextBox1.AppendText($"<-- [0x{id:X8}] {msg.ToSml()}\n");
                 });
             }
 
-            public void MessageOut(SecsMessage msg, int systembyte)
+            public void MessageOut(SecsMessage msg, int id)
             {
                 _form.Invoke((MethodInvoker)delegate
                 {
                     _form.richTextBox1.SelectionColor = Color.Black;
-                    _form.richTextBox1.AppendText($"--> [0x{systembyte:X8}] {msg.ToSml()}\n");
+                    _form.richTextBox1.AppendText($"--> [0x{id:X8}] {msg.ToSml()}\n");
                 });
             }
 

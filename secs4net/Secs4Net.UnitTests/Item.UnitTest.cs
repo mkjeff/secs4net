@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using Newtonsoft.Json.Linq;
 using Secs4Net.UnitTests.Extensions;
 using System;
 using System.Buffers;
@@ -111,7 +110,7 @@ namespace Secs4Net.UnitTests
             var arr = new short[3] { 2314, 4214, 4221 };
             using (var arrayItem = I2(arr))
             {
-                arrayItem.GetValues<short>().ToArray().Should().BeEquivalentTo(arr);
+                arrayItem.GetReadOnlyMemory<short>().ToArray().Should().BeEquivalentTo(arr);
                 arrayItem.FirstValue<short>().Should().Be(arr[0]);
                 arrayItem.FirstValueOrDefault<short>(21).Should().NotBe(21).And.Be(arr[0]);
             }
@@ -169,9 +168,9 @@ namespace Secs4Net.UnitTests
                 stringItemFirstValueOrDefault.Should().Throw<NotSupportedException>()
                     .WithMessage(CreateNotSupportedMessage(nameof(Item.FirstValueOrDefault), stringItem.Format));
 
-                Action stringItemGetValues = () => stringItem.GetValues<byte>();
+                Action stringItemGetValues = () => stringItem.GetReadOnlyMemory<byte>();
                 stringItemGetValues.Should().Throw<NotSupportedException>()
-                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetValues), stringItem.Format));
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetReadOnlyMemory), stringItem.Format));
             }
 
             using (var arrayItem = Boolean())
@@ -207,9 +206,9 @@ namespace Secs4Net.UnitTests
                 listItemFirstValueOrDefault.Should().Throw<NotSupportedException>()
                     .WithMessage(CreateNotSupportedMessage(nameof(Item.FirstValueOrDefault), listItem.Format));
 
-                Action listItemGetValues = () => listItem.GetValues<byte>();
+                Action listItemGetValues = () => listItem.GetReadOnlyMemory<byte>();
                 listItemGetValues.Should().Throw<NotSupportedException>()
-                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetValues), listItem.Format));
+                    .WithMessage(CreateNotSupportedMessage(nameof(Item.GetReadOnlyMemory), listItem.Format));
             }
             static string CreateNotSupportedMessage(string memberName, SecsFormat format)
                 => $"{memberName} is not supported, since the item's {nameof(Item.Format)} is {format}";
@@ -219,7 +218,7 @@ namespace Secs4Net.UnitTests
         public void Item_GetValues_With_Match_Typed()
         {
             var source = new int[] { 1, 2, 3, 4 };
-            var itemArray = I4(source).GetValues<int>().ToArray();
+            var itemArray = I4(source).GetReadOnlyMemory<int>().ToArray();
 
             itemArray.Should().BeEquivalentTo(source);
         }
@@ -230,7 +229,7 @@ namespace Secs4Net.UnitTests
             var source = new int[] { 1, 2, 3, 4 };
 
             // down size from int to short
-            var itemArray = I4(source).GetValues<short>().ToArray();
+            var itemArray = I4(source).GetReadOnlyMemory<short>().ToArray();
             itemArray.Length.Should().Be(Buffer.ByteLength(source) / sizeof(short));
 
             var expectedArray = new short[itemArray.Length];
@@ -245,7 +244,7 @@ namespace Secs4Net.UnitTests
             var source = new int[] { 1, 2, 3, 4 };
 
             // up size from int to long
-            var itemArray = I4(source).GetValues<long>().ToArray();
+            var itemArray = I4(source).GetReadOnlyMemory<long>().ToArray();
             itemArray.Length.Should().Be(Buffer.ByteLength(source) / sizeof(long));
 
             var expectedArray = new long[itemArray.Length];
@@ -260,7 +259,7 @@ namespace Secs4Net.UnitTests
             var source = new int[] { 1, 2, 3, 4, 5 };
 
             // up size from int to long
-            var itemArray = I4(source).GetValues<long>().ToArray();
+            var itemArray = I4(source).GetReadOnlyMemory<long>().ToArray();
             itemArray.Length.Should().Be(Buffer.ByteLength(source) / sizeof(long));
 
             var expectedArray = new long[itemArray.Length];
@@ -272,21 +271,13 @@ namespace Secs4Net.UnitTests
         [Fact]
         public void Item_GetValues_ValueArray_Can_Index_Great_Than_Length()
         {
-            var source = new int[] { 1, 2, 3, 4, 5 };
-
+            var item = I4(1, 2, 3, 4, 5);
             // up size from int to long
-            var itemArray = I4(source).GetValues<long>();
-
-            Action indexGreatThanValueArrayLength = () =>
-            {
-                var value = itemArray[itemArray.Length + 1];
-            };
-
-            indexGreatThanValueArrayLength.Should().NotThrow();
 
             Action indexGreatThanSpanLength = () =>
             {
-                var value = itemArray.AsSpan()[itemArray.Length + 1];
+                var itemArray = item.GetReadOnlyMemory<long>().Span;
+                var value = itemArray[itemArray.Length + 1];
             };
             indexGreatThanSpanLength.Should().Throw<IndexOutOfRangeException>();
         }
@@ -423,7 +414,7 @@ namespace Secs4Net.UnitTests
         {
             var original = ushort.MaxValue;
             var item = U2(original);
-            var arr = item.GetValues<byte>();
+            var arr = item.GetMemory<byte>().Span;
 
             arr.Length.Should().Be(2);
             arr[0] = 123;
@@ -431,7 +422,7 @@ namespace Secs4Net.UnitTests
 
             var changed = item.FirstValue<ushort>();
             changed.Should().NotBe(original);
-            changed.Should().Be(BitConverter.ToUInt16(arr.AsSpan()));
+            changed.Should().Be(BitConverter.ToUInt16(arr));
         }
     }
 }

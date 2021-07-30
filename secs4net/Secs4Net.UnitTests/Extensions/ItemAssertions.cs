@@ -139,7 +139,7 @@ namespace Secs4Net.UnitTests.Extensions
 
             bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, IEquivalencyValidationContext context) where T : unmanaged
             {
-                if (subject.GetValues<T>().AsSpan().SequenceEqual(expectation.GetValues<T>().AsSpan()))
+                if (subject.GetReadOnlyMemory<T>().Span.SequenceEqual(expectation.GetReadOnlyMemory<T>().Span))
                 {
                     return true;
                 }
@@ -149,8 +149,8 @@ namespace Secs4Net.UnitTests.Extensions
                     .BecauseOf(context.Because, context.BecauseArgs)
                     .FailWith("Expected {0} to be {1}, but found {2}",
                         path + $".GetValues<{typeof(T).Name}>()",
-                        expectation.GetValues<T>().ToArray(),
-                        subject.GetValues<T>().ToArray());
+                        expectation.GetReadOnlyMemory<T>().ToArray(),
+                        subject.GetReadOnlyMemory<T>().ToArray());
                 return false;
             }
 

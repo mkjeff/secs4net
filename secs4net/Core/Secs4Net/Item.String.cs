@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Secs4Net
@@ -29,6 +30,9 @@ namespace Secs4Net
                 var span = buffer.GetSpan(bytelength).Slice(0, bytelength);
                 buffer.Advance(encoder.GetBytes(_value, span));
             }
+
+            private protected sealed override bool IsEquals(Item other) 
+                => base.IsEquals(other) && _value.Equals(Unsafe.As<StringItem>(other)._value, System.StringComparison.Ordinal);
         }
     }
 }

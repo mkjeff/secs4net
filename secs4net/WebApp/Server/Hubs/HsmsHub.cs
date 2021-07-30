@@ -136,8 +136,8 @@ namespace WebApp.Server.Hubs
         public void Debug(string msg) => _hubContext.Clients.All.SendAsync("Debug", msg);
         public void Error(string msg, Exception? ex = null) => _hubContext.Clients.All.SendAsync("Error", msg + "\n" + ex);
         public void Info(string msg) => _hubContext.Clients.All.SendAsync("Info", msg);
-        public void MessageIn(SecsMessage msg, int systembyte) => _hubContext.Clients.All.SendAsync("MessageIn", $"<< [0x{systembyte:X8}] {msg.ToSml()}");
-        public void MessageOut(SecsMessage msg, int systembyte) => _hubContext.Clients.All.SendAsync("MessageOut", $">> [0x{systembyte:X8}] {msg.ToSml()}\n");
+        public void MessageIn(SecsMessage msg, int id) => _hubContext.Clients.All.SendAsync("MessageIn", $"<< [0x{id:X8}] {msg.ToSml()}");
+        public void MessageOut(SecsMessage msg, int id) => _hubContext.Clients.All.SendAsync("MessageOut", $">> [0x{id:X8}] {msg.ToSml()}\n");
         public void Warning(string msg) => _hubContext.Clients.All.SendAsync("Warning", msg);
     }
 }

@@ -77,7 +77,7 @@ namespace Secs4Net
                 messageHaderSeq.CopyTo(messageHeaderBytes);
                 var header = MessageHeader.Decode(messageHeaderBytes);
                 buffer = buffer.Slice(messageHaderSeq.End);
-                Trace.WriteLine($"Get message(id:{header.SystemBytes}) header");
+                Trace.WriteLine($"Get message(id:{header.Id:X8}) header");
 
                 if (messageLength == 10) // only message header
                 {
@@ -94,7 +94,7 @@ namespace Secs4Net
 
                 if (buffer.Length >= messageLength - 10)
                 {
-                    Trace.WriteLine($"Get data message(id:{header.SystemBytes}) with total bytes: {messageLength} and decoded directly");
+                    Trace.WriteLine($"Get data message(id:{header.Id:X8}) with total bytes: {messageLength} and decoded directly");
                     var rootItem = Item.DecodeFromFullBuffer(ref buffer);
                     await dataMessageWriter.WriteAsync((header, rootItem), cancellation).ConfigureAwait(false);
                     continue;
@@ -161,7 +161,7 @@ namespace Secs4Net
                         }
                         else
                         {
-                            Trace.WriteLine($"Get data message(id:{header.SystemBytes}) decoded by data chunked");
+                            Trace.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
                             await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
                             goto Start;
                         }
@@ -170,7 +170,7 @@ namespace Secs4Net
                 }
                 else
                 {
-                    Trace.WriteLine($"Get data message(id:{header.SystemBytes}) decoded by data chunked");
+                    Trace.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
                     await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
                 }
             }

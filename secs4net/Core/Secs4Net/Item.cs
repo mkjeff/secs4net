@@ -4,7 +4,6 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -70,10 +69,6 @@ namespace Secs4Net
         public virtual IEnumerable<Item> Slice(int start, int length)
             => throw CreateNotSupportException(Format);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NotSupportedException CreateNotSupportException(SecsFormat format, [CallerMemberName] string? memberName = null)
-            => new($"{memberName} is not supported, since the item's {nameof(Format)} is {format}");
-
         /// <summary>
         /// Get the first element of item array value
         /// </summary>
@@ -90,14 +85,21 @@ namespace Secs4Net
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
-        public virtual ref readonly T FirstValueOrDefault<T>(in T defaultValue = default) where T : unmanaged
+        public virtual ref readonly T FirstValueOrDefault<T>(T defaultValue = default) where T : unmanaged
             => throw CreateNotSupportException(Format);
 
         /// <summary>
-        /// Get item value array wrapper
+        /// Get item array as <see cref="Memory{T}"/>
         /// </summary>
         /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
-        public virtual ValueArray<T> GetValues<T>() where T : unmanaged
+        public virtual Memory<T> GetMemory<T>() where T : unmanaged
+            => throw CreateNotSupportException(Format);
+
+        /// <summary>
+        /// Get item array as <see cref="ReadOnlyMemory{T}"/>
+        /// </summary>
+        /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
+        public virtual ReadOnlyMemory<T> GetReadOnlyMemory<T>() where T: unmanaged
             => throw CreateNotSupportException(Format);
 
         /// <summary>
@@ -111,6 +113,10 @@ namespace Secs4Net
         public virtual IEnumerator<Item> GetEnumerator()
             => throw CreateNotSupportException(Format);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static NotSupportedException CreateNotSupportException(SecsFormat format, [CallerMemberName] string? memberName = null)
+            => new($"{memberName} is not supported, since the item's {nameof(Format)} is {format}");
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public virtual void Dispose()
@@ -121,45 +127,10 @@ namespace Secs4Net
             => Equals(obj as Item);
 
         public bool Equals(Item? other)
-            => other is not null && IsMatch(this, other);
+            => other is not null && IsEquals(other);
 
-        private static bool IsMatch(Item left, Item right)
-        {
-            if (left.Format != right.Format)
-            {
-                return false;
-            }
-
-            if (left.Count != right.Count)
-            {
-                return false;
-            }
-
-            if (left.Count == 0)
-            {
-                return true;
-            }
-
-            return left.Format switch
-            {
-                SecsFormat.List => IsListMatch(left, right),
-                SecsFormat.ASCII or SecsFormat.JIS8 => string.Equals(left.GetString(), right.GetString(), StringComparison.Ordinal),
-                _ => left.GetValues<byte>().AsBytes().SequenceEqual(right.GetValues<byte>().AsBytes()),
-            };
-
-            static bool IsListMatch(Item listLeft, Item listRight)
-            {
-                for (int i = 0, count = listLeft.Count; i < count; i++)
-                {
-                    if (!IsMatch(listLeft[i], listRight[i]))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-        }
+        private protected virtual bool IsEquals(Item other)
+            => Format == other.Format && Count == other.Count;
 
         public sealed override string ToString() => $"{Format}[{Count}]";
 
@@ -170,18 +141,18 @@ namespace Secs4Net
             {
                 SecsFormat.List => sb.Append("...").ToString(),
                 SecsFormat.ASCII or SecsFormat.JIS8 => sb.Append(GetString()).ToString(),
-                SecsFormat.Binary => sb.AppendBinary(GetValues<byte>().AsBytes(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.Boolean => sb.AppendArray(GetValues<bool>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.I1 => sb.AppendArray(GetValues<sbyte>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.I2 => sb.AppendArray(GetValues<short>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.I4 => sb.AppendArray(GetValues<int>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.I8 => sb.AppendArray(GetValues<long>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.U1 => sb.AppendArray(GetValues<byte>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.U2 => sb.AppendArray(GetValues<ushort>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.U4 => sb.AppendArray(GetValues<uint>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.U8 => sb.AppendArray(GetValues<ulong>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.F4 => sb.AppendArray(GetValues<float>(), DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.F8 => sb.AppendArray(GetValues<double>(), DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.Binary => sb.AppendBinary(GetReadOnlyMemory<byte>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.Boolean => sb.AppendArray(GetReadOnlyMemory<bool>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.I1 => sb.AppendArray(GetReadOnlyMemory<sbyte>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.I2 => sb.AppendArray(GetReadOnlyMemory<short>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.I4 => sb.AppendArray(GetReadOnlyMemory<int>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.I8 => sb.AppendArray(GetReadOnlyMemory<long>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.U1 => sb.AppendArray(GetReadOnlyMemory<byte>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.U2 => sb.AppendArray(GetReadOnlyMemory<ushort>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.U4 => sb.AppendArray(GetReadOnlyMemory<uint>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.U8 => sb.AppendArray(GetReadOnlyMemory<ulong>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.F4 => sb.AppendArray(GetReadOnlyMemory<float>().Span, DebuggerDisplayMaxCount).ToString(),
+                SecsFormat.F8 => sb.AppendArray(GetReadOnlyMemory<double>().Span, DebuggerDisplayMaxCount).ToString(),
                 _ => sb.ToString(),
             };
         }

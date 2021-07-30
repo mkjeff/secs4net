@@ -51,7 +51,7 @@ namespace Secs4Net.UnitTests.Extensions
                     options => options.Excluding(a => a.SecsItem),
                     because, becauseArgs);
 
-                if (Subject.SecsItem is not null)
+                if (Subject?.SecsItem is not null)
                 {
                     Subject.SecsItem.Should().NotBeEquivalentTo(expectation.SecsItem);
                 }

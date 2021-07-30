@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Secs4Net
 {
@@ -11,7 +12,7 @@ namespace Secs4Net
         {
             private readonly IList<Item> _value;
 
-            public ListItem(SecsFormat format, IList<Item> value) : base(format, value.Count) 
+            public ListItem(SecsFormat format, IList<Item> value) : base(format, value.Count)
                 => _value = value;
 
             public sealed override void Dispose()
@@ -53,6 +54,22 @@ namespace Secs4Net
                 {
                     _value[i].EncodeTo(buffer);
                 }
+            }
+
+            private protected sealed override bool IsEquals(Item other)
+                => base.IsEquals(other) && IsListEquals(_value, Unsafe.As<ListItem>(other)._value);
+
+            static bool IsListEquals(IList<Item> listLeft, IList<Item> listRight)
+            {
+                for (int i = 0, count = listLeft.Count; i < count; i++)
+                {
+                    if (!listLeft[i].IsEquals(listRight[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         }
     }
