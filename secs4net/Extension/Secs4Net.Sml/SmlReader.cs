@@ -28,7 +28,7 @@ namespace Secs4Net.Sml
         {
             var line = await sr.ReadLineAsync();
             var (name, s, f, replyExpected) = ParseFirstLine(line);
-            
+
             var stack = new Stack<List<Item>>();
             Item? rootItem = null;
             while ((line = await sr.ReadLineAsync()) != null && ParseItem(line, stack, ref rootItem))
@@ -154,18 +154,18 @@ namespace Secs4Net.Sml
             ? byte.Parse(str, System.Globalization.NumberStyles.HexNumber)
             : byte.Parse(str);
 
-        private static readonly (Func<Item>, Func<byte[], Item>, SpanFunc<char, byte>) BinaryParser = (B, B, HexByteParser);
-        private static readonly (Func<Item>, Func<sbyte[], Item>, SpanFunc<char, sbyte>) I1Parser = (I1, I1, static span => sbyte.Parse(span));
-        private static readonly (Func<Item>, Func<short[], Item>, SpanFunc<char, short>) I2Parser = (I2, I2, static span => short.Parse(span));
-        private static readonly (Func<Item>, Func<int[], Item>, SpanFunc<char, int>) I4Parser = (I4, I4, static span => int.Parse(span));
-        private static readonly (Func<Item>, Func<long[], Item>, SpanFunc<char, long>) I8Parser = (I8, I8, static span => long.Parse(span));
-        private static readonly (Func<Item>, Func<byte[], Item>, SpanFunc<char, byte>) U1Parser = (U1, U1, static span => byte.Parse(span));
-        private static readonly (Func<Item>, Func<ushort[], Item>, SpanFunc<char, ushort>) U2Parser = (U2, U2, static span => ushort.Parse(span));
-        private static readonly (Func<Item>, Func<uint[], Item>, SpanFunc<char, uint>) U4Parser = (U4, U4, static span => uint.Parse(span));
-        private static readonly (Func<Item>, Func<ulong[], Item>, SpanFunc<char, ulong>) U8Parser = (U8, U8, static span => ulong.Parse(span));
-        private static readonly (Func<Item>, Func<float[], Item>, SpanFunc<char, float>) F4Parser = (F4, F4, static span => float.Parse(span));
-        private static readonly (Func<Item>, Func<double[], Item>, SpanFunc<char, double>) F8Parser = (F8, F8, static span => double.Parse(span));
-        private static readonly (Func<Item>, Func<bool[], Item>, SpanFunc<char, bool>) BoolParser = (Boolean, Boolean, bool.Parse);
+        private static readonly (Func<Item>, Func<byte[], Item>, SpanParser<byte>) BinaryParser = (B, B, HexByteParser);
+        private static readonly (Func<Item>, Func<sbyte[], Item>, SpanParser<sbyte>) I1Parser = (I1, I1, static span => sbyte.Parse(span));
+        private static readonly (Func<Item>, Func<short[], Item>, SpanParser<short>) I2Parser = (I2, I2, static span => short.Parse(span));
+        private static readonly (Func<Item>, Func<int[], Item>, SpanParser<int>) I4Parser = (I4, I4, static span => int.Parse(span));
+        private static readonly (Func<Item>, Func<long[], Item>, SpanParser<long>) I8Parser = (I8, I8, static span => long.Parse(span));
+        private static readonly (Func<Item>, Func<byte[], Item>, SpanParser<byte>) U1Parser = (U1, U1, static span => byte.Parse(span));
+        private static readonly (Func<Item>, Func<ushort[], Item>, SpanParser<ushort>) U2Parser = (U2, U2, static span => ushort.Parse(span));
+        private static readonly (Func<Item>, Func<uint[], Item>, SpanParser<uint>) U4Parser = (U4, U4, static span => uint.Parse(span));
+        private static readonly (Func<Item>, Func<ulong[], Item>, SpanParser<ulong>) U8Parser = (U8, U8, static span => ulong.Parse(span));
+        private static readonly (Func<Item>, Func<float[], Item>, SpanParser<float>) F4Parser = (F4, F4, static span => float.Parse(span));
+        private static readonly (Func<Item>, Func<double[], Item>, SpanParser<double>) F8Parser = (F8, F8, static span => double.Parse(span));
+        private static readonly (Func<Item>, Func<bool[], Item>, SpanParser<bool>) BoolParser = (Boolean, Boolean, bool.Parse);
         private static readonly (Func<Item>, Func<string, Item>) AParser = (A, A);
         private static readonly (Func<Item>, Func<string, Item>) JParser = (J, J);
 
@@ -194,7 +194,7 @@ namespace Secs4Net.Sml
                 _ => throw new SecsException("Unknown SML format :" + format),
             };
 
-            static Item ParseValueItem<T>(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<T[], Item> creator, SpanFunc<char, T> converter) parser)
+            static Item ParseValueItem<T>(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<T[], Item> creator, SpanParser<T> converter) parser)
             {
                 var valueStrs = str.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 return valueStrs.IsEmpty()

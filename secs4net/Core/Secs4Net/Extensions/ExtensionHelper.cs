@@ -1,45 +1,40 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
 using PooledAwait;
+using Secs4Net.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Secs4Net
+namespace Secs4Net.Extensions
 {
     public static class SecsExtension
     {
-        public static IEnumerable<ReadOnlyMemory<T>> Chunk<T>(this ReadOnlyMemory<T> memory, int count)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ChunkedSpan<T> Chunk<T>(ref this Span<T> span, int count) => new(span, count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ChunkedReadOnlySpan<T> Chunk<T>(ref this ReadOnlySpan<T> span, int count) => new(span, count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ChunkedMemory<T> Chunk<T>(this Memory<T> memory, int count) => new(memory, count);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ChunkedReadOnlyMemory<T> Chunk<T>(this ReadOnlyMemory<T> memory, int count) => new(memory, count);
+        
+        public static IEnumerable<Memory<T>> AsEnumerable<T>(this ChunkedMemory<T> source)
         {
-            for (int start = 0; start < memory.Length;)
+            foreach (var m in source)
             {
-                int end = start + count;
-                if (end > memory.Length)
-                {
-                    yield return memory[start..];
-                }
-                else
-                {
-                    yield return memory[start..end];
-                }
-                start = end;
+                yield return m;
             }
         }
 
-        public static IEnumerable<Memory<T>> Chunk<T>(this Memory<T> memory, int count)
+        public static IEnumerable<ReadOnlyMemory<T>> AsEnumerable<T>(this ChunkedReadOnlyMemory<T> source)
         {
-            for (int start = 0; start < memory.Length;)
+            foreach (var m in source)
             {
-                int end = start + count;
-                if (end > memory.Length)
-                {
-                    yield return memory[start..];
-                }
-                else
-                {
-                    yield return memory[start..end];
-                }
-                start = end;
+                yield return m;
             }
         }
 
@@ -152,7 +147,7 @@ namespace Secs4Net
                 sb.Append(GetHexChar(hex1)).Append(GetHexChar(hex0));
             }
 
-            static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
+            static char GetHexChar(int i) => i < 10 ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
         }
 
     }

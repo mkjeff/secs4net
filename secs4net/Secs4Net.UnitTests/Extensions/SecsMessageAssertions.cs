@@ -4,17 +4,14 @@ using FluentAssertions.Primitives;
 
 namespace Secs4Net.UnitTests.Extensions
 {
-    public static class SecsMessageExtensions
+    internal static class SecsMessageExtensions
     {
-        public static SecsMessageAssertions Should(this SecsMessage? instance) => new SecsMessageAssertions(instance);
+        public static SecsMessageAssertions Should(this SecsMessage instance) => new(instance);
     }
 
-    public sealed class SecsMessageAssertions : ReferenceTypeAssertions<SecsMessage?, SecsMessageAssertions>
+    internal sealed class SecsMessageAssertions : ReferenceTypeAssertions<SecsMessage, SecsMessageAssertions>
     {
-        public SecsMessageAssertions(SecsMessage? instance)
-        {
-            Subject = instance;
-        }
+        public SecsMessageAssertions(SecsMessage instance) : base(instance) { }
 
         protected override string Identifier => "message";
 
@@ -28,7 +25,7 @@ namespace Secs4Net.UnitTests.Extensions
                         .Excluding(a => a.Name),
                     because, becauseArgs);
 
-                if (Subject?.SecsItem is not null)
+                if (Subject.SecsItem is not null)
                 {
                     Subject.SecsItem.Should().BeEquivalentTo(expectation.SecsItem);
                 }
@@ -47,21 +44,11 @@ namespace Secs4Net.UnitTests.Extensions
         {
             if (expectation.Equals(Subject))
             {
-                new ObjectAssertions(Subject).NotBeEquivalentTo(expectation,
-                    options => options.Excluding(a => a.SecsItem),
-                    because, becauseArgs);
-
-                if (Subject?.SecsItem is not null)
-                {
-                    Subject.SecsItem.Should().NotBeEquivalentTo(expectation.SecsItem);
-                }
-                else if (expectation.SecsItem is null)
-                {
-                    Execute.Assertion
-                        .BecauseOf(because, becauseArgs)
-                        .FailWith("Expected message.SecsItem is null, but it isn't");
-                }
+                Execute.Assertion
+                    .BecauseOf(because, becauseArgs)
+                    .FailWith("Expected message not be equivalent, but they are.");
             }
+
             return new AndConstraint<SecsMessageAssertions>(this);
         }
     }

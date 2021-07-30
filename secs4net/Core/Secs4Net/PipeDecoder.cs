@@ -26,12 +26,11 @@ namespace Secs4Net
             });
 
         private readonly Channel<(MessageHeader header, Item? rootItem)> _dataMessageChannel = Channel
-            .CreateBounded<(MessageHeader header, Item? rootItem)>(new BoundedChannelOptions(capacity: 32)
+            .CreateUnbounded<(MessageHeader header, Item? rootItem)>(new UnboundedChannelOptions
             {
                 SingleReader = true,
                 SingleWriter = true,
                 AllowSynchronousContinuations = false,
-                FullMode = BoundedChannelFullMode.Wait,
             });
 
         public PipeDecoder(PipeReader reader, PipeWriter input)

@@ -56,7 +56,7 @@ namespace Secs4Net.UnitTests
                     I4()
                 );
 
-            left.Should().NotBeEquivalentTo(right);
+            left.Should().BeEquivalentTo(right);
         }
 
         [Fact]

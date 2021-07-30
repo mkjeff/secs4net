@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace System
 {
-    public delegate TResult SpanFunc<T, TResult>(ReadOnlySpan<T> span);
+    internal delegate TResult SpanParser<TResult>(ReadOnlySpan<char> span);
 
     //https://github.com/bbartels/coreclr/blob/master/src/System.Private.CoreLib/shared/System/MemoryExtensions.Split.cs
     // https://github.com/dotnet/runtime/pull/295
@@ -18,13 +18,12 @@ namespace System
         /// <param name="options">The <see cref="StringSplitOptions"/> which should be applied with this operation.</param>
         /// <returns>Returns an enumerator for the specified sequence.</returns>
         public static SpanSplitEnumerator<char> Split(in this ReadOnlySpan<char> span, char separator, StringSplitOptions options = StringSplitOptions.None)
-            => new SpanSplitEnumerator<char>(span, separator, options == StringSplitOptions.RemoveEmptyEntries);
+            => new(span, separator, options == StringSplitOptions.RemoveEmptyEntries);
 
         public static bool IsEmpty<T>(this SpanSplitEnumerator<T> source) where T : IEquatable<T>
             => !source.MoveNext();
 
-        public static IEnumerable<TResult> Select<T, TResult>(ref this SpanSplitEnumerator<T> source, SpanFunc<T, TResult> seelctor)
-            where T : IEquatable<T>
+        public static IEnumerable<TResult> Select<TResult>(ref this SpanSplitEnumerator<char> source, SpanParser<TResult> seelctor)
         {
             var list = new List<TResult>();
             foreach (var span in source)
@@ -36,7 +35,7 @@ namespace System
         }
     }
 
-    public ref struct SpanSplitEnumerator<T> where T : IEquatable<T>
+    internal ref struct SpanSplitEnumerator<T> where T : IEquatable<T>
     {
         private ReadOnlySpan<T> _sequence;
         private readonly T _separator;
@@ -56,7 +55,7 @@ namespace System
         /// <returns>Returns the current enumerator.</returns>
         public SpanSplitEnumerator<T> GetEnumerator() => this;
 
-        internal SpanSplitEnumerator(in ReadOnlySpan<T> span, T separator, bool removeEmptyEntries)
+        internal SpanSplitEnumerator(ReadOnlySpan<T> span, T separator, bool removeEmptyEntries)
         {
             Current = default;
             _sequence = span;
@@ -83,7 +82,7 @@ namespace System
                 }
 
                 Current = _sequence.Slice(0, index);
-                _sequence = _sequence.Slice(index + 1);
+                _sequence = _sequence[(index + 1)..];
             } while (Current.IsEmpty && ShouldRemoveEmptyEntries);
 
             return true;

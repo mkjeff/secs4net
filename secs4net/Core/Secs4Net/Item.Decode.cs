@@ -1,5 +1,6 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
+using Secs4Net.Extensions;
 using System;
 using System.Buffers;
 using System.Collections.Generic;

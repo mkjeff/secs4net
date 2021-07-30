@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using PooledAwait;
+using Secs4Net.Extensions;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
@@ -41,12 +42,11 @@ namespace Secs4Net
         public int T3 { get; }
 
         private readonly Channel<PrimaryMessageWrapper> _primaryMessageChannel = Channel
-            .CreateBounded<PrimaryMessageWrapper>(new BoundedChannelOptions(capacity: 16)
+            .CreateUnbounded<PrimaryMessageWrapper>(new UnboundedChannelOptions
             {
                 SingleReader = false,
                 SingleWriter = true,
                 AllowSynchronousContinuations = false,
-                FullMode = BoundedChannelFullMode.Wait,
             });
 
         private readonly ConcurrentDictionary<int, (SecsMessage primary, ValueTaskCompletionSource<SecsMessage> completeSource)> _replyExpectedMsgs = new();
@@ -65,7 +65,8 @@ namespace Secs4Net
 
             _ = AsyncHelper.LongRunningAsync(() =>
                 _hsmsConnector.GetDataMessages(_cancellationSourceForDataMessageProcessing.Token)
-                    .ForEachAwaitWithCancellationAsync(ProcessDataMessageAsync, _cancellationSourceForDataMessageProcessing.Token));
+                    .ForEachAwaitWithCancellationAsync((a, ct) => 
+                        ProcessDataMessageAsync(a.header, a.rootItem, ct), _cancellationSourceForDataMessageProcessing.Token));
         }
 
         internal async PooledValueTask<SecsMessage> SendDataMessageAsync(SecsMessage message, int id, CancellationToken cancellation)
@@ -142,9 +143,8 @@ namespace Secs4Net
         public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)
             => _primaryMessageChannel.Reader.ReadAllAsync(cancellation);
 
-        private async Task ProcessDataMessageAsync((MessageHeader header, Item? rootItem) data, CancellationToken cancellation)
+        private async Task ProcessDataMessageAsync(MessageHeader header, Item? rootItem, CancellationToken cancellation)
         {
-            var (header, rootItem) = data;
             var msg = new SecsMessage(header.S, header.F, header.ReplyExpected)
             {
                 SecsItem = rootItem,

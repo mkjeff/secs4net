@@ -46,7 +46,7 @@ namespace Secs4Net
             span.DangerousGetReferenceAt(3) = F;
             span.DangerousGetReferenceAt(4) = (byte)0;
             span.DangerousGetReferenceAt(5) = (byte)MessageType;
-            BinaryPrimitives.WriteInt32BigEndian(span.Slice(6), Id);
+            BinaryPrimitives.WriteInt32BigEndian(span[6..], Id);
             buffer.Advance(10);
         }
 
@@ -61,7 +61,7 @@ namespace Secs4Net
                 s: (byte)(s & 0b0111_111),
                 f: Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref head, 3)),
                 messageType: (MessageType)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref head, 5)),
-                id: BinaryPrimitives.ReadInt32BigEndian(buffer.Slice(6))
+                id: BinaryPrimitives.ReadInt32BigEndian(buffer[6..])
             );
         }
     }
