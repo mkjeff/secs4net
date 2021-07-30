@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
+using Secs4Net.Extensions;
 using Secs4Net.UnitTests.Extensions;
 using System;
 using System.IO.Pipelines;
@@ -12,7 +13,7 @@ namespace Secs4Net.UnitTests
 {
     public class PipeDecoderUnitTests
     {
-        private readonly SecsMessage message = new SecsMessage(s: 1, f: 2, replyExpected: false)
+        private readonly SecsMessage message = new(s: 1, f: 2, replyExpected: false)
         {
             SecsItem =
             L(
@@ -90,7 +91,7 @@ namespace Secs4Net.UnitTests
             _ = Task.Run(() =>
             {
                 Func<Task> act = () => decoder.StartAsync(default);
-                act.Should().NotThrow();
+                act.Should().NotThrowAsync();
             });
 
             await decoder.Input.WriteAsync(encodedBytes);
@@ -99,7 +100,7 @@ namespace Secs4Net.UnitTests
                 .Take(messageIds.Length)
                 .Select(m => new
                 {
-                    Id = m.header.Id,
+                    m.header.Id,
                     Message = new SecsMessage(m.header.S, m.header.F, m.header.ReplyExpected)
                     {
                         SecsItem = m.rootItem,
@@ -132,7 +133,7 @@ namespace Secs4Net.UnitTests
             _ = Task.Run(() =>
             {
                 Func<Task> act = () => decoder.StartAsync(default);
-                act.Should().NotThrow();
+                act.Should().NotThrowAsync();
             });
 
             _ = Task.Run(async () =>
@@ -148,7 +149,7 @@ namespace Secs4Net.UnitTests
                 .Take(messageIds.Length)
                 .Select(m => new
                 {
-                    Id = m.header.Id,
+                    m.header.Id,
                     Message = new SecsMessage(m.header.S, m.header.F, m.header.ReplyExpected)
                     {
                         SecsItem = m.rootItem,

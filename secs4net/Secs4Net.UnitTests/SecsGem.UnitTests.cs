@@ -104,7 +104,7 @@ namespace Secs4Net.UnitTests
                 var reply = await secsGem1.SendAsync(ping, cts.Token);
             };
 
-            sendAsync.Should().Throw<SecsException>().WithMessage(Resources.S9F1);
+            sendAsync.Should().ThrowAsync<SecsException>().WithMessage(Resources.S9F1);
             receiver.DidNotReceive();
         }
 
@@ -147,7 +147,7 @@ namespace Secs4Net.UnitTests
                 receiver();
             };
 
-            sendAsync.Should().Throw<SecsException>().WithMessage(Resources.T3Timeout);
+            sendAsync.Should().ThrowAsync<SecsException>().WithMessage(Resources.T3Timeout);
             receiver.DidNotReceive();
         }
 
@@ -209,7 +209,7 @@ namespace Secs4Net.UnitTests
                 await Task.WhenAll(totalTasks.ToArray());
             };
 
-            sendAsync.Should().NotThrow();
+            sendAsync.Should().NotThrowAsync();
         }
     }
 }

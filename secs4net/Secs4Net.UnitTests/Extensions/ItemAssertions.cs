@@ -8,17 +8,14 @@ using System.Runtime.CompilerServices;
 
 namespace Secs4Net.UnitTests.Extensions
 {
-    public static class ItemExtensions
+    internal static class ItemExtensions
     {
-        public static ItemAssertions Should(this Item instance) => new ItemAssertions(instance);
+        public static ItemAssertions Should(this Item instance) => new(instance);
     }
 
-    public class ItemAssertions : ReferenceTypeAssertions<Item, ItemAssertions>
+    internal sealed class ItemAssertions : ReferenceTypeAssertions<Item, ItemAssertions>
     {
-        public ItemAssertions(Item instance)
-        {
-            Subject = instance;
-        }
+        public ItemAssertions(Item instance) : base(instance) { }
 
         protected override string Identifier => "item";
 
@@ -27,10 +24,9 @@ namespace Secs4Net.UnitTests.Extensions
         {
             if (!Subject.Equals(expectation))
             {
-                new ItemValidator(notBeEquivalent: false).IsEquals(new EquivalencyValidationContext
+                new ItemValidator().IsEquals(new ItemEquivalencyValidationContext
                 {
-                    Because = because,
-                    BecauseArgs = becauseArgs,
+                    Reason = new Reason(because, becauseArgs),
                     Subject = Subject,
                     Expectation = expectation,
                 });
@@ -39,29 +35,29 @@ namespace Secs4Net.UnitTests.Extensions
             return new AndConstraint<ItemAssertions>(this);
         }
 
-        public AndConstraint<ItemAssertions> NotBeEquivalentTo(Item? expectation, string because = "", params object[] becauseArgs)
+        public AndConstraint<ItemAssertions> NotBeEquivalentTo(Item expectation, string because = "", params object[] becauseArgs)
         {
             if (Subject.Equals(expectation))
             {
                 Execute.Assertion
                     .BecauseOf(because, becauseArgs)
-                    .FailWith("Expected item not be equivalent, but they are");
+                    .FailWith("Expected item not be equivalent, but they are.");
             }
 
             return new AndConstraint<ItemAssertions>(this);
         }
     }
 
-    public class ItemValidator
+    internal sealed class ItemEquivalencyValidationContext 
     {
-        private readonly bool _notBeEquivalent;
+        public Reason Reason { get; init; } = default!;
+        public Item Subject { get; init; } = default!;
+        public Item? Expectation { get; init; } = default!;
+    }
 
-        public ItemValidator(bool notBeEquivalent)
-        {
-            _notBeEquivalent = notBeEquivalent;
-        }
-
-        public bool IsEquals(IEquivalencyValidationContext context)
+    internal sealed class ItemValidator
+    {
+        public bool IsEquals(ItemEquivalencyValidationContext context)
         {
             if (context.Subject is not Item subjectValue ||
                 context.Expectation is not Item expectationValue)
@@ -72,13 +68,12 @@ namespace Secs4Net.UnitTests.Extensions
             return IsMatch(path: "item", subjectValue, expectationValue, context);
         }
 
-        private bool IsMatch(string path, Item subject, Item expectation, IEquivalencyValidationContext context)
+        private bool IsMatch(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context)
         {
             if (subject.Format != expectation.Format)
             {
                 Execute.Assertion
-                    .ForCondition(_notBeEquivalent)
-                    .BecauseOf(context.Because, context.BecauseArgs)
+                    .BecauseOf(context.Reason)
                     .FailWith("Expected {0} to be {1}, but found {2}",
                         path + ".Format", expectation.Format, subject.Format);
 
@@ -88,8 +83,7 @@ namespace Secs4Net.UnitTests.Extensions
             if (subject.Count != expectation.Count)
             {
                 Execute.Assertion
-                    .ForCondition(_notBeEquivalent)
-                    .BecauseOf(context.Because, context.BecauseArgs)
+                    .BecauseOf(context.Reason)
                     .FailWith("Expected {0} to be {1}, but found {2}",
                         path + ".Count", expectation.Count, subject.Count);
                 return false;
@@ -120,7 +114,7 @@ namespace Secs4Net.UnitTests.Extensions
                 SecsFormat.U4 => IsMatchArrayItem<uint>(path, subject, expectation, context),
             };
 
-            bool IsMatchStringItem(string path, Item subject, Item expectation, IEquivalencyValidationContext context)
+            bool IsMatchStringItem(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context)
             {
                 var subjectString = subject.GetString();
                 var expectationString = expectation.GetString();
@@ -130,38 +124,31 @@ namespace Secs4Net.UnitTests.Extensions
                 }
 
                 Execute.Assertion
-                    .ForCondition(_notBeEquivalent)
-                    .BecauseOf(context.Because, context.BecauseArgs)
+                    .BecauseOf(context.Reason)
                     .FailWith("Expected {0} to be {1}, but found {2}",
                         path + ".GetString()", expectationString, subjectString);
 
                 return false;
             }
 
-            unsafe bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, IEquivalencyValidationContext context)
-#if NET
-                where T : unmanaged
-#else
+            unsafe bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context)
                 where T : unmanaged, IEquatable<T>
-#endif
             {
-
                 if (subject.GetReadOnlyMemory<T>().Span.SequenceEqual(expectation.GetReadOnlyMemory<T>().Span))
                 {
                     return true;
                 }
 
                 Execute.Assertion
-                    .ForCondition(_notBeEquivalent)
-                    .BecauseOf(context.Because, context.BecauseArgs)
+                    .BecauseOf(context.Reason)
                     .FailWith("Expected {0} to be {1}, but found {2}",
-                        path + $".GetValues<{typeof(T).Name}>()",
+                        path + $".GetReadOnlyMemory<{typeof(T).Name}>()",
                         expectation.GetReadOnlyMemory<T>().ToArray(),
                         subject.GetReadOnlyMemory<T>().ToArray());
                 return false;
             }
 
-            bool IsMatchList(string path, Item subjectList, Item expectationList, IEquivalencyValidationContext context)
+            bool IsMatchList(string path, Item subjectList, Item expectationList, ItemEquivalencyValidationContext context)
             {
                 for (int i = 0, count = subjectList.Count; i < count; i++)
                 {

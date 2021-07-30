@@ -5,22 +5,17 @@ using System.Runtime.CompilerServices;
 namespace Secs4Net
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ref struct SpanChunked<T>
+    public ref struct ChunkedSpan<T>
     {
-        private readonly Span<T> _span;
+        private readonly Span<T> _source;
         private readonly int _chunkSize;
         private int _start;
         private int _end;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SpanChunked{T}" /> struct.
-        /// </summary>
-        /// <param name="span">The source <see cref="Span{T}"/> instance.</param>
-        /// <param name="size">Max size of chunked.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SpanChunked(Span<T> span, int size)
+        internal ChunkedSpan(Span<T> span, int size)
         {
-            _span = span;
+            _source = span;
             _chunkSize = size;
             _start = 0;
             _end = 0;
@@ -30,7 +25,7 @@ namespace Secs4Net
         /// Implements the duck-typed <see cref="System.Collections.Generic.IEnumerable{T}" /> method.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SpanChunked<T> GetEnumerator()
+        public readonly ChunkedSpan<T> GetEnumerator()
             => this;
 
         /// <summary>
@@ -39,7 +34,7 @@ namespace Secs4Net
         public readonly Span<T> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _span[_start.._end];
+            get => _source[_start.._end];
         }
 
         /// <summary>
@@ -49,7 +44,7 @@ namespace Secs4Net
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            int length = _span.Length;
+            int length = _source.Length;
             if (_end < length)
             {
                 _start = _end;
@@ -65,22 +60,17 @@ namespace Secs4Net
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ref struct ReadOnlySpanChunk<T>
+    public ref struct ChunkedReadOnlySpan<T>
     {
-        private readonly ReadOnlySpan<T> _span;
+        private readonly ReadOnlySpan<T> _source;
         private readonly int _chunkSize;
         private int _start;
         private int _end;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ReadOnlySpanChunk{T}" /> struct.
-        /// </summary>
-        /// <param name="span">The source <see cref="ReadOnlySpan{T}"/> instance.</param>
-        /// <param name="size">Max size of chunked.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlySpanChunk(ReadOnlySpan<T> span, int size)
+        public ChunkedReadOnlySpan(ReadOnlySpan<T> span, int size)
         {
-            _span = span;
+            _source = span;
             _chunkSize = size;
             _start = 0;
             _end = 0;
@@ -90,7 +80,7 @@ namespace Secs4Net
         /// Implements the duck-typed <see cref="System.Collections.Generic.IEnumerable{T}" /> method.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReadOnlySpanChunk<T> GetEnumerator()
+        public readonly ChunkedReadOnlySpan<T> GetEnumerator()
             => this;
 
         /// <summary>
@@ -99,7 +89,7 @@ namespace Secs4Net
         public readonly ReadOnlySpan<T> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _span[_start.._end];
+            get => _source[_start.._end];
         }
 
         /// <summary>
@@ -109,7 +99,7 @@ namespace Secs4Net
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            int length = _span.Length;
+            int length = _source.Length;
             if (_end < length)
             {
                 _start = _end;

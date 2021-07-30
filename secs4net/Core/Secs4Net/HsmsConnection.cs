@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using PooledAwait;
+using Secs4Net.Extensions;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
