@@ -36,13 +36,12 @@ namespace Secs4Net.Sml
 
             var stack = new Stack<List<Item>>();
             Item? rootItem = null;
+
 #if NET
-            while ((line = await sr.ReadLineAsync()) != null && ParseItem(line, stack, ref rootItem))
+            while ((line = await sr.ReadLineAsync()) != null && ParseItem(line, stack, ref rootItem)) { }
 #else
-            while ((line = await sr.ReadLineAsync()) != null && ParseItem(line.AsSpan(), stack, ref rootItem))
+            while ((line = await sr.ReadLineAsync()) != null && ParseItem(line.AsSpan(), stack, ref rootItem)) { }
 #endif
-            {
-            }
 
             return new SecsMessage(s, f, replyExpected)
             {
@@ -60,21 +59,26 @@ namespace Secs4Net.Sml
 #if NET
                 i = line.IndexOf("'S", StringComparison.Ordinal) + 2;
 #else
-                i = line.IndexOf("'S".AsSpan()) + 2;
+                i = line.IndexOf("'S".AsSpan(), StringComparison.Ordinal) + 2;
 #endif
+
                 int j = line.IndexOf('F');
+
 #if NET
                 var s = byte.Parse(line[i..j]);
 #else
                 var s = byte.Parse(line[i..j].ToString());
 #endif
+
                 line = line[(j + 1)..];
                 i = line.IndexOf('\'');
+
 #if NET
                 var f = byte.Parse(line[0..i]);
 #else
                 var f = byte.Parse(line[0..i].ToString());
 #endif
+
                 var replyExpected = line[i..].IndexOf('W') != -1;
                 return (name, s, f, replyExpected);
             }
@@ -93,12 +97,15 @@ namespace Secs4Net.Sml
             var name = i > 0 ? line.Slice(0, i).ToString() : string.Empty;
 
             line = line[name.Length..];
+
 #if NET
             i = line.IndexOf("'S", StringComparison.Ordinal) + 2;
 #else
-            i = line.IndexOf("'S".AsSpan()) + 2;
+            i = line.IndexOf("'S".AsSpan(), StringComparison.Ordinal) + 2;
 #endif
+
             int j = line.IndexOf('F');
+
 #if NET
             var s = byte.Parse(line[i..j]);
 #else
@@ -107,6 +114,7 @@ namespace Secs4Net.Sml
 
             line = line[(j + 1)..];
             i = line.IndexOf('\'');
+
 #if NET
             var f = byte.Parse(line[0..i]);
 #else
@@ -117,13 +125,12 @@ namespace Secs4Net.Sml
 
             Item? rootItem = null;
             var stack = new Stack<List<Item>>();
+
 #if NET
-            while ((line = sr.ReadLine()) != null && ParseItem(line, stack, ref rootItem))
+            while ((line = sr.ReadLine()) != null && ParseItem(line, stack, ref rootItem)) { }
 #else
-            while ((line = sr.ReadLine().AsSpan()) != null && ParseItem(line, stack, ref rootItem))
+            while ((line = sr.ReadLine().AsSpan()) != null && ParseItem(line, stack, ref rootItem)) { }
 #endif
-            {
-            }
 
             return new SecsMessage(s, f, replyExpected)
             {
@@ -196,7 +203,7 @@ namespace Secs4Net.Sml
             ? byte.Parse(str, System.Globalization.NumberStyles.HexNumber)
             : byte.Parse(str);
 #else
-            => str.StartsWith("0x".AsSpan())
+            => str.StartsWith("0x".AsSpan(), StringComparison.OrdinalIgnoreCase)
             ? byte.Parse(str.ToString(), System.Globalization.NumberStyles.HexNumber)
             : byte.Parse(str.ToString());
 #endif

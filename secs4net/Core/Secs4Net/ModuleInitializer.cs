@@ -1,5 +1,5 @@
-﻿using System;
-#if NET
+﻿#if NET
+using System;
 using System.Runtime.CompilerServices;
 using System.Text;
 
