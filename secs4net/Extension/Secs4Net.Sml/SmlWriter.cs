@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -29,7 +30,10 @@ namespace Secs4Net.Sml
 
             writer.WriteLine(msg.ToString());
 
-            msg.SecsItem?.Write(writer, indent);
+            if (msg.SecsItem is not null)
+            {
+                writer.Write(msg.SecsItem, indent);
+            }
 
             writer.Write('.');
         }
@@ -42,15 +46,15 @@ namespace Secs4Net.Sml
             }
 
             await writer.WriteLineAsync(msg.ToString()).ConfigureAwait(false);
-            if (msg.SecsItem != null)
+            if (msg.SecsItem is not null)
             {
-                await WriteAsync(writer, msg.SecsItem, indent).ConfigureAwait(false);
+                await writer.WriteAsync(msg.SecsItem, indent).ConfigureAwait(false);
             }
 
             await writer.WriteAsync('.').ConfigureAwait(false);
         }
 
-        public static void Write(this Item item, TextWriter writer, int indent = 4)
+        public static void Write(this TextWriter writer, Item item, int indent = 4)
         {
             var indentStr = new string(' ', indent);
             writer.Write(indentStr);
@@ -65,9 +69,8 @@ namespace Secs4Net.Sml
                     writer.WriteLine();
                     foreach (var a in item)
                     {
-                        a.Write(writer, indent + SmlIndent);
+                        writer.Write(a, indent + SmlIndent);
                     }
-
                     writer.Write(indentStr);
                     break;
                 case SecsFormat.ASCII:
@@ -77,114 +80,104 @@ namespace Secs4Net.Sml
                     writer.Write('\'');
                     break;
                 case SecsFormat.Binary:
-                    WriteHexArray(writer, item.GetValues<byte>());
+                    WriteHexArray(writer, item.GetReadOnlyMemory<byte>());
                     break;
                 case SecsFormat.F4:
-                    WriteArray(writer, item.GetValues<float>());
+                    writer.WriteArray(item.GetReadOnlyMemory<float>());
                     break;
                 case SecsFormat.F8:
-                    WriteArray(writer, item.GetValues<double>());
+                    writer.WriteArray(item.GetReadOnlyMemory<double>());
                     break;
                 case SecsFormat.I1:
-                    WriteArray(writer, item.GetValues<sbyte>());
+                    writer.WriteArray(item.GetReadOnlyMemory<sbyte>());
                     break;
                 case SecsFormat.I2:
-                    WriteArray(writer, item.GetValues<short>());
+                    writer.WriteArray(item.GetReadOnlyMemory<short>());
                     break;
                 case SecsFormat.I4:
-                    WriteArray(writer, item.GetValues<int>());
+                    writer.WriteArray(item.GetReadOnlyMemory<int>());
                     break;
                 case SecsFormat.I8:
-                    WriteArray(writer, item.GetValues<long>());
+                    writer.WriteArray(item.GetReadOnlyMemory<long>());
                     break;
                 case SecsFormat.U1:
-                    WriteArray(writer, item.GetValues<byte>());
+                    writer.WriteArray(item.GetReadOnlyMemory<byte>());
                     break;
                 case SecsFormat.U2:
-                    WriteArray(writer, item.GetValues<ushort>());
+                    writer.WriteArray(item.GetReadOnlyMemory<ushort>());
                     break;
                 case SecsFormat.U4:
-                    WriteArray(writer, item.GetValues<uint>());
+                    writer.WriteArray(item.GetReadOnlyMemory<uint>());
                     break;
                 case SecsFormat.U8:
-                    WriteArray(writer, item.GetValues<ulong>());
+                    writer.WriteArray(item.GetReadOnlyMemory<ulong>());
                     break;
                 case SecsFormat.Boolean:
-                    WriteArray(writer, item.GetValues<bool>());
+                    writer.WriteArray(item.GetReadOnlyMemory<bool>());
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(item.Format), item.Format, "invalid SecsFormat value");
             }
             writer.WriteLine('>');
-
-            static void WriteArray<T>(TextWriter writer, ValueArray<T> array) where T : unmanaged
-            {
-                if (array.IsEmpty)
-                {
-                    return;
-                }
-
-                for (int i = 0; i < array.Length - 1; i++)
-                {
-                    writer.Write(array[i].ToString());
-                    writer.Write(' ');
-                }
-
-                writer.Write(array[^1].ToString());
-            }
-
-            static void WriteHexArray(TextWriter writer, ValueArray<byte> array)
-            {
-                if (array.IsEmpty)
-                {
-                    return;
-                }
-
-                int length = array.Length * 3;
-                for (int i = 0; i < array.Length - 1; i++)
-                {
-                    AppendHexChars(writer, array[i]);
-                    writer.Write(' ');
-                }
-
-                AppendHexChars(writer, array[^1]);
-
-                static void AppendHexChars(TextWriter sb, byte num)
-                {
-                    var hex1 = Math.DivRem(num, 0x10, out var hex0);
-                    sb.Write(GetHexChar(hex1));
-                    sb.Write(GetHexChar(hex0));
-                }
-            }
         }
 
-        public static async Task WriteAsync(TextWriter writer, Item item, int indent = 4)
+        public static async Task WriteAsync(this TextWriter writer, Item item, int indent = 4)
         {
             var indentStr = new string(' ', indent);
             await writer.WriteAsync(indentStr).ConfigureAwait(false);
             await writer.WriteAsync($"<{item.Format.ToSml()} [{item.Count}] ").ConfigureAwait(false);
-            await WriteItemAcyn(writer, item, indent, indentStr).ConfigureAwait(false);
-            await writer.WriteLineAsync('>').ConfigureAwait(false);
+            switch (item.Format)
+            {
+                case SecsFormat.List:
+                    await WriteListAsnc(writer, item, indent, indentStr);
+                    break;
+                case SecsFormat.ASCII:
+                case SecsFormat.JIS8:
+                    writer.Write('\'');
+                    writer.Write(item.GetString());
+                    writer.Write('\'');
+                    break;
+                case SecsFormat.Binary:
+                    writer.WriteHexArray(item.GetReadOnlyMemory<byte>());
+                    break;
+                case SecsFormat.F4:
+                    writer.WriteArray(item.GetReadOnlyMemory<float>());
+                    break;
+                case SecsFormat.F8:
+                    writer.WriteArray(item.GetReadOnlyMemory<double>());
+                    break;
+                case SecsFormat.I1:
+                    writer.WriteArray(item.GetReadOnlyMemory<sbyte>());
+                    break;
+                case SecsFormat.I2:
+                    writer.WriteArray(item.GetReadOnlyMemory<short>());
+                    break;
+                case SecsFormat.I4:
+                    writer.WriteArray(item.GetReadOnlyMemory<int>());
+                    break;
+                case SecsFormat.I8:
+                    writer.WriteArray(item.GetReadOnlyMemory<long>());
+                    break;
+                case SecsFormat.U1:
+                    writer.WriteArray(item.GetReadOnlyMemory<byte>());
+                    break;
+                case SecsFormat.U2:
+                    writer.WriteArray(item.GetReadOnlyMemory<ushort>());
+                    break;
+                case SecsFormat.U4:
+                    writer.WriteArray(item.GetReadOnlyMemory<uint>());
+                    break;
+                case SecsFormat.U8:
+                    writer.WriteArray(item.GetReadOnlyMemory<ulong>());
+                    break;
+                case SecsFormat.Boolean:
+                    writer.WriteArray(item.GetReadOnlyMemory<bool>());
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(item.Format), item.Format, "invalid SecsFormat value");
+            }
 
-            static Task WriteItemAcyn(TextWriter writer, Item item, int indent, string indentStr)
-                => item.Format switch
-                {
-                    SecsFormat.List => WriteListAsnc(writer, item, indent, indentStr),
-                    SecsFormat.ASCII or SecsFormat.JIS8 => writer.WriteAsync($"'{item.GetString()}'"),
-                    SecsFormat.Binary => WriteHexArrayAsync(writer, item.GetValues<byte>()),
-                    SecsFormat.F4 => WriteArrayAsync(writer, item.GetValues<float>()),
-                    SecsFormat.F8 => WriteArrayAsync(writer, item.GetValues<double>()),
-                    SecsFormat.I1 => WriteArrayAsync(writer, item.GetValues<sbyte>()),
-                    SecsFormat.I2 => WriteArrayAsync(writer, item.GetValues<short>()),
-                    SecsFormat.I4 => WriteArrayAsync(writer, item.GetValues<int>()),
-                    SecsFormat.I8 => WriteArrayAsync(writer, item.GetValues<long>()),
-                    SecsFormat.U1 => WriteArrayAsync(writer, item.GetValues<byte>()),
-                    SecsFormat.U2 => WriteArrayAsync(writer, item.GetValues<ushort>()),
-                    SecsFormat.U4 => WriteArrayAsync(writer, item.GetValues<uint>()),
-                    SecsFormat.U8 => WriteArrayAsync(writer, item.GetValues<ulong>()),
-                    SecsFormat.Boolean => WriteArrayAsync(writer, item.GetValues<bool>()),
-                    _ => throw new ArgumentOutOfRangeException($"{nameof(item)}.{nameof(item.Format)}", item.Format, "Invalid enum value"),
-                };
+            await writer.WriteLineAsync('>').ConfigureAwait(false);
 
             static async Task WriteListAsnc(TextWriter writer, Item item, int indent, string indentStr)
             {
@@ -196,46 +189,51 @@ namespace Secs4Net.Sml
 
                 await writer.WriteAsync(indentStr).ConfigureAwait(false);
             }
+        }
 
-            static async Task WriteArrayAsync<T>(TextWriter writer, ValueArray<T> array) where T : unmanaged
+        private static void WriteArray<T>(this TextWriter writer, ReadOnlyMemory<T> memory) where T : unmanaged
+        {
+            if (memory.IsEmpty)
             {
-                if (array.IsEmpty)
-                {
-                    return;
-                }
-
-                for (int i = 0; i < array.Length - 1; i++)
-                {
-                    await writer.WriteAsync(array[i].ToString()).ConfigureAwait(false);
-                    await writer.WriteAsync(' ').ConfigureAwait(false);
-                }
-
-                await writer.WriteAsync(array[^1].ToString()).ConfigureAwait(false);
+                return;
             }
 
-            static async Task WriteHexArrayAsync(TextWriter writer, ValueArray<byte> array)
+            var array = memory.Span;
+            int i = 0;
+            for (; i < array.Length - 1; i++)
             {
-                if (array.Length == 0)
-                {
-                    return;
-                }
-
-                int length = array.Length * 3;
-                for (int i = 0; i < array.Length - 1; i++)
-                {
-                    await AppendHexChars(writer, array[i]).ConfigureAwait(false);
-                    await writer.WriteAsync(' ').ConfigureAwait(false);
-                }
-
-                await AppendHexChars(writer, array[^1]).ConfigureAwait(false);
-
-                static async Task AppendHexChars(TextWriter sb, byte num)
-                {
-                    var hex1 = Math.DivRem(num, 0x10, out var hex0);
-                    await sb.WriteAsync(GetHexChar(hex1)).ConfigureAwait(false);
-                    await sb.WriteAsync(GetHexChar(hex0)).ConfigureAwait(false);
-                }
+                writer.Write(array.DangerousGetReferenceAt(i).ToString());
+                writer.Write(' ');
             }
+
+            writer.Write(array.DangerousGetReferenceAt(i).ToString());
+        }
+
+        private static void WriteHexArray(this TextWriter writer, ReadOnlyMemory<byte> memory)
+        {
+            if (memory.IsEmpty)
+            {
+                return;
+            }
+
+            var array = memory.Span;
+            int i = 0;
+            for (; i < array.Length - 1; i++)
+            {
+                AppendHexChars(writer, array.DangerousGetReferenceAt(i));
+                writer.Write(' ');
+            }
+
+            AppendHexChars(writer, array.DangerousGetReferenceAt(i));
+
+            static void AppendHexChars(TextWriter sb, byte num)
+            {
+                var hex1 = Math.DivRem(num, 0x10, out var hex0);
+                sb.Write(GetHexChar(hex1));
+                sb.Write(GetHexChar(hex0));
+            }
+
+            static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
         }
 
         internal static string ToSml(this SecsFormat format)
@@ -258,7 +256,5 @@ namespace Secs4Net.Sml
                 SecsFormat.U4 => "U4",
                 _ => throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value"),
             };
-
-        private static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
     }
 }

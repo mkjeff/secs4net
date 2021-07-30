@@ -67,8 +67,8 @@ namespace Secs4Net
                     return false;
                 }
 
-                int systembyte = replyMessage.S == 9 ? SystemByteGenerator.New() : Id;
-                await secsGem.SendDataMessageAsync(replyMessage, systembyte, cancellation).ConfigureAwait(false);
+                int id = replyMessage.S == 9 ? MessageIdGenerator.NewId() : Id;
+                await secsGem.SendDataMessageAsync(replyMessage, id, cancellation).ConfigureAwait(false);
                 SecondaryMessage = replyMessage;
                 return true;
             }

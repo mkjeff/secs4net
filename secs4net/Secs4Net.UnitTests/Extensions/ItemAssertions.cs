@@ -145,25 +145,19 @@ namespace Secs4Net.UnitTests.Extensions
                 where T : unmanaged, IEquatable<T>
 #endif
             {
-#if NET
-                if (subject.GetValues<T>().AsSpan().SequenceEqual(expectation.GetValues<T>().AsSpan()))
+
+                if (subject.GetReadOnlyMemory<T>().Span.SequenceEqual(expectation.GetReadOnlyMemory<T>().Span))
                 {
                     return true;
                 }
-#else
-                var expectationArray = expectation.GetValues<T>();
-                if (subject.GetValues<T>().AsSpan().SequenceEqual(new ReadOnlySpan<T>(Unsafe.AsPointer(ref expectationArray[0]), expectationArray.Length)))
-                {
-                    return true;
-                }
-#endif
+
                 Execute.Assertion
                     .ForCondition(_notBeEquivalent)
                     .BecauseOf(context.Because, context.BecauseArgs)
                     .FailWith("Expected {0} to be {1}, but found {2}",
                         path + $".GetValues<{typeof(T).Name}>()",
-                        expectation.GetValues<T>().ToArray(),
-                        subject.GetValues<T>().ToArray());
+                        expectation.GetReadOnlyMemory<T>().ToArray(),
+                        subject.GetReadOnlyMemory<T>().ToArray());
                 return false;
             }
 

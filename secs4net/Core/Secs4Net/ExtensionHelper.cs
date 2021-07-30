@@ -1,6 +1,7 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
 using PooledAwait;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -8,8 +9,42 @@ using System.Threading.Tasks;
 
 namespace Secs4Net
 {
-    internal static class SecsExtension
+    public static class SecsExtension
     {
+        public static IEnumerable<ReadOnlyMemory<T>> Chunk<T>(this ReadOnlyMemory<T> memory, int count)
+        {
+            for (int start = 0; start < memory.Length;)
+            {
+                int end = start + count;
+                if (end > memory.Length)
+                {
+                    yield return memory[start..];
+                }
+                else
+                {
+                    yield return memory[start..end];
+                }
+                start = end;
+            }
+        }
+
+        public static IEnumerable<Memory<T>> Chunk<T>(this Memory<T> memory, int count)
+        {
+            for (int start = 0; start < memory.Length;)
+            {
+                int end = start + count;
+                if (end > memory.Length)
+                {
+                    yield return memory[start..];
+                }
+                else
+                {
+                    yield return memory[start..end];
+                }
+                start = end;
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void Reverse(this Span<byte> bytes, int offSet)
         {
@@ -69,7 +104,7 @@ namespace Secs4Net
             source.TrySetResult(secondaryMessage);
         }
 
-        internal static StringBuilder AppendArray<T>(this StringBuilder sb, ValueArray<T> arrary, int maxCount) where T : unmanaged
+        internal static StringBuilder AppendArray<T>(this StringBuilder sb, ReadOnlySpan<T> arrary, int maxCount) where T : unmanaged
         {
             if (arrary.IsEmpty)
             {
@@ -79,10 +114,10 @@ namespace Secs4Net
             var len = Math.Min(arrary.Length, maxCount);
             for (int i = 0; i < len - 1; i++)
             {
-                sb.Append(arrary[i].ToString()).Append(' ');
+                sb.Append(arrary.DangerousGetReferenceAt(i).ToString()).Append(' ');
             }
 
-            sb.Append(arrary[len - 1].ToString());
+            sb.Append(arrary.DangerousGetReferenceAt(len - 1).ToString());
             if (len < arrary.Length)
             {
                 sb.Append(" ...");

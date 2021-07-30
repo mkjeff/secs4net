@@ -14,7 +14,7 @@ namespace Secs4Net
         public readonly byte S;
         public readonly byte F;
         public readonly MessageType MessageType;
-        public readonly int SystemBytes;
+        public readonly int Id;
 
         internal MessageHeader(
             ushort deviceId,
@@ -22,19 +22,19 @@ namespace Secs4Net
             byte s = default,
             byte f = default,
             MessageType messageType = default,
-            int systemBytes = default)
+            int id = default)
         {
             DeviceId = deviceId;
             ReplyExpected = replyExpected;
             S = s;
             F = f;
             MessageType = messageType;
-            SystemBytes = systemBytes;
+            Id = id;
         }
 
         public override string ToString()
         {
-            return $"DeviceId={DeviceId}, S={S}, ReplyExpected={ReplyExpected}, F={F}, MessageType={MessageType}, SystemBytes={SystemBytes}";
+            return $"DeviceId={DeviceId}, S={S}, ReplyExpected={ReplyExpected}, F={F}, MessageType={MessageType}, Id={Id:X8}";
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -46,7 +46,7 @@ namespace Secs4Net
             span.DangerousGetReferenceAt(3) = F;
             span.DangerousGetReferenceAt(4) = (byte)0;
             span.DangerousGetReferenceAt(5) = (byte)MessageType;
-            BinaryPrimitives.WriteInt32BigEndian(span.Slice(6), SystemBytes);
+            BinaryPrimitives.WriteInt32BigEndian(span.Slice(6), Id);
             buffer.Advance(10);
         }
 
@@ -61,7 +61,7 @@ namespace Secs4Net
                 s: (byte)(s & 0b0111_111),
                 f: Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref head, 3)),
                 messageType: (MessageType)Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref head, 5)),
-                systemBytes: BinaryPrimitives.ReadInt32BigEndian(buffer.Slice(6))
+                id: BinaryPrimitives.ReadInt32BigEndian(buffer.Slice(6))
             );
         }
     }

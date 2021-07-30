@@ -99,7 +99,7 @@ namespace Secs4Net.UnitTests
                 .Take(messageIds.Length)
                 .Select(m => new
                 {
-                    Id = m.header.SystemBytes,
+                    Id = m.header.Id,
                     Message = new SecsMessage(m.header.S, m.header.F, m.header.ReplyExpected)
                     {
                         SecsItem = m.rootItem,
@@ -124,7 +124,7 @@ namespace Secs4Net.UnitTests
             {
                 SecsGem.EncodeMessage(message, id, deviceId: 0, buffer);
             }
-            var encodedBytes = buffer.WrittenMemory.ToArray();
+            var encodedBytes = buffer.WrittenMemory;
 
             var pipe = new Pipe();
             var decoder = new PipeDecoder(pipe.Reader, pipe.Writer);
@@ -148,7 +148,7 @@ namespace Secs4Net.UnitTests
                 .Take(messageIds.Length)
                 .Select(m => new
                 {
-                    Id = m.header.SystemBytes,
+                    Id = m.header.Id,
                     Message = new SecsMessage(m.header.S, m.header.F, m.header.ReplyExpected)
                     {
                         SecsItem = m.rootItem,

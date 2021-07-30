@@ -1,7 +1,8 @@
 # secs4net
 
-### Note: This project is just an implementation reference. 
+## Note: This project is just an implementation reference. ##
 
+<br>
 About the v2, it is almost done. but it is hard to be compatible with v1.
 
 .NET Core/.NET 5.0+ is the mainstream already, opposite .net framework stuck on the maintenance stage.

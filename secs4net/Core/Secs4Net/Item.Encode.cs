@@ -54,7 +54,7 @@ namespace Secs4Net
             ThrowHelper(count);
 
             [DoesNotReturn]
-            static void ThrowHelper(int count) => throw new ArgumentOutOfRangeException(nameof(count), count, $@"Item data length:{count} is overflow");
+            static void ThrowHelper(int count) => throw new ArgumentOutOfRangeException(nameof(count), count, $@"Item length:{count} is overflow");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

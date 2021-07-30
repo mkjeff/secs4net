@@ -127,7 +127,7 @@ namespace Secs4Net
                     _ = SendLinkTestAsync();
                 }
 
-                async FireAndForget SendLinkTestAsync() => await SendControlMessage(MessageType.LinkTestRequest, SystemByteGenerator.New()).ConfigureAwait(false);
+                async FireAndForget SendLinkTestAsync() => await SendControlMessage(MessageType.LinkTestRequest, MessageIdGenerator.NewId()).ConfigureAwait(false);
 #endif
             }, null, Timeout.Infinite, Timeout.Infinite);
 
@@ -169,7 +169,7 @@ namespace Secs4Net
                         }
                     } while (!connected);
 
-                    await SendControlMessage(MessageType.SelectRequest, SystemByteGenerator.New(), cancellation).ConfigureAwait(false);
+                    await SendControlMessage(MessageType.SelectRequest, MessageIdGenerator.NewId(), cancellation).ConfigureAwait(false);
                 };
 
                 _stopImpl = delegate { };
@@ -371,10 +371,9 @@ namespace Secs4Net
         {
             try
             {
-                var systembyte = header.SystemBytes;
                 if ((byte)header.MessageType % 2 == 0)
                 {
-                    if (_replyExpectedMsgs.TryGetValue(systembyte, out var ar))
+                    if (_replyExpectedMsgs.TryGetValue(header.Id, out var ar))
                     {
                         ar.TrySetResult(header.MessageType);
                     }
@@ -389,7 +388,7 @@ namespace Secs4Net
                 switch (header.MessageType)
                 {
                     case MessageType.SelectRequest:
-                        await SendControlMessage(MessageType.SelectResponse, systembyte, cancellation).ConfigureAwait(false);
+                        await SendControlMessage(MessageType.SelectResponse, header.Id, cancellation).ConfigureAwait(false);
                         CommunicationStateChanging(ConnectionState.Selected);
                         break;
                     case MessageType.SelectResponse:
@@ -413,7 +412,7 @@ namespace Secs4Net
                         }
                         break;
                     case MessageType.LinkTestRequest:
-                        await SendControlMessage(MessageType.LinkTestResponse, systembyte, cancellation).ConfigureAwait(false);
+                        await SendControlMessage(MessageType.LinkTestResponse, header.Id, cancellation).ConfigureAwait(false);
                         break;
                     case MessageType.SeperateRequest:
                         CommunicationStateChanging(ConnectionState.Retry);
@@ -427,28 +426,28 @@ namespace Secs4Net
         }
 
         private static readonly ReadOnlyMemory<byte> ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
-        private async Task SendControlMessage(MessageType msgType, int systembyte, CancellationToken cancellation = default)
+        private async Task SendControlMessage(MessageType msgType, int id, CancellationToken cancellation = default)
         {
             var token = ValueTaskCompletionSource<MessageType>.Create();
             if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
             {
-                _replyExpectedMsgs[systembyte] = token;
+                _replyExpectedMsgs[id] = token;
             }
 
             try
             {
-                var buffer = EncodeControlMessage(msgType, systembyte);
+                var buffer = EncodeControlMessage(msgType, id);
                 await Unsafe.As<ISecsConnection>(this).SendAsync(buffer, cancellation).ConfigureAwait(false);
 
                 _logger.Info("Sent Control Message: " + msgType);
-                if (_replyExpectedMsgs.ContainsKey(systembyte))
+                if (_replyExpectedMsgs.ContainsKey(id))
                 {
 #if NET
                     await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6), cancellation).ConfigureAwait(false);
 #else
                     if (await Task.WhenAny(token.Task, Task.Delay(T6, cancellation)).ConfigureAwait(false) != token.Task)
                     {
-                        _logger.Error($"T6 Timeout[id=0x{systembyte:X8}]: {T6 / 1000} sec.");
+                        _logger.Error($"T6 Timeout[id=0x{id:X8}]: {T6 / 1000} sec.");
                         CommunicationStateChanging(ConnectionState.Retry);
                     }
 #endif
@@ -457,7 +456,7 @@ namespace Secs4Net
 #if NET
             catch (TimeoutException)
             {
-                _logger.Error($"T6 Timeout[id=0x{systembyte:X8}]: {T6 / 1000} sec.");
+                _logger.Error($"T6 Timeout[id=0x{id:X8}]: {T6 / 1000} sec.");
                 CommunicationStateChanging(ConnectionState.Retry);
             }
 #endif
@@ -468,17 +467,17 @@ namespace Secs4Net
             }
             finally
             {
-                _replyExpectedMsgs.TryRemove(systembyte, out _);
+                _replyExpectedMsgs.TryRemove(id, out _);
             }
 
-            static ReadOnlyMemory<byte> EncodeControlMessage(MessageType msgType, int systembyte)
+            static ReadOnlyMemory<byte> EncodeControlMessage(MessageType msgType, int id)
             {
                 var buffer = new MemoryBufferWriter<byte>(new byte[14]);
                 buffer.Write(ControlMessageLengthBytes.Span);
                 new MessageHeader(
                     deviceId: 0xFFFF,
                     messageType: msgType,
-                    systemBytes: systembyte).EncodeTo(buffer);
+                    id: id).EncodeTo(buffer);
                 return buffer.WrittenMemory;
             }
         }
@@ -505,7 +504,7 @@ namespace Secs4Net
             ConnectionChanged = null;
             if (State == ConnectionState.Selected)
             {
-                await SendControlMessage(MessageType.SeperateRequest, SystemByteGenerator.New()).ConfigureAwait(false);
+                await SendControlMessage(MessageType.SeperateRequest, MessageIdGenerator.NewId()).ConfigureAwait(false);
             }
 
             Disconnect();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.HighPerformance;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -44,7 +45,7 @@ namespace Secs4Net.Json
         {
             jwtr.WriteStartObject();
 
-            jwtr.WriteNumber(nameof(msg.S),msg.S);
+            jwtr.WriteNumber(nameof(msg.S), msg.S);
             jwtr.WriteNumber(nameof(msg.F), msg.F);
             jwtr.WriteBoolean(nameof(msg.ReplyExpected), msg.ReplyExpected);
             jwtr.WriteString(nameof(msg.Name), msg.Name);
@@ -80,51 +81,51 @@ namespace Secs4Net.Json
                     writer.WriteStringValue(item.GetString());
                     break;
                 case SecsFormat.Binary:
-                    WriteValue<byte>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<byte>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.Boolean:
-                    WriteValue<bool>(writer, item, static (writer, i) => writer.WriteBooleanValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<bool>(), static (writer, i) => writer.WriteBooleanValue(i));
                     break;
                 case SecsFormat.I8:
-                    WriteValue<long>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<long>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.I1:
-                    WriteValue<sbyte>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<sbyte>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.I2:
-                    WriteValue<short>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<short>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.I4:
-                    WriteValue<int>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<int>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.F4:
-                    WriteValue<float>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<float>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.F8:
-                    WriteValue<double>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<double>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.U8:
-                    WriteValue<ulong>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<ulong>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.U1:
-                    WriteValue<byte>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<byte>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.U2:
-                    WriteValue<ushort>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<ushort>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
                 case SecsFormat.U4:
-                    WriteValue<uint>(writer, item, static (writer, i) => writer.WriteNumberValue(i));
+                    WriteArrayValue(writer, item.GetReadOnlyMemory<uint>(), static (writer, i) => writer.WriteNumberValue(i));
                     break;
             }
             writer.WriteEndObject();
 
-            static void WriteValue<T>(Utf8JsonWriter writer, Item item, Action<Utf8JsonWriter, T> write) where T : unmanaged
+            static void WriteArrayValue<T>(Utf8JsonWriter writer, ReadOnlyMemory<T> memory, Action<Utf8JsonWriter, T> write) where T : unmanaged
             {
                 writer.WriteStartArray();
-                var values = item.GetValues<T>();
-                for (var i =0; i< values.Length; i++)
+                var values = memory.Span;
+                for (var i = 0; i < values.Length; i++)
                 {
-                    write(writer, values[i]);
+                    write(writer, values.DangerousGetReferenceAt(i));
                 }
                 writer.WriteEndArray();
             }
