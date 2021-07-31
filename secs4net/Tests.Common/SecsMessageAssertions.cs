@@ -2,7 +2,7 @@
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 
-namespace Secs4Net.UnitTests.Extensions
+namespace Secs4Net
 {
     internal static class SecsMessageExtensions
     {

@@ -85,7 +85,12 @@ namespace Secs4Net.Json
             int bytesRead;
             do
             {
+#if NET
                 bytesRead = _stream.Read(newSegment.Buffer.Memory.Span.Slice(_lastSegmentEndIndex));
+#else
+                var bytes = newSegment.Buffer.Memory.Span.Slice(_lastSegmentEndIndex).ToArray();
+                bytesRead = _stream.Read(bytes, 0, bytes.Length);
+#endif
                 _lastSegmentEndIndex += bytesRead;
             } while (bytesRead > 0 && _lastSegmentEndIndex < newSegment.Buffer.Memory.Length);
             _isFinalBlock = _lastSegmentEndIndex < newSegment.Buffer.Memory.Length;

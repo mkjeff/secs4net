@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -200,11 +201,11 @@ namespace Secs4Net.Sml
         private static byte HexByteParser(ReadOnlySpan<char> str)
 #if NET
             => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-            ? byte.Parse(str, System.Globalization.NumberStyles.HexNumber)
+            ? byte.Parse(str[2..], NumberStyles.HexNumber)
             : byte.Parse(str);
 #else
             => str.StartsWith("0x".AsSpan(), StringComparison.OrdinalIgnoreCase)
-            ? byte.Parse(str.ToString(), System.Globalization.NumberStyles.HexNumber)
+            ? byte.Parse(str[2..].ToString(), NumberStyles.HexNumber)
             : byte.Parse(str.ToString());
 #endif
 

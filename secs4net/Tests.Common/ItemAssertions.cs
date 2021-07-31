@@ -1,12 +1,10 @@
 ﻿using FluentAssertions;
-using FluentAssertions.Equivalency;
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 using System;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
-namespace Secs4Net.UnitTests.Extensions
+namespace Secs4Net
 {
     internal static class ItemExtensions
     {
@@ -48,7 +46,7 @@ namespace Secs4Net.UnitTests.Extensions
         }
     }
 
-    internal sealed class ItemEquivalencyValidationContext 
+    internal sealed class ItemEquivalencyValidationContext
     {
         public Reason Reason { get; init; } = default!;
         public Item Subject { get; init; } = default!;
@@ -131,7 +129,7 @@ namespace Secs4Net.UnitTests.Extensions
                 return false;
             }
 
-            unsafe bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context)
+            bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context)
                 where T : unmanaged, IEquatable<T>
             {
                 if (subject.GetReadOnlyMemory<T>().Span.SequenceEqual(expectation.GetReadOnlyMemory<T>().Span))

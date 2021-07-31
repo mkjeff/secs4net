@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="6.0.0-beta0001" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Secs4Net\Secs4Net.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\netstandard.common\IsExternalInit.cs" Link="net20\IsExternalInit.cs" />
+  </ItemGroup>
+
+</Project>

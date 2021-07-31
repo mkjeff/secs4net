@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using Secs4Net.UnitTests.Extensions;
 using System;
 using System.Buffers;
 using System.Collections.Generic;

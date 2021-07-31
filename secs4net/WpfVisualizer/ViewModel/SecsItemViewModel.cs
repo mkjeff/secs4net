@@ -27,10 +27,19 @@ namespace SecsMessageVisuallizer.ViewModel
             }
         }
 
-        public string Name 
+        public string Name
             => _secsItem.ToString();
 
-        public override string ToString() 
-            => _secsItem.ToJson(new JsonWriterOptions{ Indented = true});
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            WriteIndented = true,
+            Converters =
+            {
+                new ItemJsonConverter(),
+            }
+        };
+
+        public override string ToString()
+            => JsonSerializer.Serialize(_secsItem, JsonOptions);
     }
 }

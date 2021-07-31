@@ -11,11 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\netstandard.common\Channel.Extensions.cs" Link="net20\Channel.Extensions.cs" />
-    <Compile Include="..\..\netstandard.common\IsExternalInit.cs" Link="net20\IsExternalInit.cs" />
-    <Compile Include="..\..\netstandard.common\NullableAttributes.cs" Link="net20\NullableAttributes.cs" />
-    <Compile Include="..\..\netstandard.common\Range.cs" Link="net20\Range.cs" />
-    <Compile Include="..\..\netstandard.common\SkipLocalsInit.cs" Link="net20\SkipLocalsInit.cs" />
+    <Compile Include="..\..\common\Channel.Extensions.cs" Link="net20\Channel.Extensions.cs" />
+    <Compile Include="..\..\common\IsExternalInit.cs" Link="net20\IsExternalInit.cs" />
+    <Compile Include="..\..\common\NullableAttributes.cs" Link="net20\NullableAttributes.cs" />
+    <Compile Include="..\..\common\Range.cs" Link="net20\Range.cs" />
+    <Compile Include="..\..\common\SkipLocalsInit.cs" Link="net20\SkipLocalsInit.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -9,13 +8,6 @@ namespace Secs4Net.Json
 {
     public static class JsonWriter
     {
-        public static string ToJson(this SecsMessage msg, JsonWriterOptions options = default)
-        {
-            using var mem = new MemoryStream();
-            msg.WriteTo(mem, options);
-            return Encoding.UTF8.GetString(mem.ToArray());
-        }
-
         public static string ToJson(this Item item, JsonWriterOptions options = default)
         {
             using var mem = new MemoryStream();
@@ -23,41 +15,6 @@ namespace Secs4Net.Json
             item.WriteTo(jwtr);
             jwtr.Flush();
             return Encoding.UTF8.GetString(mem.ToArray());
-        }
-
-
-        public static void WriteTo(this IEnumerable<SecsMessage> messages, Stream writer, JsonWriterOptions options)
-        {
-            using var jwtr = new Utf8JsonWriter(writer, options);
-            jwtr.WriteStartArray();
-            foreach (var msg in messages)
-            {
-                msg.WriteTo(jwtr);
-            }
-            jwtr.WriteEndArray();
-            jwtr.Flush();
-        }
-
-        public static void WriteTo(this SecsMessage msg, Stream writer, JsonWriterOptions options = default)
-            => msg.WriteTo(new Utf8JsonWriter(writer, options));
-
-        public static void WriteTo(this SecsMessage msg, Utf8JsonWriter jwtr)
-        {
-            jwtr.WriteStartObject();
-
-            jwtr.WriteNumber(nameof(msg.S), msg.S);
-            jwtr.WriteNumber(nameof(msg.F), msg.F);
-            jwtr.WriteBoolean(nameof(msg.ReplyExpected), msg.ReplyExpected);
-            jwtr.WriteString(nameof(msg.Name), msg.Name);
-
-            if (msg.SecsItem != null)
-            {
-                jwtr.WritePropertyName(nameof(msg.SecsItem));
-                msg.SecsItem.WriteTo(jwtr);
-            }
-
-            jwtr.WriteEndObject();
-            jwtr.Flush();
         }
 
         public static void WriteTo(this Item item, Utf8JsonWriter writer)
