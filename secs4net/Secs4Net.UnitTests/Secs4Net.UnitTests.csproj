@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\common\EnumerableExtensions.cs" Link="common\EnumerableExtensions.cs" />
     <Compile Include="..\common\Channel.Extensions.cs" Link="common\Channel.Extensions.cs" />
     <Compile Include="..\common\IsExternalInit.cs" Link="common\IsExternalInit.cs" />
     <Compile Include="..\common\NullableAttributes.cs" Link="common\NullableAttributes.cs" />
