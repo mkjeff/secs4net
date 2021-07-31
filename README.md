@@ -9,18 +9,18 @@ About the v2, it is almost done. but it is hard to be compatible with v1.
 
 As mention above, as an implementation reference, I would try to keep the source code is clean and easy to understanding. Product support is not my goal coz I'm not in this industry for a long time.
 
-If you already use secs4net in your product and can't migrate your system to `.NET 6.0`. I'd recommend using the fork version from [@TiltonJH](https://github.com/TiltonJH/secs4net).
+If you already use secs4net in your product and can't migrate your system to `v2`. I'd recommend using the fork version from [@TiltonJH](https://github.com/TiltonJH/secs4net).
 
-[![NuGet](https://img.shields.io/nuget/vpre/secs4net.svg)](https://www.nuget.org/packages/Secs4Net/2.0.0-rc2)
+[![NuGet](https://img.shields.io/nuget/vpre/secs4net.svg)](https://www.nuget.org/packages/Secs4Net/2.0.0-rc4.0)
 
 **Project Description**  
-Note: Secs4net will only support .net6.0+ starting from v2.
+~~Note: Secs4net will only support .net6.0+ starting from v2.~~
 
 SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to communicate with SEMI standard compatible device.  
 
 **Getting started**
 1. Install nuget package
-    > dotnet add package Secs4Net --version 2.0.0-rc2
+    > dotnet add package Secs4Net --version 2.0.0-rc4.0
 2. Configure .NET dependency injection
    ```cs
     public void ConfigureServices(IServiceCollection services)
