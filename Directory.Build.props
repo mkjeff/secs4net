@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <Version>2.0.0-rc4.0</Version>
+    <Copyright>Copyright © secs4net 2021</Copyright>
+    <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
+    <Authors>mkjeff</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net6.0'">
+    <Compile Include="..\..\common\Channel.Extensions.cs" Link="common\Channel.Extensions.cs" />
+    <Compile Include="..\..\common\IsExternalInit.cs" Link="common\IsExternalInit.cs" />
+    <Compile Include="..\..\common\NullableAttributes.cs" Link="common\NullableAttributes.cs" />
+    <Compile Include="..\..\common\Range.cs" Link="common\Range.cs" />
+    <Compile Include="..\..\common\SkipLocalsInit.cs" Link="common\SkipLocalsInit.cs" />
+  </ItemGroup>
+</Project>

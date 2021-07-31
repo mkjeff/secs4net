@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0-preview.6.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Secs4Net\Secs4Net.csproj" />
+    <ProjectReference Include="..\..\Extension\Secs4Net.Sml\Secs4Net.Sml.csproj" />
+    <ProjectReference Include="..\Client\WebApp.Client.csproj" />
+    <ProjectReference Include="..\Shared\WebApp.Shared.csproj" />
+  </ItemGroup>
+
+
+</Project>
