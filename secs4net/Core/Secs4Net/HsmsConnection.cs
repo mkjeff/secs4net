@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using PooledAwait;
+using Secs4Net.Extensions;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -73,6 +74,9 @@ namespace Secs4Net
         private readonly Timer _timerLinkTest;
         private readonly ConcurrentDictionary<int, ValueTaskCompletionSource<MessageType>> _replyExpectedMsgs = new();
         private readonly int _socketReceiveBufferSize;
+#if NETSTANDARD
+        private readonly byte[] _socketReceiveBuffer;
+#endif
         private readonly ISecsGemLogger _logger;
         private readonly PipeDecoder _pipeDecoder;
         private readonly Pipe _pipe;
@@ -98,6 +102,9 @@ namespace Secs4Net
             Port = options.Port;
             IsActive = options.IsActive;
             _socketReceiveBufferSize = options.SocketReceiveBufferSize;
+#if NETSTANDARD
+            _socketReceiveBuffer = new byte[_socketReceiveBufferSize];
+#endif
 
             _ = AsyncHelper.LongRunningAsync(() => HandleControlMessagesAsync(_cancellationSourceForControlMessageProcessing.Token), _cancellationSourceForControlMessageProcessing.Token);
 
@@ -145,7 +152,12 @@ namespace Secs4Net
                                 Blocking = false,
                                 ReceiveBufferSize = _socketReceiveBufferSize,
                             };
+#if NET
                             await socket.ConnectAsync(IpAddress, Port, cancellation).ConfigureAwait(false);
+#else
+                            await socket.ConnectAsync(IpAddress, Port).WithCancellation(cancellation).ConfigureAwait(false);
+#endif
+
                             _socket = socket;
                             CommunicationStateChanging(ConnectionState.Connected);
                             connected = true;
@@ -185,7 +197,11 @@ namespace Secs4Net
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
+#if NET
                             _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
+#else
+                            _socket = await server.AcceptAsync().WithCancellation(cancellation).ConfigureAwait(false);
+#endif
                             _socket.Blocking = false;
                             _socket.ReceiveBufferSize = _socketReceiveBufferSize;
                             CommunicationStateChanging(ConnectionState.Connected);
@@ -260,6 +276,7 @@ namespace Secs4Net
             }
         }
 
+
         private async Task StartPipeDecoderProducerAsync(CancellationToken cancellation)
         {
             var decoderInput = _pipeDecoder.Input;
@@ -268,10 +285,15 @@ namespace Secs4Net
                 while (true)
                 {
                     Debug.Assert(_socket != null);
+#if NET
                     var memory = decoderInput.GetMemory(_socketReceiveBufferSize);
                     var count = await _socket.ReceiveAsync(memory, SocketFlags.None, cancellation).ConfigureAwait(false);
                     decoderInput.Advance(count);
                     await decoderInput.FlushAsync(cancellation).ConfigureAwait(false);
+#else
+                    var count = await _socket.ReceiveAsync(new ArraySegment<byte>(_socketReceiveBuffer), SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false); ;
+                    await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory().Slice(0, count), cancellation).ConfigureAwait(false);
+#endif
                 }
             }
             catch (Exception ex)
@@ -421,14 +443,24 @@ namespace Secs4Net
                 _logger.Info("Sent Control Message: " + msgType);
                 if (_replyExpectedMsgs.ContainsKey(id))
                 {
+#if NET
                     await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6), cancellation).ConfigureAwait(false);
+#else
+                    if (await Task.WhenAny(token.Task, Task.Delay(T6, cancellation)).ConfigureAwait(false) != token.Task)
+                    {
+                        _logger.Error($"T6 Timeout[id=0x{id:X8}]: {T6 / 1000} sec.");
+                        CommunicationStateChanging(ConnectionState.Retry);
+                    }
+#endif
                 }
             }
+#if NET
             catch (TimeoutException)
             {
                 _logger.Error($"T6 Timeout[id=0x{id:X8}]: {T6 / 1000} sec.");
                 CommunicationStateChanging(ConnectionState.Retry);
             }
+#endif
             catch (Exception ex)
             {
                 _logger.Error($"Unknown exception occurred when send control messages", ex);
@@ -484,6 +516,7 @@ namespace Secs4Net
             _timerLinkTest.Dispose();
         }
 
+#if NET
         async PooledValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
         {
             await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
@@ -502,6 +535,30 @@ namespace Secs4Net
                 _sendLock.Release();
             }
         }
+#else
+        async PooledValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
+        {
+            if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(buffer, out var arr))
+            {
+                throw new InvalidOperationException();
+            }
+            await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
+            try
+            {
+                do
+                {
+                    Debug.Assert(_socket != null);
+                    var length = await _socket.SendAsync(arr, SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false);
+                    arr = new ArraySegment<byte>(arr.Array, arr.Offset + length, arr.Count - length);
+                    //Trace.WriteLine($"Socket sent {length} bytes.");
+                } while (arr.Count > 0);
+            }
+            finally
+            {
+                _sendLock.Release();
+            }
+        }
+#endif
 
         IAsyncEnumerable<(MessageHeader header, Item? rootItem)> ISecsConnection.GetDataMessages(CancellationToken cancellation)
             => _pipeDecoder.GetDataMessages(cancellation);

@@ -105,7 +105,11 @@ namespace Secs4Net
                 {
                     buffer = await PipeReadAsync(_reader, required: 1, cancellation).ConfigureAwait(false);
                 }
+#if NET
                 Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
+#else
+                Item.DecodeFormatAndLengthByteCount(buffer.First.Span.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
+#endif
                 buffer = buffer.Slice(1);
 
                 // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
@@ -212,7 +216,11 @@ namespace Secs4Net
             ReadOnlySequence<byte> buffer = ReadOnlySequence<byte>.Empty;
             if (PipeTryRead(reader, required, ref buffer))
             {
+#if NET
                 return ValueTask.FromResult(buffer);
+#else
+                return new ValueTask<ReadOnlySequence<byte>>(buffer);
+#endif
             }
 
             return SlowPipeReadAsync(reader, required, cancellation);

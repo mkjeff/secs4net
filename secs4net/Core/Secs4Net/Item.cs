@@ -86,7 +86,7 @@ namespace Secs4Net
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
-        public virtual ref readonly T FirstValueOrDefault<T>(T defaultValue = default) where T : unmanaged
+        public virtual T FirstValueOrDefault<T>(T defaultValue = default) where T : unmanaged
             => throw CreateNotSupportException(Format);
 
         /// <summary>

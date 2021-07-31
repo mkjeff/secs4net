@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
+using Secs4Net;
 using Secs4Net.Extensions;
-using Secs4Net.UnitTests.Extensions;
 using System;
 using System.IO.Pipelines;
 using System.Linq;

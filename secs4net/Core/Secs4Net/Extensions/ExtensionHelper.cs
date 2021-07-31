@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Secs4Net.Extensions
 {
@@ -150,6 +152,50 @@ namespace Secs4Net.Extensions
             static char GetHexChar(int i) => i < 10 ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
         }
 
-    }
+#if NETSTANDARD
+        internal static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
+            // This disposes the registration as soon as one of the tasks trigger
+            using (cancellationToken.Register(state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
+            {
+                var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
+                if (resultTask == tcs.Task)
+                {
+                    // Operation cancelled
+                    throw new OperationCanceledException(cancellationToken);
+                }
+
+                await task;
+            }
+        }
+
+        internal static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // This disposes the registration as soon as one of the tasks trigger
+            using (cancellationToken.Register(state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
+            {
+                var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
+                if (resultTask == tcs.Task)
+                {
+                    // Operation cancelled
+                    throw new OperationCanceledException(cancellationToken);
+                }
+
+                return await task;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe int GetBytes(this Encoding encoding, string str, Span<byte> span)
+        {
+            var chars = (char*)Unsafe.AsPointer(ref str.AsSpan().DangerousGetReference());
+            var bytes = (byte*)Unsafe.AsPointer(ref span.DangerousGetReference());
+            return encoding.GetBytes(chars, str.Length, bytes, span.Length);
+        }
+#endif
+    }
 }

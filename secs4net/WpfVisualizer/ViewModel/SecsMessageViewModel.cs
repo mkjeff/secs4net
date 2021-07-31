@@ -31,7 +31,16 @@ namespace SecsMessageVisuallizer.ViewModel
         }
         public bool ReplyExpected => _secsMsg.ReplyExpected;
 
-        public override string ToString() 
-            => _secsMsg.ToJson(new JsonWriterOptions { Indented = true });
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            WriteIndented = true,
+            Converters =
+            {
+                new ItemJsonConverter(),
+            }
+        };
+
+        public override string ToString()
+            => JsonSerializer.Serialize(_secsMsg, JsonOptions);
     }
 }

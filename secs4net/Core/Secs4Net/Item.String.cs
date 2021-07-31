@@ -1,4 +1,7 @@
-﻿using System.Buffers;
+﻿using Secs4Net.Extensions;
+using System;
+using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -10,10 +13,10 @@ namespace Secs4Net
         {
             private readonly string _value;
 
-            public StringItem(SecsFormat format, string value) : base(format, value.Length) 
+            public StringItem(SecsFormat format, string value) : base(format, value.Length)
                 => _value = value;
 
-            public sealed override string GetString() 
+            public sealed override string GetString()
                 => _value;
 
             public sealed override void EncodeTo(IBufferWriter<byte> buffer)
@@ -27,12 +30,13 @@ namespace Secs4Net
                 var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
                 var bytelength = encoder.GetByteCount(_value);
                 EncodeItemHeader(Format, bytelength, buffer);
-                var span = buffer.GetSpan(bytelength).Slice(0, bytelength);
-                buffer.Advance(encoder.GetBytes(_value, span));
+                var length = encoder.GetBytes(_value, buffer.GetSpan(bytelength));
+                Debug.Assert(length == bytelength);
+                buffer.Advance(bytelength);
             }
 
-            private protected sealed override bool IsEquals(Item other) 
-                => base.IsEquals(other) && _value.Equals(Unsafe.As<StringItem>(other)._value, System.StringComparison.Ordinal);
+            private protected sealed override bool IsEquals(Item other)
+                => base.IsEquals(other) && _value.Equals(Unsafe.As<StringItem>(other)._value, StringComparison.Ordinal);
         }
     }
 }

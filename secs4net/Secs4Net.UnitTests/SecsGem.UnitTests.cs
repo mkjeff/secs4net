@@ -1,7 +1,7 @@
-﻿using FluentAssertions;
+﻿using Secs4Net;
+using FluentAssertions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using Secs4Net.UnitTests.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;

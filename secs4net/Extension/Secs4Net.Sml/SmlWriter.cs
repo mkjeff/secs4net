@@ -1,6 +1,9 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
+using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Secs4Net.Sml
@@ -11,47 +14,61 @@ namespace Secs4Net.Sml
 
         public static string ToSml(this SecsMessage msg)
         {
-            if (msg is null)
-            {
-                return string.Empty;
-            }
-
             using var sw = new StringWriter();
-            msg.WriteTo(sw);
+            msg.WriteSmlTo(sw);
             return sw.ToString();
         }
 
-        public static void WriteTo(this SecsMessage msg, TextWriter writer, int indent = 4)
+        public static void WriteSmlTo(this SecsMessage msg, TextWriter writer, int indent = 4)
         {
-            if (msg is null)
+            if (msg.Name is not null)
             {
-                return;
+                writer.Write(msg.Name);
+                writer.Write(':');
             }
-
-            writer.WriteLine(msg.ToString());
+            writer.Write("'S");
+            writer.Write(msg.S);
+            writer.Write('F');
+            writer.Write(msg.F);
+            writer.Write('\'');
+            if (msg.ReplyExpected)
+            {
+                writer.Write('W');
+            }
+            writer.WriteLine();
 
             if (msg.SecsItem is not null)
             {
                 writer.Write(msg.SecsItem, indent);
             }
 
-            writer.Write('.');
+            writer.WriteLine('.');
         }
 
-        public static async Task WriteToAsync(this SecsMessage msg, TextWriter writer, int indent = 4)
+        public static async Task WriteSmlToAsync(this SecsMessage msg, TextWriter writer, int indent = 4)
         {
-            if (msg is null)
+            if (msg.Name is not null)
             {
-                return;
+                writer.Write(msg.Name);
+                writer.Write(':');
             }
+            writer.Write("'S");
+            writer.Write(msg.S);
+            writer.Write('F');
+            writer.Write(msg.F);
+            writer.Write('\'');
+            if (msg.ReplyExpected)
+            {
+                writer.Write('W');
+            }
+            writer.WriteLine();
 
-            await writer.WriteLineAsync(msg.ToString()).ConfigureAwait(false);
             if (msg.SecsItem is not null)
             {
                 await writer.WriteAsync(msg.SecsItem, indent).ConfigureAwait(false);
             }
 
-            await writer.WriteAsync('.').ConfigureAwait(false);
+            await writer.WriteLineAsync('.').ConfigureAwait(false);
         }
 
         public static void Write(this TextWriter writer, Item item, int indent = 4)
@@ -191,7 +208,12 @@ namespace Secs4Net.Sml
             }
         }
 
-        private static void WriteArray<T>(this TextWriter writer, ReadOnlyMemory<T> memory) where T : unmanaged
+        private static void WriteArray<T>(this TextWriter writer, ReadOnlyMemory<T> memory)
+#if NET           
+            where T : unmanaged, ISpanFormattable
+#else
+            where T: unmanaged
+#endif
         {
             if (memory.IsEmpty)
             {
@@ -202,7 +224,54 @@ namespace Secs4Net.Sml
             int i = 0;
             for (; i < array.Length - 1; i++)
             {
-                writer.Write(array.DangerousGetReferenceAt(i).ToString());
+                var value = array.DangerousGetReferenceAt(i);
+#if NET
+                writer.WriteSpanFormattableValue(value);
+#else
+                writer.Write(value.ToString());
+#endif
+                writer.Write(' ');
+            }
+
+            writer.Write(array.DangerousGetReferenceAt(i).ToString());
+        }
+
+        private static void WriteArray(this TextWriter writer, ReadOnlyMemory<float> memory)
+        {
+            if (memory.IsEmpty)
+            {
+                return;
+            }
+
+            var array = memory.Span;
+            int i = 0;
+            for (; i < array.Length - 1; i++)
+            {
+                var value = array.DangerousGetReferenceAt(i);
+#if NET
+                writer.WriteSpanFormattableValue(value);
+#else
+                writer.Write(value.ToString("G9", CultureInfo.InvariantCulture));
+#endif
+                writer.Write(' ');
+            }
+
+            writer.Write(array.DangerousGetReferenceAt(i).ToString());
+        }
+
+        private static void WriteArray(this TextWriter writer, ReadOnlyMemory<bool> memory)
+        {
+            if (memory.IsEmpty)
+            {
+                return;
+            }
+
+            var array = memory.Span;
+            int i = 0;
+            for (; i < array.Length - 1; i++)
+            {
+                var value = array.DangerousGetReferenceAt(i);
+                writer.Write(value.ToString());
                 writer.Write(' ');
             }
 
@@ -226,15 +295,34 @@ namespace Secs4Net.Sml
 
             AppendHexChars(writer, array.DangerousGetReferenceAt(i));
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void AppendHexChars(TextWriter sb, byte num)
             {
+                sb.Write("0x");
                 var hex1 = Math.DivRem(num, 0x10, out var hex0);
                 sb.Write(GetHexChar(hex1));
                 sb.Write(GetHexChar(hex0));
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
         }
+
+#if NET
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void WriteSpanFormattableValue<T>(this TextWriter writer, T value) where T : unmanaged, ISpanFormattable
+        {
+            using var spanOwner = SpanOwner<char>.Allocate(128);
+            if (value.TryFormat(spanOwner.Span, out var writtenCount, default, CultureInfo.InvariantCulture))
+            {
+                writer.Write(spanOwner.Span.Slice(0, writtenCount));
+            }
+            else
+            {
+                writer.Write(value.ToString());
+            }
+        }
+#endif
 
         internal static string ToSml(this SecsFormat format)
             => format switch

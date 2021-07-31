@@ -9,11 +9,11 @@ namespace Secs4Net
 {
     partial class Item
     {
-        private class MemoryItem<T> : Item where T : unmanaged
+        private class MemoryItem<T> : Item where T : unmanaged, IEquatable<T>
         {
             private readonly Memory<T> _value;
 
-            public MemoryItem(SecsFormat format, Memory<T> value) : base(format, value.Length) 
+            public MemoryItem(SecsFormat format, Memory<T> value) : base(format, value.Length)
                 => _value = value;
 
             public sealed override ref TResult FirstValue<TResult>()
@@ -29,17 +29,17 @@ namespace Secs4Net
                 static void ThrowHelper() => throw new IndexOutOfRangeException($"The item is empty or data length less than sizeof({typeof(T).Name})");
             }
 
-            public sealed override ref readonly TResult FirstValueOrDefault<TResult>(TResult defaultValue = default)
+            public sealed override TResult FirstValueOrDefault<TResult>(TResult defaultValue = default)
             {
                 if (_value.Length == 0 || _value.Length * Unsafe.SizeOf<T>() < Unsafe.SizeOf<TResult>())
                 {
-                    return ref new ReadOnlyRef<TResult>(defaultValue).Value;
+                    return defaultValue;
                 }
 
-                return ref Unsafe.As<T, TResult>(ref _value.Span.DangerousGetReferenceAt(0));
+                return Unsafe.As<T, TResult>(ref _value.Span.DangerousGetReferenceAt(0));
             }
 
-            public sealed override Memory<TResult> GetMemory<TResult>() 
+            public sealed override Memory<TResult> GetMemory<TResult>()
                 => _value.Cast<T, TResult>();
 
             public sealed override ReadOnlyMemory<TResult> GetReadOnlyMemory<TResult>()

@@ -29,7 +29,11 @@ namespace Secs4Net
 
         internal static Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
         {
+#if NET
             DecodeFormatAndLengthByteCount(bytes.FirstSpan.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
+#else
+            DecodeFormatAndLengthByteCount(bytes.First.Span.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
+#endif
 
             var dataLengthSeq = bytes.Slice(1, lengthByteCount);
             DecodeDataLength(dataLengthSeq, out var dataLength);
@@ -60,19 +64,27 @@ namespace Secs4Net
 
         internal static Item DecodeDataItem(SecsFormat format, in ReadOnlySequence<byte> bytes)
         {
-            var length = bytes.Length; 
+            var length = bytes.Length;
             return format switch
             {
                 SecsFormat.ASCII => length switch
                 {
                     0 => A(),
+#if NET
                     > 512 => A(Encoding.ASCII.GetString(bytes)),
+#else
+                    > 512 => A(DecodeString(bytes, Encoding.ASCII)),
+#endif
                     _ => A(DecodeStringWithPooled(bytes, Encoding.ASCII)),
                 },
                 SecsFormat.JIS8 => length switch
                 {
                     0 => J(),
+#if NET
                     > 512 => J(Jis8Encoding.GetString(bytes)),
+#else
+                    > 512 => J(DecodeString(bytes, Jis8Encoding)),
+#endif
                     _ => J(DecodeStringWithPooled(bytes, Jis8Encoding)),
                 },
                 SecsFormat.Boolean => length switch
@@ -161,6 +173,15 @@ namespace Secs4Net
                 valueAsBytesSpan.Reverse(elmSize);
                 return values;
             }
+
+#if NETSTANDARD
+            static unsafe string DecodeString(in ReadOnlySequence<byte> bytes, Encoding encoding)
+            {
+                using var spanOwner = SpanOwner<byte>.Allocate((int)bytes.Length);
+                bytes.CopyTo(spanOwner.Span);
+                return encoding.GetString((byte*) Unsafe.AsPointer(ref spanOwner.Span.DangerousGetReference()), spanOwner.Span.Length);
+            }
+#endif
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static string DecodeStringWithPooled(in ReadOnlySequence<byte> bytes, Encoding encoding)

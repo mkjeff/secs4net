@@ -2,16 +2,16 @@
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 
-namespace Secs4Net.UnitTests.Extensions
+namespace Secs4Net
 {
     internal static class SecsMessageExtensions
     {
-        public static SecsMessageAssertions Should(this SecsMessage instance) => new(instance);
+        public static SecsMessageAssertions Should(this SecsMessage? instance) => new(instance);
     }
 
-    internal sealed class SecsMessageAssertions : ReferenceTypeAssertions<SecsMessage, SecsMessageAssertions>
+    internal sealed class SecsMessageAssertions : ReferenceTypeAssertions<SecsMessage?, SecsMessageAssertions>
     {
-        public SecsMessageAssertions(SecsMessage instance) : base(instance) { }
+        public SecsMessageAssertions(SecsMessage? instance) : base(instance) { }
 
         protected override string Identifier => "message";
 
@@ -25,7 +25,7 @@ namespace Secs4Net.UnitTests.Extensions
                         .Excluding(a => a.Name),
                     because, becauseArgs);
 
-                if (Subject.SecsItem is not null)
+                if (Subject?.SecsItem is not null)
                 {
                     Subject.SecsItem.Should().BeEquivalentTo(expectation.SecsItem);
                 }
