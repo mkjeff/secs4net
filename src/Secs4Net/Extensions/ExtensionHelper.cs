@@ -23,7 +23,7 @@ namespace Secs4Net.Extensions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ChunkedReadOnlyMemory<T> Chunk<T>(this ReadOnlyMemory<T> memory, int count) => new(memory, count);
-        
+
         public static IEnumerable<Memory<T>> AsEnumerable<T>(this ChunkedMemory<T> source)
         {
             foreach (var m in source)
@@ -38,6 +38,32 @@ namespace Secs4Net.Extensions
             {
                 yield return m;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string GetName(this SecsFormat format)
+        {
+            return format switch
+            {
+                SecsFormat.List => nameof(SecsFormat.List),
+                SecsFormat.Binary => nameof(SecsFormat.Binary),
+                SecsFormat.Boolean => nameof(SecsFormat.Boolean),
+                SecsFormat.ASCII => nameof(SecsFormat.ASCII),
+                SecsFormat.JIS8 => nameof(SecsFormat.JIS8),
+                SecsFormat.I8 => nameof(SecsFormat.I8),
+                SecsFormat.I1 => nameof(SecsFormat.I1),
+                SecsFormat.I2 => nameof(SecsFormat.I2),
+                SecsFormat.I4 => nameof(SecsFormat.I4),
+                SecsFormat.F8 => nameof(SecsFormat.F8),
+                SecsFormat.F4 => nameof(SecsFormat.F4),
+                SecsFormat.U8 => nameof( SecsFormat.U8),
+                SecsFormat.U1 => nameof(SecsFormat.U1),
+                SecsFormat.U2 => nameof(SecsFormat.U2),
+                SecsFormat.U4 => nameof(SecsFormat.U4),
+                _ => ThrowHelper(format),
+            };
+
+            static string ThrowHelper(SecsFormat format) => throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -99,57 +125,82 @@ namespace Secs4Net.Extensions
             source.TrySetResult(secondaryMessage);
         }
 
-        internal static StringBuilder AppendArray<T>(this StringBuilder sb, ReadOnlySpan<T> arrary, int maxCount) where T : unmanaged
+        internal static string GetDebugString(this Item item, int maxCount)
         {
-            if (arrary.IsEmpty)
+            var sb = new StringBuilder();
+            sb.Append(item.Format.GetName()).Append('[').Append(item.Count).Append("]: ");
+            return item.Format switch
             {
+                SecsFormat.List => sb.Append("...").ToString(),
+                SecsFormat.ASCII or SecsFormat.JIS8 => sb.Append(item.GetString()).ToString(),
+                SecsFormat.Binary => AppendBinary(sb, item.GetReadOnlyMemory<byte>().Span, maxCount).ToString(),
+                SecsFormat.Boolean => AppendMemoryItem<bool>(sb, item, maxCount).ToString(),
+                SecsFormat.I1 => AppendMemoryItem<sbyte>(sb, item, maxCount).ToString(),
+                SecsFormat.I2 => AppendMemoryItem<short>(sb, item, maxCount).ToString(),
+                SecsFormat.I4 => AppendMemoryItem<int>(sb, item, maxCount).ToString(),
+                SecsFormat.I8 => AppendMemoryItem<long>(sb, item, maxCount).ToString(),
+                SecsFormat.U1 => AppendMemoryItem<byte>(sb, item, maxCount).ToString(),
+                SecsFormat.U2 => AppendMemoryItem<ushort>(sb, item, maxCount).ToString(),
+                SecsFormat.U4 => AppendMemoryItem<uint>(sb, item, maxCount).ToString(),
+                SecsFormat.U8 => AppendMemoryItem<ulong>(sb, item, maxCount).ToString(),
+                SecsFormat.F4 => AppendMemoryItem<float>(sb, item, maxCount).ToString(),
+                SecsFormat.F8 => AppendMemoryItem<double>(sb, item, maxCount).ToString(),
+                _ => sb.ToString(),
+            };
+
+            static StringBuilder AppendMemoryItem<T>(StringBuilder sb, Item item, int maxCount) where T : unmanaged
+            {
+                var arrary = item.GetReadOnlyMemory<T>().Span;
+                if (arrary.IsEmpty)
+                {
+                    return sb;
+                }
+
+                var len = Math.Min(arrary.Length, maxCount);
+                for (int i = 0; i < len - 1; i++)
+                {
+                    sb.Append(arrary.DangerousGetReferenceAt(i).ToString()).Append(' ');
+                }
+
+                sb.Append(arrary.DangerousGetReferenceAt(len - 1).ToString());
+                if (len < arrary.Length)
+                {
+                    sb.Append(" ...");
+                }
+
                 return sb;
             }
 
-            var len = Math.Min(arrary.Length, maxCount);
-            for (int i = 0; i < len - 1; i++)
+            static StringBuilder AppendBinary(StringBuilder sb, ReadOnlySpan<byte> array, int maxCount)
             {
-                sb.Append(arrary.DangerousGetReferenceAt(i).ToString()).Append(' ');
-            }
+                if (array.IsEmpty)
+                {
+                    return sb;
+                }
 
-            sb.Append(arrary.DangerousGetReferenceAt(len - 1).ToString());
-            if (len < arrary.Length)
-            {
-                sb.Append(" ...");
-            }
+                var len = Math.Min(array.Length, maxCount);
+                for (int i = 0; i < len - 1; i++)
+                {
+                    AppendHexChars(sb, array.DangerousGetReferenceAt(i));
+                    sb.Append(' ');
+                }
 
-            return sb;
-        }
+                AppendHexChars(sb, array.DangerousGetReferenceAt(len - 1));
+                if (len < array.Length)
+                {
+                    sb.Append(" ...");
+                }
 
-        internal static StringBuilder AppendBinary(this StringBuilder sb, ReadOnlySpan<byte> array, int maxCount)
-        {
-            if (array.IsEmpty)
-            {
                 return sb;
+
+                static void AppendHexChars(StringBuilder sb, byte num)
+                {
+                    var hex1 = Math.DivRem(num, 0x10, out var hex0);
+                    sb.Append(GetHexChar(hex1)).Append(GetHexChar(hex0));
+                }
+
+                static char GetHexChar(int i) => i < 10 ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
             }
-
-            var len = Math.Min(array.Length, maxCount);
-            for (int i = 0; i < len - 1; i++)
-            {
-                AppendHexChars(sb, array.DangerousGetReferenceAt(i));
-                sb.Append(' ');
-            }
-
-            AppendHexChars(sb, array.DangerousGetReferenceAt(len - 1));
-            if (len < array.Length)
-            {
-                sb.Append(" ...");
-            }
-
-            return sb;
-
-            static void AppendHexChars(StringBuilder sb, byte num)
-            {
-                var hex1 = Math.DivRem(num, 0x10, out var hex0);
-                sb.Append(GetHexChar(hex1)).Append(GetHexChar(hex0));
-            }
-
-            static char GetHexChar(int i) => i < 10 ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
         }
 
 #if NETSTANDARD

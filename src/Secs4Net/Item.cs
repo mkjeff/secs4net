@@ -100,7 +100,7 @@ namespace Secs4Net
         /// Get item array as <see cref="ReadOnlyMemory{T}"/>
         /// </summary>
         /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
-        public virtual ReadOnlyMemory<T> GetReadOnlyMemory<T>() where T: unmanaged
+        public virtual ReadOnlyMemory<T> GetReadOnlyMemory<T>() where T : unmanaged
             => throw CreateNotSupportException(Format);
 
         /// <summary>
@@ -133,30 +133,9 @@ namespace Secs4Net
         private protected virtual bool IsEquals(Item other)
             => Format == other.Format && Count == other.Count;
 
-        public sealed override string ToString() => $"{Format}[{Count}]";
+        public sealed override string ToString() => $"{Format.GetName()}[{Count}]";
 
-        private string GetDebugString()
-        {
-            var sb = new StringBuilder(Format.ToString()).Append('[').Append(Count).Append("]: ");
-            return Format switch
-            {
-                SecsFormat.List => sb.Append("...").ToString(),
-                SecsFormat.ASCII or SecsFormat.JIS8 => sb.Append(GetString()).ToString(),
-                SecsFormat.Binary => sb.AppendBinary(GetReadOnlyMemory<byte>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.Boolean => sb.AppendArray(GetReadOnlyMemory<bool>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.I1 => sb.AppendArray(GetReadOnlyMemory<sbyte>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.I2 => sb.AppendArray(GetReadOnlyMemory<short>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.I4 => sb.AppendArray(GetReadOnlyMemory<int>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.I8 => sb.AppendArray(GetReadOnlyMemory<long>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.U1 => sb.AppendArray(GetReadOnlyMemory<byte>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.U2 => sb.AppendArray(GetReadOnlyMemory<ushort>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.U4 => sb.AppendArray(GetReadOnlyMemory<uint>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.U8 => sb.AppendArray(GetReadOnlyMemory<ulong>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.F4 => sb.AppendArray(GetReadOnlyMemory<float>().Span, DebuggerDisplayMaxCount).ToString(),
-                SecsFormat.F8 => sb.AppendArray(GetReadOnlyMemory<double>().Span, DebuggerDisplayMaxCount).ToString(),
-                _ => sb.ToString(),
-            };
-        }
+        private string GetDebugString() => this.GetDebugString(DebuggerDisplayMaxCount);
 
         internal byte[] GetEncodedBytes()
         {

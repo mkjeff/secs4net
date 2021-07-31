@@ -7,12 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{47372419-BB0
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Secs4Net", "src\Secs4Net\Secs4Net.csproj", "{3C8C67B8-3746-4D26-B3A8-DCB01B5AA66B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{7CB55EBC-3CD9-4ECD-831F-2FEA9B4D822A}"
-	ProjectSection(SolutionItems) = preProject
-		common.json = common.json
-		common.sml = common.sml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FA43F666-4A13-4BD8-95FE-B8277E33D486}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig

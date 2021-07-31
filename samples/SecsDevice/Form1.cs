@@ -4,7 +4,6 @@ using Secs4Net.Sml;
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -64,7 +63,7 @@ namespace SecsDevice
             };
 
             btnEnable.Enabled = false;
-            await _connector.StartAsync(_cancellationTokenSource.Token);
+            _ = _connector.StartAsync(_cancellationTokenSource.Token);
             btnDisable.Enabled = true;
 
             try
