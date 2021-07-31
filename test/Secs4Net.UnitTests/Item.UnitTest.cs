@@ -3,6 +3,7 @@ using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 using static Secs4Net.Item;
 
@@ -370,6 +371,18 @@ namespace Secs4Net.UnitTests
 
             var encodedBytes = new ReadOnlySequence<byte>(item.GetEncodedBytes());
             var item2 = DecodeFromFullBuffer(ref encodedBytes);
+            encodedBytes.IsEmpty.Should().BeTrue();
+            item.Should().BeEquivalentTo(item2);
+        }
+
+
+        [Fact]
+        public void Item_With_MemoryOwner_Encode_Decode_Should_Be_Equivalent()
+        {
+            var item = U1(Enumerable.Repeat((byte)1, 1025));
+
+            var encodedBytes = new ReadOnlySequence<byte>(item.GetEncodedBytes());
+            using var item2 = DecodeFromFullBuffer(ref encodedBytes);
             encodedBytes.IsEmpty.Should().BeTrue();
             item.Should().BeEquivalentTo(item2);
         }

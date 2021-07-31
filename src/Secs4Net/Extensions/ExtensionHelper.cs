@@ -1,7 +1,9 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using PooledAwait;
 using Secs4Net.Extensions;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -206,7 +208,7 @@ namespace Secs4Net.Extensions
 #if NETSTANDARD
         internal static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = ValueTaskCompletionSource<object?>.Create();
 
             // This disposes the registration as soon as one of the tasks trigger
             using (cancellationToken.Register(state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
@@ -224,7 +226,7 @@ namespace Secs4Net.Extensions
 
         internal static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = ValueTaskCompletionSource<object?>.Create();
 
             // This disposes the registration as soon as one of the tasks trigger
             using (cancellationToken.Register(state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
@@ -243,9 +245,25 @@ namespace Secs4Net.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe int GetBytes(this Encoding encoding, string str, Span<byte> span)
         {
-            var chars = (char*)Unsafe.AsPointer(ref str.AsSpan().DangerousGetReference());
-            var bytes = (byte*)Unsafe.AsPointer(ref span.DangerousGetReference());
-            return encoding.GetBytes(chars, str.Length, bytes, span.Length);
+            fixed (char* chars = str.AsSpan())
+            {
+                fixed (byte* bytes = span)
+                {
+                    return encoding.GetBytes(chars, str.Length, bytes, span.Length);
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe string GetString(this Encoding encoding, in ReadOnlySequence<byte> bytes)
+        {
+            using var spanOwner = SpanOwner<byte>.Allocate((int)bytes.Length);
+            bytes.CopyTo(spanOwner.Span);
+
+            fixed (byte* spanBytes = spanOwner.Span)
+            {
+                return encoding.GetString(spanBytes, spanOwner.Length);
+            }
         }
 #endif
     }
