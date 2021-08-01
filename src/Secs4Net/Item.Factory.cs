@@ -10,8 +10,8 @@ namespace Secs4Net
         public static Item L(IEnumerable<Item> items) => items.Any() ? L(items.ToList()) : L();
         public static Item L(params Item[] items) => items.Length > 0 ? L((IList<Item>)items) : L();
 
-        public static Item A(string? value) => string.IsNullOrEmpty(value) ? A() : new StringItem(SecsFormat.ASCII, value);
-        public static Item J(string? value) => string.IsNullOrEmpty(value) ? J() : new StringItem(SecsFormat.JIS8, value);
+        public static Item A(string? value) => string.IsNullOrEmpty(value) ? A() : new StringItem(SecsFormat.ASCII, value!);
+        public static Item J(string? value) => string.IsNullOrEmpty(value) ? J() : new StringItem(SecsFormat.JIS8, value!);
 
         public static Item B(params byte[] value) => value.Length > 0 ? new MemoryItem<byte>(SecsFormat.Binary, value) : B();
         public static Item B(IEnumerable<byte> value) => value.Any() ? B(value.ToArray()) : B();

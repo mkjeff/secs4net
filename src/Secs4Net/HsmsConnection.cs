@@ -197,7 +197,7 @@ namespace Secs4Net
                         CommunicationStateChanging(ConnectionState.Connecting);
                         try
                         {
-#if NET
+#if NET6_0
                             _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
 #else
                             _socket = await server.AcceptAsync().WithCancellation(cancellation).ConfigureAwait(false);
@@ -443,7 +443,7 @@ namespace Secs4Net
                 _logger.Info("Sent Control Message: " + msgType);
                 if (_replyExpectedMsgs.ContainsKey(id))
                 {
-#if NET
+#if NET6_0
                     await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6), cancellation).ConfigureAwait(false);
 #else
                     if (await Task.WhenAny(token.Task, Task.Delay(T6, cancellation)).ConfigureAwait(false) != token.Task)
@@ -454,7 +454,7 @@ namespace Secs4Net
 #endif
                 }
             }
-#if NET
+#if NET6_0
             catch (TimeoutException)
             {
                 _logger.Error($"T6 Timeout[id=0x{id:X8}]: {T6 / 1000} sec.");

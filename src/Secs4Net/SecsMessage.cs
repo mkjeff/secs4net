@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Secs4Net
 {
@@ -45,20 +44,6 @@ namespace Secs4Net
             S = s;
             F = f;
             ReplyExpected = replyExpected;
-        }
-
-        public bool Equals(SecsMessage? other)
-        {
-            if (other is null)
-            {
-                return false;
-            }
-
-            // exclude Name property
-            return S == other.S
-                && F == other.F
-                && ReplyExpected == other.ReplyExpected
-                && EqualityComparer<Item>.Default.Equals(SecsItem, other.SecsItem);
         }
 
         public void Dispose()

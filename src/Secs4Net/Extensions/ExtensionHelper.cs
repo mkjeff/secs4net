@@ -58,7 +58,7 @@ namespace Secs4Net.Extensions
                 SecsFormat.I4 => nameof(SecsFormat.I4),
                 SecsFormat.F8 => nameof(SecsFormat.F8),
                 SecsFormat.F4 => nameof(SecsFormat.F4),
-                SecsFormat.U8 => nameof( SecsFormat.U8),
+                SecsFormat.U8 => nameof(SecsFormat.U8),
                 SecsFormat.U1 => nameof(SecsFormat.U1),
                 SecsFormat.U2 => nameof(SecsFormat.U2),
                 SecsFormat.U4 => nameof(SecsFormat.U4),
@@ -205,7 +205,6 @@ namespace Secs4Net.Extensions
             }
         }
 
-#if NETSTANDARD
         internal static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
         {
             var tcs = ValueTaskCompletionSource<object?>.Create();
@@ -242,6 +241,7 @@ namespace Secs4Net.Extensions
             }
         }
 
+#if NETSTANDARD
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe int GetBytes(this Encoding encoding, string str, Span<byte> span)
         {

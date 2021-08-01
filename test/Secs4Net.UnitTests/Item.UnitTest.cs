@@ -2,7 +2,6 @@ using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using static Secs4Net.Item;
@@ -115,13 +114,11 @@ namespace Secs4Net.UnitTests
                 arrayItem.FirstValueOrDefault<short>(21).Should().NotBe(21).And.Be(arr[0]);
             }
 
-            var list = new List<Item> {
+            using (var listItem = L(
                 A(str),
                 I2(arr),
                 U2(),
-                Boolean(),
-            };
-            using (var listItem = L(list))
+                Boolean()))
             {
                 listItem[0].Should().BeEquivalentTo(A(str));
                 listItem[1].Should().BeEquivalentTo(I2(arr));
@@ -387,23 +384,44 @@ namespace Secs4Net.UnitTests
         }
 
         [Fact]
-        public void Item_With_MemoryOwner_Accessing_Shold_Throw_When_MemoryOwner_Disposed()
+        public void Item_With_MemoryOwner_Accessing_Member_Shold_Throw_Exception_When_MemoryOwner_Disposed()
         {
             var memoryOwner = MemoryOwner<int>.Allocate(10);
             var item = I4(memoryOwner);
             memoryOwner.Dispose();
-            Action act = () => _ = item.FirstValue<int>();
-            act.Should().Throw<ObjectDisposedException>();
+
+            Action accessFirstValue = () => _ = item.FirstValue<int>();
+            Action accessFirstValueOrDefault = () => _ = item.FirstValueOrDefault<int>();
+            Action accessGetMemory = () => _ = item.GetMemory<int>();
+            Action accessGetReadOnlyMemory = () => _ = item.GetReadOnlyMemory<int>();
+            Action accessEncodeTo = () => item.EncodeTo(new ArrayPoolBufferWriter<byte>());
+            Action accessEquals = () => item.Equals(I4(new int[10]));
+            accessFirstValue.Should().Throw<ObjectDisposedException>();
+            accessFirstValueOrDefault.Should().Throw<ObjectDisposedException>();
+            accessGetMemory.Should().Throw<ObjectDisposedException>();
+            accessGetReadOnlyMemory.Should().Throw<ObjectDisposedException>();
+            accessEncodeTo.Should().Throw<ObjectDisposedException>();
+            accessEquals.Should().Throw<ObjectDisposedException>();
         }
 
         [Fact]
-        public void Item_With_MemoryOwner_Accessing_Shold_Throw_When_Item_Disposed()
+        public void Item_With_MemoryOwner_Accessing_Member_Shold_Throw_Exception_When_Item_Disposed()
         {
-            var memoryOwner = MemoryOwner<int>.Allocate(10);
-            var item = I4(memoryOwner);
+            var item = I4(MemoryOwner<int>.Allocate(10));
             item.Dispose();
-            Action act = () => _ = item.GetMemory<int>();
-            act.Should().Throw<ObjectDisposedException>();
+
+            Action accessFirstValue = () => _ = item.FirstValue<int>();
+            Action accessFirstValueOrDefault = () => _ = item.FirstValueOrDefault<int>();
+            Action accessGetMemory = () => _ = item.GetMemory<int>();
+            Action accessGetReadOnlyMemory = () => _ = item.GetReadOnlyMemory<int>();
+            Action accessEncodeTo = () => item.EncodeTo(new ArrayPoolBufferWriter<byte>());
+            Action accessEquals = () => item.Equals(I4(new int[10]));
+            accessFirstValue.Should().Throw<ObjectDisposedException>();
+            accessFirstValueOrDefault.Should().Throw<ObjectDisposedException>();
+            accessGetMemory.Should().Throw<ObjectDisposedException>();
+            accessGetReadOnlyMemory.Should().Throw<ObjectDisposedException>();
+            accessEncodeTo.Should().Throw<ObjectDisposedException>();
+            accessEquals.Should().Throw<ObjectDisposedException>();
         }
 
         [Fact]

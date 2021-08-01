@@ -209,7 +209,7 @@ namespace Secs4Net.Sml
         }
 
         private static void WriteArray<T>(this TextWriter writer, ReadOnlyMemory<T> memory)
-#if NET           
+#if NET6_0           
             where T : unmanaged, ISpanFormattable
 #else
             where T: unmanaged
@@ -222,18 +222,19 @@ namespace Secs4Net.Sml
 
             var array = memory.Span;
             int i = 0;
-            for (; i < array.Length - 1; i++)
+            WriteValue(writer, array.DangerousGetReferenceAt(i++));
+            for (; i < array.Length; i++)
             {
-                var value = array.DangerousGetReferenceAt(i);
-#if NET
-                writer.WriteSpanFormattableValue(value);
-#else
-                writer.Write(value.ToString());
-#endif
                 writer.Write(' ');
+                WriteValue(writer, array.DangerousGetReferenceAt(i));
             }
 
-            writer.Write(array.DangerousGetReferenceAt(i).ToString());
+            static void WriteValue(TextWriter writer, T value)
+#if NET6_0
+                => writer.WriteSpanFormattableValue(value);
+#else
+                => writer.Write(value.ToString());
+#endif
         }
 
         private static void WriteArray(this TextWriter writer, ReadOnlyMemory<float> memory)
@@ -245,18 +246,19 @@ namespace Secs4Net.Sml
 
             var array = memory.Span;
             int i = 0;
-            for (; i < array.Length - 1; i++)
+            WriteValue(writer, array.DangerousGetReferenceAt(i++));
+            for (; i < array.Length; i++)
             {
-                var value = array.DangerousGetReferenceAt(i);
-#if NET
-                writer.WriteSpanFormattableValue(value);
-#else
-                writer.Write(value.ToString("G9", CultureInfo.InvariantCulture));
-#endif
                 writer.Write(' ');
+                WriteValue(writer, array.DangerousGetReferenceAt(i));
             }
 
-            writer.Write(array.DangerousGetReferenceAt(i).ToString());
+            static void WriteValue(TextWriter writer, float value)
+#if NET6_0
+                => writer.WriteSpanFormattableValue(value);
+#else
+                => writer.Write(value.ToString("G9", CultureInfo.InvariantCulture));
+#endif
         }
 
         private static void WriteArray(this TextWriter writer, ReadOnlyMemory<bool> memory)
@@ -308,7 +310,7 @@ namespace Secs4Net.Sml
             static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
         }
 
-#if NET
+#if NET6_0
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void WriteSpanFormattableValue<T>(this TextWriter writer, T value) where T : unmanaged, ISpanFormattable
         {

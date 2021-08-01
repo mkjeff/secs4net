@@ -241,29 +241,29 @@ namespace Secs4Net.Sml
         private static readonly char[] Separator = { ' ' };
         private static readonly char[] trimElement = new char[] { ' ', '\'', '"' };
 
-        public static Item Create(this string format, ReadOnlySpan<char> smlValue)
+        private static Item Create(this string format, ReadOnlySpan<char> smlValue)
         {
             return format switch
             {
                 "A" => ParseStringItem(smlValue, AParser),
                 "JIS8" or "J" => ParseStringItem(smlValue, JParser),
-                "Bool" or "Boolean" => ParseValueItem(smlValue, BoolParser),
-                "Binary" or "B" => ParseValueItem(smlValue, BinaryParser),
-                "I1" => ParseValueItem(smlValue, I1Parser),
-                "I2" => ParseValueItem(smlValue, I2Parser),
-                "I4" => ParseValueItem(smlValue, I4Parser),
-                "I8" => ParseValueItem(smlValue, I8Parser),
-                "U1" => ParseValueItem(smlValue, U1Parser),
-                "U2" => ParseValueItem(smlValue, U2Parser),
-                "U4" => ParseValueItem(smlValue, U4Parser),
-                "U8" => ParseValueItem(smlValue, U8Parser),
-                "F4" => ParseValueItem(smlValue, F4Parser),
-                "F8" => ParseValueItem(smlValue, F8Parser),
+                "Bool" or "Boolean" => ParseArrayItem(smlValue, BoolParser),
+                "Binary" or "B" => ParseArrayItem(smlValue, BinaryParser),
+                "I1" => ParseArrayItem(smlValue, I1Parser),
+                "I2" => ParseArrayItem(smlValue, I2Parser),
+                "I4" => ParseArrayItem(smlValue, I4Parser),
+                "I8" => ParseArrayItem(smlValue, I8Parser),
+                "U1" => ParseArrayItem(smlValue, U1Parser),
+                "U2" => ParseArrayItem(smlValue, U2Parser),
+                "U4" => ParseArrayItem(smlValue, U4Parser),
+                "U8" => ParseArrayItem(smlValue, U8Parser),
+                "F4" => ParseArrayItem(smlValue, F4Parser),
+                "F8" => ParseArrayItem(smlValue, F8Parser),
                 "L" => throw new SecsException("Please use Item.L(...) to create list item."),
-                _ => throw new SecsException("Unknown SML format :" + format),
+                _ => throw new SecsException("Unknown SML format: " + format),
             };
 
-            static Item ParseValueItem<T>(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<T[], Item> creator, SpanParser<T> converter) parser)
+            static Item ParseArrayItem<T>(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<T[], Item> creator, SpanParser<T> converter) parser)
             {
                 var valueStrs = str.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 return valueStrs.IsEmpty()

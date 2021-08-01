@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
+using System.Collections.Generic;
 
 namespace Secs4Net
 {
@@ -17,7 +18,7 @@ namespace Secs4Net
 
         public AndConstraint<SecsMessageAssertions> BeEquivalentTo(SecsMessage expectation, string because = "", params object[] becauseArgs)
         {
-            if (!expectation.Equals(Subject))
+            if (!IsMessageEquals(expectation, Subject))
             {
                 new ObjectAssertions(Subject).BeEquivalentTo(expectation,
                     options => options.ComparingByMembers<SecsMessage>()
@@ -42,7 +43,7 @@ namespace Secs4Net
 
         public AndConstraint<SecsMessageAssertions> NotBeEquivalentTo(SecsMessage expectation, string because = "", params object[] becauseArgs)
         {
-            if (expectation.Equals(Subject))
+            if (IsMessageEquals(expectation, Subject))
             {
                 Execute.Assertion
                     .BecauseOf(because, becauseArgs)
@@ -50,6 +51,20 @@ namespace Secs4Net
             }
 
             return new AndConstraint<SecsMessageAssertions>(this);
+        }
+
+        private static bool IsMessageEquals(SecsMessage left, SecsMessage? right)
+        {
+            if (right is null)
+            {
+                return false;
+            }
+
+            // exclude Name property
+            return left.S == right.S
+                && left.F == right.F
+                && left.ReplyExpected == right.ReplyExpected
+                && EqualityComparer<Item>.Default.Equals(left.SecsItem!, right.SecsItem!);
         }
     }
 }

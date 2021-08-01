@@ -120,9 +120,13 @@ namespace Secs4Net
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public virtual void Dispose()
-        {
-        }
+        public virtual void Dispose() { }
+
+        public static bool operator !=(Item? r1, Item? r2)
+            => !(r1 == r2);
+
+        public static bool operator ==(Item? r1, Item? r2)
+            => (object)r1 == r2 || (r1?.Equals(r2) ?? false);
 
         public sealed override bool Equals(object? obj)
             => Equals(obj as Item);
