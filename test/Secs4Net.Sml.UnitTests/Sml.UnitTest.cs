@@ -15,17 +15,17 @@ namespace Secs4Net.Sml.UnitTests
             SecsItem =
                 L(
                     L(),
-                    U1(122, 34),
-                    U2(34531, 23123),
-                    U4(2123513, 52451141),
-                    F4(23123.21323f, 2324.221f), //net472 has precision issue with Single.ToString()
+                    U1(122, 34, 0),
+                    U2(34531, 23123, 24),
+                    U4(2123513, 52451141, 1),
+                    F4(23123.21323f, 2324.221f, -20.131f), //net472 has precision issue with Single.ToString()
                     A("A string"),
                     J("sdsad"),
-                    F8(231.00002321d, 0.2913212312d),
+                    F8(231.00002321d, 0.2913212312d, -124.42002d),
                     L(
-                        U1(122, 34),
-                        U2(34531, 23123),
-                        U4(2123513, 52451141),
+                        I1(122, 34, -13),
+                        I2(4531, -23123, 12),
+                        I4(2123513, 52451141, -11),
                         F4(23123.21323f, 2324.221f),
                         Boolean(true, false, false, true),
                         B(0x1C, 0x01, 0xFF),

@@ -375,7 +375,6 @@ namespace Secs4Net.UnitTests
             item.Should().BeEquivalentTo(item2);
         }
 
-
         [Fact]
         public void Item_With_MemoryOwner_Encode_Decode_Should_Be_Equivalent()
         {
@@ -385,6 +384,26 @@ namespace Secs4Net.UnitTests
             using var item2 = DecodeFromFullBuffer(ref encodedBytes);
             encodedBytes.IsEmpty.Should().BeTrue();
             item.Should().BeEquivalentTo(item2);
+        }
+
+        [Fact]
+        public void Item_With_MemoryOwner_Accessing_Shold_Throw_When_MemoryOwner_Disposed()
+        {
+            var memoryOwner = MemoryOwner<int>.Allocate(10);
+            var item = I4(memoryOwner);
+            memoryOwner.Dispose();
+            Action act = () => _ = item.FirstValue<int>();
+            act.Should().Throw<ObjectDisposedException>();
+        }
+
+        [Fact]
+        public void Item_With_MemoryOwner_Accessing_Shold_Throw_When_Item_Disposed()
+        {
+            var memoryOwner = MemoryOwner<int>.Allocate(10);
+            var item = I4(memoryOwner);
+            item.Dispose();
+            Action act = () => _ = item.GetMemory<int>();
+            act.Should().Throw<ObjectDisposedException>();
         }
 
         [Fact]

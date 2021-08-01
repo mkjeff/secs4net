@@ -11,19 +11,20 @@ namespace Secs4Net
     {
         private class MemoryItem<T> : Item where T : unmanaged, IEquatable<T>
         {
-            private readonly Memory<T> _value;
+            private protected virtual Memory<T> Value { get; }
 
             public MemoryItem(SecsFormat format, Memory<T> value) : base(format, value.Length)
-                => _value = value;
+                => Value = value;
 
             public sealed override ref TResult FirstValue<TResult>()
             {
-                if (_value.Length == 0 || _value.Length * Unsafe.SizeOf<T>() < Unsafe.SizeOf<TResult>())
+                var memory = Value;
+                if (memory.Length == 0 || memory.Length * Unsafe.SizeOf<T>() < Unsafe.SizeOf<TResult>())
                 {
                     ThrowHelper();
                 }
 
-                return ref Unsafe.As<T, TResult>(ref _value.Span.DangerousGetReferenceAt(0));
+                return ref Unsafe.As<T, TResult>(ref memory.Span.DangerousGetReferenceAt(0));
 
                 [DoesNotReturn]
                 static void ThrowHelper() => throw new IndexOutOfRangeException($"The item is empty or data length less than sizeof({typeof(T).Name})");
@@ -31,29 +32,31 @@ namespace Secs4Net
 
             public sealed override TResult FirstValueOrDefault<TResult>(TResult defaultValue = default)
             {
-                if (_value.Length == 0 || _value.Length * Unsafe.SizeOf<T>() < Unsafe.SizeOf<TResult>())
+                var memory = Value;
+                if (memory.Length == 0 || memory.Length * Unsafe.SizeOf<T>() < Unsafe.SizeOf<TResult>())
                 {
                     return defaultValue;
                 }
 
-                return Unsafe.As<T, TResult>(ref _value.Span.DangerousGetReferenceAt(0));
+                return Unsafe.As<T, TResult>(ref memory.Span.DangerousGetReferenceAt(0));
             }
 
             public sealed override Memory<TResult> GetMemory<TResult>()
-                => _value.Cast<T, TResult>();
+                => Value.Cast<T, TResult>();
 
             public sealed override ReadOnlyMemory<TResult> GetReadOnlyMemory<TResult>()
-                => _value.Cast<T, TResult>();
+                => Value.Cast<T, TResult>();
 
             public sealed override void EncodeTo(IBufferWriter<byte> buffer)
             {
-                if (_value.IsEmpty)
+                var memory = Value;
+                if (memory.IsEmpty)
                 {
                     EncodeEmptyItem(Format, buffer);
                     return;
                 }
 
-                var valueAsBytes = _value.Span.AsBytes();
+                var valueAsBytes = memory.Span.AsBytes();
                 var byteLength = valueAsBytes.Length;
                 EncodeItemHeader(Format, byteLength, buffer);
                 var span = buffer.GetSpan(byteLength).Slice(0, byteLength);
@@ -63,7 +66,7 @@ namespace Secs4Net
             }
 
             private protected sealed override bool IsEquals(Item other)
-                => base.IsEquals(other) && _value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other)._value.Span);
+                => base.IsEquals(other) && Value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other).Value.Span);
         }
     }
 }
