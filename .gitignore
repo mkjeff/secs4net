@@ -232,3 +232,4 @@ $RECYCLE.BIN/
 *.lnk
 yarn.lock
 **/wwwroot/app/
+*.etl

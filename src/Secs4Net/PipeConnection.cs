@@ -1,4 +1,5 @@
 ﻿using PooledAwait;
+using Secs4Net.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
@@ -12,11 +13,15 @@ namespace Secs4Net
     {
         private readonly SemaphoreSlim _sendLock = new(initialCount: 1);
         private readonly PipeDecoder _decoder;
+        private readonly int _chunkSize;
 
-        public PipeConnection(PipeReader decoderReader, PipeWriter decoderInput) 
-            => _decoder = new PipeDecoder(decoderReader, decoderInput);
+        public PipeConnection(PipeReader decoderReader, PipeWriter decoderInput, int chunkSize = 0)
+        {
+            _decoder = new PipeDecoder(decoderReader, decoderInput);
+            _chunkSize = chunkSize;
+        }
 
-        public Task StartAsync(CancellationToken cancellation) 
+        public Task StartAsync(CancellationToken cancellation)
             => AsyncHelper.LongRunningAsync(() => _decoder.StartAsync(cancellation), cancellation);
 
         async PooledValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
@@ -24,7 +29,17 @@ namespace Secs4Net
             await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
             try
             {
-                _ = await _decoder.Input.WriteAsync(source, cancellation).ConfigureAwait(false);
+                if (_chunkSize <= 0)
+                {
+                    _ = await _decoder.Input.WriteAsync(source, cancellation).ConfigureAwait(false);
+                }
+                else
+                {
+                    foreach(var chunk in source.Chunk(_chunkSize))
+                    {
+                        _ = await _decoder.Input.WriteAsync(chunk, cancellation).ConfigureAwait(false);
+                    }
+                }
             }
             finally
             {

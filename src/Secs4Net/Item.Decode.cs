@@ -27,7 +27,7 @@ namespace Secs4Net
             dataLength = Unsafe.ReadUnaligned<int>(ref itemLengthBytes.DangerousGetReference()); // max to 3 byte dataLength
         }
 
-        internal static Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
+        public static Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
         {
 #if NET
             DecodeFormatAndLengthByteCount(bytes.FirstSpan.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
