@@ -1,4 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Diagnostics.Windows.Configs;
 using Microsoft.Extensions.Options;
 using Secs4Net;
 using System;
@@ -10,6 +12,7 @@ using static Secs4Net.Item;
 namespace Secs4Netb.Benchmark
 {
     [Config(typeof(BenchmarkConfig))]
+    [EtwProfiler]
     [MemoryDiagnoser]
     public class RequestResponse
     {
@@ -47,8 +50,8 @@ namespace Secs4Netb.Benchmark
             _secsGem2 = new SecsGem(options, pipeConnection2, logger);
 
             _cts = new CancellationTokenSource();
-            _ = AsyncHelper.LongRunningAsync(() => pipeConnection1.StartAsync(_cts.Token));
-            _ = AsyncHelper.LongRunningAsync(() => pipeConnection2.StartAsync(_cts.Token));
+            _ = pipeConnection1.StartAsync(_cts.Token);
+            _ = pipeConnection2.StartAsync(_cts.Token);
             _ = AsyncHelper.LongRunningAsync(async () =>
             {
                 await foreach (var a in _secsGem2.GetPrimaryMessageAsync(_cts.Token))
@@ -94,7 +97,6 @@ namespace Secs4Netb.Benchmark
 
         private sealed class Logger : ISecsGemLogger
         {
-#if NET472
             public void Debug(string msg) { }
             public void Error(string msg) { }
             public void Error(string msg, Exception ex) { }
@@ -103,7 +105,6 @@ namespace Secs4Netb.Benchmark
             public void MessageIn(SecsMessage msg, int id) { }
             public void MessageOut(SecsMessage msg, int id) { }
             public void Warning(string msg) { }
-#endif
         }
     }
 }
