@@ -255,6 +255,27 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe int GetCharCount(this Encoding encoding, ReadOnlySpan<byte> span)
+        {
+            fixed (byte* bytes = span)
+            {
+                return encoding.GetCharCount(bytes, span.Length);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe string GetString(this Encoding encoding, ReadOnlySpan<byte> bytes)
+        {
+            using var spanOwner = SpanOwner<byte>.Allocate((int)bytes.Length);
+            bytes.CopyTo(spanOwner.Span);
+
+            fixed (byte* spanBytes = spanOwner.Span)
+            {
+                return encoding.GetString(spanBytes, spanOwner.Length);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe string GetString(this Encoding encoding, in ReadOnlySequence<byte> bytes)
         {
             using var spanOwner = SpanOwner<byte>.Allocate((int)bytes.Length);

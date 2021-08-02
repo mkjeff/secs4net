@@ -70,14 +70,14 @@ namespace Secs4Net
                 SecsFormat.ASCII => length switch
                 {
                     0 => A(),
-                    > 512 => A(Encoding.ASCII.GetString(bytes)),
-                    _ => A(DecodeStringWithPooled(bytes, Encoding.ASCII)),
+                    > 512 => CreateLazyStringItem(bytes, format),
+                    _ => CreateStringItem(bytes, format, Encoding.ASCII),
                 },
                 SecsFormat.JIS8 => length switch
                 {
                     0 => J(),
-                    > 512 => J(Jis8Encoding.GetString(bytes)),
-                    _ => J(DecodeStringWithPooled(bytes, Jis8Encoding)),
+                    > 512 => CreateLazyStringItem(bytes, format),
+                    _ => CreateStringItem(bytes, format, Jis8Encoding),
                 },
                 SecsFormat.Boolean => length switch
                 {
@@ -156,7 +156,7 @@ namespace Secs4Net
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [SkipLocalsInit]
-            static T[] Decode<T>(in ReadOnlySequence<byte> bytes) where T : unmanaged
+            static ReadOnlyMemory<T> Decode<T>(in ReadOnlySequence<byte> bytes) where T : unmanaged
             {
                 var elmSize = Unsafe.SizeOf<T>();
                 var values = new T[bytes.Length / elmSize];
@@ -167,11 +167,19 @@ namespace Secs4Net
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static string DecodeStringWithPooled(in ReadOnlySequence<byte> bytes, Encoding encoding)
+            static LazyStringItem CreateLazyStringItem(in ReadOnlySequence<byte> bytes, SecsFormat format)
+            {
+                var owner = MemoryOwner<byte>.Allocate((int)bytes.Length);
+                bytes.CopyTo(owner.Memory.Span);
+                return new LazyStringItem(format, owner);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static StringItem CreateStringItem(in ReadOnlySequence<byte> bytes, SecsFormat format, Encoding encoding)
             {
                 using var spanOwner = SpanOwner<byte>.Allocate((int)bytes.Length);
                 bytes.CopyTo(spanOwner.Span);
-                return StringPool.Shared.GetOrAdd(spanOwner.Span, encoding);
+                return new StringItem(format, StringPool.Shared.GetOrAdd(spanOwner.Span, encoding));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
