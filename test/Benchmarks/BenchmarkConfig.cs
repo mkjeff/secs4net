@@ -1,14 +1,7 @@
-using BenchmarkDotNet.Analysers;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Exporters.Csv;
-using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
-using System.IO;
 
-namespace benchmark
+namespace Secs4Netb.Benchmark
 {
     public class BenchmarkConfig : ManualConfig
     {

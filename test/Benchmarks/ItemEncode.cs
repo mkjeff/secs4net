@@ -1,5 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnostics.Windows.Configs;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using Secs4Net;
 using System;
@@ -7,11 +6,11 @@ using System.Buffers;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using static Secs4Net.Item;
-namespace benchmark
+namespace Secs4Netb.Benchmark
 {
     [Config(typeof(BenchmarkConfig))]
     [MemoryDiagnoser]
-    [NativeMemoryProfiler]
+    //[NativeMemoryProfiler]
     public class ItemEncode
     {
         private int _estimateEncodedByteLength;

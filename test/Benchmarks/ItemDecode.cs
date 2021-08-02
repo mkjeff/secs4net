@@ -6,11 +6,11 @@ using System;
 using System.Buffers;
 using System.Linq;
 using static Secs4Net.Item;
-namespace benchmark
+namespace Secs4Netb.Benchmark
 {
     [Config(typeof(BenchmarkConfig))]
     [MemoryDiagnoser]
-    [NativeMemoryProfiler]
+    //[NativeMemoryProfiler]
     public class ItemDecode
     {
         private ArrayPoolBufferWriter<byte> _encodedBuffer;

@@ -1,6 +1,6 @@
 using BenchmarkDotNet.Running;
 
-namespace benchmark
+namespace Secs4Netb.Benchmark
 {
     public class Program
     {
