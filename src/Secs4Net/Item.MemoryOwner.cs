@@ -10,7 +10,7 @@ namespace Secs4Net
             private readonly IMemoryOwner<T> _owner;
             private protected override Memory<T> Value => _owner.Memory;
 
-            public MemoryOwnerItem(SecsFormat format, IMemoryOwner<T> memoryOwner) : base(format, memoryOwner.Memory)
+            internal MemoryOwnerItem(SecsFormat format, IMemoryOwner<T> memoryOwner) : base(format, memoryOwner.Memory)
             {
                 _owner = memoryOwner;
             }

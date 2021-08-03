@@ -12,25 +12,25 @@ using static Secs4Net.Item;
 namespace Secs4Netb.Benchmark
 {
     [Config(typeof(BenchmarkConfig))]
-    [EtwProfiler]
+    //[EtwProfiler]
     [MemoryDiagnoser]
     public class RequestResponse
     {
-        private static readonly SecsMessage ping = new SecsMessage(s: 1, f: 13)
+        private static readonly SecsMessage ping = new(s: 1, f: 13)
         {
-            //SecsItem = A("Ping"),
+            SecsItem = A("Ping"),
         };
 
-        private static readonly SecsMessage pong = new SecsMessage(s: 1, f: 14, replyExpected: false)
+        private static readonly SecsMessage pong = new(s: 1, f: 14, replyExpected: false)
         {
-            //SecsItem = A("Pong"),
+            SecsItem = A("Pong"),
         };
 
         private CancellationTokenSource _cts;
         private SecsGem _secsGem1;
         private SecsGem _secsGem2;
 
-        [Params(1)]
+        [Params(4, 16, 64)]
         public int Count { get; set; }
 
         [GlobalSetup]
@@ -81,7 +81,7 @@ namespace Secs4Netb.Benchmark
             return Count;
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task<int> SendAsyncParallelly()
         {
             var tasks = new Task<SecsMessage>[Count];

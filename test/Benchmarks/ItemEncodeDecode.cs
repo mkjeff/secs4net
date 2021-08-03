@@ -4,15 +4,16 @@ using Secs4Net;
 using System;
 using System.Buffers;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using static Secs4Net.Item;
+
 namespace Secs4Netb.Benchmark
 {
     [Config(typeof(BenchmarkConfig))]
     [MemoryDiagnoser]
     //[NativeMemoryProfiler]
-    public class ItemEncode
+    public class ItemEncodeDecode
     {
+        private ArrayPoolBufferWriter<byte> _encodedBuffer;
         private int _estimateEncodedByteLength;
         private Item _item;
 
@@ -45,7 +46,10 @@ namespace Secs4Netb.Benchmark
                 _ => throw new ArgumentOutOfRangeException(nameof(Format), Format, "invalid format"),
             };
 
-            _estimateEncodedByteLength = Encode(initalBufferCount: 1024, _item);
+            _encodedBuffer = new ArrayPoolBufferWriter<byte>();
+            _item.EncodeTo(_encodedBuffer);
+
+            _estimateEncodedByteLength = _encodedBuffer.WrittenCount;
 
             static IMemoryOwner<T> CreateArray<T>(int count) where T : unmanaged => MemoryOwner<T>.Allocate(count);
 
@@ -60,20 +64,23 @@ namespace Secs4Netb.Benchmark
         public void GlobalCleanup()
         {
             _item.Dispose();
+            _encodedBuffer.Dispose();
         }
 
         [Benchmark]
         public int EncodeTo()
         {
-            return Encode(_estimateEncodedByteLength, _item);
+            using var buffer = new ArrayPoolBufferWriter<byte>(_estimateEncodedByteLength);
+            _item.EncodeTo(buffer);
+            return buffer.WrittenCount;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int Encode(int initalBufferCount, Item item)
+        [Benchmark]
+        public int DecodeFromFullBuffer()
         {
-            using var buffer = new ArrayPoolBufferWriter<byte>(initalBufferCount);
-            item.EncodeTo(buffer);
-            return buffer.WrittenCount;
+            var seq = new ReadOnlySequence<byte>(_encodedBuffer.WrittenMemory);
+            using var item = Item.DecodeFromFullBuffer(ref seq);
+            return item.Count;
         }
     }
 }

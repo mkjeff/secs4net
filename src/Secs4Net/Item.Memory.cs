@@ -13,8 +13,10 @@ namespace Secs4Net
         {
             private protected virtual Memory<T> Value { get; }
 
-            public MemoryItem(SecsFormat format, Memory<T> value) : base(format, value.Length)
+            internal MemoryItem(SecsFormat format, Memory<T> value) : base(format)
                 => Value = value;
+
+            public sealed override int Count => Value.Length;
 
             public sealed override ref TResult FirstValue<TResult>()
             {
@@ -66,7 +68,7 @@ namespace Secs4Net
             }
 
             private protected sealed override bool IsEquals(Item other)
-                => base.IsEquals(other) && Value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other).Value.Span);
+                => Format == other.Format && Value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other).Value.Span);
         }
     }
 }

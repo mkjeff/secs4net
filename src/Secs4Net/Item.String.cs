@@ -13,8 +13,11 @@ namespace Secs4Net
         {
             private readonly string _value;
 
-            public StringItem(SecsFormat format, string value) : base(format, value.Length)
+            internal StringItem(SecsFormat format, string value) : base(format)
                 => _value = value;
+
+            public sealed override int Count 
+                => _value.Length;
 
             public sealed override string GetString()
                 => _value;
@@ -36,7 +39,7 @@ namespace Secs4Net
             }
 
             private protected sealed override bool IsEquals(Item other)
-                => base.IsEquals(other) && _value.Equals(Unsafe.As<StringItem>(other)._value, StringComparison.Ordinal);
+                => Format == other.Format && _value.Equals(Unsafe.As<StringItem>(other)._value, StringComparison.Ordinal);
         }
     }
 }

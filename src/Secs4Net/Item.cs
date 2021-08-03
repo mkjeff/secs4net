@@ -33,13 +33,13 @@ namespace Secs4Net
         private static readonly Item EmptyF8 = new MemoryItem<double>(SecsFormat.F8, Array.Empty<double>());
 
         public SecsFormat Format { get; }
-        public int Count { get; }
 
-        private protected Item(SecsFormat format, int count)
+        private protected Item(SecsFormat format)
         {
             Format = format;
-            Count = count;
         }
+
+        public abstract int Count { get; }
 
         /// <summary>
         /// Encode the item to SECS binary format
@@ -134,8 +134,7 @@ namespace Secs4Net
         public bool Equals(Item? other)
             => other is not null && IsEquals(other);
 
-        private protected virtual bool IsEquals(Item other)
-            => Format == other.Format && Count == other.Count;
+        private protected abstract bool IsEquals(Item other);
 
         public sealed override string ToString() => $"{Format.GetName()}[{Count}]";
 

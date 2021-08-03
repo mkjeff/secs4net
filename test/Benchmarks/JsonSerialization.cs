@@ -1,15 +1,21 @@
-using FluentAssertions;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
+﻿using BenchmarkDotNet.Attributes;
+using Secs4Net;
+using Secs4Net.Json;
+using System.Text.Json;
 using static Secs4Net.Item;
-
-namespace Secs4Net.Sml.UnitTests
+namespace Secs4Netb.Benchmark
 {
-    public class SmlUnitTest
+    [Config(typeof(BenchmarkConfig))]
+    [MemoryDiagnoser]
+    //[NativeMemoryProfiler]
+    public class JsonSerialization
     {
-        private readonly SecsMessage message = new(s: 1, f: 2, replyExpected: false)
+        private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+        {
+            Converters = { new ItemJsonConverter() },
+        };
+
+        private static readonly SecsMessage Message = new(s: 1, f: 2, replyExpected: false)
         {
             Name = "Test",
             SecsItem =
@@ -45,40 +51,14 @@ namespace Secs4Net.Sml.UnitTests
                         F8(231.00002321d, 0.2913212312d)))
         };
 
-        [Fact]
-        public void SecsMessage_Can_Serialize_And_Deserialize()
-        {
-            var sml = message.ToSml();
-            var deserialized = sml.ToSecsMessage();
+        private static readonly string JsonString = JsonSerializer.Serialize(Message, JsonSerializerOptions);
 
-            deserialized.Should().BeEquivalentTo(message);
-        }
+        [Benchmark]
+        public string Serialize() 
+            => JsonSerializer.Serialize(Message, JsonSerializerOptions);
 
-        [Fact]
-        public async Task Multiple_SecsMessage_Can_Serialize_And_Deserialize_From_Stream()
-        {
-            var messages = Enumerable.Repeat(message, 5).ToList();
-
-            var memoryStream = new MemoryStream();
-            using var writer = new StreamWriter(memoryStream);
-            foreach (var m in messages)
-            {
-                m.WriteSmlTo(writer);
-            }
-            writer.Flush();
-
-            memoryStream.Position = 0;
-            
-
-            using var reader = new StreamReader(memoryStream);
-            var i = 0;
-            await foreach (var m in reader.ToSecsMessages())
-            {
-                m.Should().BeEquivalentTo(messages[i]);
-                i++;
-            }
-
-            i.Should().Be(messages.Count);
-        }
+        [Benchmark]
+        public SecsMessage Deserialze() 
+            => JsonSerializer.Deserialize<SecsMessage>(JsonString, JsonSerializerOptions);
     }
 }

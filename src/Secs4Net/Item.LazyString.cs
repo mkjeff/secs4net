@@ -2,7 +2,6 @@
 using Secs4Net.Extensions;
 using System;
 using System.Buffers;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Secs4Net
@@ -14,19 +13,22 @@ namespace Secs4Net
             private readonly IMemoryOwner<byte> _owner;
             private readonly Lazy<string> _value;
 
-            public LazyStringItem(SecsFormat format, IMemoryOwner<byte> owner) : base(format, GetEncoding(format).GetCharCount(owner.Memory.Span))
+            internal LazyStringItem(SecsFormat format, IMemoryOwner<byte> owner) : base(format)
             {
                 _owner = owner;
                 _value = new Lazy<string>(() =>
                 {
-                    var encoding = GetEncoding(format);
+                    var encoding = format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
                     var span = _owner.Memory.Span;
                     return span.Length > 512 ? encoding.GetString(span) : StringPool.Shared.GetOrAdd(span, encoding);
-                });
+                }, isThreadSafe: false);
             }
 
             public sealed override void Dispose()
                 => _owner.Dispose();
+
+            public sealed override int Count
+                => _value.Value.Length;
 
             public sealed override string GetString()
                 => _value.Value;
@@ -43,12 +45,8 @@ namespace Secs4Net
                 buffer.Write(bytes);
             }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static Encoding GetEncoding(SecsFormat format)
-                => format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
-
             private protected sealed override bool IsEquals(Item other)
-                => base.IsEquals(other) && _value.Value.Equals(other.GetString(), StringComparison.Ordinal);
+                => Format == other.Format && _value.Value.Equals(other.GetString(), StringComparison.Ordinal);
         }
     }
 }

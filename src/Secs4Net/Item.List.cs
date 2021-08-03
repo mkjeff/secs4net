@@ -12,7 +12,7 @@ namespace Secs4Net
         {
             private readonly IList<Item> _value;
 
-            public ListItem(SecsFormat format, IList<Item> value) : base(format, value.Count)
+            internal ListItem(SecsFormat format, IList<Item> value) : base(format)
                 => _value = value;
 
             public sealed override void Dispose()
@@ -23,6 +23,8 @@ namespace Secs4Net
                 }
                 GC.SuppressFinalize(this);
             }
+
+            public sealed override int Count => _value.Count;
 
             public sealed override Item this[int index]
             {
@@ -57,7 +59,7 @@ namespace Secs4Net
             }
 
             private protected sealed override bool IsEquals(Item other)
-                => base.IsEquals(other) && IsListEquals(_value, Unsafe.As<ListItem>(other)._value);
+                => Format == other.Format && IsListEquals(_value, Unsafe.As<ListItem>(other)._value);
 
             static bool IsListEquals(IList<Item> listLeft, IList<Item> listRight)
             {

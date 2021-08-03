@@ -10,17 +10,18 @@ namespace Secs4Netb.Benchmark
     [Config(typeof(BenchmarkConfig))]
     [MemoryDiagnoser]
     //[NativeMemoryProfiler]
-    public class ComplexItemDecode
+    public class ComplexItemEncodeDecode
     {
+        private Item _item;
         private byte[] _encodedBytes;
 
-        [Params(0, 10, 1025)]
+        [Params(0, 64, 128)]
         public int ItemCount { get; set; }
 
         [GlobalSetup]
         public void Setup()
         {
-            using var item =
+            _item =
                  L(
                      L(),
                      U1(MemoryOwner<byte>.Allocate(ItemCount)),
@@ -28,7 +29,7 @@ namespace Secs4Netb.Benchmark
                      U4(MemoryOwner<uint>.Allocate(ItemCount)),
                      F4(MemoryOwner<float>.Allocate(ItemCount)),
                      A(CreateString(Math.Min(ItemCount, 512))),
-                     J(CreateString(Math.Min(ItemCount, 512))),
+                     //J(CreateString(Math.Min(ItemCount, 512))), //JIS encoding cost more memory in coreclr
                      F8(MemoryOwner<double>.Allocate(ItemCount)),
                      L(
                          I1(MemoryOwner<sbyte>.Allocate(ItemCount)),
@@ -44,7 +45,7 @@ namespace Secs4Netb.Benchmark
                              B(MemoryOwner<byte>.Allocate(ItemCount)),
                              L(
                                  A(CreateString(Math.Min(ItemCount, 512))),
-                                 J(CreateString(Math.Min(ItemCount, 512))),
+                                 //J(CreateString(Math.Min(ItemCount, 512))),
                                  Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
                                  B(MemoryOwner<byte>.Allocate(ItemCount))),
                              F8(MemoryOwner<double>.Allocate(ItemCount))),
@@ -52,7 +53,7 @@ namespace Secs4Netb.Benchmark
                          B(MemoryOwner<byte>.Allocate(ItemCount)),
                          L(
                              A(CreateString(Math.Min(ItemCount, 512))),
-                             J(CreateString(Math.Min(ItemCount, 512))),
+                             //J(CreateString(Math.Min(ItemCount, 512))),
                              Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
                              B(MemoryOwner<byte>.Allocate(ItemCount))),
                          F8(MemoryOwner<double>.Allocate(ItemCount))),
@@ -62,7 +63,7 @@ namespace Secs4Netb.Benchmark
                      F4(MemoryOwner<float>.Allocate(ItemCount)));
 
             using var buffer = new ArrayPoolBufferWriter<byte>();
-            item.EncodeTo(buffer);
+            _item.EncodeTo(buffer);
             _encodedBytes = buffer.WrittenMemory.ToArray();
 
             static string CreateString(int count)
@@ -70,6 +71,20 @@ namespace Secs4Netb.Benchmark
                 using var spanOwner = SpanOwner<char>.Allocate(count);
                 return spanOwner.Span.ToString();
             }
+        }
+
+        [GlobalCleanup]
+        public void Cleanup()
+        {
+            _item.Dispose();
+        }
+
+        [Benchmark]
+        public int Encode()
+        {
+            using var buffer = new ArrayPoolBufferWriter<byte>(_encodedBytes.Length);
+            _item.EncodeTo(buffer);
+            return buffer.WrittenCount;
         }
 
         [Benchmark]

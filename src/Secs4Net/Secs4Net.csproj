@@ -34,6 +34,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\common\Channel.Extensions.cs" Link="common\Channel.Extensions.cs" />
+    <Compile Include="..\..\common\Encoding.Extensions.cs" Link="common\Encoding.Extensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

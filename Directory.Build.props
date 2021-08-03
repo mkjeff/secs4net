@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\common\Channel.Extensions.cs" Link="common\Channel.Extensions.cs" />
     <Compile Include="..\..\common\IsExternalInit.cs" Link="common\IsExternalInit.cs" />
     <Compile Include="..\..\common\NullableAttributes.cs" Link="common\NullableAttributes.cs" />
     <Compile Include="..\..\common\Range.cs" Link="common\Range.cs" />

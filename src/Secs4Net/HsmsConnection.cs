@@ -363,7 +363,7 @@ namespace Secs4Net
             try
             {
                 await _pipeDecoder.GetControlMessages(cancellation)
-                          .ForEachAwaitWithCancellationAsync(ProcessControlMessageAsync, cancellation);
+                          .ForEachAwaitWithCancellationAsync(ProcessControlMessageAsync, cancellation).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         }

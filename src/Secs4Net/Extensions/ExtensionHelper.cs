@@ -1,9 +1,7 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
-using Microsoft.Toolkit.HighPerformance.Buffers;
 using PooledAwait;
 using Secs4Net.Extensions;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -82,51 +80,6 @@ namespace Secs4Net.Extensions
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void HandleReplyMessage(this ValueTaskCompletionSource<SecsMessage> source, SecsMessage primaryMessage, SecsMessage secondaryMessage)
-        {
-            secondaryMessage.Name = primaryMessage.Name;
-            if (secondaryMessage.F == 0)
-            {
-                source.TrySetException(new SecsException(secondaryMessage, Resources.SxF0));
-                return;
-            }
-
-            if (secondaryMessage.S == 9)
-            {
-                switch (secondaryMessage.F)
-                {
-                    case 1:
-                        source.TrySetException(new SecsException(secondaryMessage, Resources.S9F1));
-                        break;
-                    case 3:
-                        source.TrySetException(new SecsException(secondaryMessage, Resources.S9F3));
-                        break;
-                    case 5:
-                        source.TrySetException(new SecsException(secondaryMessage, Resources.S9F5));
-                        break;
-                    case 7:
-                        source.TrySetException(new SecsException(secondaryMessage, Resources.S9F7));
-                        break;
-                    case 9:
-                        source.TrySetException(new SecsException(secondaryMessage, Resources.S9F9));
-                        break;
-                    case 11:
-                        source.TrySetException(new SecsException(secondaryMessage, Resources.S9F11));
-                        break;
-                    case 13:
-                        source.TrySetException(new SecsException(secondaryMessage, Resources.S9F13));
-                        break;
-                    default:
-                        source.TrySetException(new SecsException(secondaryMessage, Resources.S9Fy));
-                        break;
-                }
-                return;
-            }
-
-            source.TrySetResult(secondaryMessage);
-        }
-
         internal static string GetDebugString(this Item item, int maxCount)
         {
             var sb = new StringBuilder();
@@ -198,7 +151,7 @@ namespace Secs4Net.Extensions
                 static void AppendHexChars(StringBuilder sb, byte num)
                 {
                     var hex1 = Math.DivRem(num, 0x10, out var hex0);
-                    sb.Append(GetHexChar(hex1)).Append(GetHexChar(hex0));
+                    sb.Append("0x").Append(GetHexChar(hex1)).Append(GetHexChar(hex0));
                 }
 
                 static char GetHexChar(int i) => i < 10 ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
@@ -240,52 +193,5 @@ namespace Secs4Net.Extensions
                 return await task;
             }
         }
-
-#if NETSTANDARD
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe int GetBytes(this Encoding encoding, string str, Span<byte> span)
-        {
-            fixed (char* chars = str.AsSpan())
-            {
-                fixed (byte* bytes = span)
-                {
-                    return encoding.GetBytes(chars, str.Length, bytes, span.Length);
-                }
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe int GetCharCount(this Encoding encoding, ReadOnlySpan<byte> span)
-        {
-            fixed (byte* bytes = span)
-            {
-                return encoding.GetCharCount(bytes, span.Length);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe string GetString(this Encoding encoding, ReadOnlySpan<byte> bytes)
-        {
-            using var spanOwner = SpanOwner<byte>.Allocate((int)bytes.Length);
-            bytes.CopyTo(spanOwner.Span);
-
-            fixed (byte* spanBytes = spanOwner.Span)
-            {
-                return encoding.GetString(spanBytes, spanOwner.Length);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe string GetString(this Encoding encoding, in ReadOnlySequence<byte> bytes)
-        {
-            using var spanOwner = SpanOwner<byte>.Allocate((int)bytes.Length);
-            bytes.CopyTo(spanOwner.Span);
-
-            fixed (byte* spanBytes = spanOwner.Span)
-            {
-                return encoding.GetString(spanBytes, spanOwner.Length);
-            }
-        }
-#endif
     }
 }
