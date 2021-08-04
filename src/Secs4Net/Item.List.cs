@@ -12,7 +12,8 @@ namespace Secs4Net
         {
             private readonly IList<Item> _value;
 
-            internal ListItem(SecsFormat format, IList<Item> value) : base(format)
+            internal ListItem(SecsFormat format, IList<Item> value)
+                : base(format)
                 => _value = value;
 
             public sealed override void Dispose()
@@ -59,7 +60,7 @@ namespace Secs4Net
             }
 
             private protected sealed override bool IsEquals(Item other)
-                => Format == other.Format && IsListEquals(_value, Unsafe.As<ListItem>(other)._value);
+                => Format == other.Format && IsListEquals(_value, Unsafe.As<ListItem>(other)!._value);
 
             static bool IsListEquals(IList<Item> listLeft, IList<Item> listRight)
             {

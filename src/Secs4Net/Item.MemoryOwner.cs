@@ -8,9 +8,10 @@ namespace Secs4Net
         private sealed class MemoryOwnerItem<T> : MemoryItem<T> where T : unmanaged, IEquatable<T>
         {
             private readonly IMemoryOwner<T> _owner;
-            private protected override Memory<T> Value => _owner.Memory;
+            private protected override ReadOnlyMemory<T> Value => _owner.Memory;
 
-            internal MemoryOwnerItem(SecsFormat format, IMemoryOwner<T> memoryOwner) : base(format, memoryOwner.Memory)
+            internal MemoryOwnerItem(SecsFormat format, IMemoryOwner<T> memoryOwner) 
+                : base(format, memoryOwner.Memory)
             {
                 _owner = memoryOwner;
             }

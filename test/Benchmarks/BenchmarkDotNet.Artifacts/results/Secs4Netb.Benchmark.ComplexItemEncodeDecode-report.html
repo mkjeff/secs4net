@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Secs4Netb.Benchmark.ComplexItemEncodeDecode-20210804-202820</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.0, OS=Windows 10.0.19043.1151 (21H1/May2021Update)
+AMD Ryzen 7 3700X, 1 CPU, 16 logical and 8 physical cores
+.NET SDK=6.0.100-preview.6.21355.2
+  [Host]     : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
+  Job-JFBEZI : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
+  Job-ILLKVN : .NET Framework 4.8 (4.8.4400.0), X64 RyuJIT
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method</th><th> Job</th><th>       Runtime</th><th>Toolchain</th><th>ItemCount</th><th> Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Encode</td><td>Job-JFBEZI</td><td>.NET 6.0</td><td>net6.0</td><td>0</td><td>881.2 ns</td><td>3.92 ns</td><td>3.67 ns</td><td>0.55</td><td>0.0048</td><td>-</td><td>-</td><td>40 B</td>
+</tr><tr><td>Encode</td><td>Job-ILLKVN</td><td>.NET Framework 4.7.2</td><td>net472</td><td>0</td><td>1,614.7 ns</td><td>3.52 ns</td><td>2.94 ns</td><td>1.00</td><td>0.0057</td><td>-</td><td>-</td><td>40 B</td>
+</tr><tr><td>Decode</td><td>Job-JFBEZI</td><td>.NET 6.0</td><td>net6.0</td><td>0</td><td>5,208.6 ns</td><td>8.45 ns</td><td>7.49 ns</td><td>0.69</td><td>0.0839</td><td>-</td><td>-</td><td>720 B</td>
+</tr><tr><td>Decode</td><td>Job-ILLKVN</td><td>.NET Framework 4.7.2</td><td>net472</td><td>0</td><td>7,518.2 ns</td><td>14.51 ns</td><td>12.12 ns</td><td>1.00</td><td>0.1144</td><td>-</td><td>-</td><td>762 B</td>
+</tr><tr><td>Encode</td><td>Job-JFBEZI</td><td>.NET 6.0</td><td>net6.0</td><td>64</td><td>2,224.3 ns</td><td>9.48 ns</td><td>8.87 ns</td><td>0.23</td><td>0.0038</td><td>-</td><td>-</td><td>40 B</td>
+</tr><tr><td>Encode</td><td>Job-ILLKVN</td><td>.NET Framework 4.7.2</td><td>net472</td><td>64</td><td>9,496.6 ns</td><td>14.23 ns</td><td>13.31 ns</td><td>1.00</td><td>-</td><td>-</td><td>-</td><td>40 B</td>
+</tr><tr><td>Decode</td><td>Job-JFBEZI</td><td>.NET 6.0</td><td>net6.0</td><td>64</td><td>7,863.1 ns</td><td>59.52 ns</td><td>55.68 ns</td><td>0.44</td><td>0.8850</td><td>0.0153</td><td>-</td><td>7,408 B</td>
+</tr><tr><td>Decode</td><td>Job-ILLKVN</td><td>.NET Framework 4.7.2</td><td>net472</td><td>64</td><td>17,762.0 ns</td><td>54.58 ns</td><td>51.06 ns</td><td>1.00</td><td>1.1597</td><td>-</td><td>-</td><td>7,470 B</td>
+</tr><tr><td>Encode</td><td>Job-JFBEZI</td><td>.NET 6.0</td><td>net6.0</td><td>128</td><td>3,113.1 ns</td><td>15.72 ns</td><td>13.94 ns</td><td>0.19</td><td>0.0038</td><td>-</td><td>-</td><td>40 B</td>
+</tr><tr><td>Encode</td><td>Job-ILLKVN</td><td>.NET Framework 4.7.2</td><td>net472</td><td>128</td><td>16,005.0 ns</td><td>33.13 ns</td><td>27.66 ns</td><td>1.00</td><td>-</td><td>-</td><td>-</td><td>40 B</td>
+</tr><tr><td>Decode</td><td>Job-JFBEZI</td><td>.NET 6.0</td><td>net6.0</td><td>128</td><td>9,146.7 ns</td><td>37.61 ns</td><td>33.34 ns</td><td>0.36</td><td>1.0986</td><td>0.0305</td><td>-</td><td>9,272 B</td>
+</tr><tr><td>Decode</td><td>Job-ILLKVN</td><td>.NET Framework 4.7.2</td><td>net472</td><td>128</td><td>25,073.7 ns</td><td>99.29 ns</td><td>92.87 ns</td><td>1.00</td><td>1.4648</td><td>0.0305</td><td>-</td><td>9,340 B</td>
+</tr></tbody></table>
+</body>
+</html>

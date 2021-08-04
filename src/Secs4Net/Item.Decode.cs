@@ -13,12 +13,14 @@ namespace Secs4Net
 {
     partial class Item
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void DecodeFormatAndLengthByteCount(byte formatAndLengthByte, out SecsFormat format, out byte lengthByteCount)
         {
             format = (SecsFormat)(formatAndLengthByte & 0b11111100);
             lengthByteCount = (byte)(formatAndLengthByte & 0b00000011);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void DecodeDataLength(in ReadOnlySequence<byte> sourceBytes, out int dataLength)
         {
             Span<byte> itemLengthBytes = stackalloc byte[4];
@@ -62,6 +64,7 @@ namespace Secs4Net
             return item;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Item DecodeDataItem(SecsFormat format, in ReadOnlySequence<byte> bytes)
         {
             var length = bytes.Length;
@@ -70,101 +73,89 @@ namespace Secs4Net
                 SecsFormat.ASCII => length switch
                 {
                     0 => A(),
-                    > 512 => CreateLazyStringItem(bytes, format),
+                    >= 512 => CreateLazyStringItem(bytes, format),
                     _ => CreateStringItem(bytes, format, Encoding.ASCII),
                 },
                 SecsFormat.JIS8 => length switch
                 {
                     0 => J(),
-                    > 512 => CreateLazyStringItem(bytes, format),
+                    >= 512 => CreateLazyStringItem(bytes, format),
                     _ => CreateStringItem(bytes, format, Jis8Encoding),
                 },
                 SecsFormat.Boolean => length switch
                 {
                     0 => Boolean(),
-                    > 1024 => Boolean(DecodeWithOwner<bool>(bytes)),
+                    >= 1024 => Boolean(DecodeWithOwner<bool>(bytes)),
                     _ => Boolean(Decode<bool>(bytes)),
                 },
                 SecsFormat.Binary => length switch
                 {
                     0 => B(),
-                    > 1024 => B(DecodeWithOwner<byte>(bytes)),
+                    >= 1024 => B(DecodeWithOwner<byte>(bytes)),
                     _ => B(Decode<byte>(bytes)),
                 },
                 SecsFormat.U1 => length switch
                 {
                     0 => U1(),
-                    > 1024 => U1(DecodeWithOwner<byte>(bytes)),
+                    >= 1024 => U1(DecodeWithOwner<byte>(bytes)),
                     _ => U1(Decode<byte>(bytes)),
                 },
                 SecsFormat.U2 => length switch
                 {
                     0 => U2(),
-                    > 1024 => U2(DecodeWithOwner<ushort>(bytes)),
-                    _ => U2(Decode<ushort>(bytes)),
+                    >= 1024 => U2(DecodeWithOwner<ushort>(bytes).ReverseEndianness()),
+                    _ => U2(Decode<ushort>(bytes).ReverseEndianness()),
                 },
                 SecsFormat.U4 => length switch
                 {
                     0 => U4(),
-                    > 1024 => U4(DecodeWithOwner<uint>(bytes)),
-                    _ => U4(Decode<uint>(bytes)),
+                    >= 1024 => U4(DecodeWithOwner<uint>(bytes).ReverseEndianness()),
+                    _ => U4(Decode<uint>(bytes).ReverseEndianness()),
                 },
                 SecsFormat.U8 => length switch
                 {
                     0 => U8(),
-                    > 1024 => U8(DecodeWithOwner<ulong>(bytes)),
-                    _ => U8(Decode<ulong>(bytes)),
+                    >= 1024 => U8(DecodeWithOwner<ulong>(bytes).ReverseEndianness()),
+                    _ => U8(Decode<ulong>(bytes).ReverseEndianness()),
                 },
                 SecsFormat.I1 => length switch
                 {
                     0 => I1(),
-                    > 1024 => I1(DecodeWithOwner<sbyte>(bytes)),
+                    >= 1024 => I1(DecodeWithOwner<sbyte>(bytes)),
                     _ => I1(Decode<sbyte>(bytes)),
                 },
                 SecsFormat.I2 => length switch
                 {
                     0 => I2(),
-                    > 1024 => I2(DecodeWithOwner<short>(bytes)),
-                    _ => I2(Decode<short>(bytes)),
+                    >= 1024 => I2(DecodeWithOwner<short>(bytes).ReverseEndianness()),
+                    _ => I2(Decode<short>(bytes).ReverseEndianness()),
                 },
                 SecsFormat.I4 => length switch
                 {
                     0 => I4(),
-                    > 1024 => I4(DecodeWithOwner<int>(bytes)),
-                    _ => I4(Decode<int>(bytes)),
+                    >= 1024 => I4(DecodeWithOwner<int>(bytes).ReverseEndianness()),
+                    _ => I4(Decode<int>(bytes).ReverseEndianness()),
                 },
                 SecsFormat.I8 => length switch
                 {
                     0 => I8(),
-                    > 1024 => I8(DecodeWithOwner<long>(bytes)),
-                    _ => I8(Decode<long>(bytes)),
+                    >= 1024 => I8(DecodeWithOwner<long>(bytes).ReverseEndianness()),
+                    _ => I8(Decode<long>(bytes).ReverseEndianness()),
                 },
                 SecsFormat.F4 => length switch
                 {
                     0 => F4(),
-                    > 1024 => F4(DecodeWithOwner<float>(bytes)),
-                    _ => F4(Decode<float>(bytes)),
+                    >= 1024 => F4(DecodeWithOwner<float>(bytes).ReverseEndianness()),
+                    _ => F4(Decode<float>(bytes).ReverseEndianness()),
                 },
                 SecsFormat.F8 => length switch
                 {
                     0 => F8(),
-                    > 1024 => F8(DecodeWithOwner<double>(bytes)),
-                    _ => F8(Decode<double>(bytes)),
+                    >= 1024 => F8(DecodeWithOwner<double>(bytes).ReverseEndianness()),
+                    _ => F8(Decode<double>(bytes).ReverseEndianness()),
                 },
                 _ => ThrowHelper(format),
             };
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            [SkipLocalsInit]
-            static ReadOnlyMemory<T> Decode<T>(in ReadOnlySequence<byte> bytes) where T : unmanaged
-            {
-                var elmSize = Unsafe.SizeOf<T>();
-                var values = new T[bytes.Length / elmSize];
-                var valueAsBytesSpan = values.AsSpan().AsBytes();
-                bytes.CopyTo(valueAsBytesSpan);
-                valueAsBytesSpan.Reverse(elmSize);
-                return values;
-            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static LazyStringItem CreateLazyStringItem(in ReadOnlySequence<byte> bytes, SecsFormat format)
@@ -183,14 +174,20 @@ namespace Secs4Net
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static MemoryOwner<T> DecodeWithOwner<T>(in ReadOnlySequence<byte> bytes) where T : unmanaged
+            [SkipLocalsInit]
+            static Memory<T> Decode<T>(in ReadOnlySequence<byte> bytes) where T : unmanaged
             {
-                var elmSize = Unsafe.SizeOf<T>();
-                var values = MemoryOwner<T>.Allocate((int)(bytes.Length / elmSize));
-                var valueAsBytesSpan = values.Span.AsBytes();
-                bytes.CopyTo(valueAsBytesSpan);
-                valueAsBytesSpan.Reverse(elmSize);
-                return values;
+                Memory<T> valueMemory = new T[bytes.Length / Unsafe.SizeOf<T>()];
+                bytes.CopyTo(valueMemory.Span.AsBytes());
+                return valueMemory;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static IMemoryOwner<T> DecodeWithOwner<T>(in ReadOnlySequence<byte> bytes) where T : unmanaged
+            {
+                var valueMemoryOwner = MemoryOwner<T>.Allocate((int)(bytes.Length / Unsafe.SizeOf<T>()));
+                bytes.CopyTo(valueMemoryOwner.Span.AsBytes());
+                return valueMemoryOwner;
             }
 
             [DoesNotReturn]

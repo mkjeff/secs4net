@@ -1,5 +1,4 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
-using Secs4Net.Extensions;
 using System;
 using System.Buffers;
 using System.Text;
@@ -13,12 +12,13 @@ namespace Secs4Net
             private readonly IMemoryOwner<byte> _owner;
             private readonly Lazy<string> _value;
 
-            internal LazyStringItem(SecsFormat format, IMemoryOwner<byte> owner) : base(format)
+            internal LazyStringItem(SecsFormat format, IMemoryOwner<byte> owner)
+                : base(format)
             {
                 _owner = owner;
                 _value = new Lazy<string>(() =>
                 {
-                    var encoding = format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
+                    var encoding = Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
                     var span = _owner.Memory.Span;
                     return span.Length > 512 ? encoding.GetString(span) : StringPool.Shared.GetOrAdd(span, encoding);
                 }, isThreadSafe: false);

@@ -4,6 +4,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Secs4Net
 {
@@ -11,9 +12,10 @@ namespace Secs4Net
     {
         private class MemoryItem<T> : Item where T : unmanaged, IEquatable<T>
         {
-            private protected virtual Memory<T> Value { get; }
+            private protected virtual ReadOnlyMemory<T> Value { get; }
 
-            internal MemoryItem(SecsFormat format, Memory<T> value) : base(format)
+            internal MemoryItem(SecsFormat format, Memory<T> value) 
+                : base(format)
                 => Value = value;
 
             public sealed override int Count => Value.Length;
@@ -44,7 +46,7 @@ namespace Secs4Net
             }
 
             public sealed override Memory<TResult> GetMemory<TResult>()
-                => Value.Cast<T, TResult>();
+                => MemoryMarshal.AsMemory(Value.Cast<T, TResult>());
 
             public sealed override ReadOnlyMemory<TResult> GetReadOnlyMemory<TResult>()
                 => Value.Cast<T, TResult>();
@@ -58,17 +60,47 @@ namespace Secs4Net
                     return;
                 }
 
-                var valueAsBytes = memory.Span.AsBytes();
-                var byteLength = valueAsBytes.Length;
+                var valueByteSpan = memory.Span.AsBytes();
+                var byteLength = valueByteSpan.Length;
+
                 EncodeItemHeader(Format, byteLength, buffer);
-                var span = buffer.GetSpan(byteLength).Slice(0, byteLength);
-                valueAsBytes.CopyTo(span);
-                span.Reverse(Unsafe.SizeOf<T>());
+
+                var bufferByteSpan = buffer.GetSpan(byteLength).Slice(0, byteLength);
+                valueByteSpan.CopyTo(bufferByteSpan);
+
+                switch (Format)
+                {
+                    case SecsFormat.I8:
+                        bufferByteSpan.Cast<byte, long>().ReverseEndianness();
+                        break;
+                    case SecsFormat.I2:
+                        bufferByteSpan.Cast<byte, short>().ReverseEndianness();
+                        break;
+                    case SecsFormat.I4:
+                        bufferByteSpan.Cast<byte, int>().ReverseEndianness();
+                        break;
+                    case SecsFormat.U8:
+                        bufferByteSpan.Cast<byte, ulong>().ReverseEndianness();
+                        break;
+                    case SecsFormat.U2:
+                        bufferByteSpan.Cast<byte, ushort>().ReverseEndianness();
+                        break;
+                    case SecsFormat.U4:
+                        bufferByteSpan.Cast<byte, uint>().ReverseEndianness();
+                        break;
+                    case SecsFormat.F8:
+                        bufferByteSpan.Cast<byte, double>().ReverseEndianness();
+                        break;
+                    case SecsFormat.F4:
+                        bufferByteSpan.Cast<byte, float>().ReverseEndianness();
+                        break;
+                }
+
                 buffer.Advance(byteLength);
             }
 
             private protected sealed override bool IsEquals(Item other)
-                => Format == other.Format && Value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other).Value.Span);
+                => Format == other.Format && Value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other)!.Value.Span);
         }
     }
 }

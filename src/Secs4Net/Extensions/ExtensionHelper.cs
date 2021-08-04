@@ -2,8 +2,11 @@
 using PooledAwait;
 using Secs4Net.Extensions;
 using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,19 +69,234 @@ namespace Secs4Net.Extensions
             static string ThrowHelper(SecsFormat format) => throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value");
         }
 
+#if NET
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Reverse(this Span<byte> bytes, int offSet)
-        {
-            if (offSet <= 1)
-            {
-                return;
-            }
+        public static ReadOnlySpan<byte> AsBytes<T>(this ref T value) where T : unmanaged
+            => MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>());
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe ReadOnlySpan<byte> AsBytes<T>(this ref T value) where T : unmanaged
+            => new(Unsafe.AsPointer(ref Unsafe.As<T, byte>(ref value)), Unsafe.SizeOf<T>());
+#endif
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReverseEndianness(this Span<short> span)
+        {
+            for (int i = 0; i < span.Length; i++)
+            {
+                ref short value = ref span.DangerousGetReferenceAt(i);
+                value = BinaryPrimitives.ReverseEndianness(value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Memory<short> ReverseEndianness(this Memory<short> memory)
+        {
+            memory.Span.ReverseEndianness();
+            return memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IMemoryOwner<short> ReverseEndianness(this IMemoryOwner<short> memoryOwner)
+        {
+            memoryOwner.Memory.Span.ReverseEndianness();
+            return memoryOwner;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReverseEndianness(this Span<ushort> span)
+        {
+            for (int i = 0; i < span.Length; i++)
+            {
+                ref ushort value = ref span.DangerousGetReferenceAt(i);
+                value = BinaryPrimitives.ReverseEndianness(value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Memory<ushort> ReverseEndianness(this Memory<ushort> memory)
+        {
+            memory.Span.ReverseEndianness();
+            return memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IMemoryOwner<ushort> ReverseEndianness(this IMemoryOwner<ushort> memoryOwner)
+        {
+            memoryOwner.Memory.Span.ReverseEndianness();
+            return memoryOwner;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReverseEndianness(this Span<int> span)
+        {
+            for (int i = 0; i < span.Length; i++)
+            {
+                ref int value = ref span.DangerousGetReferenceAt(i);
+                value = BinaryPrimitives.ReverseEndianness(value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Memory<int> ReverseEndianness(this Memory<int> memory)
+        {
+            memory.Span.ReverseEndianness();
+            return memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IMemoryOwner<int> ReverseEndianness(this IMemoryOwner<int> memoryOwner)
+        {
+            memoryOwner.Memory.Span.ReverseEndianness();
+            return memoryOwner;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReverseEndianness(this Span<uint> span)
+        {
+            for (int i = 0; i < span.Length; i++)
+            {
+                ref uint value = ref span.DangerousGetReferenceAt(i);
+                value = BinaryPrimitives.ReverseEndianness(value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Memory<uint> ReverseEndianness(this Memory<uint> memory)
+        {
+            memory.Span.ReverseEndianness();
+            return memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IMemoryOwner<uint> ReverseEndianness(this IMemoryOwner<uint> memoryOwner)
+        {
+            memoryOwner.Memory.Span.ReverseEndianness();
+            return memoryOwner;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReverseEndianness(this Span<long> span)
+        {
+            for (int i = 0; i < span.Length; i++)
+            {
+                ref long value = ref span.DangerousGetReferenceAt(i);
+                value = BinaryPrimitives.ReverseEndianness(value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Memory<long> ReverseEndianness(this Memory<long> memory)
+        {
+            memory.Span.ReverseEndianness();
+            return memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IMemoryOwner<long> ReverseEndianness(this IMemoryOwner<long> memoryOwner)
+        {
+            memoryOwner.Memory.Span.ReverseEndianness();
+            return memoryOwner;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReverseEndianness(this Span<ulong> span)
+        {
+            for (int i = 0; i < span.Length; i++)
+            {
+                ref ulong value = ref span.DangerousGetReferenceAt(i);
+                value = BinaryPrimitives.ReverseEndianness(value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Memory<ulong> ReverseEndianness(this Memory<ulong> memory)
+        {
+            memory.Span.ReverseEndianness();
+            return memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IMemoryOwner<ulong> ReverseEndianness(this IMemoryOwner<ulong> memoryOwner)
+        {
+            memoryOwner.Memory.Span.ReverseEndianness();
+            return memoryOwner;
+        }
+
+#if NET
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReverseEndianness(this Span<float> span)
+        {
+            for (int i = 0; i < span.Length; i++)
+            {
+                ref float value = ref span.DangerousGetReferenceAt(i);
+                value = BinaryPrimitives.ReadSingleBigEndian(value.AsBytes());
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Memory<float> ReverseEndianness(this Memory<float> memory)
+        {
+            memory.Span.ReverseEndianness();
+            return memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IMemoryOwner<float> ReverseEndianness(this IMemoryOwner<float> memoryOwner)
+        {
+            memoryOwner.Memory.Span.ReverseEndianness();
+            return memoryOwner;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReverseEndianness(this Span<double> span)
+        {
+            for (int i = 0; i < span.Length; i++)
+            {
+                ref double value = ref span.DangerousGetReferenceAt(i);
+                value = BinaryPrimitives.ReadDoubleBigEndian(value.AsBytes());
+            }
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Memory<double> ReverseEndianness(this Memory<double> memory)
+        {
+            memory.Span.ReverseEndianness();
+            return memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IMemoryOwner<double> ReverseEndianness(this IMemoryOwner<double> memoryOwner)
+        {
+            memoryOwner.Memory.Span.ReverseEndianness();
+            return memoryOwner;
+        }
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void ReverseEndianness<T>(this Span<T> span) where T : unmanaged
+        {
+            var offSet = Unsafe.SizeOf<T>();
+            var bytes = span.AsBytes();
             for (var i = 0; i < bytes.Length; i += offSet)
             {
                 bytes.Slice(i, offSet).Reverse();
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Memory<T> ReverseEndianness<T>(this Memory<T> memory) where T: unmanaged
+        {
+            memory.Span.ReverseEndianness();
+            return memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IMemoryOwner<T> ReverseEndianness<T>(this IMemoryOwner<T> memoryOwner) where T : unmanaged
+        {
+            memoryOwner.Memory.Span.ReverseEndianness();
+            return memoryOwner;
+        }
+#endif
 
         internal static string GetDebugString(this Item item, int maxCount)
         {

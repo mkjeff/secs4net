@@ -1,11 +1,9 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
+using Secs4Net.Extensions;
 using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-#if NET
-using System.Runtime.InteropServices;
-#endif
 
 namespace Secs4Net
 {
@@ -16,13 +14,10 @@ namespace Secs4Net
         /// </summary>
         /// <param name="count">List item count or value bytes length</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private protected static unsafe void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
+        private protected static void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
         {
-#if NET
-            var lengthSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<int, byte>(ref count), sizeof(int));
-#else
-            var lengthSpan = new ReadOnlySpan<byte>(Unsafe.AsPointer(ref Unsafe.As<int, byte>(ref count)), sizeof(int));
-#endif
+            var lengthSpan = Unsafe.AsRef(count).AsBytes();
+
             if (count <= 0xff)
             {//	1 byte
                 var span = buffer.GetSpan(sizeHint: 2);
