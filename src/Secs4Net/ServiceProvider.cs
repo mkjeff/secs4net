@@ -12,7 +12,7 @@ namespace Secs4Net
             services.AddSingleton<ISecsConnection, HsmsConnection>();
             services.AddSingleton<ISecsGem, SecsGem>();
             services.AddSingleton<ISecsGemLogger, TLogger>();
-            services.AddHostedService(s => (HsmsConnection)s.GetRequiredService<ISecsConnection>());
+            services.AddHostedService(static s => (HsmsConnection)s.GetRequiredService<ISecsConnection>());
             return services;
         }
     }

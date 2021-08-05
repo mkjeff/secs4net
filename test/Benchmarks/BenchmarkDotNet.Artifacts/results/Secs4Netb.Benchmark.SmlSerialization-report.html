@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Secs4Netb.Benchmark.SmlSerialization-20210805-204409</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.0, OS=Windows 10.0.19043.1151 (21H1/May2021Update)
+AMD Ryzen 7 3700X, 1 CPU, 16 logical and 8 physical cores
+.NET SDK=6.0.100-preview.6.21355.2
+  [Host]     : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
+  Job-MBNKPF : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
+  Job-ZEVWQK : .NET Framework 4.8 (4.8.4400.0), X64 RyuJIT
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method</th><th> Job</th><th>       Runtime</th><th>Toolchain</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>Gen 0</th><th>Gen 1</th><th>Gen 2</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>Serialize</td><td>Job-MBNKPF</td><td>.NET 6.0</td><td>net6.0</td><td>7.929 &mu;s</td><td>0.0313 &mu;s</td><td>0.0277 &mu;s</td><td>0.54</td><td>1.0834</td><td>0.0153</td><td>-</td><td>9 KB</td>
+</tr><tr><td>Serialize</td><td>Job-ZEVWQK</td><td>.NET Framework 4.7.2</td><td>net472</td><td>14.667 &mu;s</td><td>0.0376 &mu;s</td><td>0.0294 &mu;s</td><td>1.00</td><td>1.8463</td><td>0.0305</td><td>-</td><td>11 KB</td>
+</tr><tr><td>Deserialze</td><td>Job-MBNKPF</td><td>.NET 6.0</td><td>net6.0</td><td>10.379 &mu;s</td><td>0.0325 &mu;s</td><td>0.0304 &mu;s</td><td>0.48</td><td>0.9460</td><td>0.0153</td><td>-</td><td>8 KB</td>
+</tr><tr><td>Deserialze</td><td>Job-ZEVWQK</td><td>.NET Framework 4.7.2</td><td>net472</td><td>21.799 &mu;s</td><td>0.0743 &mu;s</td><td>0.0659 &mu;s</td><td>1.00</td><td>2.8687</td><td>0.0305</td><td>-</td><td>18 KB</td>
+</tr></tbody></table>
+</body>
+</html>

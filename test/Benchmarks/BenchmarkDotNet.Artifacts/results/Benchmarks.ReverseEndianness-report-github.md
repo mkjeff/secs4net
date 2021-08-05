@@ -4,66 +4,82 @@ BenchmarkDotNet=v0.13.0, OS=Windows 10.0.19043.1151 (21H1/May2021Update)
 AMD Ryzen 7 3700X, 1 CPU, 16 logical and 8 physical cores
 .NET SDK=6.0.100-preview.6.21355.2
   [Host]     : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
-  Job-AYIXQQ : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
-  Job-IPVSTG : .NET Framework 4.8 (4.8.4400.0), X64 RyuJIT
+  Job-CDNPOR : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
+  Job-ONIXFO : .NET Framework 4.8 (4.8.4400.0), X64 RyuJIT
 
 
 ```
-|                  Method |        Job |              Runtime | Toolchain | Categories | Size |        Mean |     Error |    StdDev | Ratio | RatioSD |
-|------------------------ |----------- |--------------------- |---------- |----------- |----- |------------:|----------:|----------:|------:|--------:|
-|       &#39;Slice &amp; Reverse&#39; | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     UInt16 |  128 |   287.53 ns |  1.159 ns |  1.027 ns |  0.21 |    0.00 |
-| ReverseEndiannessHelper | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     UInt16 |  128 |   225.31 ns |  1.553 ns |  1.453 ns |  0.16 |    0.00 |
-|        BinaryPrimitives | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     UInt16 |  128 |    64.17 ns |  0.271 ns |  0.253 ns |  0.05 |    0.00 |
-|       &#39;Slice &amp; Reverse&#39; | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     UInt16 |  128 | 1,392.98 ns |  3.765 ns |  3.144 ns |  1.00 |    0.00 |
-| ReverseEndiannessHelper | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     UInt16 |  128 |   476.74 ns |  0.741 ns |  0.657 ns |  0.34 |    0.00 |
-|        BinaryPrimitives | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     UInt16 |  128 |   335.24 ns |  1.302 ns |  1.154 ns |  0.24 |    0.00 |
-|                         |            |                      |           |            |      |             |           |           |       |         |
-|       &#39;Slice &amp; Reverse&#39; | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     UInt32 |  128 |   365.72 ns |  0.499 ns |  0.442 ns |  0.25 |    0.00 |
-| ReverseEndiannessHelper | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     UInt32 |  128 |   224.40 ns |  0.532 ns |  0.497 ns |  0.15 |    0.00 |
-|        BinaryPrimitives | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     UInt32 |  128 |    64.36 ns |  0.233 ns |  0.206 ns |  0.04 |    0.00 |
-|       &#39;Slice &amp; Reverse&#39; | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     UInt32 |  128 | 1,451.79 ns |  1.657 ns |  1.384 ns |  1.00 |    0.00 |
-| ReverseEndiannessHelper | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     UInt32 |  128 |   387.84 ns |  1.178 ns |  1.102 ns |  0.27 |    0.00 |
-|        BinaryPrimitives | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     UInt32 |  128 |   341.11 ns |  0.561 ns |  0.525 ns |  0.23 |    0.00 |
-|                         |            |                      |           |            |      |             |           |           |       |         |
-|       &#39;Slice &amp; Reverse&#39; | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     UInt64 |  128 |   463.08 ns |  1.395 ns |  1.237 ns |  0.30 |    0.00 |
-| ReverseEndiannessHelper | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     UInt64 |  128 |   224.88 ns |  0.990 ns |  0.926 ns |  0.15 |    0.00 |
-|        BinaryPrimitives | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     UInt64 |  128 |    64.25 ns |  0.103 ns |  0.091 ns |  0.04 |    0.00 |
-|       &#39;Slice &amp; Reverse&#39; | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     UInt64 |  128 | 1,546.06 ns |  6.312 ns |  5.905 ns |  1.00 |    0.00 |
-| ReverseEndiannessHelper | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     UInt64 |  128 |   403.69 ns |  1.129 ns |  1.056 ns |  0.26 |    0.00 |
-|        BinaryPrimitives | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     UInt64 |  128 |   368.17 ns |  0.551 ns |  0.515 ns |  0.24 |    0.00 |
-|                         |            |                      |           |            |      |             |           |           |       |         |
-|       &#39;Slice &amp; Reverse&#39; | Job-AYIXQQ |             .NET 6.0 |    net6.0 |      Int16 |  128 |   286.60 ns |  0.591 ns |  0.524 ns |  0.20 |    0.00 |
-| ReverseEndiannessHelper | Job-AYIXQQ |             .NET 6.0 |    net6.0 |      Int16 |  128 |   223.53 ns |  0.353 ns |  0.276 ns |  0.16 |    0.00 |
-|        BinaryPrimitives | Job-AYIXQQ |             .NET 6.0 |    net6.0 |      Int16 |  128 |    64.54 ns |  0.199 ns |  0.166 ns |  0.05 |    0.00 |
-|       &#39;Slice &amp; Reverse&#39; | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |      Int16 |  128 | 1,398.91 ns |  7.002 ns |  6.550 ns |  1.00 |    0.00 |
-| ReverseEndiannessHelper | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |      Int16 |  128 |   419.30 ns |  1.066 ns |  0.945 ns |  0.30 |    0.00 |
-|        BinaryPrimitives | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |      Int16 |  128 |   333.80 ns |  0.784 ns |  0.734 ns |  0.24 |    0.00 |
-|                         |            |                      |           |            |      |             |           |           |       |         |
-|       &#39;Slice &amp; Reverse&#39; | Job-AYIXQQ |             .NET 6.0 |    net6.0 |      Int32 |  128 |   363.55 ns |  1.371 ns |  1.216 ns |  0.25 |    0.00 |
-| ReverseEndiannessHelper | Job-AYIXQQ |             .NET 6.0 |    net6.0 |      Int32 |  128 |   192.00 ns |  0.604 ns |  0.504 ns |  0.13 |    0.00 |
-|        BinaryPrimitives | Job-AYIXQQ |             .NET 6.0 |    net6.0 |      Int32 |  128 |    64.13 ns |  0.110 ns |  0.092 ns |  0.04 |    0.00 |
-|       &#39;Slice &amp; Reverse&#39; | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |      Int32 |  128 | 1,444.16 ns |  2.087 ns |  1.743 ns |  1.00 |    0.00 |
-| ReverseEndiannessHelper | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |      Int32 |  128 |   387.07 ns |  1.049 ns |  0.982 ns |  0.27 |    0.00 |
-|        BinaryPrimitives | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |      Int32 |  128 |   340.56 ns |  0.728 ns |  0.681 ns |  0.24 |    0.00 |
-|                         |            |                      |           |            |      |             |           |           |       |         |
-|       &#39;Slice &amp; Reverse&#39; | Job-AYIXQQ |             .NET 6.0 |    net6.0 |      Int64 |  128 |   466.13 ns |  0.450 ns |  0.351 ns |  0.29 |    0.00 |
-| ReverseEndiannessHelper | Job-AYIXQQ |             .NET 6.0 |    net6.0 |      Int64 |  128 |   192.63 ns |  0.582 ns |  0.545 ns |  0.12 |    0.00 |
-|        BinaryPrimitives | Job-AYIXQQ |             .NET 6.0 |    net6.0 |      Int64 |  128 |    65.62 ns |  1.306 ns |  1.398 ns |  0.04 |    0.00 |
-|       &#39;Slice &amp; Reverse&#39; | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |      Int64 |  128 | 1,592.46 ns |  8.456 ns |  7.910 ns |  1.00 |    0.00 |
-| ReverseEndiannessHelper | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |      Int64 |  128 |   401.84 ns |  0.512 ns |  0.454 ns |  0.25 |    0.00 |
-|        BinaryPrimitives | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |      Int64 |  128 |   373.88 ns |  1.273 ns |  1.191 ns |  0.23 |    0.00 |
-|                         |            |                      |           |            |      |             |           |           |       |         |
-|       &#39;Slice &amp; Reverse&#39; | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     Single |  128 |   363.47 ns |  1.293 ns |  1.209 ns |  0.25 |    0.00 |
-| ReverseEndiannessHelper | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     Single |  128 |   225.70 ns |  0.439 ns |  0.366 ns |  0.16 |    0.00 |
-|        BinaryPrimitives | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     Single |  128 |    76.92 ns |  1.297 ns |  1.214 ns |  0.05 |    0.00 |
-|       &#39;Slice &amp; Reverse&#39; | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     Single |  128 | 1,445.38 ns |  4.663 ns |  4.362 ns |  1.00 |    0.00 |
-| ReverseEndiannessHelper | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     Single |  128 | 2,535.72 ns |  8.162 ns |  7.235 ns |  1.75 |    0.01 |
-|        BinaryPrimitives | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     Single |  128 | 2,492.97 ns |  7.282 ns |  6.812 ns |  1.72 |    0.01 |
-|                         |            |                      |           |            |      |             |           |           |       |         |
-|       &#39;Slice &amp; Reverse&#39; | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     Double |  128 |   468.71 ns |  0.974 ns |  0.813 ns |  0.30 |    0.00 |
-| ReverseEndiannessHelper | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     Double |  128 |   225.17 ns |  0.562 ns |  0.469 ns |  0.15 |    0.00 |
-|       &#39;Slice &amp; Reverse&#39; | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     Double |  128 | 1,549.11 ns | 11.902 ns | 11.133 ns |  1.00 |    0.00 |
-| ReverseEndiannessHelper | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     Double |  128 | 2,780.14 ns | 22.747 ns | 20.165 ns |  1.80 |    0.02 |
-|                         |            |                      |           |            |      |             |           |           |       |         |
-|        BinaryPrimitives | Job-AYIXQQ |             .NET 6.0 |    net6.0 |     Doulbe |  128 |    76.46 ns |  0.237 ns |  0.210 ns |     ? |       ? |
-|        BinaryPrimitives | Job-IPVSTG | .NET Framework 4.7.2 |    net472 |     Doulbe |  128 | 2,752.18 ns | 14.237 ns | 12.621 ns |     ? |       ? |
+|                   Method |        Job |              Runtime | Toolchain | Categories | Size |        Mean |    Error |   StdDev | Ratio | RatioSD |
+|------------------------- |----------- |--------------------- |---------- |----------- |----- |------------:|---------:|---------:|------:|--------:|
+|        &#39;Slice &amp; Reverse&#39; | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt16 |  128 |   286.83 ns | 1.156 ns | 1.081 ns |  0.21 |    0.00 |
+|  ReverseEndiannessHelper | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt16 |  128 |   221.85 ns | 0.695 ns | 0.542 ns |  0.16 |    0.00 |
+|         BinaryPrimitives | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt16 |  128 |    64.03 ns | 0.226 ns | 0.212 ns |  0.05 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt16 |  128 |    50.33 ns | 0.233 ns | 0.194 ns |  0.04 |    0.00 |
+|        &#39;Slice &amp; Reverse&#39; | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt16 |  128 | 1,374.92 ns | 3.036 ns | 2.840 ns |  1.00 |    0.00 |
+|  ReverseEndiannessHelper | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt16 |  128 |   234.56 ns | 0.577 ns | 0.511 ns |  0.17 |    0.00 |
+|         BinaryPrimitives | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt16 |  128 |   335.61 ns | 2.381 ns | 2.110 ns |  0.24 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt16 |  128 |    90.85 ns | 0.391 ns | 0.366 ns |  0.07 |    0.00 |
+|                          |            |                      |           |            |      |             |          |          |       |         |
+|        &#39;Slice &amp; Reverse&#39; | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt32 |  128 |   362.88 ns | 0.998 ns | 0.885 ns |  0.26 |    0.00 |
+|  ReverseEndiannessHelper | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt32 |  128 |   221.46 ns | 0.907 ns | 0.757 ns |  0.16 |    0.00 |
+|         BinaryPrimitives | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt32 |  128 |    64.61 ns | 0.249 ns | 0.233 ns |  0.05 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt32 |  128 |    51.54 ns | 0.229 ns | 0.215 ns |  0.04 |    0.00 |
+|        &#39;Slice &amp; Reverse&#39; | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt32 |  128 | 1,419.11 ns | 3.401 ns | 3.181 ns |  1.00 |    0.00 |
+|  ReverseEndiannessHelper | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt32 |  128 |   204.16 ns | 0.586 ns | 0.519 ns |  0.14 |    0.00 |
+|         BinaryPrimitives | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt32 |  128 |   267.08 ns | 2.728 ns | 2.552 ns |  0.19 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt32 |  128 |   113.27 ns | 0.427 ns | 0.399 ns |  0.08 |    0.00 |
+|                          |            |                      |           |            |      |             |          |          |       |         |
+|        &#39;Slice &amp; Reverse&#39; | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt64 |  128 |   465.56 ns | 1.459 ns | 1.364 ns |  0.30 |    0.00 |
+|  ReverseEndiannessHelper | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt64 |  128 |   192.61 ns | 0.765 ns | 0.715 ns |  0.12 |    0.00 |
+|         BinaryPrimitives | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt64 |  128 |    64.35 ns | 0.290 ns | 0.271 ns |  0.04 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-CDNPOR |             .NET 6.0 |    net6.0 |     UInt64 |  128 |    51.36 ns | 0.130 ns | 0.109 ns |  0.03 |    0.00 |
+|        &#39;Slice &amp; Reverse&#39; | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt64 |  128 | 1,566.86 ns | 5.420 ns | 5.070 ns |  1.00 |    0.00 |
+|  ReverseEndiannessHelper | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt64 |  128 |   239.08 ns | 0.963 ns | 0.804 ns |  0.15 |    0.00 |
+|         BinaryPrimitives | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt64 |  128 |   370.10 ns | 1.172 ns | 1.096 ns |  0.24 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     UInt64 |  128 |   174.59 ns | 0.760 ns | 0.710 ns |  0.11 |    0.00 |
+|                          |            |                      |           |            |      |             |          |          |       |         |
+|        &#39;Slice &amp; Reverse&#39; | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int16 |  128 |   286.93 ns | 1.928 ns | 1.804 ns |  0.21 |    0.00 |
+|  ReverseEndiannessHelper | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int16 |  128 |   193.51 ns | 0.938 ns | 0.877 ns |  0.14 |    0.00 |
+|         BinaryPrimitives | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int16 |  128 |    64.60 ns | 0.236 ns | 0.220 ns |  0.05 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int16 |  128 |    70.17 ns | 0.321 ns | 0.300 ns |  0.05 |    0.00 |
+|        &#39;Slice &amp; Reverse&#39; | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int16 |  128 | 1,366.95 ns | 2.903 ns | 2.573 ns |  1.00 |    0.00 |
+|  ReverseEndiannessHelper | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int16 |  128 |   235.75 ns | 0.827 ns | 0.774 ns |  0.17 |    0.00 |
+|         BinaryPrimitives | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int16 |  128 |   335.59 ns | 1.437 ns | 1.200 ns |  0.25 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int16 |  128 |   114.14 ns | 0.571 ns | 0.534 ns |  0.08 |    0.00 |
+|                          |            |                      |           |            |      |             |          |          |       |         |
+|        &#39;Slice &amp; Reverse&#39; | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int32 |  128 |   362.11 ns | 0.946 ns | 0.885 ns |  0.25 |    0.00 |
+|  ReverseEndiannessHelper | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int32 |  128 |   191.75 ns | 0.621 ns | 0.580 ns |  0.13 |    0.00 |
+|         BinaryPrimitives | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int32 |  128 |    64.18 ns | 0.226 ns | 0.211 ns |  0.04 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int32 |  128 |    51.43 ns | 0.207 ns | 0.194 ns |  0.04 |    0.00 |
+|        &#39;Slice &amp; Reverse&#39; | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int32 |  128 | 1,447.03 ns | 2.903 ns | 2.573 ns |  1.00 |    0.00 |
+|  ReverseEndiannessHelper | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int32 |  128 |   203.93 ns | 0.878 ns | 0.822 ns |  0.14 |    0.00 |
+|         BinaryPrimitives | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int32 |  128 |   334.76 ns | 1.690 ns | 1.581 ns |  0.23 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int32 |  128 |    98.63 ns | 0.404 ns | 0.378 ns |  0.07 |    0.00 |
+|                          |            |                      |           |            |      |             |          |          |       |         |
+|        &#39;Slice &amp; Reverse&#39; | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int64 |  128 |   466.17 ns | 1.671 ns | 1.482 ns |  0.30 |    0.00 |
+|  ReverseEndiannessHelper | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int64 |  128 |   191.43 ns | 0.554 ns | 0.518 ns |  0.12 |    0.00 |
+|         BinaryPrimitives | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int64 |  128 |    64.05 ns | 0.198 ns | 0.165 ns |  0.04 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-CDNPOR |             .NET 6.0 |    net6.0 |      Int64 |  128 |    51.54 ns | 0.259 ns | 0.242 ns |  0.03 |    0.00 |
+|        &#39;Slice &amp; Reverse&#39; | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int64 |  128 | 1,561.10 ns | 5.512 ns | 5.156 ns |  1.00 |    0.00 |
+|  ReverseEndiannessHelper | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int64 |  128 |   238.05 ns | 0.855 ns | 0.799 ns |  0.15 |    0.00 |
+|         BinaryPrimitives | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int64 |  128 |   370.90 ns | 1.344 ns | 1.257 ns |  0.24 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |      Int64 |  128 |   173.74 ns | 0.731 ns | 0.684 ns |  0.11 |    0.00 |
+|                          |            |                      |           |            |      |             |          |          |       |         |
+|        &#39;Slice &amp; Reverse&#39; | Job-CDNPOR |             .NET 6.0 |    net6.0 |     Single |  128 |   362.86 ns | 1.024 ns | 0.908 ns |  0.26 |    0.00 |
+|  ReverseEndiannessHelper | Job-CDNPOR |             .NET 6.0 |    net6.0 |     Single |  128 |   223.18 ns | 0.787 ns | 0.736 ns |  0.16 |    0.00 |
+|         BinaryPrimitives | Job-CDNPOR |             .NET 6.0 |    net6.0 |     Single |  128 |    76.06 ns | 0.323 ns | 0.286 ns |  0.05 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-CDNPOR |             .NET 6.0 |    net6.0 |     Single |  128 |    59.76 ns | 0.252 ns | 0.236 ns |  0.04 |    0.00 |
+|        &#39;Slice &amp; Reverse&#39; | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     Single |  128 | 1,417.58 ns | 3.655 ns | 3.419 ns |  1.00 |    0.00 |
+|  ReverseEndiannessHelper | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     Single |  128 | 1,091.53 ns | 2.139 ns | 2.000 ns |  0.77 |    0.00 |
+|         BinaryPrimitives | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     Single |  128 |   422.59 ns | 1.046 ns | 0.978 ns |  0.30 |    0.00 |
+| BinaryPrimitives(Unsafe) | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     Single |  128 |   222.99 ns | 0.633 ns | 0.561 ns |  0.16 |    0.00 |
+|                          |            |                      |           |            |      |             |          |          |       |         |
+|        &#39;Slice &amp; Reverse&#39; | Job-CDNPOR |             .NET 6.0 |    net6.0 |     Double |  128 |   464.35 ns | 1.720 ns | 1.609 ns |  0.30 |    0.00 |
+|  ReverseEndiannessHelper | Job-CDNPOR |             .NET 6.0 |    net6.0 |     Double |  128 |   193.84 ns | 1.102 ns | 1.030 ns |  0.12 |    0.00 |
+|        &#39;Slice &amp; Reverse&#39; | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     Double |  128 | 1,565.42 ns | 3.130 ns | 2.928 ns |  1.00 |    0.00 |
+|  ReverseEndiannessHelper | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     Double |  128 | 1,239.22 ns | 3.673 ns | 3.256 ns |  0.79 |    0.00 |
+|                          |            |                      |           |            |      |             |          |          |       |         |
+|         BinaryPrimitives | Job-CDNPOR |             .NET 6.0 |    net6.0 |     Doulbe |  128 |    75.81 ns | 0.310 ns | 0.275 ns |     ? |       ? |
+| BinaryPrimitives(Unsafe) | Job-CDNPOR |             .NET 6.0 |    net6.0 |     Doulbe |  128 |    60.66 ns | 0.324 ns | 0.303 ns |     ? |       ? |
+|         BinaryPrimitives | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     Doulbe |  128 |   456.94 ns | 0.955 ns | 0.893 ns |     ? |       ? |
+| BinaryPrimitives(Unsafe) | Job-ONIXFO | .NET Framework 4.7.2 |    net472 |     Doulbe |  128 |   297.84 ns | 0.990 ns | 0.926 ns |     ? |       ? |

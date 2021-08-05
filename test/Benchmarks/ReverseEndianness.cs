@@ -2,12 +2,13 @@
 using BenchmarkDotNet.Configs;
 using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using Secs4Net;
 using Secs4Net.Extensions;
 using Secs4Netb.Benchmark;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Benchmarks
 {
@@ -78,15 +79,18 @@ namespace Benchmarks
 
         [Benchmark(Description = "ReverseEndiannessHelper")]
         [BenchmarkCategory("UInt16")]
-        public unsafe int UInt16_ReverseEndianness()
+        public unsafe int UInt16_ReverseEndiannessHelper()
         {
             var data = _uint16.Memory.Span;
 
-            for (int i = 0; i < data.Length; i++)
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
             {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<ushort>.Reverse(value);
+                rStart = ReverseEndiannessHelper<ushort>.Reverse(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -106,6 +110,23 @@ namespace Benchmarks
             return data.Length;
         }
 
+        [Benchmark(Description = "BinaryPrimitives(Unsafe)")]
+        [BenchmarkCategory("UInt16")]
+        public int UInt16_BinaryPrimitives_Unsafe_Iterator()
+        {
+            var data = _uint16.Memory.Span;
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
+            {
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
+            }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
+
+            return data.Length;
+        }
+
         [Benchmark(Description = "Slice & Reverse", Baseline = true)]
         [BenchmarkCategory("UInt32")]
         public int UInt32_SliceAndReverse()
@@ -120,15 +141,18 @@ namespace Benchmarks
 
         [Benchmark(Description = "ReverseEndiannessHelper")]
         [BenchmarkCategory("UInt32")]
-        public unsafe int UInt32_ReverseEndianness()
+        public unsafe int UInt32_ReverseEndiannessHelper()
         {
             var data = _uint32.Memory.Span;
 
-            for (int i = 0; i < data.Length; i++)
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
             {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<uint>.Reverse(value);
+                rStart = ReverseEndiannessHelper<uint>.Reverse(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -148,6 +172,23 @@ namespace Benchmarks
             return data.Length;
         }
 
+        [Benchmark(Description = "BinaryPrimitives(Unsafe)")]
+        [BenchmarkCategory("UInt32")]
+        public int UInt32_BinaryPrimitives_Unsafe_Iterator()
+        {
+            var data = _uint32.Memory.Span;
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
+            {
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
+            }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
+
+            return data.Length;
+        }
+
         [Benchmark(Description = "Slice & Reverse", Baseline = true)]
         [BenchmarkCategory("UInt64")]
         public int UInt64_SliceAndReverse()
@@ -162,15 +203,18 @@ namespace Benchmarks
 
         [Benchmark(Description = "ReverseEndiannessHelper")]
         [BenchmarkCategory("UInt64")]
-        public unsafe int UInt64_ReverseEndianness()
+        public unsafe int UInt64_ReverseEndiannessHelper()
         {
             var data = _uint64.Memory.Span;
 
-            for (int i = 0; i < data.Length; i++)
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
             {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<ulong>.Reverse(value);
+                rStart = ReverseEndiannessHelper<ulong>.Reverse(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -190,6 +234,23 @@ namespace Benchmarks
             return data.Length;
         }
 
+        [Benchmark(Description = "BinaryPrimitives(Unsafe)")]
+        [BenchmarkCategory("UInt64")]
+        public int UInt64_BinaryPrimitives_Unsafe_Iterator()
+        {
+            var data = _uint64.Memory.Span;
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
+            {
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
+            }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
+
+            return data.Length;
+        }
+
         [Benchmark(Description = "Slice & Reverse", Baseline = true)]
         [BenchmarkCategory("Int16")]
         public int Int16_SliceAndReverse()
@@ -204,15 +265,18 @@ namespace Benchmarks
 
         [Benchmark(Description = "ReverseEndiannessHelper")]
         [BenchmarkCategory("Int16")]
-        public unsafe int Int16_ReverseEndianness()
+        public unsafe int Int16_ReverseEndiannessHelper()
         {
             var data = _int16.Memory.Span;
 
-            for (int i = 0; i < data.Length; i++)
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
             {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<short>.Reverse(value);
+                rStart = ReverseEndiannessHelper<short>.Reverse(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -232,6 +296,23 @@ namespace Benchmarks
             return data.Length;
         }
 
+        [Benchmark(Description = "BinaryPrimitives(Unsafe)")]
+        [BenchmarkCategory("Int16")]
+        public int Int16_BinaryPrimitives_Unsafe_Iterator()
+        {
+            var data = _int16.Memory.Span;
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
+            {
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
+            }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
+
+            return data.Length;
+        }
+
         [Benchmark(Description = "Slice & Reverse", Baseline = true)]
         [BenchmarkCategory("Int32")]
         public int Int32_SliceAndReverse()
@@ -246,15 +327,18 @@ namespace Benchmarks
 
         [Benchmark(Description = "ReverseEndiannessHelper")]
         [BenchmarkCategory("Int32")]
-        public unsafe int Int32_ReverseEndianness()
+        public unsafe int Int32_ReverseEndiannessHelper()
         {
             var data = _int32.Memory.Span;
 
-            for (int i = 0; i < data.Length; i++)
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
             {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<int>.Reverse(value);
+                rStart = ReverseEndiannessHelper<int>.Reverse(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -274,6 +358,23 @@ namespace Benchmarks
             return data.Length;
         }
 
+        [Benchmark(Description = "BinaryPrimitives(Unsafe)")]
+        [BenchmarkCategory("Int32")]
+        public int Int32_BinaryPrimitives_Unsafe_Iterator()
+        {
+            var data = _int32.Memory.Span;
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
+            {
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
+            }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
+
+            return data.Length;
+        }
+
         [Benchmark(Description = "Slice & Reverse", Baseline = true)]
         [BenchmarkCategory("Int64")]
         public int Int64_SliceAndReverse()
@@ -288,15 +389,18 @@ namespace Benchmarks
 
         [Benchmark(Description = "ReverseEndiannessHelper")]
         [BenchmarkCategory("Int64")]
-        public unsafe int Int64_ReverseEndianness()
+        public unsafe int Int64_ReverseEndiannessHelper()
         {
             var data = _int64.Memory.Span;
 
-            for (int i = 0; i < data.Length; i++)
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
             {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<long>.Reverse(value);
+                rStart = ReverseEndiannessHelper<long>.Reverse(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -316,7 +420,23 @@ namespace Benchmarks
             return data.Length;
         }
 
-#if NET
+        [Benchmark(Description = "BinaryPrimitives(Unsafe)")]
+        [BenchmarkCategory("Int64")]
+        public int Int64_BinaryPrimitives_Unsafe_Iterator()
+        {
+            var data = _int64.Memory.Span;
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
+            {
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
+            }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
+
+            return data.Length;
+        }
+
         [Benchmark(Description = "Slice & Reverse", Baseline = true)]
         [BenchmarkCategory("Single")]
         public int Single_SliceAndReverse()
@@ -331,15 +451,18 @@ namespace Benchmarks
 
         [Benchmark(Description = "ReverseEndiannessHelper")]
         [BenchmarkCategory("Single")]
-        public unsafe int Single_ReverseEndianness()
+        public unsafe int Single_ReverseEndiannessHelper()
         {
             var data = _single.Memory.Span;
 
-            for (int i = 0; i < data.Length; i++)
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
             {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<float>.Reverse(value);
+                rStart = ReverseEndiannessHelper<float>.Reverse(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -353,8 +476,33 @@ namespace Benchmarks
             for (int i = 0; i < data.Length; i++)
             {
                 ref var value = ref data.DangerousGetReferenceAt(i);
+#if NET
                 value = BinaryPrimitives.ReadSingleBigEndian(value.AsBytes());
+#else
+                value = SecsExtension.ReadSingleBigEndian(value.AsBytes());
+#endif 
             }
+
+            return data.Length;
+        }
+
+        [Benchmark(Description = "BinaryPrimitives(Unsafe)")]
+        [BenchmarkCategory("Single")]
+        public int Single_BinaryPrimitives_Unsafe_Iterator()
+        {
+            var data = _single.Memory.Span;
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
+            {
+#if NET
+                rStart = BinaryPrimitives.ReadSingleBigEndian(rStart.AsBytes());
+#else
+                rStart = SecsExtension.ReadSingleBigEndian(rStart.AsBytes());
+#endif
+                rStart = ref Unsafe.Add(ref rStart, 1);
+            }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -373,15 +521,18 @@ namespace Benchmarks
 
         [Benchmark(Description = "ReverseEndiannessHelper")]
         [BenchmarkCategory("Double")]
-        public unsafe int Double_ReverseEndianness()
+        public unsafe int Double_ReverseEndiannessHelper()
         {
             var data = _double.Memory.Span;
 
-            for (int i = 0; i < data.Length; i++)
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
             {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<double>.Reverse(value);
+                rStart = ReverseEndiannessHelper<double>.Reverse(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -395,100 +546,35 @@ namespace Benchmarks
             for (int i = 0; i < data.Length; i++)
             {
                 ref var value = ref data.DangerousGetReferenceAt(i);
+#if NET
                 value = BinaryPrimitives.ReadDoubleBigEndian(value.AsBytes());
-            }
-
-            return data.Length;
-        }
 #else
-        [Benchmark(Description = "Slice & Reverse", Baseline = true)]
-        [BenchmarkCategory("Single")]
-        public int Single_SliceAndReverse()
-        {
-            var data = _single.Memory.Span.AsBytes();
-
-            for (int i = 0; i < data.Length; i += sizeof(float))
-            {
-                data.Slice(i, sizeof(float)).Reverse();
-            }
-
-            return data.Length;
-        }
-
-        [Benchmark(Description = "ReverseEndiannessHelper")]
-        [BenchmarkCategory("Single")]
-        public unsafe int Single_ReverseEndianness()
-        {
-            var data = _single.Memory.Span;
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<float>.Reverse(value);
-            }
-
-            return data.Length;
-        }
-
-
-        [Benchmark(Description = "BinaryPrimitives")]
-        [BenchmarkCategory("Single")]
-        public unsafe int Single_BinaryPrimitives()
-        {
-            var data = _single.Memory.Span;
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<float>.Reverse(value);
-            }
-
-            return data.Length;
-        }
-
-        [Benchmark(Description = "Slice & Reverse", Baseline = true)]
-        [BenchmarkCategory("Double")]
-        public int Double_SliceAndReverse()
-        {
-            var data = _double.Memory.Span.AsBytes();
-
-            for (int i = 0; i < data.Length; i += sizeof(double))
-            {
-                data.Slice(i, sizeof(double)).Reverse();
-            }
-
-            return data.Length;
-        }
-
-        [Benchmark(Description = "ReverseEndiannessHelper")]
-        [BenchmarkCategory("Double")]
-        public unsafe int Double_ReverseEndianness()
-        {
-            var data = _double.Memory.Span;
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<double>.Reverse(value);
-            }
-
-            return data.Length;
-        }
-
-        [Benchmark(Description = "BinaryPrimitives")]
-        [BenchmarkCategory("Doulbe")]
-        public unsafe int Double_BinaryPrimitives()
-        {
-            var data = _double.Memory.Span;
-
-            for (int i = 0; i < data.Length; i++)
-            {
-                ref var value = ref data.DangerousGetReferenceAt(i);
-                value = ReverseEndiannessHelper<double>.Reverse(value);
-            }
-
-            return data.Length;
-        }
+                value = SecsExtension.ReadDoubleBigEndian(value.AsBytes());
 #endif
+            }
+
+            return data.Length;
+        }
+
+        [Benchmark(Description = "BinaryPrimitives(Unsafe)")]
+        [BenchmarkCategory("Doulbe")]
+        public int Double_BinaryPrimitives_Unsafe_Iterator()
+        {
+            var data = _double.Memory.Span;
+            ref var rStart = ref data.DangerousGetReferenceAt(0);
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
+            do
+            {
+#if NET
+                rStart = BinaryPrimitives.ReadDoubleBigEndian(rStart.AsBytes());
+#else
+                rStart = SecsExtension.ReadDoubleBigEndian(rStart.AsBytes());
+#endif
+                rStart = ref Unsafe.Add(ref rStart, 1);
+            }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
+
+            return data.Length;
+        }
     }
 }

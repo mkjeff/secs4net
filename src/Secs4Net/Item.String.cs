@@ -35,8 +35,10 @@ namespace Secs4Net
                 var bytelength = encoder.GetByteCount(_value);
                 EncodeItemHeader(Format, bytelength, buffer);
                 var length = encoder.GetBytes(_value, buffer.GetSpan(bytelength));
-                Debug.Assert(length == bytelength);
                 buffer.Advance(bytelength);
+#if DEBUG
+                Debug.Assert(length == bytelength);
+#endif
             }
 
             private protected sealed override bool IsEquals(Item other)

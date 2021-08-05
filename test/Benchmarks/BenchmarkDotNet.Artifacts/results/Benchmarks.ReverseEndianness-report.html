@@ -2,7 +2,7 @@
 <html lang='en'>
 <head>
 <meta charset='utf-8' />
-<title>Benchmarks.ReverseEndianness-20210805-132312</title>
+<title>Benchmarks.ReverseEndianness-20210805-200741</title>
 
 <style type="text/css">
 	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
@@ -17,62 +17,78 @@ BenchmarkDotNet=v0.13.0, OS=Windows 10.0.19043.1151 (21H1/May2021Update)
 AMD Ryzen 7 3700X, 1 CPU, 16 logical and 8 physical cores
 .NET SDK=6.0.100-preview.6.21355.2
   [Host]     : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
-  Job-AYIXQQ : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
-  Job-IPVSTG : .NET Framework 4.8 (4.8.4400.0), X64 RyuJIT
+  Job-CDNPOR : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
+  Job-ONIXFO : .NET Framework 4.8 (4.8.4400.0), X64 RyuJIT
 </code></pre>
 <pre><code></code></pre>
 
 <table>
-<thead><tr><th>           Method</th><th> Job</th><th>       Runtime</th><th>Toolchain</th><th>Categories</th><th>Size</th><th> Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th>
+<thead><tr><th>            Method</th><th> Job</th><th>       Runtime</th><th>Toolchain</th><th>Categories</th><th>Size</th><th> Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th>
 </tr>
-</thead><tbody><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>UInt16</td><td>128</td><td>287.53 ns</td><td>1.159 ns</td><td>1.027 ns</td><td>0.21</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>UInt16</td><td>128</td><td>225.31 ns</td><td>1.553 ns</td><td>1.453 ns</td><td>0.16</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>UInt16</td><td>128</td><td>64.17 ns</td><td>0.271 ns</td><td>0.253 ns</td><td>0.05</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt16</td><td>128</td><td>1,392.98 ns</td><td>3.765 ns</td><td>3.144 ns</td><td>1.00</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt16</td><td>128</td><td>476.74 ns</td><td>0.741 ns</td><td>0.657 ns</td><td>0.34</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt16</td><td>128</td><td>335.24 ns</td><td>1.302 ns</td><td>1.154 ns</td><td>0.24</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>UInt32</td><td>128</td><td>365.72 ns</td><td>0.499 ns</td><td>0.442 ns</td><td>0.25</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>UInt32</td><td>128</td><td>224.40 ns</td><td>0.532 ns</td><td>0.497 ns</td><td>0.15</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>UInt32</td><td>128</td><td>64.36 ns</td><td>0.233 ns</td><td>0.206 ns</td><td>0.04</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt32</td><td>128</td><td>1,451.79 ns</td><td>1.657 ns</td><td>1.384 ns</td><td>1.00</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt32</td><td>128</td><td>387.84 ns</td><td>1.178 ns</td><td>1.102 ns</td><td>0.27</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt32</td><td>128</td><td>341.11 ns</td><td>0.561 ns</td><td>0.525 ns</td><td>0.23</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>UInt64</td><td>128</td><td>463.08 ns</td><td>1.395 ns</td><td>1.237 ns</td><td>0.30</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>UInt64</td><td>128</td><td>224.88 ns</td><td>0.990 ns</td><td>0.926 ns</td><td>0.15</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>UInt64</td><td>128</td><td>64.25 ns</td><td>0.103 ns</td><td>0.091 ns</td><td>0.04</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt64</td><td>128</td><td>1,546.06 ns</td><td>6.312 ns</td><td>5.905 ns</td><td>1.00</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt64</td><td>128</td><td>403.69 ns</td><td>1.129 ns</td><td>1.056 ns</td><td>0.26</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt64</td><td>128</td><td>368.17 ns</td><td>0.551 ns</td><td>0.515 ns</td><td>0.24</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Int16</td><td>128</td><td>286.60 ns</td><td>0.591 ns</td><td>0.524 ns</td><td>0.20</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Int16</td><td>128</td><td>223.53 ns</td><td>0.353 ns</td><td>0.276 ns</td><td>0.16</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Int16</td><td>128</td><td>64.54 ns</td><td>0.199 ns</td><td>0.166 ns</td><td>0.05</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int16</td><td>128</td><td>1,398.91 ns</td><td>7.002 ns</td><td>6.550 ns</td><td>1.00</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int16</td><td>128</td><td>419.30 ns</td><td>1.066 ns</td><td>0.945 ns</td><td>0.30</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int16</td><td>128</td><td>333.80 ns</td><td>0.784 ns</td><td>0.734 ns</td><td>0.24</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Int32</td><td>128</td><td>363.55 ns</td><td>1.371 ns</td><td>1.216 ns</td><td>0.25</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Int32</td><td>128</td><td>192.00 ns</td><td>0.604 ns</td><td>0.504 ns</td><td>0.13</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Int32</td><td>128</td><td>64.13 ns</td><td>0.110 ns</td><td>0.092 ns</td><td>0.04</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int32</td><td>128</td><td>1,444.16 ns</td><td>2.087 ns</td><td>1.743 ns</td><td>1.00</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int32</td><td>128</td><td>387.07 ns</td><td>1.049 ns</td><td>0.982 ns</td><td>0.27</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int32</td><td>128</td><td>340.56 ns</td><td>0.728 ns</td><td>0.681 ns</td><td>0.24</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Int64</td><td>128</td><td>466.13 ns</td><td>0.450 ns</td><td>0.351 ns</td><td>0.29</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Int64</td><td>128</td><td>192.63 ns</td><td>0.582 ns</td><td>0.545 ns</td><td>0.12</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Int64</td><td>128</td><td>65.62 ns</td><td>1.306 ns</td><td>1.398 ns</td><td>0.04</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int64</td><td>128</td><td>1,592.46 ns</td><td>8.456 ns</td><td>7.910 ns</td><td>1.00</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int64</td><td>128</td><td>401.84 ns</td><td>0.512 ns</td><td>0.454 ns</td><td>0.25</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int64</td><td>128</td><td>373.88 ns</td><td>1.273 ns</td><td>1.191 ns</td><td>0.23</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Single</td><td>128</td><td>363.47 ns</td><td>1.293 ns</td><td>1.209 ns</td><td>0.25</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Single</td><td>128</td><td>225.70 ns</td><td>0.439 ns</td><td>0.366 ns</td><td>0.16</td><td>0.00</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Single</td><td>128</td><td>76.92 ns</td><td>1.297 ns</td><td>1.214 ns</td><td>0.05</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Single</td><td>128</td><td>1,445.38 ns</td><td>4.663 ns</td><td>4.362 ns</td><td>1.00</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Single</td><td>128</td><td>2,535.72 ns</td><td>8.162 ns</td><td>7.235 ns</td><td>1.75</td><td>0.01</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Single</td><td>128</td><td>2,492.97 ns</td><td>7.282 ns</td><td>6.812 ns</td><td>1.72</td><td>0.01</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Double</td><td>128</td><td>468.71 ns</td><td>0.974 ns</td><td>0.813 ns</td><td>0.30</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Double</td><td>128</td><td>225.17 ns</td><td>0.562 ns</td><td>0.469 ns</td><td>0.15</td><td>0.00</td>
-</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Double</td><td>128</td><td>1,549.11 ns</td><td>11.902 ns</td><td>11.133 ns</td><td>1.00</td><td>0.00</td>
-</tr><tr><td>ReverseEndiannessHelper</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Double</td><td>128</td><td>2,780.14 ns</td><td>22.747 ns</td><td>20.165 ns</td><td>1.80</td><td>0.02</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-AYIXQQ</td><td>.NET 6.0</td><td>net6.0</td><td>Doulbe</td><td>128</td><td>76.46 ns</td><td>0.237 ns</td><td>0.210 ns</td><td>?</td><td>?</td>
-</tr><tr><td>BinaryPrimitives</td><td>Job-IPVSTG</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Doulbe</td><td>128</td><td>2,752.18 ns</td><td>14.237 ns</td><td>12.621 ns</td><td>?</td><td>?</td>
+</thead><tbody><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt16</td><td>128</td><td>286.83 ns</td><td>1.156 ns</td><td>1.081 ns</td><td>0.21</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt16</td><td>128</td><td>221.85 ns</td><td>0.695 ns</td><td>0.542 ns</td><td>0.16</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt16</td><td>128</td><td>64.03 ns</td><td>0.226 ns</td><td>0.212 ns</td><td>0.05</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt16</td><td>128</td><td>50.33 ns</td><td>0.233 ns</td><td>0.194 ns</td><td>0.04</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt16</td><td>128</td><td>1,374.92 ns</td><td>3.036 ns</td><td>2.840 ns</td><td>1.00</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt16</td><td>128</td><td>234.56 ns</td><td>0.577 ns</td><td>0.511 ns</td><td>0.17</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt16</td><td>128</td><td>335.61 ns</td><td>2.381 ns</td><td>2.110 ns</td><td>0.24</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt16</td><td>128</td><td>90.85 ns</td><td>0.391 ns</td><td>0.366 ns</td><td>0.07</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt32</td><td>128</td><td>362.88 ns</td><td>0.998 ns</td><td>0.885 ns</td><td>0.26</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt32</td><td>128</td><td>221.46 ns</td><td>0.907 ns</td><td>0.757 ns</td><td>0.16</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt32</td><td>128</td><td>64.61 ns</td><td>0.249 ns</td><td>0.233 ns</td><td>0.05</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt32</td><td>128</td><td>51.54 ns</td><td>0.229 ns</td><td>0.215 ns</td><td>0.04</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt32</td><td>128</td><td>1,419.11 ns</td><td>3.401 ns</td><td>3.181 ns</td><td>1.00</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt32</td><td>128</td><td>204.16 ns</td><td>0.586 ns</td><td>0.519 ns</td><td>0.14</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt32</td><td>128</td><td>267.08 ns</td><td>2.728 ns</td><td>2.552 ns</td><td>0.19</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt32</td><td>128</td><td>113.27 ns</td><td>0.427 ns</td><td>0.399 ns</td><td>0.08</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt64</td><td>128</td><td>465.56 ns</td><td>1.459 ns</td><td>1.364 ns</td><td>0.30</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt64</td><td>128</td><td>192.61 ns</td><td>0.765 ns</td><td>0.715 ns</td><td>0.12</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt64</td><td>128</td><td>64.35 ns</td><td>0.290 ns</td><td>0.271 ns</td><td>0.04</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>UInt64</td><td>128</td><td>51.36 ns</td><td>0.130 ns</td><td>0.109 ns</td><td>0.03</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt64</td><td>128</td><td>1,566.86 ns</td><td>5.420 ns</td><td>5.070 ns</td><td>1.00</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt64</td><td>128</td><td>239.08 ns</td><td>0.963 ns</td><td>0.804 ns</td><td>0.15</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt64</td><td>128</td><td>370.10 ns</td><td>1.172 ns</td><td>1.096 ns</td><td>0.24</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>UInt64</td><td>128</td><td>174.59 ns</td><td>0.760 ns</td><td>0.710 ns</td><td>0.11</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int16</td><td>128</td><td>286.93 ns</td><td>1.928 ns</td><td>1.804 ns</td><td>0.21</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int16</td><td>128</td><td>193.51 ns</td><td>0.938 ns</td><td>0.877 ns</td><td>0.14</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int16</td><td>128</td><td>64.60 ns</td><td>0.236 ns</td><td>0.220 ns</td><td>0.05</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int16</td><td>128</td><td>70.17 ns</td><td>0.321 ns</td><td>0.300 ns</td><td>0.05</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int16</td><td>128</td><td>1,366.95 ns</td><td>2.903 ns</td><td>2.573 ns</td><td>1.00</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int16</td><td>128</td><td>235.75 ns</td><td>0.827 ns</td><td>0.774 ns</td><td>0.17</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int16</td><td>128</td><td>335.59 ns</td><td>1.437 ns</td><td>1.200 ns</td><td>0.25</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int16</td><td>128</td><td>114.14 ns</td><td>0.571 ns</td><td>0.534 ns</td><td>0.08</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int32</td><td>128</td><td>362.11 ns</td><td>0.946 ns</td><td>0.885 ns</td><td>0.25</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int32</td><td>128</td><td>191.75 ns</td><td>0.621 ns</td><td>0.580 ns</td><td>0.13</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int32</td><td>128</td><td>64.18 ns</td><td>0.226 ns</td><td>0.211 ns</td><td>0.04</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int32</td><td>128</td><td>51.43 ns</td><td>0.207 ns</td><td>0.194 ns</td><td>0.04</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int32</td><td>128</td><td>1,447.03 ns</td><td>2.903 ns</td><td>2.573 ns</td><td>1.00</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int32</td><td>128</td><td>203.93 ns</td><td>0.878 ns</td><td>0.822 ns</td><td>0.14</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int32</td><td>128</td><td>334.76 ns</td><td>1.690 ns</td><td>1.581 ns</td><td>0.23</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int32</td><td>128</td><td>98.63 ns</td><td>0.404 ns</td><td>0.378 ns</td><td>0.07</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int64</td><td>128</td><td>466.17 ns</td><td>1.671 ns</td><td>1.482 ns</td><td>0.30</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int64</td><td>128</td><td>191.43 ns</td><td>0.554 ns</td><td>0.518 ns</td><td>0.12</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int64</td><td>128</td><td>64.05 ns</td><td>0.198 ns</td><td>0.165 ns</td><td>0.04</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Int64</td><td>128</td><td>51.54 ns</td><td>0.259 ns</td><td>0.242 ns</td><td>0.03</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int64</td><td>128</td><td>1,561.10 ns</td><td>5.512 ns</td><td>5.156 ns</td><td>1.00</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int64</td><td>128</td><td>238.05 ns</td><td>0.855 ns</td><td>0.799 ns</td><td>0.15</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int64</td><td>128</td><td>370.90 ns</td><td>1.344 ns</td><td>1.257 ns</td><td>0.24</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Int64</td><td>128</td><td>173.74 ns</td><td>0.731 ns</td><td>0.684 ns</td><td>0.11</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Single</td><td>128</td><td>362.86 ns</td><td>1.024 ns</td><td>0.908 ns</td><td>0.26</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Single</td><td>128</td><td>223.18 ns</td><td>0.787 ns</td><td>0.736 ns</td><td>0.16</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Single</td><td>128</td><td>76.06 ns</td><td>0.323 ns</td><td>0.286 ns</td><td>0.05</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Single</td><td>128</td><td>59.76 ns</td><td>0.252 ns</td><td>0.236 ns</td><td>0.04</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Single</td><td>128</td><td>1,417.58 ns</td><td>3.655 ns</td><td>3.419 ns</td><td>1.00</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Single</td><td>128</td><td>1,091.53 ns</td><td>2.139 ns</td><td>2.000 ns</td><td>0.77</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Single</td><td>128</td><td>422.59 ns</td><td>1.046 ns</td><td>0.978 ns</td><td>0.30</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Single</td><td>128</td><td>222.99 ns</td><td>0.633 ns</td><td>0.561 ns</td><td>0.16</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Double</td><td>128</td><td>464.35 ns</td><td>1.720 ns</td><td>1.609 ns</td><td>0.30</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Double</td><td>128</td><td>193.84 ns</td><td>1.102 ns</td><td>1.030 ns</td><td>0.12</td><td>0.00</td>
+</tr><tr><td>&#39;Slice &amp; Reverse&#39;</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Double</td><td>128</td><td>1,565.42 ns</td><td>3.130 ns</td><td>2.928 ns</td><td>1.00</td><td>0.00</td>
+</tr><tr><td>ReverseEndiannessHelper</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Double</td><td>128</td><td>1,239.22 ns</td><td>3.673 ns</td><td>3.256 ns</td><td>0.79</td><td>0.00</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Doulbe</td><td>128</td><td>75.81 ns</td><td>0.310 ns</td><td>0.275 ns</td><td>?</td><td>?</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-CDNPOR</td><td>.NET 6.0</td><td>net6.0</td><td>Doulbe</td><td>128</td><td>60.66 ns</td><td>0.324 ns</td><td>0.303 ns</td><td>?</td><td>?</td>
+</tr><tr><td>BinaryPrimitives</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Doulbe</td><td>128</td><td>456.94 ns</td><td>0.955 ns</td><td>0.893 ns</td><td>?</td><td>?</td>
+</tr><tr><td>BinaryPrimitives(Unsafe)</td><td>Job-ONIXFO</td><td>.NET Framework 4.7.2</td><td>net472</td><td>Doulbe</td><td>128</td><td>297.84 ns</td><td>0.990 ns</td><td>0.926 ns</td><td>?</td><td>?</td>
 </tr></tbody></table>
 </body>
 </html>

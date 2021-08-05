@@ -284,14 +284,16 @@ namespace Secs4Net
             {
                 while (true)
                 {
+#if DEBUG
                     Debug.Assert(_socket != null);
+#endif
 #if NET
                     var memory = decoderInput.GetMemory(_socketReceiveBufferSize);
-                    var count = await _socket.ReceiveAsync(memory, SocketFlags.None, cancellation).ConfigureAwait(false);
+                    var count = await _socket!.ReceiveAsync(memory, SocketFlags.None, cancellation).ConfigureAwait(false);
                     decoderInput.Advance(count);
                     await decoderInput.FlushAsync(cancellation).ConfigureAwait(false);
 #else
-                    var count = await _socket.ReceiveAsync(new ArraySegment<byte>(_socketReceiveBuffer), SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false); ;
+                    var count = await _socket!.ReceiveAsync(new ArraySegment<byte>(_socketReceiveBuffer), SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false); ;
                     await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory().Slice(0, count), cancellation).ConfigureAwait(false);
 #endif
                 }
@@ -438,7 +440,7 @@ namespace Secs4Net
             try
             {
                 var buffer = EncodeControlMessage(msgType, id);
-                await Unsafe.As<ISecsConnection>(this).SendAsync(buffer, cancellation).ConfigureAwait(false);
+                await Unsafe.As<ISecsConnection>(this)!.SendAsync(buffer, cancellation).ConfigureAwait(false);
 
                 _logger.Info("Sent Control Message: " + msgType);
                 if (_replyExpectedMsgs.ContainsKey(id))
@@ -524,8 +526,10 @@ namespace Secs4Net
             {
                 do
                 {
+#if DEBUG
                     Debug.Assert(_socket != null);
-                    var length = await _socket.SendAsync(buffer, SocketFlags.None, cancellation).ConfigureAwait(false);
+#endif
+                    var length = await _socket!.SendAsync(buffer, SocketFlags.None, cancellation).ConfigureAwait(false);
                     //Trace.WriteLine($"Socket sent {length} bytes.");
                     buffer = buffer[length..];
                 } while (!buffer.IsEmpty);
@@ -547,8 +551,10 @@ namespace Secs4Net
             {
                 do
                 {
+#if DEBUG
                     Debug.Assert(_socket != null);
-                    var length = await _socket.SendAsync(arr, SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false);
+#endif
+                    var length = await _socket!.SendAsync(arr, SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false);
                     arr = new ArraySegment<byte>(arr.Array, arr.Offset + length, arr.Count - length);
                     //Trace.WriteLine($"Socket sent {length} bytes.");
                 } while (arr.Count > 0);

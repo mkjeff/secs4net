@@ -3,7 +3,6 @@ using Secs4Net.Extensions;
 using System;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Benchmarks
 {
@@ -24,35 +23,35 @@ namespace Benchmarks
             }
             else if (t == typeof(ushort))
             {
-                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod("ReverseEndianness", new[] { typeof(ushort) })!.MethodHandle.GetFunctionPointer();
+                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod(nameof(BinaryPrimitives.ReverseEndianness), new[] { typeof(ushort) })!.MethodHandle.GetFunctionPointer();
             }
             else if (t == typeof(uint))
             {
-                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod("ReverseEndianness", new[] { typeof(uint) })!.MethodHandle.GetFunctionPointer();
+                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod(nameof(BinaryPrimitives.ReverseEndianness), new[] { typeof(uint) })!.MethodHandle.GetFunctionPointer();
             }
             else if (t == typeof(ulong))
             {
-                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod("ReverseEndianness", new[] { typeof(ulong) })!.MethodHandle.GetFunctionPointer();
+                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod(nameof(BinaryPrimitives.ReverseEndianness), new[] { typeof(ulong) })!.MethodHandle.GetFunctionPointer();
             }
             else if (t == typeof(short))
             {
-                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod("ReverseEndianness", new[] { typeof(short) })!.MethodHandle.GetFunctionPointer();
+                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod(nameof(BinaryPrimitives.ReverseEndianness), new[] { typeof(short) })!.MethodHandle.GetFunctionPointer();
             }
             else if (t == typeof(int))
             {
-                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod("ReverseEndianness", new[] { typeof(int) })!.MethodHandle.GetFunctionPointer();
+                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod(nameof(BinaryPrimitives.ReverseEndianness), new[] { typeof(int) })!.MethodHandle.GetFunctionPointer();
             }
             else if (t == typeof(long))
             {
-                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod("ReverseEndianness", new[] { typeof(long) })!.MethodHandle.GetFunctionPointer();
+                Reverse = (delegate*<T, T>)typeof(BinaryPrimitives).GetMethod(nameof(BinaryPrimitives.ReverseEndianness), new[] { typeof(long) })!.MethodHandle.GetFunctionPointer();
             }
             else if (t == typeof(float))
             {
-                Reverse = (delegate*<T, T>)typeof(ReverseHelper).GetMethod("ReverseEndiannessSingle")!.MethodHandle.GetFunctionPointer();
+                Reverse = (delegate*<T, T>)typeof(ReverseHelper).GetMethod(nameof(ReverseHelper.ReverseEndiannessSingle))!.MethodHandle.GetFunctionPointer();
             }
             else if (t == typeof(double))
             {
-                Reverse = (delegate*<T, T>)typeof(ReverseHelper).GetMethod("ReverseEndiannessDouble")!.MethodHandle.GetFunctionPointer();
+                Reverse = (delegate*<T, T>)typeof(ReverseHelper).GetMethod(nameof(ReverseHelper.ReverseEndiannessDouble))!.MethodHandle.GetFunctionPointer();
             }
             else
             {
@@ -65,27 +64,23 @@ namespace Benchmarks
 
     static class ReverseHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe float ReverseEndiannessSingle(float value)
         {
 #if NET
             return BinaryPrimitives.ReadSingleBigEndian(value.AsBytes());
 #else
-            var pointer = Unsafe.AsPointer(ref value);
-            var bytes = new Span<byte>(pointer, sizeof(float));
-            bytes.Reverse();
-            return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(bytes));
+            return SecsExtension.ReadSingleBigEndian(value.AsBytes());
 #endif
         }
 
-        public static unsafe double ReverseEndiannessDouble(double value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double ReverseEndiannessDouble(double value)
         {
 #if NET
             return BinaryPrimitives.ReadDoubleBigEndian(value.AsBytes());
 #else
-            var pointer = Unsafe.AsPointer(ref value);
-            var bytes = new Span<byte>(pointer, sizeof(double));
-            bytes.Reverse();
-            return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(bytes));
+            return SecsExtension.ReadDoubleBigEndian(value.AsBytes());
 #endif
         }
     }

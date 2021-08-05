@@ -11,6 +11,36 @@ namespace Secs4Net.UnitTests
     public class ItemUnitTest
     {
         [Fact]
+        public void Item_Self_Equals_Should_Be_True()
+        {
+            var left =
+                L(
+                    A("A"),
+                    B(),
+                    F4(),
+                    I4()
+                );
+
+            var right = left;
+            Assert.True(left == right);
+        }
+
+        [Fact]
+        public void Item_Self_Not_Equals_Should_Be_False()
+        {
+            var left =
+                L(
+                    A("A"),
+                    B(),
+                    F4(),
+                    I4()
+                );
+
+            var right = left;
+            Assert.False(left != right);
+        }
+
+        [Fact]
         public void Item_Equals_Should_Be_True()
         {
             var left =

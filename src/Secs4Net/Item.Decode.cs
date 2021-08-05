@@ -51,7 +51,9 @@ namespace Secs4Net
                 var list = new List<Item>(dataLength);
                 for (var i = 0; i < dataLength; i++)
                 {
+#if DEBUG
                     Debug.Assert(list.Count < dataLength);
+#endif
                     list.Add(DecodeFromFullBuffer(ref bytes));
                 }
 

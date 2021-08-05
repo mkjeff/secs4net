@@ -82,11 +82,14 @@ namespace Secs4Net.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void ReverseEndianness(this Span<short> span)
         {
-            for (int i = 0; i < span.Length; i++)
+            ref var rStart = ref span.DangerousGetReferenceAt(0);
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
+            do
             {
-                ref short value = ref span.DangerousGetReferenceAt(i);
-                value = BinaryPrimitives.ReverseEndianness(value);
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -106,11 +109,14 @@ namespace Secs4Net.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void ReverseEndianness(this Span<ushort> span)
         {
-            for (int i = 0; i < span.Length; i++)
+            ref var rStart = ref span.DangerousGetReferenceAt(0);
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
+            do
             {
-                ref ushort value = ref span.DangerousGetReferenceAt(i);
-                value = BinaryPrimitives.ReverseEndianness(value);
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -130,11 +136,14 @@ namespace Secs4Net.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void ReverseEndianness(this Span<int> span)
         {
-            for (int i = 0; i < span.Length; i++)
+            ref var rStart = ref span.DangerousGetReferenceAt(0);
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
+            do
             {
-                ref int value = ref span.DangerousGetReferenceAt(i);
-                value = BinaryPrimitives.ReverseEndianness(value);
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -154,11 +163,14 @@ namespace Secs4Net.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void ReverseEndianness(this Span<uint> span)
         {
-            for (int i = 0; i < span.Length; i++)
+            ref var rStart = ref span.DangerousGetReferenceAt(0);
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
+            do
             {
-                ref uint value = ref span.DangerousGetReferenceAt(i);
-                value = BinaryPrimitives.ReverseEndianness(value);
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -178,11 +190,14 @@ namespace Secs4Net.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void ReverseEndianness(this Span<long> span)
         {
-            for (int i = 0; i < span.Length; i++)
+            ref var rStart = ref span.DangerousGetReferenceAt(0);
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
+            do
             {
-                ref long value = ref span.DangerousGetReferenceAt(i);
-                value = BinaryPrimitives.ReverseEndianness(value);
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -202,11 +217,14 @@ namespace Secs4Net.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void ReverseEndianness(this Span<ulong> span)
         {
-            for (int i = 0; i < span.Length; i++)
+            ref var rStart = ref span.DangerousGetReferenceAt(0);
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
+            do
             {
-                ref ulong value = ref span.DangerousGetReferenceAt(i);
-                value = BinaryPrimitives.ReverseEndianness(value);
+                rStart = BinaryPrimitives.ReverseEndianness(rStart);
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -223,15 +241,21 @@ namespace Secs4Net.Extensions
             return memoryOwner;
         }
 
-#if NET
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void ReverseEndianness(this Span<float> span)
         {
-            for (int i = 0; i < span.Length; i++)
+            ref var rStart = ref span.DangerousGetReferenceAt(0);
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
+            do
             {
-                ref float value = ref span.DangerousGetReferenceAt(i);
-                value = BinaryPrimitives.ReadSingleBigEndian(value.AsBytes());
+#if NET
+                rStart = BinaryPrimitives.ReadSingleBigEndian(rStart.AsBytes());
+#else
+                rStart = ReadSingleBigEndian(rStart.AsBytes());
+#endif
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -251,13 +275,20 @@ namespace Secs4Net.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void ReverseEndianness(this Span<double> span)
         {
-            for (int i = 0; i < span.Length; i++)
+            ref var rStart = ref span.DangerousGetReferenceAt(0);
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
+            do
             {
-                ref double value = ref span.DangerousGetReferenceAt(i);
-                value = BinaryPrimitives.ReadDoubleBigEndian(value.AsBytes());
+#if NET
+                rStart = BinaryPrimitives.ReadDoubleBigEndian(rStart.AsBytes());
+#else
+                rStart = ReadDoubleBigEndian(rStart.AsBytes());
+#endif
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Memory<double> ReverseEndianness(this Memory<double> memory)
         {
@@ -271,9 +302,27 @@ namespace Secs4Net.Extensions
             memoryOwner.Memory.Span.ReverseEndianness();
             return memoryOwner;
         }
-#else
+
+
+#if NETSTANDARD
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReverseEndianness<T>(this Span<T> span) where T : unmanaged
+        public static float ReadSingleBigEndian(ReadOnlySpan<byte> source)
+        {
+            return Int32BitsToSingle(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<int>(source)));
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            unsafe static float Int32BitsToSingle(int value)
+                => *(float*)&value;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double ReadDoubleBigEndian(ReadOnlySpan<byte> source)
+        {
+            return BitConverter.Int64BitsToDouble(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(source)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ReverseEndianness<T>(this Span<T> span) where T : unmanaged
         {
             var offSet = Unsafe.SizeOf<T>();
             var bytes = span.AsBytes();
@@ -281,20 +330,6 @@ namespace Secs4Net.Extensions
             {
                 bytes.Slice(i, offSet).Reverse();
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Memory<T> ReverseEndianness<T>(this Memory<T> memory) where T: unmanaged
-        {
-            memory.Span.ReverseEndianness();
-            return memory;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IMemoryOwner<T> ReverseEndianness<T>(this IMemoryOwner<T> memoryOwner) where T : unmanaged
-        {
-            memoryOwner.Memory.Span.ReverseEndianness();
-            return memoryOwner;
         }
 #endif
 
@@ -381,7 +416,7 @@ namespace Secs4Net.Extensions
             var tcs = ValueTaskCompletionSource<object?>.Create();
 
             // This disposes the registration as soon as one of the tasks trigger
-            using (cancellationToken.Register(state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
+            using (cancellationToken.Register(static state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
             {
                 var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
                 if (resultTask == tcs.Task)
@@ -399,7 +434,7 @@ namespace Secs4Net.Extensions
             var tcs = ValueTaskCompletionSource<object?>.Create();
 
             // This disposes the registration as soon as one of the tasks trigger
-            using (cancellationToken.Register(state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
+            using (cancellationToken.Register(static state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
             {
                 var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
                 if (resultTask == tcs.Task)

@@ -168,9 +168,13 @@ namespace Secs4Net.Sml
             // <format[count] smlValue
 
             int indexItemL = line.IndexOf('<') + 1;
+#if DEBUG
             Debug.Assert(indexItemL != 0);
+#endif
             int indexSizeL = line[indexItemL..].IndexOf('[') + indexItemL;
+#if DEBUG
             Debug.Assert(indexSizeL != -1);
+#endif
             var format = line[indexItemL..indexSizeL].Trim();
 
             if (format[0] == 'L')
@@ -180,9 +184,13 @@ namespace Secs4Net.Sml
             else
             {
                 int indexSizeR = line[indexSizeL..].IndexOf(']') + indexSizeL;
+#if DEBUG
                 Debug.Assert(indexSizeR != -1);
+#endif
                 int indexItemR = line.LastIndexOf('>');
+#if DEBUG
                 Debug.Assert(indexItemR != -1);
+#endif
                 var valueStr = line.Slice(indexSizeR + 1, indexItemR - indexSizeR - 1);
                 var item = Create(format.ToString(), valueStr);
                 if (stack.Count > 0)
