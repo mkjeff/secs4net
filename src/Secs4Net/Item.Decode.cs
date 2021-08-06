@@ -3,8 +3,6 @@ using Microsoft.Toolkit.HighPerformance.Buffers;
 using Secs4Net.Extensions;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -48,16 +46,13 @@ namespace Secs4Net
                     return L();
                 }
 
-                var list = new List<Item>(dataLength);
+                var items = new Item[dataLength];
                 for (var i = 0; i < dataLength; i++)
                 {
-#if DEBUG
-                    Debug.Assert(list.Count < dataLength);
-#endif
-                    list.Add(DecodeFromFullBuffer(ref bytes));
+                    items.DangerousGetReferenceAt(i) = DecodeFromFullBuffer(ref bytes);
                 }
 
-                return L(list);
+                return L(items);
             }
 
             var dataItemBytes = bytes.Slice(0, dataLength);

@@ -1,3 +1,4 @@
+using Microsoft.Toolkit.HighPerformance;
 using System.Collections.Generic;
 
 namespace System
@@ -23,15 +24,33 @@ namespace System
         public static bool IsEmpty<T>(this SpanSplitEnumerator<T> source) where T : IEquatable<T>
             => !source.MoveNext();
 
-        public static IEnumerable<TResult> Select<TResult>(ref this SpanSplitEnumerator<char> source, SpanParser<TResult> seelctor)
+        public static TResult[] ToArray<TResult>(ref this SpanSplitEnumerator<char> source, SpanParser<TResult> seelctor, int? size)
         {
-            var list = new List<TResult>();
-            foreach (var span in source)
+            if (size.HasValue)
             {
-                list.Add(seelctor.Invoke(span));
-            }
+                var list = new TResult[size.GetValueOrDefault()];
+                int i = 0;
+                foreach (var span in source)
+                {
+                    list.DangerousGetReferenceAt(i++) = seelctor.Invoke(span);
+                    if (i == list.Length)
+                    {
+                        break;
+                    }
+                }
 
-            return list;
+                return list;
+            }
+            else
+            {
+                var list = new List<TResult>();
+                foreach (var span in source)
+                {
+                    list.Add(seelctor.Invoke(span));
+                }
+
+                return list.ToArray();
+            }
         }
     }
 

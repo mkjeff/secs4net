@@ -175,24 +175,33 @@ namespace Secs4Net.Sml
 #if DEBUG
             Debug.Assert(indexSizeL != -1);
 #endif
+
             var format = line[indexItemL..indexSizeL].Trim();
+
+
+            int indexSizeR = line[indexSizeL..].IndexOf(']') + indexSizeL;
+#if DEBUG
+            Debug.Assert(indexSizeR != -1);
+#endif
+
+#if NET
+            int? size = int.TryParse(line[(indexSizeL + 1)..indexSizeR], out var s) ? s :null;
+#else
+            int? size = int.TryParse(line[(indexSizeL + 1)..indexSizeR].ToString(), out var s) ? s : null;
+#endif
 
             if (format[0] == 'L')
             {
-                stack.Push(new List<Item>());
+                stack.Push(new List<Item>(size ?? 0));
             }
             else
             {
-                int indexSizeR = line[indexSizeL..].IndexOf(']') + indexSizeL;
-#if DEBUG
-                Debug.Assert(indexSizeR != -1);
-#endif
                 int indexItemR = line.LastIndexOf('>');
 #if DEBUG
                 Debug.Assert(indexItemR != -1);
 #endif
                 var valueStr = line.Slice(indexSizeR + 1, indexItemR - indexSizeR - 1);
-                var item = Create(format.ToString(), valueStr);
+                var item = Create(format.ToString(), valueStr, size);
                 if (stack.Count > 0)
                 {
                     stack.Peek().Add(item);
@@ -249,34 +258,34 @@ namespace Secs4Net.Sml
         private static readonly char[] Separator = { ' ' };
         private static readonly char[] trimElement = new char[] { ' ', '\'', '"' };
 
-        private static Item Create(this string format, ReadOnlySpan<char> smlValue)
+        private static Item Create(this string format, ReadOnlySpan<char> smlValue, int? size = null)
         {
             return format switch
             {
                 "A" => ParseStringItem(smlValue, AParser),
                 "JIS8" or "J" => ParseStringItem(smlValue, JParser),
-                "Bool" or "Boolean" => ParseArrayItem(smlValue, BoolParser),
-                "Binary" or "B" => ParseArrayItem(smlValue, BinaryParser),
-                "I1" => ParseArrayItem(smlValue, I1Parser),
-                "I2" => ParseArrayItem(smlValue, I2Parser),
-                "I4" => ParseArrayItem(smlValue, I4Parser),
-                "I8" => ParseArrayItem(smlValue, I8Parser),
-                "U1" => ParseArrayItem(smlValue, U1Parser),
-                "U2" => ParseArrayItem(smlValue, U2Parser),
-                "U4" => ParseArrayItem(smlValue, U4Parser),
-                "U8" => ParseArrayItem(smlValue, U8Parser),
-                "F4" => ParseArrayItem(smlValue, F4Parser),
-                "F8" => ParseArrayItem(smlValue, F8Parser),
+                "Bool" or "Boolean" => ParseArrayItem(smlValue, BoolParser, size),
+                "Binary" or "B" => ParseArrayItem(smlValue, BinaryParser, size),
+                "I1" => ParseArrayItem(smlValue, I1Parser, size),
+                "I2" => ParseArrayItem(smlValue, I2Parser, size),
+                "I4" => ParseArrayItem(smlValue, I4Parser, size),
+                "I8" => ParseArrayItem(smlValue, I8Parser, size),
+                "U1" => ParseArrayItem(smlValue, U1Parser, size),
+                "U2" => ParseArrayItem(smlValue, U2Parser, size),
+                "U4" => ParseArrayItem(smlValue, U4Parser, size),
+                "U8" => ParseArrayItem(smlValue, U8Parser, size),
+                "F4" => ParseArrayItem(smlValue, F4Parser, size),
+                "F8" => ParseArrayItem(smlValue, F8Parser, size),
                 "L" => throw new SecsException("Please use Item.L(...) to create list item."),
                 _ => throw new SecsException("Unknown SML format: " + format),
             };
 
-            static Item ParseArrayItem<T>(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<T[], Item> creator, SpanParser<T> converter) parser)
+            static Item ParseArrayItem<T>(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<T[], Item> creator, SpanParser<T> converter) parser, int? size)
             {
                 var valueStrs = str.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 return valueStrs.IsEmpty()
                     ? parser.emptyCreator()
-                    : parser.creator(valueStrs.Select(parser.converter).ToArray());
+                    : parser.creator(valueStrs.ToArray(parser.converter, size));
             }
 
             static Item ParseStringItem(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<string, Item> creator) parser)

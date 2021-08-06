@@ -22,7 +22,10 @@ namespace Secs4Net.Benchmark
                 DefaultColumnProviders.Params,
                 new SimpleColumnProvider(JobCharacteristicColumn.AllColumns.Where(c => c.ColumnName == "Runtime").ToArray()),
                 DefaultColumnProviders.Statistics,
-                DefaultColumnProviders.Metrics);            
+                DefaultColumnProviders.Metrics);
+
+            SummaryStyle = BenchmarkDotNet.Reports.SummaryStyle.Default
+                .WithRatioStyle(RatioStyle.Trend);
         }
     }
 }

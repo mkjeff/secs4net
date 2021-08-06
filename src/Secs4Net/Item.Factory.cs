@@ -9,9 +9,8 @@ namespace Secs4Net
 {
     partial class Item
     {
-        public static Item L(IList<Item> items) => items.Count > 0 ? new ListItem(SecsFormat.List, items) : L();
-        public static Item L(IEnumerable<Item> items) => items.Any() ? L(items.ToList()) : L();
-        public static Item L(params Item[] items) => items.Length > 0 ? L((IList<Item>)items) : L();
+        public static Item L(IEnumerable<Item> items) => L(items.ToArray());
+        public static Item L(params Item[] items) => items.Length > 0 ? new ListItem(SecsFormat.List, items) : L();
 
         public static Item A(string? value) => string.IsNullOrEmpty(value) ? A() : new StringItem(SecsFormat.ASCII, value!);
         public static Item J(string? value) => string.IsNullOrEmpty(value) ? J() : new StringItem(SecsFormat.JIS8, value!);

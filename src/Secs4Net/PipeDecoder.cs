@@ -45,16 +45,16 @@ namespace Secs4Net
         public IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation)
             => _dataMessageChannel.Reader.ReadAllAsync(cancellation);
 
-        public Task StartAsync(CancellationToken cancellation) 
+        public Task StartAsync(CancellationToken cancellation)
             => DecodeLoopAsync(_controlMessageChannel.Writer, _dataMessageChannel.Writer, _reader, cancellation);
 
         private static async Task DecodeLoopAsync(
-            ChannelWriter<MessageHeader> controlMessageWriter, 
+            ChannelWriter<MessageHeader> controlMessageWriter,
             ChannelWriter<(MessageHeader header, Item? rootItem)> dataMessageWriter,
             PipeReader reader,
-            CancellationToken cancellation) 
-        { 
-            var stack = new Stack<List<Item>>(capacity: 8);
+            CancellationToken cancellation)
+        {
+            var stack = new Stack<ItemList>(capacity: 8);
             var totalLengthBytes = new byte[4];
             var messageHeaderBytes = new byte[10];
             // PipeReader peek first
@@ -149,7 +149,7 @@ namespace Secs4Net
 #if DEBUG
                         Trace.WriteLine($"Decoded List[{itemContentLength}]");
 #endif
-                        stack.Push(new List<Item>(itemContentLength));
+                        stack.Push(new ItemList(size: itemContentLength));
                         goto GetNewItem;
                     }
                 }
@@ -173,7 +173,7 @@ namespace Secs4Net
                     list.Add(item);
                     while (list.Count == list.Capacity) //stack unwind when all List's Items has decoded
                     {
-                        item = Item.L(stack.Pop());
+                        item = Item.L(stack.Pop().GetArray());
                         //Trace.WriteLine($"Unwind List[{item.Count}]");
                         if (stack.Count > 0)
                         {
@@ -246,7 +246,7 @@ namespace Secs4Net
             }
 
             return SlowPipeReadAsync(reader, required, cancellation);
-            
+
             [MethodImpl(MethodImplOptions.NoInlining)]
             static async PooledValueTask<ReadOnlySequence<byte>> SlowPipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
             {
@@ -264,6 +264,19 @@ namespace Secs4Net
                     reader.AdvanceTo(consumed: buffer.Start, examined: buffer.End);
                 }
             }
+        }
+
+        private sealed class ItemList
+        {
+            private int _index = 0;
+            private readonly Item[] _items;
+
+            public int Capacity => _items.Length;
+            public int Count => _index;
+
+            public ItemList(int size) => _items = new Item[size];
+            public void Add(Item item) => _items.DangerousGetReferenceAt(_index++) = item;
+            public Item[] GetArray() => _items;
         }
     }
 }
