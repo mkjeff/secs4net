@@ -1,12 +1,11 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.Toolkit.HighPerformance.Buffers;
-using Secs4Net;
 using System;
 using System.Buffers;
 using System.Linq;
 using static Secs4Net.Item;
 
-namespace Secs4Netb.Benchmark
+namespace Secs4Net.Benchmark
 {
     [Config(typeof(BenchmarkConfig))]
     [MemoryDiagnoser]

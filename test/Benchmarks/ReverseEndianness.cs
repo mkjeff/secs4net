@@ -2,18 +2,17 @@
 using BenchmarkDotNet.Configs;
 using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
+using Secs4Net.Benchmark;
 using Secs4Net.Extensions;
-using Secs4Netb.Benchmark;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
-namespace Benchmarks
+namespace Secs4Net.Benchmarks
 {
     [Config(typeof(BenchmarkConfig))]
-    //[MemoryDiagnoser]
+    [MemoryDiagnoser]
     [CategoriesColumn]
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class ReverseEndianness
@@ -28,7 +27,7 @@ namespace Benchmarks
         private IMemoryOwner<double> _double;
 
 
-        [Params(128)]
+        [Params(64)]
         public int Size { get; set; }
 
         [GlobalSetup]
@@ -84,13 +83,12 @@ namespace Benchmarks
             var data = _uint16.Memory.Span;
 
             ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = ReverseEndiannessHelper<ushort>.Reverse(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -115,15 +113,7 @@ namespace Benchmarks
         public int UInt16_BinaryPrimitives_Unsafe_Iterator()
         {
             var data = _uint16.Memory.Span;
-            ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
-            {
-                rStart = BinaryPrimitives.ReverseEndianness(rStart);
-                rStart = ref Unsafe.Add(ref rStart, 1);
-            }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
-
+            data.ReverseEndianness();
             return data.Length;
         }
 
@@ -146,13 +136,12 @@ namespace Benchmarks
             var data = _uint32.Memory.Span;
 
             ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = ReverseEndiannessHelper<uint>.Reverse(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -177,15 +166,7 @@ namespace Benchmarks
         public int UInt32_BinaryPrimitives_Unsafe_Iterator()
         {
             var data = _uint32.Memory.Span;
-            ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
-            {
-                rStart = BinaryPrimitives.ReverseEndianness(rStart);
-                rStart = ref Unsafe.Add(ref rStart, 1);
-            }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
-
+            data.ReverseEndianness();
             return data.Length;
         }
 
@@ -208,13 +189,12 @@ namespace Benchmarks
             var data = _uint64.Memory.Span;
 
             ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = ReverseEndiannessHelper<ulong>.Reverse(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -239,15 +219,7 @@ namespace Benchmarks
         public int UInt64_BinaryPrimitives_Unsafe_Iterator()
         {
             var data = _uint64.Memory.Span;
-            ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
-            {
-                rStart = BinaryPrimitives.ReverseEndianness(rStart);
-                rStart = ref Unsafe.Add(ref rStart, 1);
-            }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
-
+            data.ReverseEndianness();
             return data.Length;
         }
 
@@ -270,13 +242,12 @@ namespace Benchmarks
             var data = _int16.Memory.Span;
 
             ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = ReverseEndiannessHelper<short>.Reverse(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -301,15 +272,7 @@ namespace Benchmarks
         public int Int16_BinaryPrimitives_Unsafe_Iterator()
         {
             var data = _int16.Memory.Span;
-            ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
-            {
-                rStart = BinaryPrimitives.ReverseEndianness(rStart);
-                rStart = ref Unsafe.Add(ref rStart, 1);
-            }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
-
+            data.ReverseEndianness();
             return data.Length;
         }
 
@@ -332,13 +295,12 @@ namespace Benchmarks
             var data = _int32.Memory.Span;
 
             ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = ReverseEndiannessHelper<int>.Reverse(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -363,15 +325,7 @@ namespace Benchmarks
         public int Int32_BinaryPrimitives_Unsafe_Iterator()
         {
             var data = _int32.Memory.Span;
-            ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
-            {
-                rStart = BinaryPrimitives.ReverseEndianness(rStart);
-                rStart = ref Unsafe.Add(ref rStart, 1);
-            }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
-
+            data.ReverseEndianness();
             return data.Length;
         }
 
@@ -394,13 +348,12 @@ namespace Benchmarks
             var data = _int64.Memory.Span;
 
             ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = ReverseEndiannessHelper<long>.Reverse(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -425,15 +378,7 @@ namespace Benchmarks
         public int Int64_BinaryPrimitives_Unsafe_Iterator()
         {
             var data = _int64.Memory.Span;
-            ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
-            {
-                rStart = BinaryPrimitives.ReverseEndianness(rStart);
-                rStart = ref Unsafe.Add(ref rStart, 1);
-            }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
-
+            data.ReverseEndianness();
             return data.Length;
         }
 
@@ -456,13 +401,12 @@ namespace Benchmarks
             var data = _single.Memory.Span;
 
             ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = ReverseEndiannessHelper<float>.Reverse(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -491,19 +435,7 @@ namespace Benchmarks
         public int Single_BinaryPrimitives_Unsafe_Iterator()
         {
             var data = _single.Memory.Span;
-            ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
-            {
-#if NET
-                rStart = BinaryPrimitives.ReadSingleBigEndian(rStart.AsBytes());
-#else
-                rStart = SecsExtension.ReadSingleBigEndian(rStart.AsBytes());
-#endif
-                rStart = ref Unsafe.Add(ref rStart, 1);
-            }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
-
+            data.ReverseEndianness();
             return data.Length;
         }
 
@@ -526,13 +458,12 @@ namespace Benchmarks
             var data = _double.Memory.Span;
 
             ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
+            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = ReverseEndiannessHelper<double>.Reverse(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
 
             return data.Length;
         }
@@ -561,19 +492,7 @@ namespace Benchmarks
         public int Double_BinaryPrimitives_Unsafe_Iterator()
         {
             var data = _double.Memory.Span;
-            ref var rStart = ref data.DangerousGetReferenceAt(0);
-            ref var rEnd = ref data.DangerousGetReferenceAt(data.Length - 1);
-            do
-            {
-#if NET
-                rStart = BinaryPrimitives.ReadDoubleBigEndian(rStart.AsBytes());
-#else
-                rStart = SecsExtension.ReadDoubleBigEndian(rStart.AsBytes());
-#endif
-                rStart = ref Unsafe.Add(ref rStart, 1);
-            }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
-
+            data.ReverseEndianness();
             return data.Length;
         }
     }

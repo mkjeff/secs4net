@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Secs4Netb.Benchmark
+namespace Secs4Net.Benchmark
 {
     internal static class AsyncHelper
     {

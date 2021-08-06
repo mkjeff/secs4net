@@ -80,16 +80,15 @@ namespace Secs4Net.Extensions
 #endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReverseEndianness(this Span<short> span)
+        public static void ReverseEndianness(this Span<short> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
-            do
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -107,16 +106,15 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReverseEndianness(this Span<ushort> span)
+        public static void ReverseEndianness(this Span<ushort> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
-            do
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length );
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -134,16 +132,15 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReverseEndianness(this Span<int> span)
+        public static void ReverseEndianness(this Span<int> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
-            do
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -161,16 +158,15 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReverseEndianness(this Span<uint> span)
+        public static void ReverseEndianness(this Span<uint> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
-            do
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length );
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -188,16 +184,15 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReverseEndianness(this Span<long> span)
+        public static void ReverseEndianness(this Span<long> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
-            do
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -215,16 +210,15 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReverseEndianness(this Span<ulong> span)
+        public static void ReverseEndianness(this Span<ulong> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
-            do
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -242,11 +236,11 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReverseEndianness(this Span<float> span)
+        public static void ReverseEndianness(this Span<float> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
-            do
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
 #if NET
                 rStart = BinaryPrimitives.ReadSingleBigEndian(rStart.AsBytes());
@@ -255,7 +249,6 @@ namespace Secs4Net.Extensions
 #endif
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -273,11 +266,11 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ReverseEndianness(this Span<double> span)
+        public static void ReverseEndianness(this Span<double> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length - 1);
-            do
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
 #if NET
                 rStart = BinaryPrimitives.ReadDoubleBigEndian(rStart.AsBytes());
@@ -286,7 +279,6 @@ namespace Secs4Net.Extensions
 #endif
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-            while (!Unsafe.IsAddressGreaterThan(ref rStart, ref rEnd));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -316,21 +308,8 @@ namespace Secs4Net.Extensions
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double ReadDoubleBigEndian(ReadOnlySpan<byte> source)
-        {
-            return BitConverter.Int64BitsToDouble(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(source)));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ReverseEndianness<T>(this Span<T> span) where T : unmanaged
-        {
-            var offSet = Unsafe.SizeOf<T>();
-            var bytes = span.AsBytes();
-            for (var i = 0; i < bytes.Length; i += offSet)
-            {
-                bytes.Slice(i, offSet).Reverse();
-            }
-        }
+        public static double ReadDoubleBigEndian(ReadOnlySpan<byte> source) 
+            => BitConverter.Int64BitsToDouble(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(source)));
 #endif
 
         internal static string GetDebugString(this Item item, int maxCount)

@@ -1,15 +1,13 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Diagnostics.Windows.Configs;
 using Microsoft.Extensions.Options;
-using Secs4Net;
 using System;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using static Secs4Net.Item;
 
-namespace Secs4Netb.Benchmark
+namespace Secs4Net.Benchmark
 {
     [Config(typeof(BenchmarkConfig))]
     //[EtwProfiler]
@@ -30,7 +28,7 @@ namespace Secs4Netb.Benchmark
         private SecsGem _secsGem1;
         private SecsGem _secsGem2;
 
-        [Params(4, 16, 64)]
+        [Params(16, 64)]
         public int Count { get; set; }
 
         [GlobalSetup]
@@ -71,8 +69,8 @@ namespace Secs4Netb.Benchmark
             _secsGem2?.Dispose();
         }
 
-        [Benchmark]
-        public async Task<int> SendAsyncSequentially()
+        [Benchmark(Description = "Sequential")]
+        public async Task<int> SequentialSendAsync()
         {
             for (int i = 0; i < Count; i++)
             {
@@ -81,8 +79,8 @@ namespace Secs4Netb.Benchmark
             return Count;
         }
 
-        [Benchmark]
-        public async Task<int> SendAsyncParallelly()
+        [Benchmark(Description = "Parallel")]
+        public async Task<int> ParallelSendAsync()
         {
             var tasks = new Task<SecsMessage>[Count];
             for (int i = 0; i < Count; i++)

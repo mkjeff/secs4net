@@ -1,9 +1,9 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Secs4Net;
 using Secs4Net.Json;
 using System.Text.Json;
 using static Secs4Net.Item;
-namespace Secs4Netb.Benchmark
+
+namespace Secs4Net.Benchmark
 {
     [Config(typeof(BenchmarkConfig))]
     [MemoryDiagnoser]
@@ -54,11 +54,11 @@ namespace Secs4Netb.Benchmark
         private static readonly string JsonString = JsonSerializer.Serialize(Message, JsonSerializerOptions);
 
         [Benchmark]
-        public string Serialize() 
+        public string Serialize()
             => JsonSerializer.Serialize(Message, JsonSerializerOptions);
 
         [Benchmark]
-        public SecsMessage Deserialze() 
+        public SecsMessage Deserialze()
             => JsonSerializer.Deserialize<SecsMessage>(JsonString, JsonSerializerOptions);
     }
 }

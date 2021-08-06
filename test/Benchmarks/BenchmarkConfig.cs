@@ -1,22 +1,28 @@
+using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Loggers;
+using System.Linq;
 
-namespace Secs4Netb.Benchmark
+namespace Secs4Net.Benchmark
 {
     public class BenchmarkConfig : ManualConfig
     {
         public BenchmarkConfig()
         {
-            //WithArtifactsPath(new DirectoryInfo(Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), 
-            //    "BenchmarkDotNet.Artifacts")).FullName);
-            // Configure your benchmarks, see for more details: https://benchmarkdotnet.org/articles/configs/configs.html.
-            //Add(Job.Dry);
-            //Add(ConsoleLogger.Default);
-            //Add(TargetMethodColumn.Method, StatisticColumn.Max);
-            //Add(RPlotExporter.Default, CsvExporter.Default);
-            //Add(EnvironmentAnalyser.Default);
-            //Add(Job.Default.WithRuntime)
+            this.WithCultureInfo(System.Globalization.CultureInfo.InvariantCulture);
+
+            WithOption(ConfigOptions.DisableLogFile, true);
+            WithOption(ConfigOptions.DontOverwriteResults, false);
             AddLogger(ConsoleLogger.Default);
+            AddExporter(MarkdownExporter.GitHub);
+
+            AddColumnProvider(
+                DefaultColumnProviders.Descriptor,
+                DefaultColumnProviders.Params,
+                new SimpleColumnProvider(JobCharacteristicColumn.AllColumns.Where(c => c.ColumnName == "Runtime").ToArray()),
+                DefaultColumnProviders.Statistics,
+                DefaultColumnProviders.Metrics);            
         }
     }
 }

@@ -4,7 +4,7 @@ using System;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
-namespace Benchmarks
+namespace Secs4Net.Benchmarks
 {
     /// <summary>
     /// Even use function pointer, still slower than BinaryPrimitives directly method call.

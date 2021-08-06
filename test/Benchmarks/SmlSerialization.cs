@@ -1,9 +1,8 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Secs4Net;
 using Secs4Net.Sml;
 using static Secs4Net.Item;
 
-namespace Secs4Netb.Benchmark
+namespace Secs4Net.Benchmark
 {
     [Config(typeof(BenchmarkConfig))]
     [MemoryDiagnoser]
@@ -49,11 +48,11 @@ namespace Secs4Netb.Benchmark
         private static string Sml = Message.ToSml();
 
         [Benchmark]
-        public string Serialize() 
+        public string Serialize()
             => Message.ToSml();
 
         [Benchmark]
-        public SecsMessage Deserialze() 
+        public SecsMessage Deserialze()
             => Sml.ToSecsMessage();
     }
 }
