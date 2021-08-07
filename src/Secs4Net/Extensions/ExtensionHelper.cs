@@ -1,10 +1,10 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
 using PooledAwait;
-using Secs4Net.Extensions;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -66,6 +66,7 @@ namespace Secs4Net.Extensions
                 _ => ThrowHelper(format),
             };
 
+            [DoesNotReturn]
             static string ThrowHelper(SecsFormat format) => throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value");
         }
 
@@ -76,7 +77,17 @@ namespace Secs4Net.Extensions
 #else
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe ReadOnlySpan<byte> AsBytes<T>(this ref T value) where T : unmanaged
-            => new(Unsafe.AsPointer(ref Unsafe.As<T, byte>(ref value)), Unsafe.SizeOf<T>());
+            => new(Unsafe.AsPointer(ref value), Unsafe.SizeOf<T>());
+#endif
+
+#if NET
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Span<T> Cast<T>(this Span<byte> bytes) where T : unmanaged
+            => MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(bytes)), bytes.Length / Unsafe.SizeOf<T>());
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe Span<T> Cast<T>(this Span<byte> bytes) where T : unmanaged
+            => new(Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes)), bytes.Length / Unsafe.SizeOf<T>());
 #endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -109,7 +120,7 @@ namespace Secs4Net.Extensions
         public static void ReverseEndianness(this Span<ushort> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length );
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
             while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
@@ -161,7 +172,7 @@ namespace Secs4Net.Extensions
         public static void ReverseEndianness(this Span<uint> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length );
+            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
             while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
@@ -308,7 +319,7 @@ namespace Secs4Net.Extensions
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double ReadDoubleBigEndian(ReadOnlySpan<byte> source) 
+        public static double ReadDoubleBigEndian(ReadOnlySpan<byte> source)
             => BitConverter.Int64BitsToDouble(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(source)));
 #endif
 

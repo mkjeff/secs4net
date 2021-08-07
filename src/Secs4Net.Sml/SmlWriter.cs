@@ -1,6 +1,8 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
+using System.Buffers.Binary;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -146,7 +148,7 @@ namespace Secs4Net.Sml
             switch (item.Format)
             {
                 case SecsFormat.List:
-                    await WriteListAsnc(writer, item, indent, indentStr);
+                    await WriteListAsnc(writer, item, indent, indentStr).ConfigureAwait(false);
                     break;
                 case SecsFormat.ASCII:
                 case SecsFormat.JIS8:
@@ -208,6 +210,7 @@ namespace Secs4Net.Sml
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void WriteArray<T>(this TextWriter writer, ReadOnlyMemory<T> memory)
 #if NET6_0           
             where T : unmanaged, ISpanFormattable
@@ -221,14 +224,24 @@ namespace Secs4Net.Sml
             }
 
             var array = memory.Span;
-            int i = 0;
-            WriteValue(writer, array.DangerousGetReferenceAt(i++));
-            for (; i < array.Length; i++)
+            ref var rStart = ref array.DangerousGetReferenceAt(0);
+            ref var rEnd = ref array.DangerousGetReferenceAt(array.Length - 1);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
+                WriteValue(writer, rStart);
                 writer.Write(' ');
-                WriteValue(writer, array.DangerousGetReferenceAt(i));
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            WriteValue(writer, rStart);
+            //int i = 0;
+            //WriteValue(writer, array.DangerousGetReferenceAt(i++));
+            //for (; i < array.Length; i++)
+            //{
+            //    writer.Write(' ');
+            //    WriteValue(writer, array.DangerousGetReferenceAt(i));
+            //}
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void WriteValue(TextWriter writer, T value)
 #if NET6_0
                 => writer.WriteSpanFormattableValue(value);
@@ -237,6 +250,7 @@ namespace Secs4Net.Sml
 #endif
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void WriteArray(this TextWriter writer, ReadOnlyMemory<float> memory)
         {
             if (memory.IsEmpty)
@@ -245,14 +259,24 @@ namespace Secs4Net.Sml
             }
 
             var array = memory.Span;
-            int i = 0;
-            WriteValue(writer, array.DangerousGetReferenceAt(i++));
-            for (; i < array.Length; i++)
+            ref var rStart = ref array.DangerousGetReferenceAt(0);
+            ref var rEnd = ref array.DangerousGetReferenceAt(array.Length - 1);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
+                WriteValue(writer, rStart);
                 writer.Write(' ');
-                WriteValue(writer, array.DangerousGetReferenceAt(i));
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            WriteValue(writer, rStart);
+            //int i = 0;
+            //WriteValue(writer, array.DangerousGetReferenceAt(i++));
+            //for (; i < array.Length; i++)
+            //{
+            //    writer.Write(' ');
+            //    WriteValue(writer, array.DangerousGetReferenceAt(i));
+            //}
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void WriteValue(TextWriter writer, float value)
 #if NET6_0
                 => writer.WriteSpanFormattableValue(value);
@@ -261,6 +285,7 @@ namespace Secs4Net.Sml
 #endif
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void WriteArray(this TextWriter writer, ReadOnlyMemory<bool> memory)
         {
             if (memory.IsEmpty)
@@ -269,17 +294,27 @@ namespace Secs4Net.Sml
             }
 
             var array = memory.Span;
-            int i = 0;
-            for (; i < array.Length - 1; i++)
+            ref var rStart = ref array.DangerousGetReferenceAt(0);
+            ref var rEnd = ref array.DangerousGetReferenceAt(array.Length - 1);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
-                var value = array.DangerousGetReferenceAt(i);
-                writer.Write(value.ToString());
+                writer.Write(rStart.ToString());
                 writer.Write(' ');
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            writer.Write(rStart.ToString());
+            //int i = 0;
+            //for (; i < array.Length - 1; i++)
+            //{
+            //    var value = array.DangerousGetReferenceAt(i);
+            //    writer.Write(value.ToString());
+            //    writer.Write(' ');
+            //}
 
-            writer.Write(array.DangerousGetReferenceAt(i).ToString());
+            //writer.Write(array.DangerousGetReferenceAt(i).ToString());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void WriteHexArray(this TextWriter writer, ReadOnlyMemory<byte> memory)
         {
             if (memory.IsEmpty)
@@ -288,14 +323,23 @@ namespace Secs4Net.Sml
             }
 
             var array = memory.Span;
-            int i = 0;
-            for (; i < array.Length - 1; i++)
+            ref var rStart = ref array.DangerousGetReferenceAt(0);
+            ref var rEnd = ref array.DangerousGetReferenceAt(array.Length - 1);
+            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
             {
-                AppendHexChars(writer, array.DangerousGetReferenceAt(i));
+                AppendHexChars(writer, rStart);
                 writer.Write(' ');
+                rStart = ref Unsafe.Add(ref rStart, 1);
             }
+            AppendHexChars(writer, rStart);
+            //int i = 0;
+            //for (; i < array.Length - 1; i++)
+            //{
+            //    AppendHexChars(writer, array.DangerousGetReferenceAt(i));
+            //    writer.Write(' ');
+            //}
 
-            AppendHexChars(writer, array.DangerousGetReferenceAt(i));
+            //AppendHexChars(writer, array.DangerousGetReferenceAt(i));
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void AppendHexChars(TextWriter sb, byte num)
@@ -326,8 +370,10 @@ namespace Secs4Net.Sml
         }
 #endif
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string ToSml(this SecsFormat format)
-            => format switch
+        {
+            return format switch
             {
                 SecsFormat.List => "L",
                 SecsFormat.Binary => "B",
@@ -344,7 +390,11 @@ namespace Secs4Net.Sml
                 SecsFormat.U1 => "U1",
                 SecsFormat.U2 => "U2",
                 SecsFormat.U4 => "U4",
-                _ => throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value"),
+                _ => ThrowHelper(format),
             };
+
+            [DoesNotReturn]
+            static string ThrowHelper(SecsFormat format) => throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value");
+        }
     }
 }

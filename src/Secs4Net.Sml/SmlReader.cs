@@ -144,12 +144,12 @@ namespace Secs4Net.Sml
         {
             line = line.TrimStart();
 
-            if (line[0] == '.')
+            if (line.DangerousGetReferenceAt(0) == '.')
             {
                 return false;
             }
 
-            if (line[0] == '>')
+            if (line.DangerousGetReferenceAt(0) == '>')
             {
                 var itemList = stack.Pop();
                 var item = itemList.Count > 0 ? L(itemList) : L();
@@ -185,12 +185,12 @@ namespace Secs4Net.Sml
 #endif
 
 #if NET
-            int? size = int.TryParse(line[(indexSizeL + 1)..indexSizeR], out var s) ? s :null;
+            int? size = int.TryParse(line[(indexSizeL + 1)..indexSizeR], out var s) ? s : null;
 #else
             int? size = int.TryParse(line[(indexSizeL + 1)..indexSizeR].ToString(), out var s) ? s : null;
 #endif
 
-            if (format[0] == 'L')
+            if (format.DangerousGetReferenceAt(0) == 'L')
             {
                 stack.Push(new List<Item>(size ?? 0));
             }

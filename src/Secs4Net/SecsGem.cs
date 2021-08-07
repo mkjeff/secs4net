@@ -145,7 +145,7 @@ namespace Secs4Net
 
             try
             {
-                if (header.DeviceId != DeviceId && msg.S != 9 && msg.F != 1)
+                if (header.DeviceId != DeviceId && header.S != 9 && header.F != 1)
                 {
                     _logger.MessageIn(msg, header.Id);
                     _logger.Warning("Received Unrecognized Device Id Message");
@@ -161,9 +161,9 @@ namespace Secs4Net
                 }
 
                 var id = header.Id;
-                if (msg.F % 2 != 0)
+                if (header.F % 2 != 0)
                 {
-                    if (msg.S != 9)
+                    if (header.S != 9)
                     {
                         //Primary message
                         _logger.MessageIn(msg, header.Id);
@@ -171,7 +171,7 @@ namespace Secs4Net
                         return;
                     }
                     // Error message
-                    if (msg.SecsItem is { Format: not SecsFormat.List or SecsFormat.ASCII or SecsFormat.JIS8 } dataItem
+                    if (rootItem is { Format: not SecsFormat.List or SecsFormat.ASCII or SecsFormat.JIS8 } dataItem
                         && dataItem.GetReadOnlyMemory<byte>() is { Length: >= 10 } headerBytes)
                     {
                         id = BinaryPrimitives.ReadInt32BigEndian(headerBytes.Span.Slice(6, 4));

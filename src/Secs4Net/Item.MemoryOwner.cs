@@ -8,19 +8,16 @@ namespace Secs4Net
         private sealed class MemoryOwnerItem<T> : MemoryItem<T> where T : unmanaged, IEquatable<T>
         {
             private readonly IMemoryOwner<T> _owner;
-            private protected sealed override ReadOnlyMemory<T> Value => _owner.Memory;
+            
+            private protected sealed override ReadOnlyMemory<T> Value 
+                => _owner.Memory;
 
-            internal MemoryOwnerItem(SecsFormat format, IMemoryOwner<T> memoryOwner) 
+            internal MemoryOwnerItem(SecsFormat format, IMemoryOwner<T> memoryOwner)
                 : base(format, memoryOwner.Memory)
-            {
-                _owner = memoryOwner;
-            }
+                => _owner = memoryOwner;
 
-            public sealed override void Dispose()
-            {
-                _owner.Dispose();
-                GC.SuppressFinalize(this);
-            }
+            public sealed override void Dispose() 
+                => _owner.Dispose();
         }
     }
 }

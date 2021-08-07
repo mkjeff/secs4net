@@ -19,12 +19,11 @@ namespace Secs4Net
 
             public sealed override void Dispose()
             {
-                for (int i = 0; i < _value.Length; i++)
+                var span = _value.AsSpan();
+                for (int i = 0; i < span.Length; i++)
                 {
-                    _value.DangerousGetReferenceAt(i).Dispose();
+                    span.DangerousGetReferenceAt(i).Dispose();
                 }
-
-                GC.SuppressFinalize(this);
             }
 
             public sealed override int Count => _value.Length;
@@ -44,31 +43,36 @@ namespace Secs4Net
                 return _value.Skip(start).Take(length);
             }
 
-            public sealed override IEnumerator<Item> GetEnumerator() => ((IEnumerable<Item>)_value).GetEnumerator();
+            public sealed override IEnumerator<Item> GetEnumerator() 
+                => ((IEnumerable<Item>)_value).GetEnumerator();
 
             public sealed override void EncodeTo(IBufferWriter<byte> buffer)
             {
-                if (_value.Length == 0)
+                var span = _value.AsSpan();
+                if (span.IsEmpty)
                 {
                     EncodeEmptyItem(Format, buffer);
                     return;
                 }
 
-                EncodeItemHeader(Format, _value.Length, buffer);
-                for (int i = 0; i < _value.Length; i++)
+                EncodeItemHeader(Format, span.Length, buffer);
+                for (int i = 0; i < span.Length; i++)
                 {
-                    _value.DangerousGetReferenceAt(i).EncodeTo(buffer);
+                    span.DangerousGetReferenceAt(i).EncodeTo(buffer);
                 }
             }
 
             private protected sealed override bool IsEquals(Item other)
                 => Format == other.Format && IsListEquals(_value, Unsafe.As<ListItem>(other)!._value);
 
-            static bool IsListEquals(Item[] listLeft, Item[] listRight)
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static bool IsListEquals(Item[] listLeft, Item[] listRight)
             {
-                for (int i = 0, count = listLeft.Length; i < count; i++)
+                var spanLeft = listLeft.AsSpan();
+                var spanRight = listRight.AsSpan();
+                for (int i = 0, count = spanLeft.Length; i < count; i++)
                 {
-                    if (!listLeft.DangerousGetReferenceAt(i).IsEquals(listRight.DangerousGetReferenceAt(i)))
+                    if (!spanLeft.DangerousGetReferenceAt(i).IsEquals(spanRight.DangerousGetReferenceAt(i)))
                     {
                         return false;
                     }

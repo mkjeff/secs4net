@@ -1,5 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using Secs4Net.Json;
+using System;
 using System.Text.Json;
 using static Secs4Net.Item;
 
@@ -15,50 +17,80 @@ namespace Secs4Net.Benchmark
             Converters = { new ItemJsonConverter() },
         };
 
-        private static readonly SecsMessage Message = new(s: 1, f: 2, replyExpected: false)
-        {
-            Name = "Test",
-            SecsItem =
-                L(
-                    L(),
-                    U1(122, 34, 0),
-                    U2(34531, 23123, 24),
-                    U4(2123513, 52451141, 1),
-                    F4(23123.21323f, 2324.221f, -20.131f),
-                    A("A string"),
-                    Boolean(true, false, false, true),
-                        B(0x1C, 0x01, 0xFF),
-                        L(
-                            A("A string"),
-                            J("sdsad"),
-                            Boolean(true, false, false, true),
-                            B(0x1C, 0x01, 0xFF)),
-                        F8(231.00002321d, 0.2913212312d),
-                    J("sdsad"),
-                    F8(231.00002321d, 0.2913212312d, -124.42002d),
-                    L(
-                        I1(122, 34, -13),
-                        I2(4531, -23123, 12),
-                        I4(2123513, 52451141, -11),
-                        F4(23123.21323f, 2324.221f),
-                        Boolean(true, false, false, true),
-                        B(0x1C, 0x01, 0xFF),
-                        L(
-                            A("A string"),
-                            J("sdsad"),
-                            Boolean(true, false, false, true),
-                            B(0x1C, 0x01, 0xFF)),
-                        F8(231.00002321d, 0.2913212312d)))
-        };
+        private SecsMessage _message;
+        private string _json;
 
-        private static readonly string JsonString = JsonSerializer.Serialize(Message, JsonSerializerOptions);
+        [Params(0, 64, 128)]
+        public int ItemCount { get; set; }
+
+        [GlobalSetup]
+        public void Setup()
+        {
+            _message = new(s: 1, f: 2, replyExpected: false)
+            {
+                Name = "Test",
+                SecsItem = L(
+                     L(),
+                     U1(MemoryOwner<byte>.Allocate(ItemCount)),
+                     U2(MemoryOwner<ushort>.Allocate(ItemCount)),
+                     U4(MemoryOwner<uint>.Allocate(ItemCount)),
+                     F4(MemoryOwner<float>.Allocate(ItemCount)),
+                     A(CreateString(Math.Min(ItemCount, 512))),
+                     J(CreateString(Math.Min(ItemCount, 512))), //JIS encoding cost more memory in coreclr
+                     F8(MemoryOwner<double>.Allocate(ItemCount)),
+                     L(
+                         I1(MemoryOwner<sbyte>.Allocate(ItemCount)),
+                         I2(MemoryOwner<short>.Allocate(ItemCount)),
+                         I4(MemoryOwner<int>.Allocate(ItemCount)),
+                         F4(MemoryOwner<float>.Allocate(ItemCount)),
+                         L(
+                             I1(MemoryOwner<sbyte>.Allocate(ItemCount)),
+                             I2(MemoryOwner<short>.Allocate(ItemCount)),
+                             I4(MemoryOwner<int>.Allocate(ItemCount)),
+                             F4(MemoryOwner<float>.Allocate(ItemCount)),
+                             Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
+                             B(MemoryOwner<byte>.Allocate(ItemCount)),
+                             L(
+                                 A(CreateString(Math.Min(ItemCount, 512))),
+                                 //J(CreateString(Math.Min(ItemCount, 512))),
+                                 Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
+                                 B(MemoryOwner<byte>.Allocate(ItemCount))),
+                             F8(MemoryOwner<double>.Allocate(ItemCount))),
+                         Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
+                         B(MemoryOwner<byte>.Allocate(ItemCount)),
+                         L(
+                             A(CreateString(Math.Min(ItemCount, 512))),
+                             J(CreateString(Math.Min(ItemCount, 512))),
+                             Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
+                             B(MemoryOwner<byte>.Allocate(ItemCount))),
+                         F8(MemoryOwner<double>.Allocate(ItemCount))),
+                     U1(MemoryOwner<byte>.Allocate(ItemCount)),
+                     U2(MemoryOwner<ushort>.Allocate(ItemCount)),
+                     U4(MemoryOwner<uint>.Allocate(ItemCount)),
+                     F4(MemoryOwner<float>.Allocate(ItemCount))),
+            };
+
+            _json = JsonSerializer.Serialize(_message, JsonSerializerOptions);
+
+            static string CreateString(int count)
+            {
+                using var spanOwner = SpanOwner<char>.Allocate(count);
+                return spanOwner.Span.ToString();
+            }
+        }
+
+        [GlobalCleanup]
+        public void Cleanup()
+        {
+            _message.Dispose();
+        }
 
         [Benchmark]
         public string Serialize()
-            => JsonSerializer.Serialize(Message, JsonSerializerOptions);
+            => JsonSerializer.Serialize(_message, JsonSerializerOptions);
 
         [Benchmark]
         public SecsMessage Deserialze()
-            => JsonSerializer.Deserialize<SecsMessage>(JsonString, JsonSerializerOptions);
+            => JsonSerializer.Deserialize<SecsMessage>(_json, JsonSerializerOptions);
     }
 }
