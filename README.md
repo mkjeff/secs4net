@@ -2,19 +2,11 @@
 
 ## Note: This project is just an implementation reference. ##
 
-<br>
-About the v2, it is almost done. but it is hard to be compatible with v1.
-
-.NET Core/.NET 5.0+ is the mainstream already, opposite .net framework stuck on the maintenance stage.
-
-As mention above, as an implementation reference, I would try to keep the source code is clean and easy to understanding. Product support is not my goal coz I'm not in this industry for a long time.
-
-If you already use secs4net in your product and can't migrate your system to `v2`. I'd recommend using the fork version from [@TiltonJH](https://github.com/TiltonJH/secs4net).
+> There are lots of breaking changes in `2.0`. If you already use secs4net in your product and can't migrate to `2.0`. I'd recommend using the fork version from [@TiltonJH](https://github.com/TiltonJH/secs4net).
 
 [![NuGet](https://img.shields.io/nuget/vpre/secs4net.svg)](https://www.nuget.org/packages/Secs4Net/2.0.0-rc4.0)
 
 **Project Description**  
-~~Note: Secs4net will only support .net6.0+ starting from v2.~~
 
 SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to communicate with SEMI standard compatible device.  
 
@@ -63,7 +55,7 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
 
         //access list
         s3f17.SecsItem[1][0][0] == A("Id"); 
-        s3f17.SecsItem[1][0][2].Take(1..2); // LINQ Take with range syntax
+        s3f17.SecsItem[1][0][2][1..3]; //  range syntax
     
         //access unmanaged arry item
         byte b2 = s3f17.SecsItem[0].FirstValue<byte>(); // with different type
@@ -106,7 +98,7 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
     };
     ```
 
-6. creating `Item` via LINQ
+6. Creates `Item` via LINQ
 
     ```cs
     using static Secs4Net.Item;
@@ -141,10 +133,10 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
     ```
 
 7. `Item` is mutable with restrict.
-    > Basic rule: The `Item.Count` has been fixed already while the item is created.
+    > Basic rule: The `Item.Count` has been fixed while the item is created.
     
-    That means you can only overwrite values on allocated memory. 
-    e.q. A List item can override a sub-item via index operator but can't add/remove the sub-item. String Item still immutable, coz C# `string` is immutable as well.
+    That means you can only overwrite values on existing memory.
+    String Item is still immutable, coz C# `string` is immutable as well.
 
 8. Reuse pooled array for large item values
 
@@ -173,3 +165,8 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
     ```
     > `IMemoryOwner<T>`, `Item` and `SecsMessage` have implemented `IDisposable` don't forget to Dispose it when they don't need anymore.
     Otherwise, the array will not return to the pool till GC collects.
+
+    > Be aware that the max encoded bytes length in a single Item was `16,777,215`.
+
+    Sometimes, we will split a large raw data into many separated items.
+    In that case, creating the Item from sliced `Memory<T>` is more efficient.
