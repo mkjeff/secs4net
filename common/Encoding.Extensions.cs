@@ -1,4 +1,4 @@
-#if NETSTANDARD
+#if !NET
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using System.Buffers;
 using System.Runtime.CompilerServices;

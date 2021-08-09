@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Secs4Net
 {
@@ -19,11 +20,19 @@ namespace Secs4Net
 
             public sealed override void Dispose()
             {
-                var span = _value.AsSpan();
-                for (int i = 0; i < span.Length; i++)
+                var arr = _value;
+#if NET
+                ref var head = ref MemoryMarshal.GetArrayDataReference(arr);
+                for (nint i = 0, count = arr.Length; i < count; i++)
                 {
-                    span.DangerousGetReferenceAt(i).Dispose();
+                    Unsafe.Add(ref head, i).Dispose();
                 }
+#else
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    arr.DangerousGetReferenceAt(i).Dispose();
+                }
+#endif
             }
 
             public sealed override int Count => _value.Length;
@@ -43,23 +52,31 @@ namespace Secs4Net
                 return _value.Skip(start).Take(length);
             }
 
-            public sealed override IEnumerator<Item> GetEnumerator() 
+            public sealed override IEnumerator<Item> GetEnumerator()
                 => ((IEnumerable<Item>)_value).GetEnumerator();
 
             public sealed override void EncodeTo(IBufferWriter<byte> buffer)
             {
-                var span = _value.AsSpan();
-                if (span.IsEmpty)
+                var arr = _value;
+                if (arr.Length == 0)
                 {
                     EncodeEmptyItem(Format, buffer);
                     return;
                 }
 
-                EncodeItemHeader(Format, span.Length, buffer);
-                for (int i = 0; i < span.Length; i++)
+                EncodeItemHeader(Format, arr.Length, buffer);
+#if NET
+                ref var head = ref MemoryMarshal.GetArrayDataReference(arr);
+                for (nint i = 0, count = arr.Length; i < count; i++)
                 {
-                    span.DangerousGetReferenceAt(i).EncodeTo(buffer);
+                    Unsafe.Add(ref head, i).EncodeTo(buffer);
                 }
+#else
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    arr.DangerousGetReferenceAt(i).EncodeTo(buffer);
+                }
+#endif
             }
 
             private protected sealed override bool IsEquals(Item other)
@@ -68,16 +85,29 @@ namespace Secs4Net
             [MethodImpl(MethodImplOptions.NoInlining)]
             private static bool IsListEquals(Item[] listLeft, Item[] listRight)
             {
-                var spanLeft = listLeft.AsSpan();
-                var spanRight = listRight.AsSpan();
-                for (int i = 0, count = spanLeft.Length; i < count; i++)
+                if (listLeft.Length != listRight.Length)
                 {
-                    if (!spanLeft.DangerousGetReferenceAt(i).IsEquals(spanRight.DangerousGetReferenceAt(i)))
+                    return false;
+                }
+#if NET
+                ref var headLeft = ref MemoryMarshal.GetArrayDataReference(listLeft);
+                ref var headRight = ref MemoryMarshal.GetArrayDataReference(listRight);
+                for (nint i = 0, count = listLeft.Length; i < count; i++)
+                {
+                    if (!Unsafe.Add(ref headLeft, i).IsEquals(Unsafe.Add(ref headRight, i)))
                     {
                         return false;
                     }
                 }
-
+#else
+                for (int i = 0, count = listLeft.Length; i < count; i++)
+                {
+                    if (!listLeft.DangerousGetReferenceAt(i).IsEquals(listRight.DangerousGetReferenceAt(i)))
+                    {
+                        return false;
+                    }
+                }
+#endif
                 return true;
             }
         }

@@ -1,8 +1,8 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using Secs4Net.Sml;
-using System;
 using System.IO;
+using System.Text;
 using static Secs4Net.Item;
 
 namespace Secs4Net.Benchmark
@@ -30,8 +30,8 @@ namespace Secs4Net.Benchmark
                      U2(MemoryOwner<ushort>.Allocate(ItemCount)),
                      U4(MemoryOwner<uint>.Allocate(ItemCount)),
                      F4(MemoryOwner<float>.Allocate(ItemCount)),
-                     A(CreateString(Math.Min(ItemCount, 512))),
-                     J(CreateString(Math.Min(ItemCount, 512))), //JIS encoding cost more memory in coreclr
+                     A(CreateString(ItemCount, Encoding.ASCII)),
+                     J(CreateString(ItemCount, Item.Jis8Encoding)), //JIS encoding cost more memory in coreclr
                      F8(MemoryOwner<double>.Allocate(ItemCount)),
                      L(
                          I1(MemoryOwner<sbyte>.Allocate(ItemCount)),
@@ -46,16 +46,16 @@ namespace Secs4Net.Benchmark
                              Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
                              B(MemoryOwner<byte>.Allocate(ItemCount)),
                              L(
-                                 A(CreateString(Math.Min(ItemCount, 512))),
-                                 //J(CreateString(Math.Min(ItemCount, 512))),
+                                 A(CreateString(ItemCount, Encoding.ASCII)),
+                                 J(CreateString(ItemCount, Item.Jis8Encoding)),
                                  Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
                                  B(MemoryOwner<byte>.Allocate(ItemCount))),
                              F8(MemoryOwner<double>.Allocate(ItemCount))),
                          Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
                          B(MemoryOwner<byte>.Allocate(ItemCount)),
                          L(
-                             A(CreateString(Math.Min(ItemCount, 512))),
-                             J(CreateString(Math.Min(ItemCount, 512))),
+                             A(CreateString(ItemCount, Encoding.ASCII)),
+                             J(CreateString(ItemCount, Item.Jis8Encoding)),
                              Boolean(MemoryOwner<bool>.Allocate(ItemCount)),
                              B(MemoryOwner<byte>.Allocate(ItemCount))),
                          F8(MemoryOwner<double>.Allocate(ItemCount))),
@@ -67,10 +67,14 @@ namespace Secs4Net.Benchmark
 
             _sml = _message.ToSml();
 
-            static string CreateString(int count)
+            static string CreateString(int count, Encoding encoding)
             {
-                using var spanOwner = SpanOwner<char>.Allocate(count);
-                return spanOwner.Span.ToString();
+                if (count == 0)
+                {
+                    return string.Empty;
+                }
+                using var spanOwner = SpanOwner<byte>.Allocate(count);
+                return encoding.GetString(spanOwner.Span);
             }
         }
 

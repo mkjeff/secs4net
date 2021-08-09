@@ -1,8 +1,6 @@
-﻿using Secs4Net.Extensions;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Secs4Net
@@ -13,11 +11,11 @@ namespace Secs4Net
         {
             private readonly string _value;
 
-            internal StringItem(SecsFormat format, string value) 
+            internal StringItem(SecsFormat format, string value)
                 : base(format)
                 => _value = value;
 
-            public sealed override int Count 
+            public sealed override int Count
                 => _value.Length;
 
             public sealed override string GetString()

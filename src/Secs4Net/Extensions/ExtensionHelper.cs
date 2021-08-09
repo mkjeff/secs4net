@@ -1,7 +1,6 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
 using PooledAwait;
 using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -72,11 +71,11 @@ namespace Secs4Net.Extensions
 
 #if NET
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> AsBytes<T>(this ref T value) where T : unmanaged
-            => MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>());
+        public static Span<byte> AsBytes<T>(this ref T value) where T : unmanaged
+            => MemoryMarshal.CreateSpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>());
 #else
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe ReadOnlySpan<byte> AsBytes<T>(this ref T value) where T : unmanaged
+        public static unsafe Span<byte> AsBytes<T>(this ref T value) where T : unmanaged
             => new(Unsafe.AsPointer(ref value), Unsafe.SizeOf<T>());
 #endif
 
@@ -103,20 +102,6 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Memory<short> ReverseEndianness(this Memory<short> memory)
-        {
-            memory.Span.ReverseEndianness();
-            return memory;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IMemoryOwner<short> ReverseEndianness(this IMemoryOwner<short> memoryOwner)
-        {
-            memoryOwner.Memory.Span.ReverseEndianness();
-            return memoryOwner;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReverseEndianness(this Span<ushort> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -126,20 +111,6 @@ namespace Secs4Net.Extensions
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Memory<ushort> ReverseEndianness(this Memory<ushort> memory)
-        {
-            memory.Span.ReverseEndianness();
-            return memory;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IMemoryOwner<ushort> ReverseEndianness(this IMemoryOwner<ushort> memoryOwner)
-        {
-            memoryOwner.Memory.Span.ReverseEndianness();
-            return memoryOwner;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -155,20 +126,6 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Memory<int> ReverseEndianness(this Memory<int> memory)
-        {
-            memory.Span.ReverseEndianness();
-            return memory;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IMemoryOwner<int> ReverseEndianness(this IMemoryOwner<int> memoryOwner)
-        {
-            memoryOwner.Memory.Span.ReverseEndianness();
-            return memoryOwner;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReverseEndianness(this Span<uint> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -178,20 +135,6 @@ namespace Secs4Net.Extensions
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Memory<uint> ReverseEndianness(this Memory<uint> memory)
-        {
-            memory.Span.ReverseEndianness();
-            return memory;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IMemoryOwner<uint> ReverseEndianness(this IMemoryOwner<uint> memoryOwner)
-        {
-            memoryOwner.Memory.Span.ReverseEndianness();
-            return memoryOwner;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -207,20 +150,6 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Memory<long> ReverseEndianness(this Memory<long> memory)
-        {
-            memory.Span.ReverseEndianness();
-            return memory;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IMemoryOwner<long> ReverseEndianness(this IMemoryOwner<long> memoryOwner)
-        {
-            memoryOwner.Memory.Span.ReverseEndianness();
-            return memoryOwner;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReverseEndianness(this Span<ulong> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -230,20 +159,6 @@ namespace Secs4Net.Extensions
                 rStart = BinaryPrimitives.ReverseEndianness(rStart);
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Memory<ulong> ReverseEndianness(this Memory<ulong> memory)
-        {
-            memory.Span.ReverseEndianness();
-            return memory;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IMemoryOwner<ulong> ReverseEndianness(this IMemoryOwner<ulong> memoryOwner)
-        {
-            memoryOwner.Memory.Span.ReverseEndianness();
-            return memoryOwner;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -263,20 +178,6 @@ namespace Secs4Net.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Memory<float> ReverseEndianness(this Memory<float> memory)
-        {
-            memory.Span.ReverseEndianness();
-            return memory;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IMemoryOwner<float> ReverseEndianness(this IMemoryOwner<float> memoryOwner)
-        {
-            memoryOwner.Memory.Span.ReverseEndianness();
-            return memoryOwner;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReverseEndianness(this Span<double> span)
         {
             ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -291,21 +192,6 @@ namespace Secs4Net.Extensions
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Memory<double> ReverseEndianness(this Memory<double> memory)
-        {
-            memory.Span.ReverseEndianness();
-            return memory;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IMemoryOwner<double> ReverseEndianness(this IMemoryOwner<double> memoryOwner)
-        {
-            memoryOwner.Memory.Span.ReverseEndianness();
-            return memoryOwner;
-        }
-
 
 #if NETSTANDARD
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

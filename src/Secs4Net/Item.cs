@@ -15,7 +15,7 @@ namespace Secs4Net
     public abstract partial class Item : IEquatable<Item>, IEnumerable<Item>, IDisposable
     {
         private const int DebuggerDisplayMaxCount = 20;
-        private static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
+        public static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
         private static readonly Item EmptyL = new ListItem(SecsFormat.List, Array.Empty<Item>());
         private static readonly Item EmptyA = new StringItem(SecsFormat.ASCII, string.Empty);
         private static readonly Item EmptyJ = new StringItem(SecsFormat.JIS8, string.Empty);
@@ -31,7 +31,6 @@ namespace Secs4Net
         private static readonly Item EmptyI8 = new MemoryItem<long>(SecsFormat.I8, Array.Empty<long>());
         private static readonly Item EmptyF4 = new MemoryItem<float>(SecsFormat.F4, Array.Empty<float>());
         private static readonly Item EmptyF8 = new MemoryItem<double>(SecsFormat.F8, Array.Empty<double>());
-
         public SecsFormat Format { get; }
 
         private protected Item(SecsFormat format)

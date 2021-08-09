@@ -26,5 +26,9 @@
     <ProjectReference Include="..\..\src\Secs4Net.Sml\Secs4Net.Sml.csproj" />
     <ProjectReference Include="..\..\src\Secs4Net\Secs4Net.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\common\Encoding.Extensions.cs" Link="common\Encoding.Extensions.cs" />
+  </ItemGroup>
   
 </Project>

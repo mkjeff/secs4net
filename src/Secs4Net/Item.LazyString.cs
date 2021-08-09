@@ -1,5 +1,4 @@
-﻿using Microsoft.Toolkit.HighPerformance.Buffers;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Text;
 
@@ -19,8 +18,7 @@ namespace Secs4Net
                 _value = new Lazy<string>(() =>
                 {
                     var encoding = Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
-                    var span = _owner.Memory.Span;
-                    return span.Length > 512 ? encoding.GetString(span) : StringPool.Shared.GetOrAdd(span, encoding);
+                    return encoding.GetString(_owner.Memory.Span);
                 }, isThreadSafe: false);
             }
 

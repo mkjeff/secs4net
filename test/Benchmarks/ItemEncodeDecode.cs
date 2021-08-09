@@ -3,6 +3,7 @@ using Microsoft.Toolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers;
 using System.Linq;
+using System.Text;
 using static Secs4Net.Item;
 
 namespace Secs4Net.Benchmark
@@ -30,8 +31,8 @@ namespace Secs4Net.Benchmark
                 SecsFormat.List => L(Enumerable.Repeat(L(), Size)),
                 SecsFormat.Binary => B(CreateArray<byte>(Size)),
                 SecsFormat.Boolean => Boolean(CreateArray<bool>(Size)),
-                SecsFormat.ASCII => A(CreateString(Size)),
-                SecsFormat.JIS8 => J(CreateString(Size)),
+                SecsFormat.ASCII => A(CreateString(Size, Encoding.ASCII)),
+                SecsFormat.JIS8 => J(CreateString(Size, Item.Jis8Encoding)),
                 SecsFormat.I8 => I8(CreateArray<long>(Size)),
                 SecsFormat.I1 => I1(CreateArray<sbyte>(Size)),
                 SecsFormat.I2 => I2(CreateArray<short>(Size)),
@@ -52,10 +53,14 @@ namespace Secs4Net.Benchmark
 
             static IMemoryOwner<T> CreateArray<T>(int count) where T : unmanaged => MemoryOwner<T>.Allocate(count);
 
-            static string CreateString(int count)
+            static string CreateString(int count, Encoding encoding)
             {
-                using var spanOwner = SpanOwner<char>.Allocate(count);
-                return spanOwner.Span.ToString();
+                if (count == 0)
+                {
+                    return string.Empty;
+                }
+                using var spanOwner = SpanOwner<byte>.Allocate(count);
+                return encoding.GetString(spanOwner.Span);
             }
         }
 

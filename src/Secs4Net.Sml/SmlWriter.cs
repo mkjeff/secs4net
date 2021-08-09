@@ -233,13 +233,6 @@ namespace Secs4Net.Sml
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
             WriteValue(writer, rStart);
-            //int i = 0;
-            //WriteValue(writer, array.DangerousGetReferenceAt(i++));
-            //for (; i < array.Length; i++)
-            //{
-            //    writer.Write(' ');
-            //    WriteValue(writer, array.DangerousGetReferenceAt(i));
-            //}
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void WriteValue(TextWriter writer, T value)
@@ -268,13 +261,6 @@ namespace Secs4Net.Sml
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
             WriteValue(writer, rStart);
-            //int i = 0;
-            //WriteValue(writer, array.DangerousGetReferenceAt(i++));
-            //for (; i < array.Length; i++)
-            //{
-            //    writer.Write(' ');
-            //    WriteValue(writer, array.DangerousGetReferenceAt(i));
-            //}
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void WriteValue(TextWriter writer, float value)
@@ -303,15 +289,6 @@ namespace Secs4Net.Sml
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
             writer.Write(rStart.ToString());
-            //int i = 0;
-            //for (; i < array.Length - 1; i++)
-            //{
-            //    var value = array.DangerousGetReferenceAt(i);
-            //    writer.Write(value.ToString());
-            //    writer.Write(' ');
-            //}
-
-            //writer.Write(array.DangerousGetReferenceAt(i).ToString());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -332,14 +309,6 @@ namespace Secs4Net.Sml
                 rStart = ref Unsafe.Add(ref rStart, 1);
             }
             AppendHexChars(writer, rStart);
-            //int i = 0;
-            //for (; i < array.Length - 1; i++)
-            //{
-            //    AppendHexChars(writer, array.DangerousGetReferenceAt(i));
-            //    writer.Write(' ');
-            //}
-
-            //AppendHexChars(writer, array.DangerousGetReferenceAt(i));
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void AppendHexChars(TextWriter sb, byte num)
