@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net6.0-windows;net472</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
