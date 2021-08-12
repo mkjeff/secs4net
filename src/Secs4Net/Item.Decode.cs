@@ -14,7 +14,7 @@ partial class Item
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void DecodeFormatAndLengthByteCount(byte formatAndLengthByte, out SecsFormat format, out byte lengthByteCount)
     {
-        format = (SecsFormat)(formatAndLengthByte & 0b11111100);
+        format = (SecsFormat)(formatAndLengthByte >> 2);
         lengthByteCount = (byte)(formatAndLengthByte & 0b00000011);
     }
 

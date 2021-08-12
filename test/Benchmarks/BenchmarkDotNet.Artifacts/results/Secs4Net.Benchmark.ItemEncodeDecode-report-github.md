@@ -1,282 +1,192 @@
 ``` ini
 
-BenchmarkDotNet=v0.13.0, OS=Windows 10.0.19043.1151 (21H1/May2021Update)
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19043.1165 (21H1/May2021Update)
 AMD Ryzen 7 3700X, 1 CPU, 16 logical and 8 physical cores
-.NET SDK=6.0.100-preview.6.21355.2
-  [Host]     : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
-  Job-PSNALV : .NET 6.0.0 (6.0.21.35212), X64 RyuJIT
-  Job-DJMMZE : .NET Framework 4.8 (4.8.4400.0), X64 RyuJIT
+.NET SDK=6.0.100-preview.7.21379.14
+  [Host]     : .NET 6.0.0 (6.0.21.37719), X64 RyuJIT
+  Job-GVDIFM : .NET 6.0.0 (6.0.21.37719), X64 RyuJIT
+  Job-WCNVCL : .NET Framework 4.8 (4.8.4400.0), X64 RyuJIT
 
 
 ```
-|               Method |              Runtime | Size |  Format |         Mean |      Error |     StdDev |        Ratio | RatioSD |  Gen 0 |  Gen 1 | Gen 2 | Allocated |
-|--------------------- |--------------------- |----- |-------- |-------------:|-----------:|-----------:|-------------:|--------:|-------:|-------:|------:|----------:|
-|             **EncodeTo** |             **.NET 6.0** |    **0** |   **ASCII** |     **77.82 ns** |   **0.396 ns** |   **0.371 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |   ASCII |    130.76 ns |   0.911 ns |   0.807 ns | 1.68x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |   ASCII |     97.16 ns |   0.814 ns |   0.762 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |   ASCII |    215.59 ns |   0.324 ns |   0.287 ns | 2.22x slower |   0.02x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |  **Binary** |     **84.24 ns** |   **1.105 ns** |   **0.979 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |  Binary |    140.41 ns |   0.980 ns |   0.869 ns | 1.67x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |  Binary |     97.32 ns |   0.335 ns |   0.313 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |  Binary |    216.30 ns |   0.385 ns |   0.341 ns | 2.22x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** | **Boolean** |     **88.81 ns** |   **0.311 ns** |   **0.276 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 | Boolean |    136.17 ns |   2.117 ns |   1.981 ns | 1.54x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 | Boolean |    101.21 ns |   0.225 ns |   0.211 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 | Boolean |    221.19 ns |   0.510 ns |   0.477 ns | 2.19x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **F4** |     **80.56 ns** |   **0.325 ns** |   **0.304 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      F4 |    138.27 ns |   1.509 ns |   1.412 ns | 1.72x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      F4 |    113.12 ns |   0.390 ns |   0.365 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      F4 |    218.89 ns |   0.777 ns |   0.727 ns | 1.93x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **F8** |     **82.97 ns** |   **0.206 ns** |   **0.193 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      F8 |    137.30 ns |   0.806 ns |   0.754 ns | 1.65x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      F8 |     92.45 ns |   1.115 ns |   1.043 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      F8 |    217.84 ns |   0.363 ns |   0.340 ns | 2.36x slower |   0.03x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **I1** |     **84.45 ns** |   **0.495 ns** |   **0.463 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      I1 |    133.37 ns |   0.714 ns |   0.668 ns | 1.58x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      I1 |     94.32 ns |   0.306 ns |   0.271 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      I1 |    218.19 ns |   1.417 ns |   1.325 ns | 2.31x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **I2** |     **82.62 ns** |   **0.409 ns** |   **0.383 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      I2 |    136.43 ns |   0.837 ns |   0.783 ns | 1.65x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      I2 |     99.80 ns |   0.341 ns |   0.319 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      I2 |    217.67 ns |   0.228 ns |   0.202 ns | 2.18x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **I4** |     **82.91 ns** |   **0.519 ns** |   **0.486 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      I4 |    135.47 ns |   0.799 ns |   0.748 ns | 1.63x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      I4 |    103.86 ns |   0.312 ns |   0.292 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      I4 |    219.28 ns |   0.360 ns |   0.319 ns | 2.11x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **I8** |     **80.42 ns** |   **0.467 ns** |   **0.437 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      I8 |    136.11 ns |   0.929 ns |   0.869 ns | 1.69x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      I8 |     95.59 ns |   0.398 ns |   0.372 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      I8 |    217.12 ns |   0.336 ns |   0.314 ns | 2.27x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |    **JIS8** |     **75.27 ns** |   **0.410 ns** |   **0.384 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |    JIS8 |    130.10 ns |   0.503 ns |   0.470 ns | 1.73x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |    JIS8 |     90.06 ns |   0.501 ns |   0.469 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |    JIS8 |    215.59 ns |   0.645 ns |   0.572 ns | 2.39x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |    **List** |     **78.08 ns** |   **0.345 ns** |   **0.323 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |    List |    125.80 ns |   0.507 ns |   0.474 ns | 1.61x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |    List |     58.33 ns |   0.282 ns |   0.250 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |    List |    158.56 ns |   0.323 ns |   0.287 ns | 2.72x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **U1** |     **83.36 ns** |   **0.360 ns** |   **0.336 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      U1 |    139.86 ns |   0.901 ns |   0.843 ns | 1.68x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      U1 |     95.90 ns |   0.411 ns |   0.384 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      U1 |    216.37 ns |   0.362 ns |   0.321 ns | 2.26x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **U2** |     **79.27 ns** |   **0.735 ns** |   **0.687 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      U2 |    135.98 ns |   0.950 ns |   0.889 ns | 1.72x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      U2 |    102.42 ns |   0.148 ns |   0.131 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      U2 |    218.29 ns |   0.351 ns |   0.311 ns | 2.13x slower |   0.00x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **U4** |     **83.22 ns** |   **0.639 ns** |   **0.598 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      U4 |    137.80 ns |   1.124 ns |   1.051 ns | 1.66x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      U4 |    112.14 ns |   0.772 ns |   0.723 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      U4 |    219.52 ns |   0.790 ns |   0.701 ns | 1.96x slower |   0.01x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |    **0** |      **U8** |     **79.22 ns** |   **0.684 ns** |   **0.640 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |    0 |      U8 |    137.77 ns |   1.908 ns |   1.785 ns | 1.74x slower |   0.03x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |    0 |      U8 |    100.41 ns |   1.010 ns |   0.844 ns |     baseline |         |      - |      - |     - |         - |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      U8 |    217.57 ns |   1.059 ns |   0.990 ns | 2.17x slower |   0.02x |      - |      - |     - |         - |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |   **ASCII** |     **98.72 ns** |   **0.328 ns** |   **0.291 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |   ASCII |    177.61 ns |   1.720 ns |   1.608 ns | 1.80x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |   ASCII |    211.79 ns |   0.932 ns |   0.778 ns |     baseline |         | 0.0038 |      - |     - |      32 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |   ASCII |    464.85 ns |   1.650 ns |   1.378 ns | 2.19x slower |   0.01x | 0.0048 |      - |     - |      32 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |  **Binary** |     **97.65 ns** |   **0.535 ns** |   **0.447 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |  Binary |    179.14 ns |   1.722 ns |   1.438 ns | 1.83x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |  Binary |    140.25 ns |   0.912 ns |   0.853 ns |     baseline |         | 0.0095 |      - |     - |      80 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |  Binary |    294.31 ns |   0.914 ns |   0.810 ns | 2.10x slower |   0.01x | 0.0124 |      - |     - |      80 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** | **Boolean** |    **101.23 ns** |   **1.210 ns** |   **1.132 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 | Boolean |    171.10 ns |   2.849 ns |   2.665 ns | 1.69x slower |   0.03x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 | Boolean |    139.38 ns |   0.517 ns |   0.484 ns |     baseline |         | 0.0095 |      - |     - |      80 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 | Boolean |    283.58 ns |   1.347 ns |   1.194 ns | 2.04x slower |   0.01x | 0.0124 |      - |     - |      80 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **F4** |    **101.13 ns** |   **0.387 ns** |   **0.343 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      F4 |    204.64 ns |   1.571 ns |   1.470 ns | 2.02x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      F4 |    135.03 ns |   0.677 ns |   0.634 ns |     baseline |         | 0.0124 |      - |     - |     104 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      F4 |    335.60 ns |   0.643 ns |   0.570 ns | 2.49x slower |   0.01x | 0.0162 |      - |     - |     104 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **F8** |     **99.87 ns** |   **1.160 ns** |   **1.085 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      F8 |    207.85 ns |   1.620 ns |   1.515 ns | 2.08x slower |   0.03x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      F8 |    136.94 ns |   0.819 ns |   0.726 ns |     baseline |         | 0.0172 |      - |     - |     144 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      F8 |    347.37 ns |   1.100 ns |   0.975 ns | 2.54x slower |   0.02x | 0.0224 |      - |     - |     144 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **I1** |     **96.58 ns** |   **1.024 ns** |   **0.957 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      I1 |    169.53 ns |   1.438 ns |   1.201 ns | 1.76x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      I1 |    130.25 ns |   0.782 ns |   0.694 ns |     baseline |         | 0.0095 |      - |     - |      80 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      I1 |    293.80 ns |   0.741 ns |   0.619 ns | 2.26x slower |   0.01x | 0.0124 |      - |     - |      80 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **I2** |    **100.75 ns** |   **0.423 ns** |   **0.395 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      I2 |    191.70 ns |   0.735 ns |   0.688 ns | 1.90x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      I2 |    136.45 ns |   0.720 ns |   0.674 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      I2 |    331.03 ns |   0.294 ns |   0.245 ns | 2.43x slower |   0.01x | 0.0138 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **I4** |    **105.84 ns** |   **0.292 ns** |   **0.273 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      I4 |    187.35 ns |   0.477 ns |   0.446 ns | 1.77x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      I4 |    130.09 ns |   0.778 ns |   0.728 ns |     baseline |         | 0.0124 |      - |     - |     104 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      I4 |    338.78 ns |   0.490 ns |   0.409 ns | 2.60x slower |   0.01x | 0.0162 |      - |     - |     104 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **I8** |     **99.53 ns** |   **0.446 ns** |   **0.417 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      I8 |    193.63 ns |   0.789 ns |   0.738 ns | 1.95x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      I8 |    145.32 ns |   0.555 ns |   0.519 ns |     baseline |         | 0.0172 |      - |     - |     144 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      I8 |    340.95 ns |   0.900 ns |   0.798 ns | 2.35x slower |   0.01x | 0.0224 |      - |     - |     144 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |    **JIS8** |    **384.38 ns** |   **1.931 ns** |   **1.712 ns** |     **baseline** |        **** | **0.0582** |      **-** |     **-** |     **488 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |    JIS8 |    453.15 ns |   1.243 ns |   1.102 ns | 1.18x slower |   0.00x | 0.0596 |      - |     - |     377 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |    JIS8 |    315.94 ns |   1.244 ns |   1.164 ns |     baseline |         | 0.0315 |      - |     - |     264 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |    JIS8 |    577.89 ns |   2.361 ns |   2.208 ns | 1.83x slower |   0.01x | 0.0334 |      - |     - |     217 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |    **List** |    **162.31 ns** |   **1.063 ns** |   **0.942 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |    List |    380.23 ns |   1.882 ns |   1.761 ns | 2.34x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |    List |    489.21 ns |   4.852 ns |   4.538 ns |     baseline |         | 0.0162 |      - |     - |     136 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |    List |  1,091.35 ns |   3.681 ns |   3.443 ns | 2.23x slower |   0.02x | 0.0210 |      - |     - |     136 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **U1** |    **103.04 ns** |   **0.220 ns** |   **0.195 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      U1 |    180.85 ns |   1.883 ns |   1.669 ns | 1.76x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      U1 |    144.37 ns |   0.530 ns |   0.442 ns |     baseline |         | 0.0095 |      - |     - |      80 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      U1 |    297.21 ns |   2.679 ns |   2.506 ns | 2.06x slower |   0.02x | 0.0124 |      - |     - |      80 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **U2** |     **98.98 ns** |   **0.873 ns** |   **0.817 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      U2 |    188.32 ns |   1.910 ns |   1.787 ns | 1.90x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      U2 |    140.52 ns |   1.298 ns |   1.214 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      U2 |    341.57 ns |   1.329 ns |   1.178 ns | 2.43x slower |   0.03x | 0.0138 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **U4** |    **100.30 ns** |   **1.305 ns** |   **1.089 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      U4 |    191.02 ns |   1.886 ns |   1.672 ns | 1.91x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      U4 |    132.93 ns |   0.739 ns |   0.655 ns |     baseline |         | 0.0124 |      - |     - |     104 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      U4 |    327.45 ns |   1.435 ns |   1.342 ns | 2.46x slower |   0.02x | 0.0162 |      - |     - |     104 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** |   **10** |      **U8** |    **101.64 ns** |   **1.162 ns** |   **1.087 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 |   10 |      U8 |    194.98 ns |   1.074 ns |   1.005 ns | 1.92x slower |   0.02x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 |   10 |      U8 |    131.59 ns |   0.567 ns |   0.503 ns |     baseline |         | 0.0172 |      - |     - |     144 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 |   10 |      U8 |    337.85 ns |   1.441 ns |   1.348 ns | 2.57x slower |   0.01x | 0.0224 |      - |     - |     144 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |   **ASCII** |    **135.21 ns** |   **2.050 ns** |   **1.917 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |   ASCII |  1,191.23 ns |   4.305 ns |   3.816 ns | 8.80x slower |   0.13x | 0.0057 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |   ASCII |    426.07 ns |   2.866 ns |   2.681 ns |     baseline |         | 0.2694 | 0.0019 |     - |   2,256 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |   ASCII |  1,739.89 ns |   7.240 ns |   6.418 ns | 4.08x slower |   0.03x | 0.3624 | 0.0019 |     - |   2,295 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |  **Binary** |    **111.86 ns** |   **0.405 ns** |   **0.338 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |  Binary |    204.83 ns |   3.217 ns |   3.009 ns | 1.83x slower |   0.03x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |  Binary |    250.65 ns |   0.879 ns |   0.822 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |  Binary |    424.14 ns |   3.830 ns |   3.583 ns | 1.69x slower |   0.01x | 0.0138 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** | **Boolean** |    **107.57 ns** |   **1.061 ns** |   **0.992 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 | Boolean |    196.21 ns |   2.204 ns |   2.062 ns | 1.82x slower |   0.03x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 | Boolean |    246.43 ns |   1.622 ns |   1.518 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 | Boolean |    423.45 ns |   3.287 ns |   3.074 ns | 1.72x slower |   0.02x | 0.0138 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **F4** |    **537.59 ns** |   **3.131 ns** |   **2.928 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      F4 |  2,301.37 ns |  18.401 ns |  17.212 ns | 4.28x slower |   0.03x | 0.0038 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      F4 |    677.67 ns |   4.735 ns |   4.430 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      F4 |  2,164.42 ns |  12.838 ns |  12.009 ns | 3.19x slower |   0.03x | 0.0114 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **F8** |    **670.74 ns** |   **3.706 ns** |   **3.466 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      F8 |  2,783.41 ns |  20.846 ns |  18.480 ns | 4.15x slower |   0.04x | 0.0038 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      F8 |    699.63 ns |   5.422 ns |   5.072 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      F8 |  2,907.45 ns |  21.909 ns |  20.493 ns | 4.16x slower |   0.03x | 0.0114 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **I1** |    **120.63 ns** |   **1.119 ns** |   **1.047 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      I1 |    195.96 ns |   2.538 ns |   2.374 ns | 1.62x slower |   0.03x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      I1 |    239.80 ns |   1.066 ns |   0.945 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      I1 |    425.13 ns |   4.215 ns |   3.737 ns | 1.77x slower |   0.02x | 0.0138 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **I2** |    **604.18 ns** |   **3.118 ns** |   **2.916 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      I2 |    985.66 ns |   2.346 ns |   2.080 ns | 1.63x slower |   0.01x | 0.0057 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      I2 |    729.97 ns |   3.552 ns |   3.322 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      I2 |  1,234.72 ns |   1.799 ns |   1.683 ns | 1.69x slower |   0.01x | 0.0134 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **I4** |    **486.36 ns** |   **0.631 ns** |   **0.559 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      I4 |    983.32 ns |   2.098 ns |   1.860 ns | 2.02x slower |   0.00x | 0.0057 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      I4 |    526.06 ns |   2.738 ns |   2.287 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      I4 |  1,220.91 ns |   3.445 ns |   3.222 ns | 2.32x slower |   0.01x | 0.0134 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **I8** |    **521.54 ns** |   **1.477 ns** |   **1.310 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      I8 |  1,667.26 ns |   4.834 ns |   4.522 ns | 3.20x slower |   0.01x | 0.0057 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      I8 |    557.50 ns |   2.415 ns |   2.141 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      I8 |  1,906.76 ns |  10.283 ns |   9.619 ns | 3.42x slower |   0.02x | 0.0134 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |    **JIS8** | **18,992.55 ns** | **117.839 ns** | **110.226 ns** |     **baseline** |        **** | **0.0305** |      **-** |     **-** |     **488 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |    JIS8 | 18,269.15 ns |  99.206 ns |  92.797 ns | 1.04x faster |   0.01x | 0.0305 |      - |     - |     377 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |    JIS8 |  9,970.45 ns |  61.518 ns |  51.371 ns |     baseline |         | 0.3204 |      - |     - |   2,720 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |    JIS8 | 10,281.13 ns |  70.657 ns |  66.093 ns | 1.03x slower |   0.01x | 0.4120 |      - |     - |   2,664 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |    **List** |  **7,821.07 ns** |  **32.256 ns** |  **30.173 ns** |     **baseline** |        **** |      **-** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |    List | 24,442.63 ns |  36.412 ns |  30.406 ns | 3.12x slower |   0.01x |      - |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |    List | 40,524.58 ns | 298.827 ns | 249.534 ns |     baseline |         | 0.9766 |      - |     - |   8,248 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |    List | 93,308.42 ns | 186.098 ns | 174.076 ns | 2.30x slower |   0.01x | 1.2207 |      - |     - |   8,273 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **U1** |    **112.15 ns** |   **0.512 ns** |   **0.479 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      U1 |    205.12 ns |   1.081 ns |   0.959 ns | 1.83x slower |   0.01x | 0.0062 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      U1 |    232.63 ns |   0.312 ns |   0.292 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      U1 |    426.87 ns |   1.542 ns |   1.288 ns | 1.84x slower |   0.01x | 0.0138 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **U2** |    **485.33 ns** |   **0.882 ns** |   **0.782 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      U2 |    784.54 ns |   1.611 ns |   1.428 ns | 1.62x slower |   0.00x | 0.0057 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      U2 |    592.31 ns |   2.107 ns |   1.868 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      U2 |    988.69 ns |   6.299 ns |   5.260 ns | 1.67x slower |   0.01x | 0.0134 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **U4** |    **477.46 ns** |   **3.093 ns** |   **2.742 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      U4 |    986.93 ns |   3.458 ns |   3.065 ns | 2.07x slower |   0.01x | 0.0057 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      U4 |    530.57 ns |   6.426 ns |   5.697 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      U4 |  1,231.19 ns |   2.765 ns |   2.587 ns | 2.32x slower |   0.03x | 0.0134 |      - |     - |      88 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-|             **EncodeTo** |             **.NET 6.0** | **1024** |      **U8** |    **515.38 ns** |   **1.352 ns** |   **1.264 ns** |     **baseline** |        **** | **0.0048** |      **-** |     **-** |      **40 B** |
-|             EncodeTo | .NET Framework 4.7.2 | 1024 |      U8 |  1,675.04 ns |   8.719 ns |   8.156 ns | 3.25x slower |   0.02x | 0.0057 |      - |     - |      40 B |
-|                      |                      |      |         |              |            |            |              |         |        |        |       |           |
-| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      U8 |    648.84 ns |   4.519 ns |   4.227 ns |     baseline |         | 0.0105 |      - |     - |      88 B |
-| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      U8 |  1,911.06 ns |   4.171 ns |   3.697 ns | 2.95x slower |   0.02x | 0.0114 |      - |     - |      88 B |
+|               Method |              Runtime | Size |  Format |         Mean |      Error |     StdDev |        Ratio | RatioSD |  Gen 0 |  Gen 1 | Allocated |
+|--------------------- |--------------------- |----- |-------- |-------------:|-----------:|-----------:|-------------:|--------:|-------:|-------:|----------:|
+|             **EncodeTo** |             **.NET 6.0** |    **0** |    **List** |     **76.57 ns** |   **0.602 ns** |   **0.563 ns** | **1.59x faster** |   **0.02x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |    List |    121.63 ns |   1.443 ns |   1.279 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |    List |     55.81 ns |   0.772 ns |   0.722 ns | 2.75x faster |   0.03x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |    List |    153.71 ns |   0.372 ns |   0.348 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |  **Binary** |     **80.60 ns** |   **0.242 ns** |   **0.202 ns** | **1.58x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |  Binary |    127.68 ns |   0.430 ns |   0.381 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |  Binary |     78.19 ns |   0.669 ns |   0.626 ns | 2.78x faster |   0.02x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |  Binary |    217.06 ns |   0.665 ns |   0.622 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** | **Boolean** |     **79.58 ns** |   **0.269 ns** |   **0.252 ns** | **1.60x faster** |   **0.02x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 | Boolean |    127.00 ns |   1.555 ns |   1.455 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 | Boolean |     76.71 ns |   0.253 ns |   0.237 ns | 2.86x faster |   0.01x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 | Boolean |    219.33 ns |   0.397 ns |   0.371 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |   **ASCII** |     **76.65 ns** |   **0.398 ns** |   **0.372 ns** | **1.66x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |   ASCII |    127.08 ns |   0.348 ns |   0.326 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |   ASCII |     73.98 ns |   0.135 ns |   0.120 ns | 3.24x faster |   0.01x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |   ASCII |    239.78 ns |   0.567 ns |   0.503 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |    **JIS8** |     **78.09 ns** |   **0.275 ns** |   **0.257 ns** | **1.63x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |    JIS8 |    127.13 ns |   0.278 ns |   0.260 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |    JIS8 |     80.40 ns |   0.487 ns |   0.455 ns | 2.98x faster |   0.02x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |    JIS8 |    239.84 ns |   0.596 ns |   0.557 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **I8** |     **80.85 ns** |   **0.363 ns** |   **0.339 ns** | **1.51x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      I8 |    122.32 ns |   0.421 ns |   0.373 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      I8 |     82.19 ns |   0.303 ns |   0.283 ns | 3.01x faster |   0.01x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      I8 |    247.65 ns |   0.350 ns |   0.328 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **I1** |     **80.84 ns** |   **0.274 ns** |   **0.243 ns** | **1.58x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      I1 |    127.86 ns |   0.872 ns |   0.815 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      I1 |     73.23 ns |   0.479 ns |   0.448 ns | 3.43x faster |   0.03x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      I1 |    251.29 ns |   0.928 ns |   0.823 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **I2** |     **78.93 ns** |   **0.353 ns** |   **0.330 ns** | **1.62x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      I2 |    127.84 ns |   1.046 ns |   0.978 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      I2 |     75.30 ns |   0.510 ns |   0.452 ns | 3.07x faster |   0.02x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      I2 |    231.09 ns |   0.527 ns |   0.493 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **I4** |     **78.38 ns** |   **0.379 ns** |   **0.354 ns** | **1.56x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      I4 |    122.57 ns |   0.602 ns |   0.563 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      I4 |     81.20 ns |   0.253 ns |   0.237 ns | 3.03x faster |   0.01x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      I4 |    245.91 ns |   0.535 ns |   0.475 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **F8** |     **78.30 ns** |   **0.249 ns** |   **0.221 ns** | **1.57x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      F8 |    122.63 ns |   0.663 ns |   0.621 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      F8 |     81.80 ns |   0.219 ns |   0.205 ns | 3.15x faster |   0.01x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      F8 |    257.84 ns |   0.458 ns |   0.406 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **F4** |     **78.53 ns** |   **0.288 ns** |   **0.270 ns** | **1.55x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      F4 |    122.11 ns |   0.419 ns |   0.372 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      F4 |     76.69 ns |   0.372 ns |   0.348 ns | 3.26x faster |   0.01x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      F4 |    249.85 ns |   0.300 ns |   0.251 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **U8** |     **80.94 ns** |   **0.262 ns** |   **0.245 ns** | **1.51x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      U8 |    122.55 ns |   0.541 ns |   0.506 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      U8 |     74.42 ns |   0.395 ns |   0.370 ns | 3.26x faster |   0.02x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      U8 |    242.62 ns |   0.581 ns |   0.543 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **U1** |     **80.95 ns** |   **0.318 ns** |   **0.297 ns** | **1.59x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      U1 |    128.48 ns |   0.644 ns |   0.603 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      U1 |     83.04 ns |   0.392 ns |   0.348 ns | 2.99x faster |   0.01x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      U1 |    247.88 ns |   0.415 ns |   0.368 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **U2** |     **76.86 ns** |   **0.249 ns** |   **0.233 ns** | **1.64x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      U2 |    126.28 ns |   0.898 ns |   0.840 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      U2 |     78.31 ns |   0.310 ns |   0.290 ns | 2.96x faster |   0.01x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      U2 |    232.17 ns |   0.361 ns |   0.338 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** |    **0** |      **U4** |     **81.18 ns** |   **0.393 ns** |   **0.368 ns** | **1.51x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 |    0 |      U4 |    122.44 ns |   0.667 ns |   0.624 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 |    0 |      U4 |     78.59 ns |   0.480 ns |   0.449 ns | 3.14x faster |   0.02x |      - |      - |         - |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 |    0 |      U4 |    246.67 ns |   0.586 ns |   0.548 ns |     baseline |         |      - |      - |         - |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |    **List** |  **8,099.92 ns** |  **39.952 ns** |  **37.371 ns** | **3.03x faster** |   **0.01x** |      **-** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |    List | 24,518.17 ns |  28.479 ns |  25.246 ns |     baseline |         |      - |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |    List | 43,745.32 ns | 206.943 ns | 183.449 ns | 2.22x faster |   0.01x | 0.9766 |      - |   8,248 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |    List | 97,122.94 ns | 150.194 ns | 140.491 ns |     baseline |         | 1.2207 |      - |   8,273 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |  **Binary** |    **103.88 ns** |   **0.239 ns** |   **0.223 ns** | **1.86x faster** |   **0.02x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |  Binary |    193.48 ns |   1.904 ns |   1.781 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |  Binary |    204.37 ns |   0.561 ns |   0.525 ns | 1.98x faster |   0.01x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |  Binary |    404.76 ns |   0.976 ns |   0.865 ns |     baseline |         | 0.0138 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** | **Boolean** |    **100.79 ns** |   **0.221 ns** |   **0.206 ns** | **2.01x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 | Boolean |    202.87 ns |   0.916 ns |   0.857 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 | Boolean |    201.38 ns |   1.116 ns |   1.044 ns | 2.10x faster |   0.01x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 | Boolean |    423.15 ns |   1.268 ns |   1.186 ns |     baseline |         | 0.0138 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |   **ASCII** |    **123.52 ns** |   **0.319 ns** |   **0.267 ns** | **9.68x faster** |   **0.03x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |   ASCII |  1,195.61 ns |   3.225 ns |   2.859 ns |     baseline |         | 0.0057 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |   ASCII |    408.89 ns |   3.226 ns |   3.017 ns | 4.29x faster |   0.04x | 0.2694 | 0.0019 |   2,256 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |   ASCII |  1,753.13 ns |   8.404 ns |   7.861 ns |     baseline |         | 0.3624 | 0.0019 |   2,295 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |    **JIS8** | **12,572.18 ns** | **155.748 ns** | **145.687 ns** | **1.47x faster** |   **0.02x** | **0.0458** |      **-** |     **488 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |    JIS8 | 18,487.06 ns | 158.341 ns | 148.112 ns |     baseline |         | 0.0305 |      - |     377 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |    JIS8 | 10,625.92 ns |  59.164 ns |  49.405 ns | 1.03x slower |   0.01x | 0.3204 |      - |   2,720 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |    JIS8 | 10,321.77 ns |  67.710 ns |  63.336 ns |     baseline |         | 0.4120 |      - |   2,664 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **I8** |    **512.55 ns** |   **1.867 ns** |   **1.559 ns** | **3.26x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      I8 |  1,670.66 ns |   2.906 ns |   2.718 ns |     baseline |         | 0.0057 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      I8 |    772.69 ns |   3.342 ns |   3.126 ns | 2.42x faster |   0.01x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      I8 |  1,868.86 ns |   6.000 ns |   5.319 ns |     baseline |         | 0.0134 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **I1** |    **112.21 ns** |   **0.228 ns** |   **0.190 ns** | **1.81x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      I1 |    202.72 ns |   1.140 ns |   1.067 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      I1 |    210.48 ns |   0.684 ns |   0.607 ns | 2.00x faster |   0.02x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      I1 |    421.54 ns |   2.530 ns |   2.366 ns |     baseline |         | 0.0138 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **I2** |    **613.26 ns** |   **1.055 ns** |   **0.935 ns** | **1.61x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      I2 |    986.46 ns |   4.097 ns |   3.632 ns |     baseline |         | 0.0057 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      I2 |    599.15 ns |   2.677 ns |   2.504 ns | 1.99x faster |   0.01x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      I2 |  1,192.32 ns |   2.694 ns |   2.250 ns |     baseline |         | 0.0134 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **I4** |    **484.62 ns** |   **2.133 ns** |   **1.781 ns** | **2.04x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      I4 |    988.58 ns |   3.747 ns |   3.321 ns |     baseline |         | 0.0057 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      I4 |    495.67 ns |   1.341 ns |   1.120 ns | 2.43x faster |   0.01x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      I4 |  1,202.18 ns |   3.290 ns |   2.916 ns |     baseline |         | 0.0134 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **F8** |    **661.27 ns** |   **3.879 ns** |   **3.439 ns** | **4.20x faster** |   **0.02x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      F8 |  2,774.25 ns |   6.517 ns |   5.442 ns |     baseline |         | 0.0038 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      F8 |    774.51 ns |   2.726 ns |   2.416 ns | 3.79x faster |   0.03x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      F8 |  2,937.93 ns |  17.002 ns |  15.072 ns |     baseline |         | 0.0114 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **F4** |    **540.24 ns** |   **0.992 ns** |   **0.879 ns** | **3.98x faster** |   **0.02x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      F4 |  2,147.80 ns |   9.434 ns |   8.825 ns |     baseline |         | 0.0038 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      F4 |    637.19 ns |   2.457 ns |   2.299 ns | 3.37x faster |   0.02x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      F4 |  2,146.68 ns |   5.724 ns |   5.354 ns |     baseline |         | 0.0114 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **U8** |    **668.98 ns** |   **1.183 ns** |   **0.988 ns** | **2.49x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      U8 |  1,665.33 ns |   3.055 ns |   2.708 ns |     baseline |         | 0.0057 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      U8 |    592.22 ns |   2.621 ns |   2.452 ns | 3.16x faster |   0.02x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      U8 |  1,873.66 ns |   8.899 ns |   6.948 ns |     baseline |         | 0.0134 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **U1** |    **103.17 ns** |   **0.346 ns** |   **0.324 ns** | **1.87x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      U1 |    192.90 ns |   0.622 ns |   0.581 ns |     baseline |         | 0.0062 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      U1 |    200.26 ns |   0.935 ns |   0.875 ns | 2.10x faster |   0.01x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      U1 |    419.98 ns |   2.070 ns |   1.937 ns |     baseline |         | 0.0138 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **U2** |    **623.45 ns** |   **1.963 ns** |   **1.639 ns** | **1.25x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      U2 |    781.28 ns |   8.542 ns |   7.990 ns |     baseline |         | 0.0057 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      U2 |    479.03 ns |   2.755 ns |   2.442 ns | 2.07x faster |   0.02x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      U2 |    991.09 ns |   4.162 ns |   3.893 ns |     baseline |         | 0.0134 |      - |      88 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+|             **EncodeTo** |             **.NET 6.0** | **1024** |      **U4** |    **487.15 ns** |   **0.684 ns** |   **0.640 ns** | **2.02x faster** |   **0.01x** | **0.0048** |      **-** |      **40 B** |
+|             EncodeTo | .NET Framework 4.7.2 | 1024 |      U4 |    983.31 ns |   3.040 ns |   2.695 ns |     baseline |         | 0.0057 |      - |      40 B |
+|                      |                      |      |         |              |            |            |              |         |        |        |           |
+| DecodeFromFullBuffer |             .NET 6.0 | 1024 |      U4 |    569.77 ns |   1.247 ns |   0.974 ns | 2.10x faster |   0.01x | 0.0105 |      - |      88 B |
+| DecodeFromFullBuffer | .NET Framework 4.7.2 | 1024 |      U4 |  1,194.35 ns |   2.924 ns |   2.592 ns |     baseline |         | 0.0134 |      - |      88 B |

@@ -18,7 +18,7 @@ partial class Item
     {
         var lengthSpan = Unsafe.AsRef(count).AsBytes();
 
-        var formatByte = (int)format;
+        var formatByte = (int)format << 2;
         if (count <= 0xff)
         {//	1 byte
             var span = buffer.GetSpan(sizeHint: 2);
