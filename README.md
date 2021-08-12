@@ -62,7 +62,6 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
         s3f17.SecsItem[0].FirstValue<byte>() = 0; // change original value 
         s3f17.SecsItem[0].GetFirstValueOrDefault<byte>(fallbackValueWhenItemIsEmpty); 
         Memory<byte> bytes = s3f17.SecsItem[0].GetMemory<byte>();
-        Memory<byte> readonlyBytes = s3f17.SecsItem[0].GetReadOnlyMemory<byte>();
 
         // access string item
         string str = s3f17.SecsItem[1][0][0].GetString(); // str = "Id"

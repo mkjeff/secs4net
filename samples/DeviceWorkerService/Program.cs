@@ -10,4 +10,3 @@ Host.CreateDefaultBuilder(args)
         services.AddSecs4Net<DeviceLogger>(hostContext.Configuration);
         services.AddHostedService<DeviceWorker>();
     }).Build().Run();
-

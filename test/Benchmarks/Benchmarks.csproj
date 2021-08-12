@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;net5.0;net472</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -17,8 +17,8 @@
   </PropertyGroup>
    
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.0" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.1" />
   </ItemGroup>
   
   <ItemGroup>
@@ -29,6 +29,8 @@
 
   <ItemGroup>
     <Compile Include="..\..\common\Encoding.Extensions.cs" Link="common\Encoding.Extensions.cs" />
+    <Compile Include="..\..\common\EnumerableExtensions.cs" Link="common\EnumerableExtensions.cs" />
+    <Compile Include="..\..\common\Usings.cs" Link="common\Usings.cs" />
   </ItemGroup>
   
 </Project>

@@ -1,117 +1,116 @@
 using Microsoft.Toolkit.HighPerformance;
 using System.Collections.Generic;
 
-namespace System
+namespace System;
+
+internal delegate TResult SpanParser<TResult>(ReadOnlySpan<char> span);
+
+//https://github.com/bbartels/coreclr/blob/master/src/System.Private.CoreLib/shared/System/MemoryExtensions.Split.cs
+// https://github.com/dotnet/runtime/pull/295
+
+internal static partial class MemoryExtensions
 {
-    internal delegate TResult SpanParser<TResult>(ReadOnlySpan<char> span);
+    /// <summary>
+    /// Returns an enumerator that iterates through a <see cref="ReadOnlySpan{T}"/>,
+    /// which is split by separator <paramref name="separator"/>.
+    /// </summary>
+    /// <param name="span">The source span which should be iterated over.</param>
+    /// <param name="separator">The separator used to separate the <paramref name="span"/>.</param>
+    /// <param name="options">The <see cref="StringSplitOptions"/> which should be applied with this operation.</param>
+    /// <returns>Returns an enumerator for the specified sequence.</returns>
+    public static SpanSplitEnumerator<char> Split(in this ReadOnlySpan<char> span, char separator, StringSplitOptions options = StringSplitOptions.None)
+        => new(span, separator, options == StringSplitOptions.RemoveEmptyEntries);
 
-    //https://github.com/bbartels/coreclr/blob/master/src/System.Private.CoreLib/shared/System/MemoryExtensions.Split.cs
-    // https://github.com/dotnet/runtime/pull/295
+    public static bool IsEmpty<T>(this SpanSplitEnumerator<T> source) where T : IEquatable<T>
+        => !source.MoveNext();
 
-    internal static partial class MemoryExtensions
+    public static TResult[] ToArray<TResult>(ref this SpanSplitEnumerator<char> source, SpanParser<TResult> seelctor, int? size)
     {
-        /// <summary>
-        /// Returns an enumerator that iterates through a <see cref="ReadOnlySpan{T}"/>,
-        /// which is split by separator <paramref name="separator"/>.
-        /// </summary>
-        /// <param name="span">The source span which should be iterated over.</param>
-        /// <param name="separator">The separator used to separate the <paramref name="span"/>.</param>
-        /// <param name="options">The <see cref="StringSplitOptions"/> which should be applied with this operation.</param>
-        /// <returns>Returns an enumerator for the specified sequence.</returns>
-        public static SpanSplitEnumerator<char> Split(in this ReadOnlySpan<char> span, char separator, StringSplitOptions options = StringSplitOptions.None)
-            => new(span, separator, options == StringSplitOptions.RemoveEmptyEntries);
-
-        public static bool IsEmpty<T>(this SpanSplitEnumerator<T> source) where T : IEquatable<T>
-            => !source.MoveNext();
-
-        public static TResult[] ToArray<TResult>(ref this SpanSplitEnumerator<char> source, SpanParser<TResult> seelctor, int? size)
+        if (size.HasValue)
         {
-            if (size.HasValue)
+            var list = new TResult[size.GetValueOrDefault()];
+            int i = 0;
+            foreach (var span in source)
             {
-                var list = new TResult[size.GetValueOrDefault()];
-                int i = 0;
-                foreach (var span in source)
+                list.DangerousGetReferenceAt(i++) = seelctor.Invoke(span);
+                if (i == list.Length)
                 {
-                    list.DangerousGetReferenceAt(i++) = seelctor.Invoke(span);
-                    if (i == list.Length)
-                    {
-                        break;
-                    }
+                    break;
                 }
-
-                return list;
             }
-            else
+
+            return list;
+        }
+        else
+        {
+            var list = new List<TResult>();
+            foreach (var span in source)
             {
-                var list = new List<TResult>();
-                foreach (var span in source)
-                {
-                    list.Add(seelctor.Invoke(span));
-                }
-
-                return list.ToArray();
+                list.Add(seelctor.Invoke(span));
             }
+
+            return list.ToArray();
         }
     }
+}
 
-    internal ref struct SpanSplitEnumerator<T> where T : IEquatable<T>
+internal ref struct SpanSplitEnumerator<T> where T : IEquatable<T>
+{
+    private ReadOnlySpan<T> _sequence;
+    private readonly T _separator;
+    private SpanSplitInfo _spanSplitInfo;
+
+    private bool ShouldRemoveEmptyEntries => _spanSplitInfo.HasFlag(SpanSplitInfo.RemoveEmptyEntries);
+    private bool IsFinished => _spanSplitInfo.HasFlag(SpanSplitInfo.FinishedEnumeration);
+
+    /// <summary>
+    /// Gets the element at the current position of the enumerator.
+    /// </summary>
+    public ReadOnlySpan<T> Current { get; private set; }
+
+    /// <summary>
+    /// Returns the current enumerator.
+    /// </summary>
+    /// <returns>Returns the current enumerator.</returns>
+    public SpanSplitEnumerator<T> GetEnumerator() => this;
+
+    internal SpanSplitEnumerator(ReadOnlySpan<T> span, T separator, bool removeEmptyEntries)
     {
-        private ReadOnlySpan<T> _sequence;
-        private readonly T _separator;
-        private SpanSplitInfo _spanSplitInfo;
+        Current = default;
+        _sequence = span;
+        _separator = separator;
+        _spanSplitInfo = default(SpanSplitInfo) | (removeEmptyEntries ? SpanSplitInfo.RemoveEmptyEntries : 0);
+    }
 
-        private bool ShouldRemoveEmptyEntries => _spanSplitInfo.HasFlag(SpanSplitInfo.RemoveEmptyEntries);
-        private bool IsFinished => _spanSplitInfo.HasFlag(SpanSplitInfo.FinishedEnumeration);
+    /// <summary>
+    /// Advances the enumerator to the next element in the <see cref="ReadOnlySpan{T}"/>.
+    /// </summary>
+    /// <returns>Returns whether there is another item in the enumerator.</returns>
+    public bool MoveNext()
+    {
+        if (IsFinished) { return false; }
 
-        /// <summary>
-        /// Gets the element at the current position of the enumerator.
-        /// </summary>
-        public ReadOnlySpan<T> Current { get; private set; }
-
-        /// <summary>
-        /// Returns the current enumerator.
-        /// </summary>
-        /// <returns>Returns the current enumerator.</returns>
-        public SpanSplitEnumerator<T> GetEnumerator() => this;
-
-        internal SpanSplitEnumerator(ReadOnlySpan<T> span, T separator, bool removeEmptyEntries)
+        do
         {
-            Current = default;
-            _sequence = span;
-            _separator = separator;
-            _spanSplitInfo = default(SpanSplitInfo) | (removeEmptyEntries ? SpanSplitInfo.RemoveEmptyEntries : 0);
-        }
-
-        /// <summary>
-        /// Advances the enumerator to the next element in the <see cref="ReadOnlySpan{T}"/>.
-        /// </summary>
-        /// <returns>Returns whether there is another item in the enumerator.</returns>
-        public bool MoveNext()
-        {
-            if (IsFinished) { return false; }
-
-            do
+            int index = _sequence.IndexOf(_separator);
+            if (index < 0)
             {
-                int index = _sequence.IndexOf(_separator);
-                if (index < 0)
-                {
-                    Current = _sequence;
-                    _spanSplitInfo |= SpanSplitInfo.FinishedEnumeration;
-                    return !(ShouldRemoveEmptyEntries && Current.IsEmpty);
-                }
+                Current = _sequence;
+                _spanSplitInfo |= SpanSplitInfo.FinishedEnumeration;
+                return !(ShouldRemoveEmptyEntries && Current.IsEmpty);
+            }
 
-                Current = _sequence.Slice(0, index);
-                _sequence = _sequence[(index + 1)..];
-            } while (Current.IsEmpty && ShouldRemoveEmptyEntries);
+            Current = _sequence.Slice(0, index);
+            _sequence = _sequence[(index + 1)..];
+        } while (Current.IsEmpty && ShouldRemoveEmptyEntries);
 
-            return true;
-        }
+        return true;
+    }
 
-        [Flags]
-        private enum SpanSplitInfo : byte
-        {
-            RemoveEmptyEntries = 0x1,
-            FinishedEnumeration = 0x2
-        }
+    [Flags]
+    private enum SpanSplitInfo : byte
+    {
+        RemoveEmptyEntries = 0x1,
+        FinishedEnumeration = 0x2
     }
 }

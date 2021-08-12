@@ -1,4 +1,4 @@
-#if !NET
+#if !NET6_0
 using System.Collections.Generic;
 
 namespace System.Linq

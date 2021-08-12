@@ -10,273 +10,272 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace Secs4Net
+namespace Secs4Net;
+
+public sealed class PipeDecoder
 {
-    public sealed class PipeDecoder
+    private readonly PipeReader _reader;
+    public PipeWriter Input { get; }
+
+    private readonly Channel<MessageHeader> _controlMessageChannel = Channel
+        .CreateUnbounded<MessageHeader>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = true,
+            AllowSynchronousContinuations = true,
+        });
+
+    private readonly Channel<(MessageHeader header, Item? rootItem)> _dataMessageChannel = Channel
+        .CreateUnbounded<(MessageHeader header, Item? rootItem)>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = true,
+            AllowSynchronousContinuations = false,
+        });
+
+    public PipeDecoder(PipeReader reader, PipeWriter input)
     {
-        private readonly PipeReader _reader;
-        internal PipeWriter Input { get; }
+        _reader = reader;
+        Input = input;
+    }
 
-        private readonly Channel<MessageHeader> _controlMessageChannel = Channel
-            .CreateUnbounded<MessageHeader>(new UnboundedChannelOptions
-            {
-                SingleReader = true,
-                SingleWriter = true,
-                AllowSynchronousContinuations = true,
-            });
+    public IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
+        => _controlMessageChannel.Reader.ReadAllAsync(cancellation);
 
-        private readonly Channel<(MessageHeader header, Item? rootItem)> _dataMessageChannel = Channel
-            .CreateUnbounded<(MessageHeader header, Item? rootItem)>(new UnboundedChannelOptions
-            {
-                SingleReader = true,
-                SingleWriter = true,
-                AllowSynchronousContinuations = false,
-            });
+    public IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation)
+        => _dataMessageChannel.Reader.ReadAllAsync(cancellation);
 
-        public PipeDecoder(PipeReader reader, PipeWriter input)
+    public Task StartAsync(CancellationToken cancellation)
+        => DecodeLoopAsync(_controlMessageChannel.Writer, _dataMessageChannel.Writer, _reader, cancellation);
+
+    private static async Task DecodeLoopAsync(
+        ChannelWriter<MessageHeader> controlMessageWriter,
+        ChannelWriter<(MessageHeader header, Item? rootItem)> dataMessageWriter,
+        PipeReader reader,
+        CancellationToken cancellation)
+    {
+        var stack = new Stack<ItemList>(capacity: 8);
+        var totalLengthBytes = new byte[4];
+        var messageHeaderBytes = new byte[10];
+        // PipeReader peek first
+        var buffer = await PipeReadAsync(reader, required: 4, cancellation).ConfigureAwait(false);
+        while (true)
         {
-            _reader = reader;
-            Input = input;
-        }
-
-        public IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
-            => _controlMessageChannel.Reader.ReadAllAsync(cancellation);
-
-        public IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation)
-            => _dataMessageChannel.Reader.ReadAllAsync(cancellation);
-
-        public Task StartAsync(CancellationToken cancellation)
-            => DecodeLoopAsync(_controlMessageChannel.Writer, _dataMessageChannel.Writer, _reader, cancellation);
-
-        private static async Task DecodeLoopAsync(
-            ChannelWriter<MessageHeader> controlMessageWriter,
-            ChannelWriter<(MessageHeader header, Item? rootItem)> dataMessageWriter,
-            PipeReader reader,
-            CancellationToken cancellation)
-        {
-            var stack = new Stack<ItemList>(capacity: 8);
-            var totalLengthBytes = new byte[4];
-            var messageHeaderBytes = new byte[10];
-            // PipeReader peek first
-            var buffer = await PipeReadAsync(reader, required: 4, cancellation).ConfigureAwait(false);
-            while (true)
+        Start:
+            // 0: get total message length 4 bytes
+            if (IsBufferInsufficient(reader, ref buffer, required: 4))
             {
-            Start:
-                // 0: get total message length 4 bytes
-                if (IsBufferInsufficient(reader, ref buffer, required: 4))
-                {
-                    buffer = await PipeReadAsync(reader, required: 4, cancellation).ConfigureAwait(false);
-                }
-                var totalLengthSeq = buffer.Slice(buffer.Start, 4);
-                totalLengthSeq.CopyTo(totalLengthBytes);
-                uint messageLength = BinaryPrimitives.ReadUInt32BigEndian(totalLengthBytes);
-                buffer = buffer.Slice(totalLengthSeq.End);
+                buffer = await PipeReadAsync(reader, required: 4, cancellation).ConfigureAwait(false);
+            }
+            var totalLengthSeq = buffer.Slice(buffer.Start, 4);
+            totalLengthSeq.CopyTo(totalLengthBytes);
+            uint messageLength = BinaryPrimitives.ReadUInt32BigEndian(totalLengthBytes);
+            buffer = buffer.Slice(totalLengthSeq.End);
 #if DEBUG
-                Trace.WriteLine($"Get new message with length: {messageLength}");
+            Trace.WriteLine($"Get new message with length: {messageLength}");
 #endif
 
-                // 1: get message header 10 bytes
-                if (IsBufferInsufficient(reader, ref buffer, required: 10))
-                {
-                    buffer = await PipeReadAsync(reader, required: 10, cancellation).ConfigureAwait(false);
-                }
-                var messageHaderSeq = buffer.Slice(buffer.Start, 10);
-                messageHaderSeq.CopyTo(messageHeaderBytes);
-                var header = MessageHeader.Decode(messageHeaderBytes);
-                buffer = buffer.Slice(messageHaderSeq.End);
+            // 1: get message header 10 bytes
+            if (IsBufferInsufficient(reader, ref buffer, required: 10))
+            {
+                buffer = await PipeReadAsync(reader, required: 10, cancellation).ConfigureAwait(false);
+            }
+            var messageHaderSeq = buffer.Slice(buffer.Start, 10);
+            messageHaderSeq.CopyTo(messageHeaderBytes);
+            var header = MessageHeader.Decode(messageHeaderBytes);
+            buffer = buffer.Slice(messageHaderSeq.End);
 #if DEBUG
-                Trace.WriteLine($"Get message(id:{header.Id:X8}) header");
+            Trace.WriteLine($"Get message(id:{header.Id:X8}) header");
 #endif
 
-                if (messageLength == 10) // only message header
+            if (messageLength == 10) // only message header
+            {
+                if (header.MessageType == MessageType.DataMessage)
                 {
-                    if (header.MessageType == MessageType.DataMessage)
-                    {
-                        await dataMessageWriter.WriteAsync((header, rootItem: null), cancellation).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await controlMessageWriter.WriteAsync(header, cancellation).ConfigureAwait(false);
-                    }
-                    continue;
-                }
-
-                if (buffer.Length >= messageLength - 10)
-                {
-                    var rootItem = Item.DecodeFromFullBuffer(ref buffer);
-#if DEBUG
-                    Trace.WriteLine($"Get data message(id:{header.Id:X8}) with total bytes: {messageLength} and decoded directly");
-#endif
-                    await dataMessageWriter.WriteAsync((header, rootItem), cancellation).ConfigureAwait(false);
-                    continue;
-                }
-
-            GetNewItem:
-                // 2: get _format + _lengthByteCount(2bit) 1 byte
-                if (IsBufferInsufficient(reader, ref buffer, required: 1))
-                {
-                    buffer = await PipeReadAsync(reader, required: 1, cancellation).ConfigureAwait(false);
-                }
-#if NET
-                Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
-#else
-                Item.DecodeFormatAndLengthByteCount(buffer.First.Span.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
-#endif
-                buffer = buffer.Slice(1);
-
-                // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
-                if (IsBufferInsufficient(reader, ref buffer, required: itemContentLengthByteCount))
-                {
-                    buffer = await PipeReadAsync(reader, required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
-                }
-                var itemContentLengthBytes = buffer.Slice(0, itemContentLengthByteCount);
-                Item.DecodeDataLength(itemContentLengthBytes, out var itemContentLength);
-                buffer = buffer.Slice(itemContentLengthBytes.End);
-
-                // 4: get item content
-                Item item;
-                if (itemFormat == SecsFormat.List)
-                {
-                    if (itemContentLength == 0)
-                    {
-                        item = Item.L();
-#if DEBUG
-                        Trace.WriteLine($"Decoded List[0]");
-#endif
-                    }
-                    else
-                    {
-#if DEBUG
-                        Trace.WriteLine($"Decoded List[{itemContentLength}]");
-#endif
-                        stack.Push(new ItemList(size: itemContentLength));
-                        goto GetNewItem;
-                    }
+                    await dataMessageWriter.WriteAsync((header, rootItem: null), cancellation).ConfigureAwait(false);
                 }
                 else
                 {
-                    if (IsBufferInsufficient(reader, ref buffer, required: itemContentLength))
-                    {
-                        buffer = await PipeReadAsync(reader, required: itemContentLength, cancellation).ConfigureAwait(false);
-                    }
-                    var itemDataBytes = buffer.Slice(0, itemContentLength);
-                    item = Item.DecodeDataItem(itemFormat, itemDataBytes);
-                    buffer = buffer.Slice(itemDataBytes.End);
+                    await controlMessageWriter.WriteAsync(header, cancellation).ConfigureAwait(false);
+                }
+                continue;
+            }
+
+            if (buffer.Length >= messageLength - 10)
+            {
+                var rootItem = Item.DecodeFromFullBuffer(ref buffer);
 #if DEBUG
-                    Trace.WriteLine($"Decoded Item[{itemFormat}], length: {itemContentLength}");
+                Trace.WriteLine($"Get data message(id:{header.Id:X8}) with total bytes: {messageLength} and decoded directly");
+#endif
+                await dataMessageWriter.WriteAsync((header, rootItem), cancellation).ConfigureAwait(false);
+                continue;
+            }
+
+        GetNewItem:
+            // 2: get _format + _lengthByteCount(2bit) 1 byte
+            if (IsBufferInsufficient(reader, ref buffer, required: 1))
+            {
+                buffer = await PipeReadAsync(reader, required: 1, cancellation).ConfigureAwait(false);
+            }
+#if NET
+            Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
+#else
+            Item.DecodeFormatAndLengthByteCount(buffer.First.Span.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
+#endif
+            buffer = buffer.Slice(1);
+
+            // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
+            if (IsBufferInsufficient(reader, ref buffer, required: itemContentLengthByteCount))
+            {
+                buffer = await PipeReadAsync(reader, required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
+            }
+            var itemContentLengthBytes = buffer.Slice(0, itemContentLengthByteCount);
+            Item.DecodeDataLength(itemContentLengthBytes, out var itemContentLength);
+            buffer = buffer.Slice(itemContentLengthBytes.End);
+
+            // 4: get item content
+            Item item;
+            if (itemFormat == SecsFormat.List)
+            {
+                if (itemContentLength == 0)
+                {
+                    item = Item.L();
+#if DEBUG
+                    Trace.WriteLine($"Decoded List[0]");
 #endif
                 }
-
-                if (stack.Count > 0)
+                else
                 {
-                    var list = stack.Peek();
-                    list.Add(item);
-                    while (list.Count == list.Capacity) //stack unwind when all List's Items has decoded
-                    {
-                        item = Item.L(stack.Pop().GetArray());
-                        //Trace.WriteLine($"Unwind List[{item.Count}]");
-                        if (stack.Count > 0)
-                        {
-                            list = stack.Peek();
-                            list.Add(item);
-                        }
-                        else
-                        {
 #if DEBUG
-                            Trace.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
+                    Trace.WriteLine($"Decoded List[{itemContentLength}]");
 #endif
-                            await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
-                            goto Start;
-                        }
-                    }
+                    stack.Push(new ItemList(size: itemContentLength));
                     goto GetNewItem;
                 }
-                else
+            }
+            else
+            {
+                if (IsBufferInsufficient(reader, ref buffer, required: itemContentLength))
                 {
+                    buffer = await PipeReadAsync(reader, required: itemContentLength, cancellation).ConfigureAwait(false);
+                }
+                var itemDataBytes = buffer.Slice(0, itemContentLength);
+                item = Item.DecodeDataItem(itemFormat, itemDataBytes);
+                buffer = buffer.Slice(itemDataBytes.End);
 #if DEBUG
-                    Trace.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
+                Trace.WriteLine($"Decoded Item[{itemFormat}], length: {itemContentLength}");
 #endif
-                    await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
+            }
+
+            if (stack.Count > 0)
+            {
+                var list = stack.Peek();
+                list.Add(item);
+                while (list.Count == list.Capacity) //stack unwind when all List's Items has decoded
+                {
+                    item = Item.L(stack.Pop().GetArray());
+                    //Trace.WriteLine($"Unwind List[{item.Count}]");
+                    if (stack.Count > 0)
+                    {
+                        list = stack.Peek();
+                        list.Add(item);
+                    }
+                    else
+                    {
+#if DEBUG
+                        Trace.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
+#endif
+                        await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
+                        goto Start;
+                    }
                 }
+                goto GetNewItem;
+            }
+            else
+            {
+#if DEBUG
+                Trace.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
+#endif
+                await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
             }
         }
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsBufferInsufficient(PipeReader reader, ref ReadOnlySequence<byte> remainedBuffer, int required)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsBufferInsufficient(PipeReader reader, ref ReadOnlySequence<byte> remainedBuffer, int required)
+    {
+        if (remainedBuffer.Length >= required)
         {
-            if (remainedBuffer.Length >= required)
-            {
-                return false;
-            }
-
-            reader.AdvanceTo(remainedBuffer.Start);
-            return !PipeTryRead(reader, required, ref remainedBuffer);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool PipeTryRead(PipeReader reader, int required, ref ReadOnlySequence<byte> buffer)
-        {
-            if (reader.TryRead(out var result))
-            {
-                buffer = result.Buffer;
-                if (buffer.Length >= required)
-                {
-                    return true;
-                }
-                else
-                {
-                    reader.AdvanceTo(consumed: buffer.Start, examined: buffer.End);
-                }
-            }
-
             return false;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ValueTask<ReadOnlySequence<byte>> PipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
+        reader.AdvanceTo(remainedBuffer.Start);
+        return !PipeTryRead(reader, required, ref remainedBuffer);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool PipeTryRead(PipeReader reader, int required, ref ReadOnlySequence<byte> buffer)
+    {
+        if (reader.TryRead(out var result))
         {
-            ReadOnlySequence<byte> buffer = ReadOnlySequence<byte>.Empty;
-            if (PipeTryRead(reader, required, ref buffer))
+            buffer = result.Buffer;
+            if (buffer.Length >= required)
             {
+                return true;
+            }
+            else
+            {
+                reader.AdvanceTo(consumed: buffer.Start, examined: buffer.End);
+            }
+        }
+
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ValueTask<ReadOnlySequence<byte>> PipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
+    {
+        ReadOnlySequence<byte> buffer = ReadOnlySequence<byte>.Empty;
+        if (PipeTryRead(reader, required, ref buffer))
+        {
 #if NET
-                return ValueTask.FromResult(buffer);
+            return ValueTask.FromResult(buffer);
 #else
-                return new ValueTask<ReadOnlySequence<byte>>(buffer);
+            return new ValueTask<ReadOnlySequence<byte>>(buffer);
 #endif
-            }
-
-            return SlowPipeReadAsync(reader, required, cancellation);
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            static async PooledValueTask<ReadOnlySequence<byte>> SlowPipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
-            {
-                while (true)
-                {
-                    //StartT8Timer();
-                    var result = await reader.ReadAsync(cancellation).ConfigureAwait(false);
-                    //StopT8Timer();
-                    var buffer = result.Buffer;
-
-                    if (buffer.Length >= required)
-                    {
-                        return buffer;
-                    }
-                    reader.AdvanceTo(consumed: buffer.Start, examined: buffer.End);
-                }
-            }
         }
 
-        private sealed class ItemList
+        return SlowPipeReadAsync(reader, required, cancellation);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static async PooledValueTask<ReadOnlySequence<byte>> SlowPipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
         {
-            private int _index = 0;
-            private readonly Item[] _items;
+            while (true)
+            {
+                //StartT8Timer();
+                var result = await reader.ReadAsync(cancellation).ConfigureAwait(false);
+                //StopT8Timer();
+                var buffer = result.Buffer;
 
-            public int Capacity => _items.Length;
-            public int Count => _index;
-
-            public ItemList(int size) => _items = new Item[size];
-            public void Add(Item item) => _items.DangerousGetReferenceAt(_index++) = item;
-            public Item[] GetArray() => _items;
+                if (buffer.Length >= required)
+                {
+                    return buffer;
+                }
+                reader.AdvanceTo(consumed: buffer.Start, examined: buffer.End);
+            }
         }
+    }
+
+    private sealed class ItemList
+    {
+        private int _index = 0;
+        private readonly Item[] _items;
+
+        public int Capacity => _items.Length;
+        public int Count => _index;
+
+        public ItemList(int size) => _items = new Item[size];
+        public void Add(Item item) => _items.DangerousGetReferenceAt(_index++) = item;
+        public Item[] GetArray() => _items;
     }
 }
