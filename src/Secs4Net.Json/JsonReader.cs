@@ -10,54 +10,202 @@ namespace Secs4Net.Json;
 
 public static class JsonReader
 {
-    public static SecsMessage ToSecsMessage(this string jsonString)
-        => JsonDocument.Parse(jsonString).ToSecsMessage();
-
-    public static SecsMessage ToSecsMessage(this JsonDocument jsonDocument)
-    {
-        var json = jsonDocument.RootElement;
-        var s = json.GetProperty(nameof(SecsMessage.S)).GetByte();
-        var f = json.GetProperty(nameof(SecsMessage.F)).GetByte();
-        var replyExpected = json.GetProperty(nameof(SecsMessage.ReplyExpected)).GetBoolean();
-        var name = json.GetProperty(nameof(SecsMessage.Name)).GetString();
-        var item = json.TryGetProperty(nameof(SecsMessage.SecsItem), out var root)
-            ? root.ToItem()
-            : null;
-
-        return new SecsMessage(s, f, replyExpected)
-        {
-            Name = name,
-            SecsItem = item,
-        };
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public static Item ToItem(this JsonElement jobject)
     {
         var json = jobject.EnumerateObject().First();
-        return json.Name switch
+#if NET
+        var format = Enum.Parse<SecsFormat>(json.Name);
+#else
+        Enum.TryParse<SecsFormat>(json.Name, out var format);
+#endif
+        var value = json.Value;
+        return format switch
         {
-            nameof(SecsFormat.List) => L(json.Value.EnumerateArray().Select(static a => a.ToItem())),
-            nameof(SecsFormat.ASCII) => A(json.Value.GetString()),
-            nameof(SecsFormat.JIS8) => J(json.Value.GetString()),
-            nameof(SecsFormat.Binary) => B(json.Value.EnumerateArray().Select(static a => a.GetByte())),
-            nameof(SecsFormat.Boolean) => Boolean(json.Value.EnumerateArray().Select(static a => a.GetBoolean())),
-            nameof(SecsFormat.F4) => F4(json.Value.EnumerateArray().Select(static a => a.GetSingle())),
-            nameof(SecsFormat.F8) => F8(json.Value.EnumerateArray().Select(static a => a.GetDouble())),
-            nameof(SecsFormat.I1) => I1(json.Value.EnumerateArray().Select(static a => a.GetSByte())),
-            nameof(SecsFormat.I2) => I2(json.Value.EnumerateArray().Select(static a => a.GetInt16())),
-            nameof(SecsFormat.I4) => I4(json.Value.EnumerateArray().Select(static a => a.GetInt32())),
-            nameof(SecsFormat.I8) => I8(json.Value.EnumerateArray().Select(static a => a.GetInt64())),
-            nameof(SecsFormat.U1) => U1(json.Value.EnumerateArray().Select(static a => a.GetByte())),
-            nameof(SecsFormat.U2) => U2(json.Value.EnumerateArray().Select(static a => a.GetUInt16())),
-            nameof(SecsFormat.U4) => U4(json.Value.EnumerateArray().Select(static a => a.GetUInt32())),
-            nameof(SecsFormat.U8) => U8(json.Value.EnumerateArray().Select(static a => a.GetUInt64())),
-            _ => throw new ArgumentOutOfRangeException($"Unknown item format: {json.Name}"),
+            SecsFormat.List => CreateList(value),
+            SecsFormat.ASCII => A(value.GetString()),
+            SecsFormat.JIS8 => J(value.GetString()),
+            SecsFormat.Binary => CreateBinary(value),
+            SecsFormat.Boolean => CreateBoolean(value),
+            SecsFormat.F4 => CreateF4(value),
+            SecsFormat.F8 => CreateF8(value),
+            SecsFormat.I1 => CreateI1(value),
+            SecsFormat.I2 => CreateI2(value),
+            SecsFormat.I4 => CreateI4(value),
+            SecsFormat.I8 => CreateI8(value),
+            SecsFormat.U1 => CreateU1(value),
+            SecsFormat.U2 => CreateU2(value),
+            SecsFormat.U4 => CreateU4(value),
+            SecsFormat.U8 => CreateU8(value),
+            _ => ThrowHelper(format),
         };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateList(JsonElement jsonArray)
+        {
+            var items = new Item[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                items[i++] = a.ToItem();
+            }
+            return L(items);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateBinary(JsonElement jsonArray)
+        {
+            var values = new byte[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetByte();
+            }
+            return B(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateBoolean(JsonElement jsonArray)
+        {
+            var values = new bool[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetBoolean();
+            }
+            return Boolean(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateF4(JsonElement jsonArray)
+        {
+            var values = new float[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetSingle();
+            }
+            return F4(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateF8(JsonElement jsonArray)
+        {
+            var values = new double[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetDouble();
+            }
+            return F8(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateI1(JsonElement jsonArray)
+        {
+            var values = new sbyte[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetSByte();
+            }
+            return I1(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateI2(JsonElement jsonArray)
+        {
+            var values = new short[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetInt16();
+            }
+            return I2(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateI4(JsonElement jsonArray)
+        {
+            var values = new int[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetInt32();
+            }
+            return I4(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateI8(JsonElement jsonArray)
+        {
+            var values = new long[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetInt64();
+            }
+            return I8(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateU1(JsonElement jsonArray)
+        {
+            var values = new byte[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetByte();
+            }
+            return U1(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateU2(JsonElement jsonArray)
+        {
+            var values = new ushort[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetUInt16();
+            }
+            return U2(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateU4(JsonElement jsonArray)
+        {
+            var values = new uint[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetUInt32();
+            }
+            return U4(values);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Item CreateU8(JsonElement jsonArray)
+        {
+            var values = new ulong[jsonArray.GetArrayLength()];
+            int i = 0;
+            foreach (var a in jsonArray.EnumerateArray())
+            {
+                values[i++] = a.GetUInt64();
+            }
+            return U8(values);
+        }
+
+        static Item ThrowHelper(SecsFormat format) => throw new ArgumentOutOfRangeException($"Unknown item format: {format}");
     }
 
     public static List<SecsMessage> ToSecsMessages(this Stream stream)
     {
+        var options = new JsonSerializerOptions
+        {
+            Converters = {
+                new ItemJsonConverter()
+            }
+        };
         using var jsonStreamReader = new Utf8JsonStreamReader(stream, 4096);
         jsonStreamReader.Read(); // move to array start
         jsonStreamReader.Read(); // move to start of the object
@@ -66,8 +214,11 @@ public static class JsonReader
         while (jsonStreamReader.TokenType != JsonTokenType.EndArray)
         {
             // deserialize object
-            var jsonObject = jsonStreamReader.GetJsonDocument();
-            result.Add(jsonObject.ToSecsMessage());
+            var message = jsonStreamReader.Deserialise<SecsMessage>(options);
+            if (message is not null)
+            {
+                result.Add(message);
+            }
             // JsonSerializer.Deserialize ends on last token of the object parsed,
             // move to the first token of next object
             jsonStreamReader.Read();

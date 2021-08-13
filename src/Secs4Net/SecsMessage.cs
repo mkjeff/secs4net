@@ -21,12 +21,12 @@ public sealed class SecsMessage : IDisposable
     /// </summary>
     public bool ReplyExpected { get; internal set; }
 
+    public string? Name { get; set; }
+
     /// <summary>
     /// the root item of message
     /// </summary>
     public Item? SecsItem { get; init; }
-
-    public string? Name { get; set; }
 
     /// <summary>
     /// constructor of SecsMessage
@@ -49,6 +49,5 @@ public sealed class SecsMessage : IDisposable
     public void Dispose()
     {
         SecsItem?.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

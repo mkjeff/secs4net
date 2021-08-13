@@ -8,19 +8,19 @@ namespace Secs4Net;
 
 internal static class ItemExtensions
 {
-    public static ItemAssertions Should(this Item instance) => new(instance);
+    public static ItemAssertions Should(this Item? instance) => new(instance);
 }
 
-internal sealed class ItemAssertions : ReferenceTypeAssertions<Item, ItemAssertions>
+internal sealed class ItemAssertions : ReferenceTypeAssertions<Item?, ItemAssertions>
 {
-    public ItemAssertions(Item instance) : base(instance) { }
+    public ItemAssertions(Item? instance) : base(instance) { }
 
     protected override string Identifier => "item";
 
 
     public AndConstraint<ItemAssertions> BeEquivalentTo(Item? expectation, string because = "", params object[] becauseArgs)
     {
-        if (!Subject.Equals(expectation))
+        if (Subject?.Equals(expectation) != true)
         {
             new ItemValidator().IsEquals(new ItemEquivalencyValidationContext
             {
@@ -35,7 +35,7 @@ internal sealed class ItemAssertions : ReferenceTypeAssertions<Item, ItemAsserti
 
     public AndConstraint<ItemAssertions> NotBeEquivalentTo(Item expectation, string because = "", params object[] becauseArgs)
     {
-        if (Subject.Equals(expectation))
+        if (expectation.Equals(Subject))
         {
             Execute.Assertion
                 .BecauseOf(because, becauseArgs)
@@ -49,7 +49,7 @@ internal sealed class ItemAssertions : ReferenceTypeAssertions<Item, ItemAsserti
 internal sealed class ItemEquivalencyValidationContext
 {
     public Reason Reason { get; init; } = default!;
-    public Item Subject { get; init; } = default!;
+    public Item? Subject { get; init; } = default!;
     public Item? Expectation { get; init; } = default!;
 }
 

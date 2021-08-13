@@ -44,8 +44,8 @@ public class JsonUnitTest
         var options = new JsonSerializerOptions
         {
             Converters = {
-                    new ItemJsonConverter()
-                }
+                new ItemJsonConverter()
+            }
         };
 
         var sml = JsonSerializer.Serialize(message, options);
@@ -60,14 +60,15 @@ public class JsonUnitTest
         var options = new JsonSerializerOptions
         {
             Converters = {
-                    new ItemJsonConverter()
-                }
+                new ItemJsonConverter()
+            }
         };
 
         var sml = JsonSerializer.Serialize(EmptyMessage, options);
         var deserialized = JsonSerializer.Deserialize<SecsMessage>(sml, options);
 
         deserialized.Should().NotBeNull().And.BeEquivalentTo(EmptyMessage);
+        deserialized.SecsItem.Should().BeNull();
     }
 
     [Fact]
@@ -76,8 +77,8 @@ public class JsonUnitTest
         var options = new JsonSerializerOptions
         {
             Converters = {
-                    new ItemJsonConverter()
-                }
+                new ItemJsonConverter()
+            }
         };
 
         var messages = Enumerable.Repeat(message, 5).ToList();

@@ -81,6 +81,7 @@ public static class JsonWriter
 
         writer.WriteEndObject();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void WriteArrayValue<T>(Utf8JsonWriter writer, Item item, Action<Utf8JsonWriter, T> write) where T : unmanaged
         {
             var span = item.GetMemory<T>().Span;
