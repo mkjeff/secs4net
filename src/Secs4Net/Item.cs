@@ -10,8 +10,6 @@ using System.Text;
 
 namespace Secs4Net;
 
-[DebuggerDisplay("{GetDebugString()}")]
-[DebuggerTypeProxy(typeof(EncodedItemDebugView))]
 public abstract partial class Item : IEquatable<Item>, IEnumerable<Item>, IDisposable
 {
     private const int DebuggerDisplayMaxCount = 20;
@@ -130,8 +128,6 @@ public abstract partial class Item : IEquatable<Item>, IEnumerable<Item>, IDispo
 
     public sealed override string ToString() => $"{Format.GetName()}[{Count}]";
 
-    private string GetDebugString() => this.GetDebugString(DebuggerDisplayMaxCount);
-
     internal byte[] GetEncodedBytes()
     {
         using var buffer = new ArrayPoolBufferWriter<byte>();
@@ -139,10 +135,21 @@ public abstract partial class Item : IEquatable<Item>, IEnumerable<Item>, IDispo
         return buffer.WrittenSpan.ToArray();
     }
 
-    private sealed class EncodedItemDebugView
+    [DebuggerDisplay("Encoded Bytes")]
+    private sealed class EncodedByteDebugProxy
     {
-        private readonly Item _item;
-        public EncodedItemDebugView(Item item) => _item = item;
-        public byte[] EncodedBytes => _item.GetEncodedBytes();
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private readonly Lazy<byte[]> _encodedBytes;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public byte[] Bytes => _encodedBytes.Value;
+
+        public EncodedByteDebugProxy(Item item)
+        {
+            _encodedBytes = new Lazy<byte[]>(() =>
+            {
+                return item.GetEncodedBytes();
+            });
+        }
     }
 }

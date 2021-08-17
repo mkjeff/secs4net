@@ -2,6 +2,7 @@
 using Secs4Net.Extensions;
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -10,6 +11,7 @@ namespace Secs4Net;
 
 partial class Item
 {
+    [DebuggerTypeProxy(typeof(MemoryItem<>.ItemDebugView))]
     private class MemoryItem<T> : Item where T : unmanaged, IEquatable<T>
     {
         private readonly Memory<T> _value;
@@ -80,5 +82,17 @@ partial class Item
 
         private protected sealed override bool IsEquals(Item other)
             => Format == other.Format && _value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other)!._value.Span);
+
+        private sealed class ItemDebugView
+        {
+            private readonly MemoryItem<T> _item;
+            public ItemDebugView(MemoryItem<T> item)
+            {
+                _item = item;
+                EncodedBytes = new EncodedByteDebugProxy(item);
+            }
+            public Span<T> Value => _item._value.Span;
+            public EncodedByteDebugProxy EncodedBytes { get; }
+        }
     }
 }

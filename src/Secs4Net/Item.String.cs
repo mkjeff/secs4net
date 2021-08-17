@@ -7,6 +7,7 @@ namespace Secs4Net;
 
 partial class Item
 {
+    [DebuggerTypeProxy(typeof(ItemDebugView))]
     private sealed class StringItem : Item
     {
         private readonly string _value;
@@ -41,5 +42,18 @@ partial class Item
 
         private protected sealed override bool IsEquals(Item other)
             => Format == other.Format && _value.Equals(other.GetString(), StringComparison.Ordinal);
+
+        private sealed class ItemDebugView
+        {
+            private readonly StringItem _item; 
+
+            public ItemDebugView(StringItem item)
+            {
+                _item = item;
+                EncodedBytes = new EncodedByteDebugProxy(item);
+            }
+            public string Value => _item._value;
+            public EncodedByteDebugProxy EncodedBytes { get; }
+        }
     }
 }

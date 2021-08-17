@@ -2,6 +2,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -10,6 +11,7 @@ namespace Secs4Net;
 
 partial class Item
 {
+    [DebuggerTypeProxy(typeof(ItemDebugView))]
     private sealed class ListItem : Item
     {
         private readonly Item[] _value;
@@ -109,6 +111,21 @@ partial class Item
             }
 #endif
             return true;
+        }
+
+        private sealed class ItemDebugView
+        {
+            private readonly ListItem _item;
+            public ItemDebugView(ListItem item)
+            {
+                _item = item;
+                EncodedBytes = new EncodedByteDebugProxy(item);
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public Item[] Items => _item._value;
+
+            public EncodedByteDebugProxy EncodedBytes { get; }
         }
     }
 }
