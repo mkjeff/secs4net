@@ -10,7 +10,6 @@ using System.Buffers;
 namespace Secs4Net.Benchmarks;
 
 [Config(typeof(BenchmarkConfig))]
-[MemoryDiagnoser]
 [CategoriesColumn]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
 public class ReverseEndianness

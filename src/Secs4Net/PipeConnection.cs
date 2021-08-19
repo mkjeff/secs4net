@@ -1,11 +1,6 @@
 ﻿using PooledAwait;
-using Secs4Net.Extensions;
-using System;
-using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Secs4Net;
 
@@ -24,7 +19,10 @@ public sealed class PipeConnection : ISecsConnection
     public Task StartAsync(CancellationToken cancellation)
         => AsyncHelper.LongRunningAsync(() => _decoder.StartAsync(cancellation), cancellation);
 
-    async PooledValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
+    ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
+        => SendAsync(source, cancellation);
+
+    private async PooledValueTask SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
     {
         await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
         try

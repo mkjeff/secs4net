@@ -1,18 +1,13 @@
 ﻿using Microsoft.Toolkit.HighPerformance.Buffers;
-using Secs4Net.Extensions;
-using System;
 using System.Buffers;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Secs4Net;
 
-public abstract partial class Item : IEquatable<Item>, IEnumerable<Item>, IDisposable
+public abstract partial class Item : IEquatable<Item>, IDisposable
 {
-    private const int DebuggerDisplayMaxCount = 20;
     public static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
     private static readonly Item EmptyL = new ListItem(SecsFormat.List, Array.Empty<Item>());
     private static readonly Item EmptyA = new StringItem(SecsFormat.ASCII, string.Empty);
@@ -58,13 +53,10 @@ public abstract partial class Item : IEquatable<Item>, IEnumerable<Item>, IDispo
     }
 
     /// <summary>
-    /// Forms a slice out of the current List starting at a specified index for a specified length.
+    /// Get List's sub-items
     /// </summary>
-    /// <param name="start">The index at which to begin this slice.</param>
-    /// <param name="length">The desired length for the slice</param>
     /// <exception cref="NotSupportedException">When the item's <see cref="Format"/> is not <see cref="SecsFormat.List"/></exception>
-    /// <exception cref="IndexOutOfRangeException"></exception>
-    public virtual IEnumerable<Item> Slice(int start, int length)
+    public virtual Item[] Items
         => throw CreateNotSupportException(Format);
 
     /// <summary>
@@ -101,14 +93,9 @@ public abstract partial class Item : IEquatable<Item>, IEnumerable<Item>, IDispo
     public virtual string GetString()
         => throw CreateNotSupportException(Format);
 
-    public virtual IEnumerator<Item> GetEnumerator()
-        => throw CreateNotSupportException(Format);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static NotSupportedException CreateNotSupportException(SecsFormat format, [CallerMemberName] string? memberName = null)
         => new($"{memberName} is not supported, since the item's {nameof(Format)} is {format}");
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     public virtual void Dispose() { }
 
@@ -126,7 +113,7 @@ public abstract partial class Item : IEquatable<Item>, IEnumerable<Item>, IDispo
 
     private protected abstract bool IsEquals(Item other);
 
-    public sealed override string ToString() => $"{Format.GetName()}[{Count}]";
+    public sealed override string ToString() => $"{Format.GetName()} [{Count}]";
 
     internal byte[] GetEncodedBytes()
     {
@@ -136,20 +123,14 @@ public abstract partial class Item : IEquatable<Item>, IEnumerable<Item>, IDispo
     }
 
     [DebuggerDisplay("Encoded Bytes")]
-    private sealed class EncodedByteDebugProxy
+    private sealed class EncodedByteDebugView
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly Lazy<byte[]> _encodedBytes;
+        private readonly Item _item;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public byte[] Bytes => _encodedBytes.Value;
+        public byte[] Bytes => _item.GetEncodedBytes();
 
-        public EncodedByteDebugProxy(Item item)
-        {
-            _encodedBytes = new Lazy<byte[]>(() =>
-            {
-                return item.GetEncodedBytes();
-            });
-        }
+        public EncodedByteDebugView(Item item) => _item = item;
     }
 }

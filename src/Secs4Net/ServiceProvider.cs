@@ -1,10 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.Versioning;
 
 namespace Secs4Net;
 
 public static class ServiceProvider
 {
+#if NET
+    [UnsupportedOSPlatform("browser")]
+#endif
     public static IServiceCollection AddSecs4Net<TLogger>(this IServiceCollection services, IConfiguration configuration)
         where TLogger : class, ISecsGemLogger
     {

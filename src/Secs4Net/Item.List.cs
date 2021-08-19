@@ -1,9 +1,6 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -45,17 +42,7 @@ partial class Item
             set => _value[index] = value;
         }
 
-        public sealed override IEnumerable<Item> Slice(int start, int length)
-        {
-            if (start < 0 || start + length > _value.Length)
-            {
-                throw new IndexOutOfRangeException($"Item.Count is {_value.Length}, but Slice(start: {start}, length: {length})");
-            }
-            return _value.Skip(start).Take(length);
-        }
-
-        public sealed override IEnumerator<Item> GetEnumerator()
-            => ((IEnumerable<Item>)_value).GetEnumerator();
+        public sealed override Item[] Items => _value;
 
         public sealed override void EncodeTo(IBufferWriter<byte> buffer)
         {
@@ -119,13 +106,13 @@ partial class Item
             public ItemDebugView(ListItem item)
             {
                 _item = item;
-                EncodedBytes = new EncodedByteDebugProxy(item);
+                EncodedBytes = new EncodedByteDebugView(item);
             }
 
             [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
             public Item[] Items => _item._value;
 
-            public EncodedByteDebugProxy EncodedBytes { get; }
+            public EncodedByteDebugView EncodedBytes { get; }
         }
     }
 }

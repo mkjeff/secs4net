@@ -36,7 +36,7 @@ public static class JsonWriter
             switch (item.Format)
             {
                 case SecsFormat.List:
-                    foreach (var a in item)
+                    foreach (var a in item.Items)
                     {
                         a.WriteTo(writer);
                     }

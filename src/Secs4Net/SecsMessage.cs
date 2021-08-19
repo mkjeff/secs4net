@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Secs4Net;
+﻿namespace Secs4Net;
 
 public sealed class SecsMessage : IDisposable
 {

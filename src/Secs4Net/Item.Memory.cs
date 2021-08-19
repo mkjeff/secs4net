@@ -1,6 +1,4 @@
 ﻿using Microsoft.Toolkit.HighPerformance;
-using Secs4Net.Extensions;
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -89,10 +87,10 @@ partial class Item
             public ItemDebugView(MemoryItem<T> item)
             {
                 _item = item;
-                EncodedBytes = new EncodedByteDebugProxy(item);
+                EncodedBytes = new EncodedByteDebugView(item);
             }
             public Span<T> Value => _item._value.Span;
-            public EncodedByteDebugProxy EncodedBytes { get; }
+            public EncodedByteDebugView EncodedBytes { get; }
         }
     }
 }

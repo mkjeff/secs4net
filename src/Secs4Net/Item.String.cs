@@ -1,5 +1,4 @@
-﻿using System;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Diagnostics;
 using System.Text;
 
@@ -50,10 +49,10 @@ partial class Item
             public ItemDebugView(StringItem item)
             {
                 _item = item;
-                EncodedBytes = new EncodedByteDebugProxy(item);
+                EncodedBytes = new EncodedByteDebugView(item);
             }
             public string Value => _item._value;
-            public EncodedByteDebugProxy EncodedBytes { get; }
+            public EncodedByteDebugView EncodedBytes { get; }
         }
     }
 }

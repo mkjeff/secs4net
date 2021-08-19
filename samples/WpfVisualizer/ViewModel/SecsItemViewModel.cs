@@ -21,7 +21,7 @@ namespace SecsMessageVisuallizer.ViewModel
 
         protected override void LoadChildren()
         {
-            foreach (Item item in _secsItem)
+            foreach (Item item in _secsItem.Items)
             {
                 base.Children.Add(new SecsItemViewModel(item, this));
             }

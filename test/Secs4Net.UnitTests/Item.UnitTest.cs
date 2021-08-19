@@ -154,18 +154,18 @@ public class ItemUnitTest
 
             Action getEnumerator = () =>
             {
-                foreach (var item in listItem)
+                foreach (var item in listItem.Items)
                 {
 
                 }
             };
             getEnumerator.Should().NotThrow();
 
-            L(listItem[1..^1]).Should().BeEquivalentTo(L(I2(arr), U2()));
+            L(listItem.Items[1..^1]).Should().BeEquivalentTo(L(I2(arr), U2()));
 
             var range = 2..5;
-            Action sliceOutOfRange = () => _ = listItem[range];
-            sliceOutOfRange.Should().Throw<IndexOutOfRangeException>().WithMessage($"Item.Count is {listItem.Count}, but Slice(start: {range.Start.Value}, length: {range.End.Value - range.Start.Value})");
+            Action sliceOutOfRange = () => _ = listItem.Items[range];
+            sliceOutOfRange.Should().Throw<ArgumentOutOfRangeException>();
         }
     }
 
@@ -178,13 +178,9 @@ public class ItemUnitTest
             stringItemAccessIndexer.Should().Throw<NotSupportedException>()
                 .WithMessage(CreateNotSupportedMessage("Item", stringItem.Format));
 
-            Action stringItemAccessRange = () => _ = stringItem[1..];
-            stringItemAccessRange.Should().Throw<NotSupportedException>()
-                .WithMessage(CreateNotSupportedMessage(nameof(Item.Slice), stringItem.Format));
-
-            Action stringItemGetEnumerator = () => stringItem.GetEnumerator();
+            Action stringItemGetEnumerator = () => _ = stringItem.Items;
             stringItemGetEnumerator.Should().Throw<NotSupportedException>()
-                .WithMessage(CreateNotSupportedMessage(nameof(Item.GetEnumerator), stringItem.Format));
+                .WithMessage(CreateNotSupportedMessage(nameof(Item.Items), stringItem.Format));
 
             Action stringItemFirstValue = () => stringItem.FirstValue<byte>();
             stringItemFirstValue.Should().Throw<NotSupportedException>()
@@ -209,13 +205,9 @@ public class ItemUnitTest
             arrayItemAccessIndexer.Should().Throw<NotSupportedException>()
                 .WithMessage(CreateNotSupportedMessage("Item", arrayItem.Format));
 
-            Action arrayItemAccessRange = () => _ = arrayItem[0..^0];
-            arrayItemAccessRange.Should().Throw<NotSupportedException>()
-                .WithMessage(CreateNotSupportedMessage(nameof(Item.Slice), arrayItem.Format));
-
-            Action arrayItemGetEnumerator = () => arrayItem.GetEnumerator();
+            Action arrayItemGetEnumerator = () => _ = arrayItem.Items;
             arrayItemGetEnumerator.Should().Throw<NotSupportedException>()
-                .WithMessage(CreateNotSupportedMessage(nameof(Item.GetEnumerator), arrayItem.Format));
+                .WithMessage(CreateNotSupportedMessage(nameof(Item.Items), arrayItem.Format));
         }
 
         using (var listItem = L())
@@ -333,7 +325,7 @@ public class ItemUnitTest
 #if NET
         first.Should().Be(BitConverter.ToUInt16(bytes));
 #else
-            first.Should().Be(BitConverter.ToUInt16(bytes, 0));
+        first.Should().Be(BitConverter.ToUInt16(bytes, 0));
 #endif
     }
 
@@ -412,47 +404,6 @@ public class ItemUnitTest
         item.Should().BeEquivalentTo(item2);
     }
 
-    [Fact(Skip = "No more applicable")]
-    public void Item_With_MemoryOwner_Accessing_Member_Shold_Throw_Exception_When_MemoryOwner_Disposed()
-    {
-        var memoryOwner = MemoryOwner<int>.Allocate(10);
-        var item = I4(memoryOwner);
-        memoryOwner.Dispose();
-
-        Action accessFirstValue = () => _ = item.FirstValue<int>();
-        Action accessFirstValueOrDefault = () => _ = item.FirstValueOrDefault<int>();
-        Action accessGetMemory = () => _ = item.GetMemory<int>();
-        Action accessGetReadOnlyMemory = () => _ = item.GetMemory<int>();
-        Action accessEncodeTo = () => item.EncodeTo(new ArrayPoolBufferWriter<byte>());
-        Action accessEquals = () => item.Equals(I4(new int[10]));
-        accessFirstValue.Should().Throw<ObjectDisposedException>();
-        accessFirstValueOrDefault.Should().Throw<ObjectDisposedException>();
-        accessGetMemory.Should().Throw<ObjectDisposedException>();
-        accessGetReadOnlyMemory.Should().Throw<ObjectDisposedException>();
-        accessEncodeTo.Should().Throw<ObjectDisposedException>();
-        accessEquals.Should().Throw<ObjectDisposedException>();
-    }
-
-    [Fact(Skip = "No more applicable")]
-    public void Item_With_MemoryOwner_Accessing_Member_Shold_Throw_Exception_When_Item_Disposed()
-    {
-        var item = I4(MemoryOwner<int>.Allocate(10));
-        item.Dispose();
-
-        Action accessFirstValue = () => _ = item.FirstValue<int>();
-        Action accessFirstValueOrDefault = () => _ = item.FirstValueOrDefault<int>();
-        Action accessGetMemory = () => _ = item.GetMemory<int>();
-        Action accessGetReadOnlyMemory = () => _ = item.GetMemory<int>();
-        Action accessEncodeTo = () => item.EncodeTo(new ArrayPoolBufferWriter<byte>());
-        Action accessEquals = () => item.Equals(I4(new int[10]));
-        accessFirstValue.Should().Throw<ObjectDisposedException>();
-        accessFirstValueOrDefault.Should().Throw<ObjectDisposedException>();
-        accessGetMemory.Should().Throw<ObjectDisposedException>();
-        accessGetReadOnlyMemory.Should().Throw<ObjectDisposedException>();
-        accessEncodeTo.Should().Throw<ObjectDisposedException>();
-        accessEquals.Should().Throw<ObjectDisposedException>();
-    }
-
     [Fact]
     public void List_Item_Slot_Can_Be_Changed()
     {
@@ -472,7 +423,7 @@ public class ItemUnitTest
         var oldItem = item[2];
         oldItem.Dispose();
         item[2] = Boolean(true);
-        item[2].Should().BeEquivalentTo(item[2]);
+        item[2].Should().BeEquivalentTo(Boolean(true));
     }
 
     [Fact]
@@ -491,7 +442,7 @@ public class ItemUnitTest
 #if NET
         changed.Should().Be(BitConverter.ToUInt16(originalBytes));
 #else
-            changed.Should().Be(BitConverter.ToUInt16(originalBytes, 0));
+        changed.Should().Be(BitConverter.ToUInt16(originalBytes, 0));
 #endif
     }
 
@@ -511,7 +462,7 @@ public class ItemUnitTest
 #if NET
         changed.Should().Be(BitConverter.ToUInt16(arr));
 #else
-            changed.Should().Be(BitConverter.ToUInt16(arr.ToArray(), 0));
+        changed.Should().Be(BitConverter.ToUInt16(arr.ToArray(), 0));
 #endif
     }
 }

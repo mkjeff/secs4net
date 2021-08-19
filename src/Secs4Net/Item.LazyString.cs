@@ -1,5 +1,4 @@
-﻿using System;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Diagnostics;
 using System.Text;
 
@@ -8,7 +7,6 @@ namespace Secs4Net;
 partial class Item
 {
     [DebuggerTypeProxy(typeof(ItemDebugView))]
-
     private sealed class LazyStringItem : Item
     {
         private readonly IMemoryOwner<byte> _owner;
@@ -55,11 +53,11 @@ partial class Item
             public ItemDebugView(LazyStringItem item)
             {
                 _item = item;
-                EncodedBytes = new EncodedByteDebugProxy(item);
+                EncodedBytes = new EncodedByteDebugView(item);
             }
 
             public string Value => _item._value.Value;
-            public EncodedByteDebugProxy EncodedBytes { get; }
+            public EncodedByteDebugView EncodedBytes { get; }
         }
     }
 }

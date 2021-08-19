@@ -7,7 +7,7 @@ using System.Text;
 namespace Secs4Net.Benchmark;
 
 [Config(typeof(BenchmarkConfig))]
-[MemoryDiagnoser]
+[MemoryDiagnoser(displayGenColumns: false)]
 //[NativeMemoryProfiler]
 public class SmlSerialization
 {

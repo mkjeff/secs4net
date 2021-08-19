@@ -2,22 +2,20 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using PooledAwait;
-using Secs4Net.Extensions;
-using System;
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Runtime.Versioning;
 
 namespace Secs4Net;
 
+#if NET
+[UnsupportedOSPlatform("browser")]
+#endif
 public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncDisposable
 {
     public event EventHandler<ConnectionState>? ConnectionChanged;
@@ -153,7 +151,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
                             ReceiveBufferSize = _socketReceiveBufferSize,
                         };
 #if NET
-                            await socket.ConnectAsync(IpAddress, Port, cancellation).ConfigureAwait(false);
+                        await socket.ConnectAsync(IpAddress, Port, cancellation).ConfigureAwait(false);
 #else
                         await socket.ConnectAsync(IpAddress, Port).WithCancellation(cancellation).ConfigureAwait(false);
 #endif
@@ -198,7 +196,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
                     try
                     {
 #if NET6_0
-                            _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
+                        _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
 #else
                         _socket = await server.AcceptAsync().WithCancellation(cancellation).ConfigureAwait(false);
 #endif
@@ -518,8 +516,11 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         _timerLinkTest.Dispose();
     }
 
+    ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
+        => SendAsync(buffer, cancellation);
+
 #if NET
-    async PooledValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
+    private async PooledValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
     {
         await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
         try
@@ -540,7 +541,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         }
     }
 #else
-    async PooledValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
+    private async PooledValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
     {
         if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(buffer, out var arr))
         {

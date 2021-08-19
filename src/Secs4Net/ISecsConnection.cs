@@ -1,8 +1,5 @@
-﻿using PooledAwait;
-using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel;
 using System.Net;
-using System.Threading;
 
 namespace Secs4Net;
 
@@ -45,6 +42,9 @@ public interface ISecsConnection
 
     void Reconnect();
 
-    internal PooledValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
-    internal IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation);
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    ValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
+
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation);
 }

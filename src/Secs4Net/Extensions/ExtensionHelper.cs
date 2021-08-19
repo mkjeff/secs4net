@@ -1,13 +1,7 @@
-﻿using Microsoft.Toolkit.HighPerformance;
-using PooledAwait;
-using System;
-using System.Collections.Generic;
+﻿using PooledAwait;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Secs4Net.Extensions;
 

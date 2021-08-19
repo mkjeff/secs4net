@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Secs4Net;
+﻿namespace Secs4Net;
 
 internal static class AsyncHelper
 {

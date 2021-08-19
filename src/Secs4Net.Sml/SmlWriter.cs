@@ -86,7 +86,7 @@ public static class SmlWriter
         {
             case SecsFormat.List:
                 writer.WriteLine();
-                foreach (var a in item)
+                foreach (var a in item.Items)
                 {
                     writer.Write(a, indent + SmlIndent);
                 }
@@ -201,7 +201,7 @@ public static class SmlWriter
         static async Task WriteListAsnc(TextWriter writer, Item item, int indent, string indentStr)
         {
             await writer.WriteLineAsync().ConfigureAwait(false);
-            foreach (var a in item)
+            foreach (var a in item.Items)
             {
                 await WriteAsync(writer, a, indent + SmlIndent).ConfigureAwait(false);
             }
