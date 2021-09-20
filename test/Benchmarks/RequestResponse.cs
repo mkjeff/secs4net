@@ -35,21 +35,21 @@ public class RequestResponse
     {
         var pipe1 = new Pipe(new PipeOptions(useSynchronizationContext: false));
         var pipe2 = new Pipe(new PipeOptions(useSynchronizationContext: false));
-        var pipeConnection1 = new PipeConnection(decoderReader: pipe1.Reader, decoderInput: pipe2.Writer);
-        var pipeConnection2 = new PipeConnection(decoderReader: pipe2.Reader, decoderInput: pipe1.Writer);
+        var connection1 = new PipeConnection(decoderReader: pipe1.Reader, decoderInput: pipe2.Writer);
+        var connection2 = new PipeConnection(decoderReader: pipe2.Reader, decoderInput: pipe1.Writer);
 
         var options = Options.Create(new SecsGemOptions
         {
             DeviceId = 0,
         });
         var logger = new Logger();
-        _secsGem1 = new SecsGem(options, pipeConnection1, logger);
-        _secsGem2 = new SecsGem(options, pipeConnection2, logger);
+        _secsGem1 = new SecsGem(options, connection1, logger);
+        _secsGem2 = new SecsGem(options, connection2, logger);
 
         _cts = new CancellationTokenSource();
-        _ = pipeConnection1.StartAsync(_cts.Token);
-        _ = pipeConnection2.StartAsync(_cts.Token);
-        _ = AsyncHelper.LongRunningAsync(async () =>
+        Task.Run(()=> connection1.StartAsync(_cts.Token));
+        Task.Run(() => connection2.StartAsync(_cts.Token));
+        Task.Run(async () =>
         {
             await foreach (var a in _secsGem2.GetPrimaryMessageAsync(_cts.Token))
             {
