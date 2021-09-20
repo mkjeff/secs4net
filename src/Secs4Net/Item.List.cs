@@ -9,6 +9,7 @@ namespace Secs4Net;
 partial class Item
 {
     [DebuggerTypeProxy(typeof(ItemDebugView))]
+    [SkipLocalsInit]
     private sealed class ListItem : Item
     {
         private readonly Item[] _value;

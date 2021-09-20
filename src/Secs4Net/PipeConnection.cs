@@ -8,16 +8,14 @@ public sealed class PipeConnection : ISecsConnection
 {
     private readonly SemaphoreSlim _sendLock = new(initialCount: 1);
     private readonly PipeDecoder _decoder;
-    private readonly int _chunkSize;
 
-    public PipeConnection(PipeReader decoderReader, PipeWriter decoderInput, int chunkSize = 0)
+    public PipeConnection(PipeReader decoderReader, PipeWriter decoderInput)
     {
         _decoder = new PipeDecoder(decoderReader, decoderInput);
-        _chunkSize = chunkSize;
     }
 
     public Task StartAsync(CancellationToken cancellation)
-        => AsyncHelper.LongRunningAsync(() => _decoder.StartAsync(cancellation), cancellation);
+        => _decoder.StartAsync(cancellation);
 
     ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
         => SendAsync(source, cancellation);
@@ -27,17 +25,7 @@ public sealed class PipeConnection : ISecsConnection
         await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
         try
         {
-            if (_chunkSize <= 0)
-            {
-                _ = await _decoder.Input.WriteAsync(source, cancellation).ConfigureAwait(false);
-            }
-            else
-            {
-                foreach (var chunk in source.Chunk(_chunkSize))
-                {
-                    _ = await _decoder.Input.WriteAsync(chunk, cancellation).ConfigureAwait(false);
-                }
-            }
+            _ = await _decoder.Input.WriteAsync(source, cancellation).ConfigureAwait(false);
         }
         finally
         {

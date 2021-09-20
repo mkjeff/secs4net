@@ -41,17 +41,17 @@ internal sealed class DeviceWorker : BackgroundService
     {
         try
         {
-            await foreach (var m in _secsGem.GetPrimaryMessageAsync(stoppingToken))
+            await foreach (var e in _secsGem.GetPrimaryMessageAsync(stoppingToken))
             {
-                using var primaryMessage = m.PrimaryMessage;
-                _logger.LogInformation($"Received primary message: {primaryMessage.ToString()}");
+                using var primaryMessage = e.PrimaryMessage;
+                _logger.LogInformation($"Received primary message: {primaryMessage}");
                 try
                 {
                     using var secondaryMessage = new SecsMessage(primaryMessage.S, (byte)(primaryMessage.F + 1))
                     {
                         SecsItem = primaryMessage.SecsItem,
                     };
-                    await m.TryReplyAsync(secondaryMessage, stoppingToken);
+                    await e.TryReplyAsync(secondaryMessage, stoppingToken);
                 }
                 catch (Exception ex)
                 {

@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using Secs4Net;
-using Secs4Net.Extensions;
 using System;
 using System.IO.Pipelines;
 using System.Linq;
@@ -137,10 +136,10 @@ public class PipeDecoderUnitTests
 
         _ = Task.Run(async () =>
         {
-            foreach (var chunk in encodedBytes.Chunk(23))
+            foreach (var chunk in new ChunkedReadOnlyMemory<byte>(encodedBytes, size: 23))
             {
                 await Task.Delay(200); //simulate a slow connection
-                    await decoder.Input.WriteAsync(chunk);
+                await decoder.Input.WriteAsync(chunk);
             }
         });
 

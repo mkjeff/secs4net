@@ -199,6 +199,7 @@ public sealed class PipeDecoder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     private static bool IsBufferInsufficient(PipeReader reader, ref ReadOnlySequence<byte> remainedBuffer, int required)
     {
         if (remainedBuffer.Length >= required)
@@ -211,6 +212,7 @@ public sealed class PipeDecoder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     private static bool PipeTryRead(PipeReader reader, int required, ref ReadOnlySequence<byte> buffer)
     {
         if (reader.TryRead(out var result))
@@ -230,6 +232,7 @@ public sealed class PipeDecoder
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     private static ValueTask<ReadOnlySequence<byte>> PipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
     {
         ReadOnlySequence<byte> buffer = ReadOnlySequence<byte>.Empty;

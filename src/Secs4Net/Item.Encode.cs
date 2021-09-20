@@ -12,6 +12,7 @@ partial class Item
     /// </summary>
     /// <param name="count">List item count or value bytes length</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     private protected static void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
     {
         var lengthSpan = Unsafe.AsRef(count).AsBytes();
@@ -52,6 +53,7 @@ partial class Item
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     private protected static void EncodeEmptyItem(SecsFormat format, IBufferWriter<byte> buffer)
     {
         var span = buffer.GetSpan(sizeHint: 2);

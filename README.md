@@ -8,9 +8,10 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
 
 **Getting started**
 
-1. ## Install nuget package
+## Install nuget package
     > dotnet add package Secs4Net --version 2.0.0-rc4.0
-2. ## Configure .NET dependency injection
+
+## Configure .NET dependency injection
    ```cs
     public void ConfigureServices(IServiceCollection services)
     {
@@ -28,9 +29,9 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
     {
         // implement ISecsGemLogger methods
     }
+   ```
 
-   ```    
-3. ## Basic usage
+## Basic usage
    ```cs
     try
     {
@@ -90,7 +91,8 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
         // device reply S9Fx
     }
    ```
-4. ## Handle primary messages
+
+## Handle primary messages
    ```cs
     await foreach (var e in secsGem.GetPrimaryMessageAsync(cancellationToken))
     {     
@@ -103,7 +105,7 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
     };
    ```
 
-5. ## Creates `Item` via LINQ
+## Creates `Item` via LINQ
    ```cs
     using static Secs4Net.Item;
 
@@ -136,17 +138,16 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
                                 L()))));
    ```
 
-6. ## `Item` is mutable with restrict.
-    > Basic rule: The `Item.Count` has been fixed while the item was created.
+## Modify `Item` in restrict.
+  > Basic rule: The `Item.Count` has been fixed while the item was created.
 
-    That means you can only overwrite values on existing memory.
-    String Item is still immutable, coz C# `string` is immutable as well.
+You can only overwrite values on existing memory. String Item is immutable, coz C# `string` is immutable as well.
 
-7. ## Reuse pooled array for large item values
+## Reuse array for large item values
+All unmanaged data Item can created from `IMemoryOwner<T>` or `Memory<T>`.
 
-    All unmanaged data Item can created from `IMemoryOwner<T>` or `Memory<T>`.
-
-    The following sample uses the implementation of `IMemoryOwner<T>` from [`Microsoft.Toolkit.HighPerformance`](https://docs.microsoft.com/en-us/windows/communitytoolkit/high-performance/memoryowner) that has been referenced internally by secs4net..
+The following sample uses the implementation of `IMemoryOwner<T>` from [`Microsoft.Toolkit.HighPerformance`](https://docs.microsoft.com/en-us/windows/communitytoolkit/high-performance/memoryowner) that has been referenced internally by secs4net..
+   
    ```cs
     var largeArrayOwner = MemoryOwner<int>.Allocate(size: 65535);
     
@@ -167,8 +168,68 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provide easy way to com
     using var s6f12 = await secsGem.SendAsync(s6f11);
    
    ```
-    > `IMemoryOwner<T>`, `Item` and `SecsMessage` have implemented `IDisposable` don't forget to Dispose it when they don't need anymore.
+   > `IMemoryOwner<T>`, `Item` and `SecsMessage` have implemented `IDisposable` don't forget to Dispose it when they don't need anymore.
     Otherwise, the array will not return to the pool till GC collects.
-
-    > Since the max encoded bytes length in a single non-List Item was `16,777,215`(3 bytes), we split raw data into separated items.
+   
+   > Since the max encoded bytes length in a single non-List Item was `16,777,215`(3 bytes), we split raw data into separated items.
     In that case, creating the Items from sliced `Memory<T>` is more efficient.
+
+## LINQPad
+If you like to use LINQPad to dump `Item` object in a simplified format, you probably need a [custom dump method](http://www.linqpad.net/CustomizingDump.aspx) method. Adjust your LINQPad **My Extensions** file as follow
+```cs
+static object ToDump(object obj)
+{
+	var objType = obj.GetType();
+	if (Type.GetType("Secs4Net.Item,Secs4Net") is { } itemType && objType.IsSubclassOf(itemType))
+	{
+		return Dump(obj);
+	}
+	return obj;
+}
+
+static object Dump(dynamic item)
+{
+	return (int)item.Format switch
+	{
+		(int)SecsFormat.List => 	new { item.Format, Values = OnDemandList(item),			},
+		(int)SecsFormat.ASCII =>	new	{ item.Format, Values = item.GetString()			},	 
+		(int)SecsFormat.JIS8 => 	new	{ item.Format, Values = item.GetString()			},
+		(int)SecsFormat.Binary =>	new	{ item.Format, Values = OnDemandMemory<byte>(item)	},		 
+		(int)SecsFormat.Boolean => 	new { item.Format, Values = OnDemandMemory<bool>(item)	},
+		(int)SecsFormat.I8 => 		new	{ item.Format, Values = OnDemandMemory<long>(item)	},
+		(int)SecsFormat.I1 => 		new	{ item.Format, Values = OnDemandMemory<sbyte>(item)	},
+		(int)SecsFormat.I2 => 		new	{ item.Format, Values = OnDemandMemory<short>(item)	},
+		(int)SecsFormat.I4 =>	 	new	{ item.Format, Values = OnDemandMemory<int>(item)	},
+		(int)SecsFormat.F8 => 		new	{ item.Format, Values = OnDemandMemory<double>(item)},
+		(int)SecsFormat.F4 => 		new	{ item.Format, Values = OnDemandMemory<float>(item)	},
+		(int)SecsFormat.U8 => 		new	{ item.Format, Values = OnDemandMemory<ulong>(item)	},
+        (int)SecsFormat.U1 => 		new	{ item.Format, Values = OnDemandMemory<byte>(item)	},
+		(int)SecsFormat.U2 => 		new	{ item.Format, Values = OnDemandMemory<ushort>(item)},
+		(int)SecsFormat.U4 => 		new	{ item.Format, Values = OnDemandMemory<uint>(item)	},
+		_ => $"Unsupported Format: {item.Format}",
+	};
+	 
+	static object OnDemandList(dynamic item) => Util.OnDemand($"[{item.Count}]", () => item.Items);
+	static object OnDemandMemory<T>(dynamic item) => Util.OnDemand($"[{item.Count}]", () => item.GetMemory<T>());
+}
+
+// You can also define namespaces, non-static classes, enums, etc.
+enum SecsFormat
+{
+	List = 0b_0000_00,
+	Binary = 0b_0010_00,
+	Boolean = 0b_0010_01,
+	ASCII = 0b_0100_00,
+	JIS8 = 0b_0100_01,
+	I8 = 0b_0110_00,
+	I1 = 0b_0110_01,
+	I2 = 0b_0110_10,
+	I4 = 0b_0111_00,
+	F8 = 0b_1000_00,
+	F4 = 0b_1001_00,
+	U8 = 0b_1010_00,
+	U1 = 0b_1010_01,
+	U2 = 0b_1010_10,
+	U4 = 0b_1011_00,
+}
+```

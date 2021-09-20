@@ -18,13 +18,13 @@ public interface ISecsConnection
     bool IsActive { get; }
 
     /// <summary>
-    /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the IP address will be treated remote device's IP address, 
+    /// When <see cref="IsActive"/> is <see langword="true"/> the IP address will be treated remote device's IP address, 
     /// opposite the connection will bind on this IP address as Passive mode.
     /// </summary>
     IPAddress IpAddress { get; }
 
     /// <summary>
-    /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the port number will be treated remote device's TCP port number, 
+    /// When <see cref="IsActive"/> is <see langword="true"/> the port number will be treated remote device's TCP port number, 
     /// opposite the connection will bind on the port number as Passive mode.
     /// </summary>
     int Port { get; }
@@ -33,7 +33,7 @@ public interface ISecsConnection
     /// Remote device's IP address.<br/>
     /// In Active mode, it is the same as IPAddress property<br/>
     /// In Passive mode, remote IP Address can be resolved successfully only 
-    /// when <see cref="State">State</see> is <see cref="ConnectionState.Connected">Connected</see> or <see cref="ConnectionState.Selected">Connected</see>, 
+    /// when <see cref="State"/> is <see cref="ConnectionState.Connected"/> or <see cref="ConnectionState.Selected"/>, 
     /// otherwise, return "N/A"
     /// </summary>
     string DeviceIpAddress { get; }

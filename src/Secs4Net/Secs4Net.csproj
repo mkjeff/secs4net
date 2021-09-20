@@ -4,6 +4,7 @@
     <TargetFrameworks>net6.0;net5.0;netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,10 +36,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-preview.7.*" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-preview.7.*" />
-    <PackageReference Include="System.IO.Pipelines" Version="6.0.0-preview.7.*" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0-preview.7.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-rc.1.*" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0-rc.1.*" />
+    <PackageReference Include="System.IO.Pipelines" Version="6.0.0-rc.1.*" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0-rc.1.*" />
   </ItemGroup>
 
   <ItemGroup>

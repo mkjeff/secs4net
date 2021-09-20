@@ -10,14 +10,14 @@ public record SecsGemOptions
     public bool IsActive { get; init; }
 
     /// <summary>
-    /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the IP address will be treated remote device's IP address, 
+    /// When <see cref="IsActive"/> is <see langword="true"/> the IP address will be treated remote device's IP address, 
     /// opposite the connection will bind on this IP address as Passive mode.
     /// Default value is "127.0.0.1".
     /// </summary>
     public string IpAddress { get; init; } = "127.0.0.1";
 
     /// <summary>
-    /// When <see cref="IsActive">IsActive</see> is <see langword="true"/> the port number will be treated remote device's TCP port number, 
+    /// When <see cref="IsActive"/> is <see langword="true"/> the port number will be treated remote device's TCP port number, 
     /// opposite the connection will bind on the port number as Passive mode.
     /// Default value is 5000.
     /// </summary>
@@ -30,7 +30,7 @@ public record SecsGemOptions
     public int T3 { get; init; } = 45000;
 
     /// <summary>
-    /// Configure the timeout interval in milliseconds between the connection state transition from <see cref="ConnectionState.Connecting">Connecting</see> to <see cref="ConnectionState.Connected">Connected</see>.
+    /// Configure the timeout interval in milliseconds between the connection state transition from <see cref="ConnectionState.Connecting"/> to <see cref="ConnectionState.Connected"/>.
     /// Default value is 10000 milliseconds.
     /// </summary>
     public int T5 { get; init; } = 10000;
@@ -42,7 +42,7 @@ public record SecsGemOptions
     public int T6 { get; init; } = 5000;
 
     /// <summary>
-    /// Configure the timeout interval in milliseconds between the connection state transition from <see cref="ConnectionState.Connected">Connected</see> to <see cref="ConnectionState.Selected">Selected</see>.
+    /// Configure the timeout interval in milliseconds between the connection state transition from <see cref="ConnectionState.Connected"/> to <see cref="ConnectionState.Selected"/>.
     /// Default value is 10000 milliseconds.
     /// </summary>
     public int T7 { get; init; } = 10000;

@@ -1,5 +1,6 @@
 ﻿using System.Buffers;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Secs4Net;
@@ -7,6 +8,7 @@ namespace Secs4Net;
 partial class Item
 {
     [DebuggerTypeProxy(typeof(ItemDebugView))]
+    [SkipLocalsInit]
     private sealed class LazyStringItem : Item
     {
         private readonly IMemoryOwner<byte> _owner;

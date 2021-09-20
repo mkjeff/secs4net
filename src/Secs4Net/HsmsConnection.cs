@@ -104,7 +104,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         _socketReceiveBuffer = new byte[_socketReceiveBufferSize];
 #endif
 
-        _ = AsyncHelper.LongRunningAsync(() => HandleControlMessagesAsync(_cancellationSourceForControlMessageProcessing.Token), _cancellationSourceForControlMessageProcessing.Token);
+        Task.Run(() => HandleControlMessagesAsync(_cancellationSourceForControlMessageProcessing.Token), _cancellationSourceForControlMessageProcessing.Token);
 
         _timer7 = new Timer(delegate
         {
@@ -252,10 +252,8 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         return Task.CompletedTask;
     }
 
-    private void Start(CancellationToken cancellation)
-    {
-        _ = AsyncHelper.LongRunningAsync(() => _startImpl(cancellation), cancellation);
-    }
+    private void Start(CancellationToken cancellation) 
+        => Task.Run(() => _startImpl(cancellation), cancellation);
 
     private async Task StartPipeDecoderConsumerAsync(CancellationToken cancellation)
     {
@@ -339,9 +337,8 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
             case ConnectionState.Connected:
 #if !DISABLE_TIMER
                 _cancellationTokenSourceForPipeDecoder = new CancellationTokenSource();
-                var cancellation = _cancellationTokenSourceForPipeDecoder.Token;
-                _ = AsyncHelper.LongRunningAsync(() => StartPipeDecoderConsumerAsync(cancellation), cancellation);
-                _ = AsyncHelper.LongRunningAsync(() => StartPipeDecoderProducerAsync(cancellation), cancellation);
+                Task.Run(() => StartPipeDecoderConsumerAsync(_cancellationTokenSourceForPipeDecoder.Token));
+                Task.Run(() => StartPipeDecoderProducerAsync(_cancellationTokenSourceForPipeDecoder.Token));
                 _logger.Info($"Start T7 Timer: {T7 / 1000} sec.");
                 _timer7.Change(T7, Timeout.Infinite);
 #endif

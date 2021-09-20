@@ -1,7 +1,7 @@
-﻿using Secs4Net;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using Secs4Net;
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
@@ -32,12 +32,8 @@ public class SecsGemUnitTests
 
     public SecsGemUnitTests()
     {
-        var pipe1 = new Pipe(new PipeOptions(
-            //readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline,
-            useSynchronizationContext: false));
-        var pipe2 = new Pipe(new PipeOptions(
-            //readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline,
-            useSynchronizationContext: false));
+        var pipe1 = new Pipe(new PipeOptions(useSynchronizationContext: false));
+        var pipe2 = new Pipe(new PipeOptions(useSynchronizationContext: false));
         pipeConnection1 = new PipeConnection(decoderReader: pipe1.Reader, decoderInput: pipe2.Writer);
         pipeConnection2 = new PipeConnection(decoderReader: pipe2.Reader, decoderInput: pipe1.Writer);
     }
@@ -107,8 +103,8 @@ public class SecsGemUnitTests
         {
             await foreach (var a in secsGem2.GetPrimaryMessageAsync(cts.Token))
             {
-                    // can't receive any message, reply S9F1 internally
-                    receiver(a.PrimaryMessage);
+                // can't receive any message, reply S9F1 internally
+                receiver(a.PrimaryMessage);
             }
         });
 
@@ -149,7 +145,7 @@ public class SecsGemUnitTests
             await foreach (var a in secsGem2.GetPrimaryMessageAsync(cts.Token))
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(options1.Value.T3 + 100)); // process delay over T3
-                    await a.TryReplyAsync(pong);
+                await a.TryReplyAsync(pong);
             }
         });
 
@@ -191,7 +187,7 @@ public class SecsGemUnitTests
         var secsGem1 = new SecsGem(optionsActive, connection1, Substitute.For<ISecsGemLogger>());
         var secsGem2 = new SecsGem(optionsPassive, connection2, Substitute.For<ISecsGemLogger>());
 
-        _ = AsyncHelper.LongRunningAsync(async () =>
+        _ = Task.Run(async () =>
         {
             var pong = new SecsMessage(s: 1, f: 14, replyExpected: false)
             {

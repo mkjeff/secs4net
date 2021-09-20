@@ -17,6 +17,7 @@ partial class Item
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     internal static void DecodeDataLength(in ReadOnlySequence<byte> sourceBytes, out int dataLength)
     {
         dataLength = 0;
@@ -26,6 +27,7 @@ partial class Item
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
+    [SkipLocalsInit]
     public static unsafe Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
     {
 #if NET
@@ -83,6 +85,7 @@ partial class Item
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeASCII(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -106,6 +109,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeJIS8(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -129,6 +133,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeBoolean(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -152,6 +157,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeBinary(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -175,6 +181,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeU1(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -198,6 +205,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeU2(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -225,6 +233,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeU4(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -252,6 +261,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeU8(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -279,6 +289,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeI1(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -303,6 +314,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeI2(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -330,6 +342,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeI4(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -357,6 +370,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
         static Item DecodeI8(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -384,6 +398,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [SkipLocalsInit]
         static Item DecodeF4(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;
@@ -411,6 +426,7 @@ partial class Item
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [SkipLocalsInit]
         static Item DecodeF8(in ReadOnlySequence<byte> bytes)
         {
             int length = (int)bytes.Length;

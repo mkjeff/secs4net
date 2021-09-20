@@ -21,7 +21,7 @@ public interface ISecsGem
     /// Send a message to device asynchronously and get reply message.
     /// </summary>
     /// <param name="message">primary message</param>
-    /// <returns>Secondary message, or null if <paramref name="message" />'s <see cref="SecsMessage.ReplyExpected">ReplyExpected</see> is <see langword="false" /> </returns>
+    /// <returns>Secondary message, or null if <paramref name="message" />'s <see cref="SecsMessage.ReplyExpected"/> is <see langword="false" /> </returns>
     ValueTask<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default);
 }
 
@@ -58,7 +58,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
         _hsmsConnector = hsmsConnector;
         _logger = logger;
 
-        _ = AsyncHelper.LongRunningAsync(() =>
+        Task.Run(() =>
             _hsmsConnector.GetDataMessages(_cancellationSourceForDataMessageProcessing.Token)
                 .ForEachAwaitWithCancellationAsync((a, ct) =>
                     ProcessDataMessageAsync(a.header, a.rootItem, ct), _cancellationSourceForDataMessageProcessing.Token));

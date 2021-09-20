@@ -16,9 +16,11 @@ public static class SmlReader
 {
     public static async IAsyncEnumerable<SecsMessage> ToSecsMessages(this TextReader reader)
     {
+        var stack = new Stack<List<Item>>();
         while (reader.Peek() != -1)
         {
-            yield return await reader.ToSecsMessageAsync();
+            yield return await reader.ToSecsMessageAsync(stack);
+            stack.Clear();
         }
     }
 
@@ -28,7 +30,12 @@ public static class SmlReader
         return sr.ToSecsMessage();
     }
 
-    public static async Task<SecsMessage> ToSecsMessageAsync(this TextReader sr)
+    public static Task<SecsMessage> ToSecsMessageAsync(this TextReader sr)
+    {
+        return sr.ToSecsMessageAsync(new Stack<List<Item>>());
+    }
+
+    private static async Task<SecsMessage> ToSecsMessageAsync(this TextReader sr, Stack<List<Item>> stack)
     {
         var line = await sr.ReadLineAsync();
 #if NET
@@ -37,7 +44,6 @@ public static class SmlReader
         var (name, s, f, replyExpected) = ParseFirstLine(line.AsSpan());
 #endif
 
-        var stack = new Stack<List<Item>>();
         Item? rootItem = null;
 
 #if NET

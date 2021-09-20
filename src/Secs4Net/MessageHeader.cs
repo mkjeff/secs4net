@@ -31,12 +31,11 @@ public readonly struct MessageHeader
         Id = id;
     }
 
-    public override string ToString()
-    {
-        return $"DeviceId={DeviceId}, S={S}, ReplyExpected={ReplyExpected}, F={F}, MessageType={MessageType}, Id={Id:X8}";
-    }
+    public override string ToString() 
+        => $"DeviceId={DeviceId}, S={S}, ReplyExpected={ReplyExpected}, F={F}, MessageType={MessageType}, Id={Id:X8}";
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     internal void EncodeTo(IBufferWriter<byte> buffer)
     {
         var span = buffer.GetSpan(sizeHint: 10);
@@ -50,6 +49,7 @@ public readonly struct MessageHeader
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     internal static MessageHeader Decode(ReadOnlySpan<byte> buffer)
     {
         ref var head = ref MemoryMarshal.GetReference(buffer);

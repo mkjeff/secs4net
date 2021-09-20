@@ -68,6 +68,7 @@ public static class ReverseHelper
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<short> span)
     {
         ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -84,6 +85,7 @@ public static class ReverseHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<ushort> span)
     {
         ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -100,6 +102,7 @@ public static class ReverseHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<int> span)
     {
         ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -116,6 +119,7 @@ public static class ReverseHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<uint> span)
     {
         ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -132,6 +136,7 @@ public static class ReverseHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<long> span)
     {
         ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -148,6 +153,7 @@ public static class ReverseHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<ulong> span)
     {
         ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -164,6 +170,7 @@ public static class ReverseHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<float> span)
     {
         ref var rStart = ref span.DangerousGetReferenceAt(0);
@@ -180,6 +187,7 @@ public static class ReverseHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<double> span)
     {
         ref var rStart = ref span.DangerousGetReferenceAt(0);

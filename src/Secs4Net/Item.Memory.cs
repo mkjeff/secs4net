@@ -10,6 +10,7 @@ namespace Secs4Net;
 partial class Item
 {
     [DebuggerTypeProxy(typeof(MemoryItem<>.ItemDebugView))]
+    [SkipLocalsInit]
     private class MemoryItem<T> : Item where T : unmanaged, IEquatable<T>
     {
         private readonly Memory<T> _value;

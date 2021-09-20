@@ -8,34 +8,6 @@ namespace Secs4Net.Extensions;
 public static class SecsExtension
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ChunkedSpan<T> Chunk<T>(ref this Span<T> span, int count) => new(span, count);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ChunkedReadOnlySpan<T> Chunk<T>(ref this ReadOnlySpan<T> span, int count) => new(span, count);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ChunkedMemory<T> Chunk<T>(this Memory<T> memory, int count) => new(memory, count);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ChunkedReadOnlyMemory<T> Chunk<T>(this ReadOnlyMemory<T> memory, int count) => new(memory, count);
-
-    public static IEnumerable<Memory<T>> AsEnumerable<T>(this ChunkedMemory<T> source)
-    {
-        foreach (var m in source)
-        {
-            yield return m;
-        }
-    }
-
-    public static IEnumerable<ReadOnlyMemory<T>> AsEnumerable<T>(this ChunkedReadOnlyMemory<T> source)
-    {
-        foreach (var m in source)
-        {
-            yield return m;
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string GetName(this SecsFormat format)
     {
         return format switch
@@ -74,7 +46,7 @@ public static class SecsExtension
 
     internal static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
     {
-        var tcs = ValueTaskCompletionSource<object?>.Create();
+        var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         // This disposes the registration as soon as one of the tasks trigger
         using (cancellationToken.Register(static state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
@@ -92,7 +64,7 @@ public static class SecsExtension
 
     internal static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
     {
-        var tcs = ValueTaskCompletionSource<object?>.Create();
+        var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         // This disposes the registration as soon as one of the tasks trigger
         using (cancellationToken.Register(static state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
