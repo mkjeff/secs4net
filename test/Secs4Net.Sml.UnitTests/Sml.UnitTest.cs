@@ -79,4 +79,34 @@ public class SmlUnitTest
 
         i.Should().Be(messages.Count);
     }
+
+    [Fact]
+    public void Class_Can_To_Sml_And_Sml_Can_To_Class()
+    {
+        var testClass = new TestClass();
+        string str = testClass.ToSml();
+        str = $"TEST:'S6F1' W\r\n{str}";
+        var message = str.ToSecsMessage();
+        var testClass1 = message.ToType<TestClass>();
+
+        testClass1.Should().BeEquivalentTo(testClass);
+    }
+
+    private class TestClass
+    {
+        public byte ALCD = 1;
+        public uint ALID = 2;
+        public TestSubClass testSubClass;
+        public TestClass()
+        {
+            testSubClass = new TestSubClass();
+        }
+        public class TestSubClass
+        {
+            public string DeviceID = "DeviceID";
+            public ushort UnitID = 666;
+            public float[] FloatInfo = new float[2] { 1, 2 };
+            public int[] IntInfo = new int[2] { 4, 5 };
+        }
+    }
 }

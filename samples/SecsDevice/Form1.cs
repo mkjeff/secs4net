@@ -103,14 +103,20 @@ namespace SecsDevice
 
         private async void btnSendPrimary_Click(object sender, EventArgs e)
         {
-            if (_secsGem is null || string.IsNullOrWhiteSpace(txtSendPrimary.Text) || _connector?.State != ConnectionState.Selected)
+            if (_secsGem is null || _connector?.State != ConnectionState.Selected)
             {
                 return;
             }
-
+            string str = txtSendPrimary.Text;
+            if (string.IsNullOrWhiteSpace(str))
+            {
+                str = new TestClass().ToSml();
+                str = $"TEST:'S6F1' W\r\n{str}";
+            }
             try
             {
-                var reply = await _secsGem.SendAsync(txtSendPrimary.Text.ToSecsMessage());
+                var message = str.ToSecsMessage();
+                var reply = await _secsGem.SendAsync(message);
                 txtRecvSecondary.Text = reply.ToSml();
             }
             catch (SecsException ex)
@@ -226,6 +232,24 @@ namespace SecsDevice
                 Error(msg, null, ex);
             }
 #endif
+        }
+
+        private class TestClass
+        {
+            public byte ALCD = 1;
+            public uint ALID = 2;
+            public TestSubClass testSubClass;
+            public TestClass()
+            {
+                testSubClass = new TestSubClass();
+            }
+            public class TestSubClass
+            {
+                public string DeviceID = "DeviceID";
+                public ushort UnitID = 666;
+                public float[] FloatInfo = new float[2] { 1, 2 };
+                public int[] IntInfo = new int[2] { 4, 5 };
+            }
         }
     }
 }
