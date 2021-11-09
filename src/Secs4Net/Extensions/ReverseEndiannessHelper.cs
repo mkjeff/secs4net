@@ -209,15 +209,15 @@ public static class ReverseHelper
 
 #if NETSTANDARD
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float ReadSingleBigEndian(ReadOnlySpan<byte> source)
+    private static float ReadSingleBigEndian(ReadOnlySpan<byte> source)
         => Int32BitsToSingle(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<int>(source)));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    unsafe static float Int32BitsToSingle(int value)
+    private unsafe static float Int32BitsToSingle(int value)
         => *(float*)&value;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double ReadDoubleBigEndian(ReadOnlySpan<byte> source)
+    private static double ReadDoubleBigEndian(ReadOnlySpan<byte> source)
         => BitConverter.Int64BitsToDouble(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(source)));
 #endif
 

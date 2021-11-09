@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace System.Text
 {
-    public static class EncodingExtenstions
+    internal static class EncodingExtenstions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe int GetBytes(this Encoding encoding, string str, Span<byte> span)

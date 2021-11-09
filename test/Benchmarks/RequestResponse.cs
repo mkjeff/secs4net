@@ -2,7 +2,6 @@
 using BenchmarkDotNet.Diagnosers;
 using Microsoft.Extensions.Options;
 using System;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +25,8 @@ public class RequestResponse
     private CancellationTokenSource _cts;
     private SecsGem _secsGem1;
     private SecsGem _secsGem2;
+    private HsmsConnection _connection1;
+    private HsmsConnection _connection2;
 
     [Params(16, 64)]
     public int Count { get; set; }
@@ -33,22 +34,32 @@ public class RequestResponse
     [GlobalSetup]
     public void Setup()
     {
-        var pipe1 = new Pipe(new PipeOptions(useSynchronizationContext: false));
-        var pipe2 = new Pipe(new PipeOptions(useSynchronizationContext: false));
-        var connection1 = new PipeConnection(decoderReader: pipe1.Reader, decoderInput: pipe2.Writer);
-        var connection2 = new PipeConnection(decoderReader: pipe2.Reader, decoderInput: pipe1.Writer);
+        var logger = new Logger();
+
+        _connection1 = new HsmsConnection(Options.Create(new SecsGemOptions
+        {
+            IsActive = true,
+            DeviceId = 0,
+            T3 = 60000,
+        }), logger);
+
+        _connection2 = new HsmsConnection(Options.Create(new SecsGemOptions
+        {
+            IsActive = false,
+            DeviceId = 0,
+            T3 = 60000,
+        }), logger);
 
         var options = Options.Create(new SecsGemOptions
         {
             DeviceId = 0,
         });
-        var logger = new Logger();
-        _secsGem1 = new SecsGem(options, connection1, logger);
-        _secsGem2 = new SecsGem(options, connection2, logger);
+        _secsGem1 = new SecsGem(options, _connection1, logger);
+        _secsGem2 = new SecsGem(options, _connection2, logger);
 
         _cts = new CancellationTokenSource();
-        Task.Run(()=> connection1.StartAsync(_cts.Token));
-        Task.Run(() => connection2.StartAsync(_cts.Token));
+        Task.Run(() => _connection1.StartAsync(_cts.Token));
+        Task.Run(() => _connection2.StartAsync(_cts.Token));
         Task.Run(async () =>
         {
             await foreach (var a in _secsGem2.GetPrimaryMessageAsync(_cts.Token))
@@ -66,6 +77,8 @@ public class RequestResponse
         _cts?.Dispose();
         _secsGem1?.Dispose();
         _secsGem2?.Dispose();
+        _connection1?.Dispose();
+        _connection2?.Dispose();
     }
 
     [Benchmark(Description = "Sequential")]
