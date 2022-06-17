@@ -7,225 +7,225 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace SecsDevice
+namespace SecsDevice;
+
+public partial class Form1 : Form
 {
-    public partial class Form1 : Form
+    SecsGem? _secsGem;
+    HsmsConnection? _connector;
+    readonly ISecsGemLogger _logger;
+    readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
+    CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
+    public Form1()
     {
-        SecsGem? _secsGem;
-        HsmsConnection? _connector;
-        readonly ISecsGemLogger _logger;
-        readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
-        CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        InitializeComponent();
 
-        public Form1()
+        radioActiveMode.DataBindings.Add("Enabled", btnEnable, "Enabled");
+        radioPassiveMode.DataBindings.Add("Enabled", btnEnable, "Enabled");
+        txtAddress.DataBindings.Add("Enabled", btnEnable, "Enabled");
+        numPort.DataBindings.Add("Enabled", btnEnable, "Enabled");
+        numDeviceId.DataBindings.Add("Enabled", btnEnable, "Enabled");
+        numBufferSize.DataBindings.Add("Enabled", btnEnable, "Enabled");
+        recvMessageBindingSource.DataSource = recvBuffer;
+        Application.ThreadException += (sender, e) => MessageBox.Show(e.Exception.ToString());
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) => MessageBox.Show(e.ExceptionObject.ToString());
+        _logger = new SecsLogger(this);
+    }
+
+    private async void btnEnable_Click(object sender, EventArgs e)
+    {
+        _secsGem?.Dispose();
+
+        if (_connector is not null)
         {
-            InitializeComponent();
-
-            radioActiveMode.DataBindings.Add("Enabled", btnEnable, "Enabled");
-            radioPassiveMode.DataBindings.Add("Enabled", btnEnable, "Enabled");
-            txtAddress.DataBindings.Add("Enabled", btnEnable, "Enabled");
-            numPort.DataBindings.Add("Enabled", btnEnable, "Enabled");
-            numDeviceId.DataBindings.Add("Enabled", btnEnable, "Enabled");
-            numBufferSize.DataBindings.Add("Enabled", btnEnable, "Enabled");
-            recvMessageBindingSource.DataSource = recvBuffer;
-            Application.ThreadException += (sender, e) => MessageBox.Show(e.Exception.ToString());
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) => MessageBox.Show(e.ExceptionObject.ToString());
-            _logger = new SecsLogger(this);
+            await _connector.DisposeAsync();
         }
 
-        private async void btnEnable_Click(object sender, EventArgs e)
+        var options = Options.Create(new SecsGemOptions
         {
-            _secsGem?.Dispose();
+            IsActive = radioActiveMode.Checked,
+            IpAddress = txtAddress.Text,
+            Port = (int)numPort.Value,
+            SocketReceiveBufferSize = (int)numBufferSize.Value,
+            DeviceId = (ushort)numDeviceId.Value,
+        });
 
-            if (_connector is not null)
-            {
-                await _connector.DisposeAsync();
-            }
+        _connector = new HsmsConnection(options, _logger);
+        _secsGem = new SecsGem(options, _connector, _logger);
 
-            var options = Options.Create(new SecsGemOptions
+        _connector.ConnectionChanged += delegate
+        {
+            base.Invoke((MethodInvoker)delegate
             {
-                IsActive = radioActiveMode.Checked,
-                IpAddress = txtAddress.Text,
-                Port = (int)numPort.Value,
-                SocketReceiveBufferSize = (int)numBufferSize.Value,
-                DeviceId = (ushort)numDeviceId.Value,
+                lbStatus.Text = _connector.State.ToString();
             });
+        };
 
-            _connector = new HsmsConnection(options, _logger);
-            _secsGem = new SecsGem(options, _connector, _logger);
+        btnEnable.Enabled = false;
+        _ = _connector.StartAsync(_cancellationTokenSource.Token);
+        btnDisable.Enabled = true;
 
-            _connector.ConnectionChanged += delegate
+        try
+        {
+            await foreach (var primaryMessage in _secsGem.GetPrimaryMessageAsync(_cancellationTokenSource.Token))
             {
-                base.Invoke((MethodInvoker)delegate
-                {
-                    lbStatus.Text = _connector.State.ToString();
-                });
-            };
-
-            btnEnable.Enabled = false;
-            _ = _connector.StartAsync(_cancellationTokenSource.Token);
-            btnDisable.Enabled = true;
-
-            try
-            {
-                await foreach (var primaryMessage in _secsGem.GetPrimaryMessageAsync(_cancellationTokenSource.Token))
-                {
-                    recvBuffer.Add(primaryMessage);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-
+                recvBuffer.Add(primaryMessage);
             }
         }
-
-        private async void btnDisable_Click(object sender, EventArgs e)
+        catch (OperationCanceledException)
         {
-            if (!_cancellationTokenSource.IsCancellationRequested)
-            {
-                _cancellationTokenSource.Cancel();
-                _cancellationTokenSource.Dispose();
-            }
-            if (_connector is not null)
-            {
-                await _connector.DisposeAsync();
-            }
-            _secsGem?.Dispose();
-            _cancellationTokenSource = new CancellationTokenSource();
 
-            _secsGem = null;
-            btnEnable.Enabled = true;
-            btnDisable.Enabled = false;
-            lbStatus.Text = "Disable";
-            recvBuffer.Clear();
-            richTextBox1.Clear();
+        }
+    }
+
+    private async void btnDisable_Click(object sender, EventArgs e)
+    {
+        if (!_cancellationTokenSource.IsCancellationRequested)
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+        }
+        if (_connector is not null)
+        {
+            await _connector.DisposeAsync();
+        }
+        _secsGem?.Dispose();
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        _secsGem = null;
+        btnEnable.Enabled = true;
+        btnDisable.Enabled = false;
+        lbStatus.Text = "Disable";
+        recvBuffer.Clear();
+        richTextBox1.Clear();
+    }
+
+    private async void btnSendPrimary_Click(object sender, EventArgs e)
+    {
+        if (_secsGem is null || string.IsNullOrWhiteSpace(txtSendPrimary.Text) || _connector?.State != ConnectionState.Selected)
+        {
+            return;
         }
 
-        private async void btnSendPrimary_Click(object sender, EventArgs e)
+        try
         {
-            if (_secsGem is null || string.IsNullOrWhiteSpace(txtSendPrimary.Text) || _connector?.State != ConnectionState.Selected)
-            {
-                return;
-            }
+            var reply = await _secsGem.SendAsync(txtSendPrimary.Text.ToSecsMessage());
+            txtRecvSecondary.Text = reply.ToSml();
+        }
+        catch (SecsException ex)
+        {
+            txtRecvSecondary.Text = ex.Message;
+        }
+    }
 
-            try
-            {
-                var reply = await _secsGem.SendAsync(txtSendPrimary.Text.ToSecsMessage());
-                txtRecvSecondary.Text = reply.ToSml();
-            }
-            catch (SecsException ex)
-            {
-                txtRecvSecondary.Text = ex.Message;
-            }
+    private void lstUnreplyMsg_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        var receivedMessage = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
+        txtRecvPrimary.Text = receivedMessage?.PrimaryMessage.ToSml();
+    }
+
+    private async void btnReplySecondary_Click(object sender, EventArgs e)
+    {
+        if (lstUnreplyMsg.SelectedItem is not PrimaryMessageWrapper recv
+            || string.IsNullOrWhiteSpace(txtReplySeconary.Text))
+        {
+            return;
         }
 
-        private void lstUnreplyMsg_SelectedIndexChanged(object sender, EventArgs e)
+        await recv.TryReplyAsync(txtReplySeconary.Text.ToSecsMessage());
+        recvBuffer.Remove(recv);
+        txtRecvPrimary.Clear();
+    }
+
+    private async void btnReplyS9F7_Click(object sender, EventArgs e)
+    {
+        if (lstUnreplyMsg.SelectedItem is not PrimaryMessageWrapper recv)
         {
-            var receivedMessage = lstUnreplyMsg.SelectedItem as PrimaryMessageWrapper;
-            txtRecvPrimary.Text = receivedMessage?.PrimaryMessage.ToSml();
+            return;
         }
 
-        private async void btnReplySecondary_Click(object sender, EventArgs e)
-        {
-            if (lstUnreplyMsg.SelectedItem is not PrimaryMessageWrapper recv
-                || string.IsNullOrWhiteSpace(txtReplySeconary.Text))
-            {
-                return;
-            }
+        await recv.TryReplyAsync();
 
-            await recv.TryReplyAsync(txtReplySeconary.Text.ToSecsMessage());
-            recvBuffer.Remove(recv);
-            txtRecvPrimary.Clear();
+        recvBuffer.Remove(recv);
+        txtRecvPrimary.Clear();
+    }
+
+    sealed class SecsLogger : ISecsGemLogger
+    {
+        readonly Form1 _form;
+        internal SecsLogger(Form1 form)
+        {
+            _form = form;
         }
 
-        private async void btnReplyS9F7_Click(object sender, EventArgs e)
+        public void MessageIn(SecsMessage msg, int id)
         {
-            if (lstUnreplyMsg.SelectedItem is not PrimaryMessageWrapper recv)
+            _form.Invoke((MethodInvoker)delegate
             {
-                return;
-            }
-
-            await recv.TryReplyAsync();
-
-            recvBuffer.Remove(recv);
-            txtRecvPrimary.Clear();
+                _form.richTextBox1.SelectionColor = Color.Black;
+                _form.richTextBox1.AppendText($"<-- [0x{id:X8}] {msg.ToSml()}\n");
+            });
         }
 
-        class SecsLogger : ISecsGemLogger
+        public void MessageOut(SecsMessage msg, int id)
         {
-            readonly Form1 _form;
-            internal SecsLogger(Form1 form)
+            _form.Invoke((MethodInvoker)delegate
             {
-                _form = form;
-            }
-            public void MessageIn(SecsMessage msg, int id)
-            {
-                _form.Invoke((MethodInvoker)delegate
-                {
-                    _form.richTextBox1.SelectionColor = Color.Black;
-                    _form.richTextBox1.AppendText($"<-- [0x{id:X8}] {msg.ToSml()}\n");
-                });
-            }
+                _form.richTextBox1.SelectionColor = Color.Black;
+                _form.richTextBox1.AppendText($"--> [0x{id:X8}] {msg.ToSml()}\n");
+            });
+        }
 
-            public void MessageOut(SecsMessage msg, int id)
+        public void Info(string msg)
+        {
+            _form.Invoke((MethodInvoker)delegate
             {
-                _form.Invoke((MethodInvoker)delegate
-                {
-                    _form.richTextBox1.SelectionColor = Color.Black;
-                    _form.richTextBox1.AppendText($"--> [0x{id:X8}] {msg.ToSml()}\n");
-                });
-            }
+                _form.richTextBox1.SelectionColor = Color.Blue;
+                _form.richTextBox1.AppendText($"{msg}\n");
+            });
+        }
 
-            public void Info(string msg)
+        public void Warning(string msg)
+        {
+            _form.Invoke((MethodInvoker)delegate
             {
-                _form.Invoke((MethodInvoker)delegate
-                {
-                    _form.richTextBox1.SelectionColor = Color.Blue;
-                    _form.richTextBox1.AppendText($"{msg}\n");
-                });
-            }
+                _form.richTextBox1.SelectionColor = Color.Green;
+                _form.richTextBox1.AppendText($"{msg}\n");
+            });
+        }
 
-            public void Warning(string msg)
+        public void Error(string msg, SecsMessage? message, Exception? ex)
+        {
+            _form.Invoke((MethodInvoker)delegate
             {
-                _form.Invoke((MethodInvoker)delegate
-                {
-                    _form.richTextBox1.SelectionColor = Color.Green;
-                    _form.richTextBox1.AppendText($"{msg}\n");
-                });
-            }
+                _form.richTextBox1.SelectionColor = Color.Red;
+                _form.richTextBox1.AppendText($"{msg}\n");
+                _form.richTextBox1.AppendText($"{message?.ToSml()}\n");
+                _form.richTextBox1.SelectionColor = Color.Gray;
+                _form.richTextBox1.AppendText($"{ex}\n");
+            });
+        }
 
-            public void Error(string msg, SecsMessage? message, Exception? ex)
+        public void Debug(string msg)
+        {
+            _form.Invoke((MethodInvoker)delegate
             {
-                _form.Invoke((MethodInvoker)delegate
-                {
-                    _form.richTextBox1.SelectionColor = Color.Red;
-                    _form.richTextBox1.AppendText($"{msg}\n");
-                    _form.richTextBox1.AppendText($"{message?.ToSml()}\n");
-                    _form.richTextBox1.SelectionColor = Color.Gray;
-                    _form.richTextBox1.AppendText($"{ex}\n");
-                });
-            }
-
-            public void Debug(string msg)
-            {
-                _form.Invoke((MethodInvoker)delegate
-                {
-                    _form.richTextBox1.SelectionColor = Color.Yellow;
-                    _form.richTextBox1.AppendText($"{msg}\n");
-                });
-            }
+                _form.richTextBox1.SelectionColor = Color.Yellow;
+                _form.richTextBox1.AppendText($"{msg}\n");
+            });
+        }
 
 #if NET472
-            public void Error(string msg)
-            {
-                Error(msg, null, null);
-            }
-
-            public void Error(string msg, Exception ex)
-            {
-                Error(msg, null, ex);
-            }
-#endif
+        public void Error(string msg)
+        {
+            Error(msg, null, null);
         }
+
+        public void Error(string msg, Exception ex)
+        {
+            Error(msg, null, ex);
+        }
+#endif
     }
 }

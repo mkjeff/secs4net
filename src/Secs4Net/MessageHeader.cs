@@ -6,33 +6,14 @@ using System.Runtime.InteropServices;
 
 namespace Secs4Net;
 
-public readonly struct MessageHeader
+public readonly record struct MessageHeader
 {
-    public readonly ushort DeviceId;
-    public readonly bool ReplyExpected;
-    public readonly byte S;
-    public readonly byte F;
-    public readonly MessageType MessageType;
-    public readonly int Id;
-
-    internal MessageHeader(
-        ushort deviceId,
-        bool replyExpected = default,
-        byte s = default,
-        byte f = default,
-        MessageType messageType = default,
-        int id = default)
-    {
-        DeviceId = deviceId;
-        ReplyExpected = replyExpected;
-        S = s;
-        F = f;
-        MessageType = messageType;
-        Id = id;
-    }
-
-    public override string ToString() 
-        => $"DeviceId={DeviceId}, S={S}, ReplyExpected={ReplyExpected}, F={F}, MessageType={MessageType}, Id={Id:X8}";
+    public int Id { get; init; }
+    public ushort DeviceId { get; init; }
+    public MessageType MessageType { get; init; }
+    public byte S { get; init; }
+    public byte F { get; init; }
+    public bool ReplyExpected { get; init; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SkipLocalsInit]
@@ -50,17 +31,18 @@ public readonly struct MessageHeader
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SkipLocalsInit]
-    internal static MessageHeader Decode(ReadOnlySpan<byte> buffer)
+    internal static void Decode(ReadOnlySpan<byte> buffer, out MessageHeader header)
     {
         ref var head = ref MemoryMarshal.GetReference(buffer);
         var s = Unsafe.Add(ref head, 2);
-        return new MessageHeader(
-            deviceId: BinaryPrimitives.ReadUInt16BigEndian(buffer),
-            replyExpected: (s & 0b1000_0000) != 0,
-            s: (byte)(s & 0b0111_111),
-            f: Unsafe.Add(ref head, 3),
-            messageType: (MessageType)Unsafe.Add(ref head, 5),
-            id: BinaryPrimitives.ReadInt32BigEndian(buffer[6..])
-        );
+        header = new MessageHeader
+        {
+            DeviceId = BinaryPrimitives.ReadUInt16BigEndian(buffer),
+            ReplyExpected = (s & 0b1000_0000) != 0,
+            S = (byte)(s & 0b0111_111),
+            F = Unsafe.Add(ref head, 3),
+            MessageType = (MessageType)Unsafe.Add(ref head, 5),
+            Id = BinaryPrimitives.ReadInt32BigEndian(buffer[6..]),
+        };
     }
 }

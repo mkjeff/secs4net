@@ -36,7 +36,7 @@ public sealed class PipeDecoder
         Input = input;
     }
 
-    public IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
+    internal IAsyncEnumerable<MessageHeader> GetControlMessages(CancellationToken cancellation)
         => _controlMessageChannel.Reader.ReadAllAsync(cancellation);
 
     public IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation)
@@ -79,7 +79,7 @@ public sealed class PipeDecoder
             }
             var messageHaderSeq = buffer.Slice(buffer.Start, 10);
             messageHaderSeq.CopyTo(messageHeaderBytes);
-            var header = MessageHeader.Decode(messageHeaderBytes);
+            MessageHeader.Decode(messageHeaderBytes, out var header);
             buffer = buffer.Slice(messageHaderSeq.End);
 #if DEBUG
             Trace.WriteLine($"Get message(id:{header.Id:X8}) header");

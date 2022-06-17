@@ -163,8 +163,7 @@ public class ItemUnitTest
 
             L(listItem.Items[1..^1]).Should().BeEquivalentTo(L(I2(arr), U2()));
 
-            var range = 2..5;
-            Action sliceOutOfRange = () => _ = listItem.Items[range];
+            Action sliceOutOfRange = () => _ = listItem.Items[2..5];
             sliceOutOfRange.Should().Throw<ArgumentOutOfRangeException>();
         }
     }

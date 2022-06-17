@@ -472,10 +472,12 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         {
             var buffer = new MemoryBufferWriter<byte>(new byte[14]);
             buffer.Write(ControlMessageLengthBytes.Span);
-            new MessageHeader(
-                deviceId: 0xFFFF,
-                messageType: msgType,
-                id: id).EncodeTo(buffer);
+            new MessageHeader
+            {
+                DeviceId = 0xFFFF,
+                MessageType = msgType,
+                Id = id
+            }.EncodeTo(buffer);
             return buffer.WrittenMemory;
         }
     }

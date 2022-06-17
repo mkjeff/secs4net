@@ -38,13 +38,15 @@ public sealed class PrimaryMessageWrapper
         {
             var headerBytes = new byte[10];
             var buffer = new MemoryBufferWriter<byte>(headerBytes);
-            new MessageHeader(
-                secsGem.DeviceId,
-                PrimaryMessage.ReplyExpected,
-                PrimaryMessage.S,
-                PrimaryMessage.F,
-                MessageType.DataMessage,
-                Id).EncodeTo(buffer);
+            new MessageHeader
+            {
+                DeviceId = secsGem.DeviceId,
+                ReplyExpected = PrimaryMessage.ReplyExpected,
+                S = PrimaryMessage.S,
+                F = PrimaryMessage.F,
+                MessageType = MessageType.DataMessage,
+                Id = Id
+            }.EncodeTo(buffer);
             replyMessage = new SecsMessage(9, 7, replyExpected: false)
             {
                 Name = "Unknown Message",
