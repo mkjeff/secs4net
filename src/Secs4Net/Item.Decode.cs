@@ -1,5 +1,5 @@
-﻿using Microsoft.Toolkit.HighPerformance;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using CommunityToolkit.HighPerformance;
+using CommunityToolkit.HighPerformance.Buffers;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Secs4Net;
 
-partial class Item
+public partial class Item
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void DecodeFormatAndLengthByteCount(byte formatAndLengthByte, out SecsFormat format, out byte lengthByteCount)
@@ -23,7 +23,7 @@ partial class Item
         dataLength = 0;
         var lengthBytes = dataLength.AsBytes();
         sourceBytes.CopyTo(lengthBytes);
-        lengthBytes.Slice(0, (int)sourceBytes.Length).Reverse();
+        lengthBytes[..(int)sourceBytes.Length].Reverse();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

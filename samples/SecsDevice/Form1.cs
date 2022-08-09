@@ -11,11 +11,11 @@ namespace SecsDevice;
 
 public partial class Form1 : Form
 {
-    SecsGem? _secsGem;
-    HsmsConnection? _connector;
-    readonly ISecsGemLogger _logger;
-    readonly BindingList<PrimaryMessageWrapper> recvBuffer = new BindingList<PrimaryMessageWrapper>();
-    CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    private SecsGem? _secsGem;
+    private HsmsConnection? _connector;
+    private readonly ISecsGemLogger _logger;
+    private readonly BindingList<PrimaryMessageWrapper> recvBuffer = new();
+    private CancellationTokenSource _cancellationTokenSource = new();
 
     public Form1()
     {
@@ -151,9 +151,9 @@ public partial class Form1 : Form
         txtRecvPrimary.Clear();
     }
 
-    sealed class SecsLogger : ISecsGemLogger
+    private sealed class SecsLogger : ISecsGemLogger
     {
-        readonly Form1 _form;
+        private readonly Form1 _form;
         internal SecsLogger(Form1 form)
         {
             _form = form;

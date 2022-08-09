@@ -1,11 +1,11 @@
-﻿using Microsoft.Toolkit.HighPerformance;
+﻿using CommunityToolkit.HighPerformance;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Secs4Net;
 
-partial class Item
+public partial class Item
 {
     /// <summary>
     /// Encode Item header

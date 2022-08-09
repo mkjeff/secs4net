@@ -1,5 +1,5 @@
 #if !NET
-using Microsoft.Toolkit.HighPerformance.Buffers;
+using CommunityToolkit.HighPerformance.Buffers;
 using System.Buffers;
 using System.Runtime.CompilerServices;
 

@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using CommunityToolkit.HighPerformance.Buffers;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Toolkit.HighPerformance.Buffers;
 using PooledAwait;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -252,7 +252,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         return Task.CompletedTask;
     }
 
-    private void Start(CancellationToken cancellation) 
+    private void Start(CancellationToken cancellation)
         => Task.Run(() => _startImpl(cancellation), cancellation);
 
     private async Task StartPipeDecoderConsumerAsync(CancellationToken cancellation)
@@ -290,7 +290,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
                 await decoderInput.FlushAsync(cancellation).ConfigureAwait(false);
 #else
                 var count = await _socket!.ReceiveAsync(new ArraySegment<byte>(_socketReceiveBuffer), SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false); ;
-                await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory().Slice(0, count), cancellation).ConfigureAwait(false);
+                await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory()[..count], cancellation).ConfigureAwait(false);
 #endif
             }
         }
@@ -482,13 +482,13 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         }
     }
 
-    void StopT8Timer()
+    private void StopT8Timer()
     {
         _logger.Debug($"Stop T8 Timer: {T8 / 1000} sec.");
         _timer8.Change(Timeout.Infinite, Timeout.Infinite);
     }
 
-    void StartT8Timer()
+    private void StartT8Timer()
     {
         _logger.Debug($"Start T8 Timer: {T8 / 1000} sec.");
         _timer8.Change(T8, Timeout.Infinite);

@@ -1,4 +1,4 @@
-﻿using Microsoft.Toolkit.HighPerformance;
+﻿using CommunityToolkit.HighPerformance;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -63,7 +63,7 @@ public static class SmlReader
             // Parse First Line
             int i = line.IndexOf(':');
 
-            var name = i > 0 ? line.Slice(0, i).ToString() : string.Empty;
+            var name = i > 0 ? line[..i].ToString() : string.Empty;
             line = line[name.Length..];
 #if NET
             i = line.IndexOf("'S", StringComparison.Ordinal) + 2;
@@ -103,7 +103,7 @@ public static class SmlReader
         // Parse First Line
         int i = line.IndexOf(':');
 
-        var name = i > 0 ? line.Slice(0, i).ToString() : string.Empty;
+        var name = i > 0 ? line[..i].ToString() : string.Empty;
 
         line = line[name.Length..];
 
@@ -263,7 +263,6 @@ public static class SmlReader
     private static readonly (Func<Item>, Func<string, Item>) AParser = (A, A);
     private static readonly (Func<Item>, Func<string, Item>) JParser = (J, J);
 
-    private static readonly char[] Separator = { ' ' };
     private static readonly char[] trimElement = new char[] { ' ', '\'', '"' };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

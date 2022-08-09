@@ -1,4 +1,4 @@
-﻿using Microsoft.Toolkit.HighPerformance;
+﻿using CommunityToolkit.HighPerformance;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Secs4Net;
 
-partial class Item
+public partial class Item
 {
     [DebuggerTypeProxy(typeof(MemoryItem<>.ItemDebugView))]
     [SkipLocalsInit]
@@ -63,7 +63,7 @@ partial class Item
 
             EncodeItemHeader(Format, byteLength, buffer);
 
-            var bufferByteSpan = buffer.GetSpan(byteLength).Slice(0, byteLength);
+            var bufferByteSpan = buffer.GetSpan(byteLength)[..byteLength];
             valueByteSpan.CopyTo(bufferByteSpan);
             ReverseEndiannessHelper<T>.Reverse(Cast(bufferByteSpan));
             buffer.Advance(byteLength);

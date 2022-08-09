@@ -1,4 +1,4 @@
-﻿using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using CommunityToolkit.HighPerformance.Buffers;
 
 namespace Secs4Net;
 

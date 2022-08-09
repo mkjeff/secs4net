@@ -1,5 +1,5 @@
-﻿using Microsoft.Toolkit.HighPerformance;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using CommunityToolkit.HighPerformance;
+using CommunityToolkit.HighPerformance.Buffers;
 using System;
 using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;

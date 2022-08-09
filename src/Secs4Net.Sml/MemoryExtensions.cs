@@ -1,4 +1,4 @@
-using Microsoft.Toolkit.HighPerformance;
+using CommunityToolkit.HighPerformance;
 using System.Collections.Generic;
 
 namespace System;
@@ -100,7 +100,7 @@ internal ref struct SpanSplitEnumerator<T> where T : IEquatable<T>
                 return !(ShouldRemoveEmptyEntries && Current.IsEmpty);
             }
 
-            Current = _sequence.Slice(0, index);
+            Current = _sequence[..index];
             _sequence = _sequence[(index + 1)..];
         } while (Current.IsEmpty && ShouldRemoveEmptyEntries);
 

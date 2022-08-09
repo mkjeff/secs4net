@@ -1,7 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+using CommunityToolkit.HighPerformance.Buffers;
 using Secs4Net.Benchmark;
-using Secs4Net.Extensions;
 using System;
 using System.IO.Pipelines;
 using System.Linq;

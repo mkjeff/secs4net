@@ -1,5 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+using CommunityToolkit.HighPerformance.Buffers;
 using Secs4Net.Json;
 using System.Text;
 using System.Text.Json;

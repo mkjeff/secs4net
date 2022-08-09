@@ -86,10 +86,10 @@ internal ref struct Utf8JsonStreamReader
         do
         {
 #if NET
-            bytesRead = _stream.Read(newSegment.Buffer.Memory.Span.Slice(_lastSegmentEndIndex));
+            bytesRead = _stream.Read(newSegment.Buffer.Memory.Span[_lastSegmentEndIndex..]);
 #else
-                var bytes = newSegment.Buffer.Memory.Span.Slice(_lastSegmentEndIndex).ToArray();
-                bytesRead = _stream.Read(bytes, 0, bytes.Length);
+            var bytes = newSegment.Buffer.Memory.Span[_lastSegmentEndIndex..].ToArray();
+            bytesRead = _stream.Read(bytes, 0, bytes.Length);
 #endif
             _lastSegmentEndIndex += bytesRead;
         } while (bytesRead > 0 && _lastSegmentEndIndex < newSegment.Buffer.Memory.Length);

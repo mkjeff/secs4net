@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using CommunityToolkit.HighPerformance.Buffers;
+using FluentAssertions;
 using Secs4Net;
 using System;
 using System.IO.Pipelines;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Toolkit.HighPerformance;
+﻿using CommunityToolkit.HighPerformance;
 using PooledAwait;
 using System.Buffers;
 using System.Buffers.Binary;

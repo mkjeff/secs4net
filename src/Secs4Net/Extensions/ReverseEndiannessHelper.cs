@@ -1,4 +1,4 @@
-﻿using Microsoft.Toolkit.HighPerformance;
+﻿using CommunityToolkit.HighPerformance;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -55,7 +55,7 @@ public static class ReverseEndiannessHelper<T> where T : unmanaged
 
 public static class ReverseHelper
 {
-    const nuint SingleOffset = 1;
+    private const nuint SingleOffset = 1;
 
     public static void ReverseUInt16(Span<ushort> span) => span.ReverseEndianness();
     public static void ReverseUInt32(Span<uint> span) => span.ReverseEndianness();

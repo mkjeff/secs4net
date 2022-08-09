@@ -1,4 +1,4 @@
-﻿using Microsoft.Toolkit.HighPerformance.Buffers;
+﻿using CommunityToolkit.HighPerformance.Buffers;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
