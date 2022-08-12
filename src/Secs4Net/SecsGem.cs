@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Options;
-using CommunityToolkit.HighPerformance.Buffers;
+﻿using CommunityToolkit.HighPerformance.Buffers;
+using Microsoft.Extensions.Options;
 using PooledAwait;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Channels;
 
 namespace Secs4Net;
@@ -212,10 +213,10 @@ public sealed class SecsGem : ISecsGem, IDisposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void EncodeMessage(SecsMessage msg, int id, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
+    public static unsafe void EncodeMessage(SecsMessage msg, int id, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
     {
+        buffer.GetSpan(14);
         // reserve 4 byte for total length
-        var lengthBytes = buffer.GetSpan(sizeof(int))[..sizeof(int)];
         buffer.Advance(sizeof(int));
         new MessageHeader
         {
@@ -228,6 +229,11 @@ public sealed class SecsGem : ISecsGem, IDisposable
         }.EncodeTo(buffer);
         msg.SecsItem?.EncodeTo(buffer);
 
+#if NET
+        var lengthBytes = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(buffer.WrittenSpan), 4);
+#else
+        var lengthBytes = new Span<byte>(Unsafe.AsPointer(ref MemoryMarshal.GetReference(buffer.WrittenSpan)), 4);
+#endif
         BinaryPrimitives.WriteInt32BigEndian(lengthBytes, buffer.WrittenCount - sizeof(int));
     }
 
