@@ -70,12 +70,12 @@ public partial class Item
 
 #if NET
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static Span<T> Cast(Span<byte> bytes)
-                => MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(bytes)), bytes.Length / Unsafe.SizeOf<T>());
+            static unsafe Span<T> Cast(Span<byte> bytes)
+                => MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(bytes)), bytes.Length / sizeof(T));
 #else
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static unsafe Span<T> Cast(Span<byte> bytes)
-                => new(Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes)), bytes.Length / Unsafe.SizeOf<T>());
+                => new(Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes)), bytes.Length / sizeof(T));
 #endif
         }
 

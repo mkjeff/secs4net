@@ -211,7 +211,7 @@ public class SecsGemUnitTests
             var totalTasks = new List<Task<SecsMessage>>(capacity: sendCount);
             for (var g = 0; g < sendCount; g++)
             {
-                totalTasks.Add(secsGem1.SendAsync(ping, cancellation).AsTask());
+                totalTasks.Add(secsGem1.SendAsync(ping, cancellation));
             }
             await Task.WhenAll(totalTasks.ToArray());
         };

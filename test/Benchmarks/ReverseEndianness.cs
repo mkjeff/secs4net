@@ -1,11 +1,9 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using CommunityToolkit.HighPerformance;
-using CommunityToolkit.HighPerformance.Buffers;
 using Secs4Net.Benchmark;
 using Secs4Net.Extensions;
 using System;
-using System.Buffers;
 
 namespace Secs4Net.Benchmarks;
 
@@ -14,14 +12,14 @@ namespace Secs4Net.Benchmarks;
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
 public class ReverseEndianness
 {
-    private IMemoryOwner<ushort> _uint16;
-    private IMemoryOwner<uint> _uint32;
-    private IMemoryOwner<ulong> _uint64;
-    private IMemoryOwner<short> _int16;
-    private IMemoryOwner<int> _int32;
-    private IMemoryOwner<long> _int64;
-    private IMemoryOwner<float> _single;
-    private IMemoryOwner<double> _double;
+    private ushort[] _uint16;
+    private uint[] _uint32;
+    private ulong[] _uint64;
+    private short[] _int16;
+    private int[] _int32;
+    private long[] _int64;
+    private float[] _single;
+    private double[] _double;
 
 
     [Params(64)]
@@ -38,34 +36,22 @@ public class ReverseEndianness
         ReverseEndiannessHelper<long>.Reverse(default);
         ReverseEndiannessHelper<float>.Reverse(default);
         ReverseEndiannessHelper<double>.Reverse(default);
-        _uint16 = MemoryOwner<ushort>.Allocate(Size);
-        _uint32 = MemoryOwner<uint>.Allocate(Size);
-        _uint64 = MemoryOwner<ulong>.Allocate(Size);
-        _int16 = MemoryOwner<short>.Allocate(Size);
-        _int32 = MemoryOwner<int>.Allocate(Size);
-        _int64 = MemoryOwner<long>.Allocate(Size);
-        _single = MemoryOwner<float>.Allocate(Size);
-        _double = MemoryOwner<double>.Allocate(Size);
+        _uint16 = new ushort[Size];
+        _uint32 = new uint[Size];
+        _uint64 = new ulong[Size];
+        _int16 = new short[Size];
+        _int32 = new int[Size];
+        _int64 = new long[Size];
+        _single = new float[Size];
+        _double = new double[Size];
     }
 
-    [GlobalCleanup]
-    public void Cleanup()
-    {
-        _uint16.Dispose();
-        _uint32.Dispose();
-        _uint64.Dispose();
-        _int16.Dispose();
-        _int32.Dispose();
-        _int64.Dispose();
-        _single.Dispose();
-        _double.Dispose();
-    }
 
     [Benchmark(Description = "Slice & Reverse", Baseline = true)]
     [BenchmarkCategory("UInt16")]
     public int UInt16_SliceAndReverse()
     {
-        var bytes = _uint16.Memory.Span.AsBytes();
+        var bytes = _uint16.AsSpan().AsBytes();
         for (var i = 0; i < bytes.Length; i += sizeof(ushort))
         {
             bytes.Slice(i, sizeof(ushort)).Reverse();
@@ -77,7 +63,7 @@ public class ReverseEndianness
     [BenchmarkCategory("UInt16")]
     public unsafe int UInt16_ReverseEndiannessHelper()
     {
-        var data = _uint16.Memory.Span;
+        var data = _uint16.AsSpan();
         ReverseEndiannessHelper<ushort>.Reverse(data);
         return data.Length;
     }
@@ -86,7 +72,7 @@ public class ReverseEndianness
     [BenchmarkCategory("UInt16")]
     public int UInt16_BinaryPrimitives()
     {
-        var data = _uint16.Memory.Span;
+        var data = _uint16.AsSpan();
         data.ReverseEndianness();
         return data.Length;
     }
@@ -95,7 +81,7 @@ public class ReverseEndianness
     [BenchmarkCategory("UInt32")]
     public int UInt32_SliceAndReverse()
     {
-        var bytes = _uint32.Memory.Span.AsBytes();
+        var bytes = _uint32.AsSpan().AsBytes();
         for (var i = 0; i < bytes.Length; i += sizeof(uint))
         {
             bytes.Slice(i, sizeof(uint)).Reverse();
@@ -107,7 +93,7 @@ public class ReverseEndianness
     [BenchmarkCategory("UInt32")]
     public unsafe int UInt32_ReverseEndiannessHelper()
     {
-        var data = _uint32.Memory.Span;
+        var data = _uint32.AsSpan();
         ReverseEndiannessHelper<uint>.Reverse(data);
         return data.Length;
     }
@@ -116,7 +102,7 @@ public class ReverseEndianness
     [BenchmarkCategory("UInt32")]
     public int UInt32_BinaryPrimitives()
     {
-        var data = _uint32.Memory.Span;
+        var data = _uint32.AsSpan();
         data.ReverseEndianness();
         return data.Length;
     }
@@ -125,7 +111,7 @@ public class ReverseEndianness
     [BenchmarkCategory("UInt64")]
     public int UInt64_SliceAndReverse()
     {
-        var bytes = _uint64.Memory.Span.AsBytes();
+        var bytes = _uint64.AsSpan().AsBytes();
         for (var i = 0; i < bytes.Length; i += sizeof(ulong))
         {
             bytes.Slice(i, sizeof(ulong)).Reverse();
@@ -137,7 +123,7 @@ public class ReverseEndianness
     [BenchmarkCategory("UInt64")]
     public unsafe int UInt64_ReverseEndiannessHelper()
     {
-        var data = _uint64.Memory.Span;
+        var data = _uint64.AsSpan();
         ReverseEndiannessHelper<ulong>.Reverse(data);
         return data.Length;
     }
@@ -146,7 +132,7 @@ public class ReverseEndianness
     [BenchmarkCategory("UInt64")]
     public int UInt64_BinaryPrimitives()
     {
-        var data = _uint64.Memory.Span;
+        var data = _uint64.AsSpan();
         data.ReverseEndianness();
         return data.Length;
     }
@@ -155,7 +141,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Int16")]
     public int Int16_SliceAndReverse()
     {
-        var bytes = _int16.Memory.Span.AsBytes();
+        var bytes = _int16.AsSpan().AsBytes();
         for (var i = 0; i < bytes.Length; i += sizeof(short))
         {
             bytes.Slice(i, sizeof(short)).Reverse();
@@ -167,7 +153,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Int16")]
     public unsafe int Int16_ReverseEndiannessHelper()
     {
-        var data = _int16.Memory.Span;
+        var data = _int16.AsSpan();
         ReverseEndiannessHelper<short>.Reverse(data);
         return data.Length;
     }
@@ -176,7 +162,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Int16")]
     public int Int16_BinaryPrimitives()
     {
-        var data = _int16.Memory.Span;
+        var data = _int16.AsSpan();
         data.ReverseEndianness();
         return data.Length;
     }
@@ -185,7 +171,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Int32")]
     public int Int32_SliceAndReverse()
     {
-        var bytes = _int32.Memory.Span.AsBytes();
+        var bytes = _int32.AsSpan().AsBytes();
         for (var i = 0; i < bytes.Length; i += sizeof(int))
         {
             bytes.Slice(i, sizeof(int)).Reverse();
@@ -197,7 +183,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Int32")]
     public unsafe int Int32_ReverseEndiannessHelper()
     {
-        var data = _int32.Memory.Span;
+        var data = _int32.AsSpan();
         ReverseEndiannessHelper<int>.Reverse(data);
         return data.Length;
     }
@@ -206,7 +192,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Int32")]
     public int Int32_BinaryPrimitives()
     {
-        var data = _int32.Memory.Span;
+        var data = _int32.AsSpan();
         data.ReverseEndianness();
         return data.Length;
     }
@@ -215,7 +201,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Int64")]
     public int Int64_SliceAndReverse()
     {
-        var bytes = _int64.Memory.Span.AsBytes();
+        var bytes = _int64.AsSpan().AsBytes();
         for (var i = 0; i < bytes.Length; i += sizeof(long))
         {
             bytes.Slice(i, sizeof(long)).Reverse();
@@ -227,7 +213,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Int64")]
     public unsafe int Int64_ReverseEndiannessHelper()
     {
-        var data = _int64.Memory.Span;
+        var data = _int64.AsSpan();
         ReverseEndiannessHelper<long>.Reverse(data);
         return data.Length;
     }
@@ -236,7 +222,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Int64")]
     public int Int64_BinaryPrimitives()
     {
-        var data = _int64.Memory.Span;
+        var data = _int64.AsSpan();
         data.ReverseEndianness();
         return data.Length;
     }
@@ -245,7 +231,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Single")]
     public int Single_SliceAndReverse()
     {
-        var bytes = _single.Memory.Span.AsBytes();
+        var bytes = _single.AsSpan().AsBytes();
         for (var i = 0; i < bytes.Length; i += sizeof(float))
         {
             bytes.Slice(i, sizeof(float)).Reverse();
@@ -257,7 +243,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Single")]
     public unsafe int Single_ReverseEndiannessHelper()
     {
-        var data = _single.Memory.Span;
+        var data = _single.AsSpan();
         ReverseEndiannessHelper<float>.Reverse(data);
         return data.Length;
     }
@@ -266,7 +252,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Single")]
     public int Single_BinaryPrimitives()
     {
-        var data = _single.Memory.Span;
+        var data = _single.AsSpan();
         data.ReverseEndianness();
         return data.Length;
     }
@@ -275,7 +261,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Double")]
     public int Double_SliceAndReverse()
     {
-        var bytes = _double.Memory.Span.AsBytes();
+        var bytes = _double.AsSpan().AsBytes();
         for (var i = 0; i < bytes.Length; i += sizeof(double))
         {
             bytes.Slice(i, sizeof(double)).Reverse();
@@ -287,7 +273,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Double")]
     public unsafe int Double_ReverseEndiannessHelper()
     {
-        var data = _double.Memory.Span;
+        var data = _double.AsSpan();
         ReverseEndiannessHelper<double>.Reverse(data);
         return data.Length;
     }
@@ -296,7 +282,7 @@ public class ReverseEndianness
     [BenchmarkCategory("Doulbe")]
     public int Double_BinaryPrimitives()
     {
-        var data = _double.Memory.Span;
+        var data = _double.AsSpan();
         data.ReverseEndianness();
         return data.Length;
     }

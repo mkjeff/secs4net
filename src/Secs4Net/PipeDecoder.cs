@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance;
-using PooledAwait;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
@@ -238,17 +236,16 @@ public sealed class PipeDecoder
         ReadOnlySequence<byte> buffer = ReadOnlySequence<byte>.Empty;
         if (PipeTryRead(reader, required, ref buffer))
         {
-#if NET
-            return ValueTask.FromResult(buffer);
-#else
-            return new ValueTask<ReadOnlySequence<byte>>(buffer);
-#endif
+            return new(buffer);
         }
 
         return SlowPipeReadAsync(reader, required, cancellation);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static async PooledValueTask<ReadOnlySequence<byte>> SlowPipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
+#if NET
+        [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
+#endif
+        static async ValueTask<ReadOnlySequence<byte>> SlowPipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
         {
             while (true)
             {

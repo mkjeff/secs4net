@@ -23,7 +23,7 @@ public interface ISecsGem
     /// </summary>
     /// <param name="message">primary message</param>
     /// <returns>Secondary message, or null if <paramref name="message" />'s <see cref="SecsMessage.ReplyExpected"/> is <see langword="false" /> </returns>
-    ValueTask<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default);
+    Task<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default);
 }
 
 public sealed class SecsGem : ISecsGem, IDisposable
@@ -65,7 +65,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
                     ProcessDataMessageAsync(a.header, a.rootItem, ct), _cancellationSourceForDataMessageProcessing.Token));
     }
 
-    internal async PooledValueTask<SecsMessage> SendDataMessageAsync(SecsMessage message, int id, CancellationToken cancellation)
+    internal async Task<SecsMessage> SendDataMessageAsync(SecsMessage message, int id, CancellationToken cancellation)
     {
         if (_hsmsConnector.State != ConnectionState.Selected)
         {
@@ -126,7 +126,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
         }
     }
 
-    public ValueTask<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default)
+    public Task<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default)
         => SendDataMessageAsync(message, MessageIdGenerator.NewId(), cancellation);
 
     public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)
@@ -204,7 +204,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
     {
         if (Interlocked.Exchange(ref _disposeStage, DisposalComplete) != DisposalNotStarted)
         {
-            return;
+            throw new ObjectDisposedException(nameof(SecsGem));
         }
 
         _cancellationSourceForDataMessageProcessing.Cancel();

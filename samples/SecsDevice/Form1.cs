@@ -110,7 +110,7 @@ public partial class Form1 : Form
 
         try
         {
-            var reply = await _secsGem.SendAsync(txtSendPrimary.Text.ToSecsMessage());
+            var reply = await _secsGem.SendAsync(txtSendPrimary.Text.ToSecsMessage(), _cancellationTokenSource.Token);
             txtRecvSecondary.Text = reply.ToSml();
         }
         catch (SecsException ex)
@@ -133,7 +133,7 @@ public partial class Form1 : Form
             return;
         }
 
-        await recv.TryReplyAsync(txtReplySeconary.Text.ToSecsMessage());
+        await recv.TryReplyAsync(txtReplySeconary.Text.ToSecsMessage(), _cancellationTokenSource.Token);
         recvBuffer.Remove(recv);
         txtRecvPrimary.Clear();
     }

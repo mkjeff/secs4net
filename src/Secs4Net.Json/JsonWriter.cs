@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.HighPerformance;
-using Secs4Net.Extensions;
+﻿using Secs4Net.Extensions;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -84,13 +83,9 @@ public static class JsonWriter
         static void WriteArrayValue<T>(Utf8JsonWriter writer, Item item, Action<Utf8JsonWriter, T> write) where T : unmanaged
         {
             var span = item.GetMemory<T>().Span;
-
-            ref var rStart = ref span.DangerousGetReferenceAt(0);
-            ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
-            while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
+            foreach (var value in span)
             {
-                write.Invoke(writer, rStart);
-                rStart = ref Unsafe.Add(ref rStart, 1);
+                write.Invoke(writer, value);
             }
         }
     }

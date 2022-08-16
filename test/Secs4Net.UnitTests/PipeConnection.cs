@@ -1,5 +1,4 @@
-﻿using PooledAwait;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
@@ -21,10 +20,10 @@ public sealed class PipeConnection : ISecsConnection
     public Task StartAsync(CancellationToken cancellation)
         => _decoder.StartAsync(cancellation);
 
-    ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
+    Task ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
         => SendAsync(source, cancellation);
 
-    private async PooledValueTask SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
+    private async Task SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
     {
         await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
         try

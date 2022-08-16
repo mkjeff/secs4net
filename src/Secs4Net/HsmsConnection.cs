@@ -360,7 +360,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         try
         {
             await _pipeDecoder.GetControlMessages(cancellation)
-                      .ForEachAwaitWithCancellationAsync(ProcessControlMessageAsync, cancellation).ConfigureAwait(false);
+                .ForEachAwaitWithCancellationAsync(ProcessControlMessageAsync, cancellation).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
     }
@@ -515,11 +515,11 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         _timerLinkTest.Dispose();
     }
 
-    ValueTask ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
+    Task ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
         => SendAsync(buffer, cancellation);
 
 #if NET
-    private async PooledValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
+    private async Task SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
     {
         await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
         try
@@ -540,7 +540,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         }
     }
 #else
-    private async PooledValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
+    private async Task SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
     {
         if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(buffer, out var arr))
         {

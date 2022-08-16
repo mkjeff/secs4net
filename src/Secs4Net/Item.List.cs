@@ -1,8 +1,6 @@
-﻿using CommunityToolkit.HighPerformance;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Secs4Net;
 
@@ -20,19 +18,10 @@ partial class Item
 
         public sealed override void Dispose()
         {
-            var arr = _value;
-#if NET
-            ref var head = ref MemoryMarshal.GetArrayDataReference(arr);
-            for (nint i = 0, count = arr.Length; i < count; i++)
+            foreach (var a in _value)
             {
-                Unsafe.Add(ref head, i).Dispose();
+                a.Dispose();
             }
-#else
-            for (int i = 0; i < arr.Length; i++)
-            {
-                arr.DangerousGetReferenceAt(i).Dispose();
-            }
-#endif
         }
 
         public sealed override int Count => _value.Length;
@@ -55,18 +44,10 @@ partial class Item
             }
 
             EncodeItemHeader(Format, arr.Length, buffer);
-#if NET
-            ref var head = ref MemoryMarshal.GetArrayDataReference(arr);
-            for (nint i = 0, count = arr.Length; i < count; i++)
+            foreach (var item in arr)
             {
-                Unsafe.Add(ref head, i).EncodeTo(buffer);
+                item.EncodeTo(buffer);
             }
-#else
-            for (int i = 0; i < arr.Length; i++)
-            {
-                arr.DangerousGetReferenceAt(i).EncodeTo(buffer);
-            }
-#endif
         }
 
         private protected sealed override bool IsEquals(Item other)
@@ -79,25 +60,15 @@ partial class Item
             {
                 return false;
             }
-#if NET
-            ref var headLeft = ref MemoryMarshal.GetArrayDataReference(listLeft);
-            ref var headRight = ref MemoryMarshal.GetArrayDataReference(listRight);
-            for (nint i = 0, count = listLeft.Length; i < count; i++)
-            {
-                if (!Unsafe.Add(ref headLeft, i).IsEquals(Unsafe.Add(ref headRight, i)))
-                {
-                    return false;
-                }
-            }
-#else
+
             for (int i = 0, count = listLeft.Length; i < count; i++)
             {
-                if (!listLeft.DangerousGetReferenceAt(i).IsEquals(listRight.DangerousGetReferenceAt(i)))
+                if (!listLeft[i].IsEquals(listRight[i]))
                 {
                     return false;
                 }
             }
-#endif
+
             return true;
         }
 

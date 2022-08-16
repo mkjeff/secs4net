@@ -35,12 +35,12 @@ public static class SecsExtension
 
 #if NET
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<byte> AsBytes<T>(this ref T value) where T : unmanaged
-        => MemoryMarshal.CreateSpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>());
+    internal static unsafe Span<byte> AsBytes<T>(this ref T value) where T : unmanaged
+        => MemoryMarshal.CreateSpan(ref Unsafe.As<T, byte>(ref value), sizeof(T));
 #else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<byte> AsBytes<T>(this ref T value) where T : unmanaged
-        => new(Unsafe.AsPointer(ref value), Unsafe.SizeOf<T>());
+    internal static unsafe Span<byte> AsBytes<T>(this ref T value) where T : unmanaged
+        => new(Unsafe.AsPointer(ref value), sizeof(T));
 #endif
 
     internal static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
@@ -57,7 +57,7 @@ public static class SecsExtension
                 throw new OperationCanceledException(cancellationToken);
             }
 
-            await task;
+            await task.ConfigureAwait(false);
         }
     }
 
@@ -75,7 +75,7 @@ public static class SecsExtension
                 throw new OperationCanceledException(cancellationToken);
             }
 
-            return await task;
+            return await task.ConfigureAwait(false);
         }
     }
 }

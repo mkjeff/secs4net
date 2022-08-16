@@ -60,6 +60,9 @@ public class RequestResponse
         _cts = new CancellationTokenSource();
         Task.Run(() => _connection1.StartAsync(_cts.Token));
         Task.Run(() => _connection2.StartAsync(_cts.Token));
+
+        SpinWait.SpinUntil(() => _connection2.State == ConnectionState.Selected);
+
         Task.Run(async () =>
         {
             await foreach (var a in _secsGem2.GetPrimaryMessageAsync(_cts.Token))
@@ -97,7 +100,7 @@ public class RequestResponse
         var tasks = new Task<SecsMessage>[Count];
         for (int i = 0; i < Count; i++)
         {
-            tasks[i] = _secsGem1.SendAsync(ping).AsTask();
+            tasks[i] = _secsGem1.SendAsync(ping);
         }
         var replies = await Task.WhenAll(tasks).ConfigureAwait(false);
 

@@ -43,7 +43,7 @@ public interface ISecsConnection
     void Reconnect();
 
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    ValueTask SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
+    Task SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
 
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation);

@@ -14,35 +14,35 @@ public static class ReverseEndiannessHelper<T> where T : unmanaged
         var t = typeof(T);
         if (t == typeof(ushort))
         {
-            Reverse = (delegate*<Span<T>, void>)(delegate*<Span<ushort>, void>)&ReverseHelper.ReverseUInt16;
+            Reverse = (delegate*<Span<T>, void>)ReverseHelper.ReverseUInt16;
         }
         else if (t == typeof(uint))
         {
-            Reverse = (delegate*<Span<T>, void>)(delegate*<Span<uint>, void>)&ReverseHelper.ReverseUInt32;
+            Reverse = (delegate*<Span<T>, void>)ReverseHelper.ReverseUInt32;
         }
         else if (t == typeof(ulong))
         {
-            Reverse = (delegate*<Span<T>, void>)(delegate*<Span<ulong>, void>)&ReverseHelper.ReverseUInt64;
+            Reverse = (delegate*<Span<T>, void>)ReverseHelper.ReverseUInt64;
         }
         else if (t == typeof(short))
         {
-            Reverse = (delegate*<Span<T>, void>)(delegate*<Span<short>, void>)&ReverseHelper.ReverseInt16;
+            Reverse = (delegate*<Span<T>, void>)ReverseHelper.ReverseInt16;
         }
         else if (t == typeof(int))
         {
-            Reverse = (delegate*<Span<T>, void>)(delegate*<Span<int>, void>)&ReverseHelper.ReverseInt32;
+            Reverse = (delegate*<Span<T>, void>)ReverseHelper.ReverseInt32;
         }
         else if (t == typeof(long))
         {
-            Reverse = (delegate*<Span<T>, void>)(delegate*<Span<long>, void>)&ReverseHelper.ReverseInt64;
+            Reverse = (delegate*<Span<T>, void>)ReverseHelper.ReverseInt64;
         }
         else if (t == typeof(float))
         {
-            Reverse = (delegate*<Span<T>, void>)(delegate*<Span<float>, void>)&ReverseHelper.ReverseSingle;
+            Reverse = (delegate*<Span<T>, void>)ReverseHelper.ReverseSingle;
         }
         else if (t == typeof(double))
         {
-            Reverse = (delegate*<Span<T>, void>)(delegate*<Span<double>, void>)&ReverseHelper.ReverseDouble;
+            Reverse = (delegate*<Span<T>, void>)ReverseHelper.ReverseDouble;
         }
         else
         {
@@ -57,14 +57,14 @@ public static class ReverseHelper
 {
     private const nuint SingleOffset = 1;
 
-    public static void ReverseUInt16(Span<ushort> span) => span.ReverseEndianness();
-    public static void ReverseUInt32(Span<uint> span) => span.ReverseEndianness();
-    public static void ReverseUInt64(Span<ulong> span) => span.ReverseEndianness();
-    public static void ReverseInt16(Span<short> span) => span.ReverseEndianness();
-    public static void ReverseInt32(Span<int> span) => span.ReverseEndianness();
-    public static void ReverseInt64(Span<long> span) => span.ReverseEndianness();
-    public static void ReverseSingle(Span<float> span) => span.ReverseEndianness();
-    public static void ReverseDouble(Span<double> span) => span.ReverseEndianness();
+    internal static readonly unsafe delegate*<Span<ushort>, void> ReverseUInt16 = &ReverseEndianness;
+    internal static readonly unsafe delegate*<Span<uint>, void> ReverseUInt32 = &ReverseEndianness;
+    internal static readonly unsafe delegate*<Span<ulong>, void> ReverseUInt64 = &ReverseEndianness;
+    internal static readonly unsafe delegate*<Span<short>, void> ReverseInt16 = &ReverseEndianness;
+    internal static readonly unsafe delegate*<Span<int>, void> ReverseInt32 = &ReverseEndianness;
+    internal static readonly unsafe delegate*<Span<long>, void> ReverseInt64 = &ReverseEndianness;
+    internal static readonly unsafe delegate*<Span<float>, void> ReverseSingle = &ReverseEndianness;
+    internal static readonly unsafe delegate*<Span<double>, void> ReverseDouble = &ReverseEndianness;
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -84,7 +84,11 @@ public static class ReverseHelper
         }
     }
 
+#if NET6_0
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     [SkipLocalsInit]
     public static void ReverseEndianness(this Span<ushort> span)
     {
@@ -101,7 +105,11 @@ public static class ReverseHelper
         }
     }
 
+#if NET6_0
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif    
     [SkipLocalsInit]
     public static void ReverseEndianness(this Span<int> span)
     {
@@ -118,7 +126,11 @@ public static class ReverseHelper
         }
     }
 
+#if NET6_0
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     [SkipLocalsInit]
     public static void ReverseEndianness(this Span<uint> span)
     {
@@ -135,7 +147,11 @@ public static class ReverseHelper
         }
     }
 
+#if NET6_0
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     [SkipLocalsInit]
     public static void ReverseEndianness(this Span<long> span)
     {
@@ -152,7 +168,11 @@ public static class ReverseHelper
         }
     }
 
+#if NET6_0
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     [SkipLocalsInit]
     public static void ReverseEndianness(this Span<ulong> span)
     {
@@ -169,7 +189,11 @@ public static class ReverseHelper
         }
     }
 
+#if NET6_0
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     [SkipLocalsInit]
     public static void ReverseEndianness(this Span<float> span)
     {
@@ -186,7 +210,11 @@ public static class ReverseHelper
         }
     }
 
+#if NET6_0
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     [SkipLocalsInit]
     public static void ReverseEndianness(this Span<double> span)
     {
