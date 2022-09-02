@@ -227,7 +227,6 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
     {
         _timer7.Change(Timeout.Infinite, Timeout.Infinite);
         _timer8.Change(Timeout.Infinite, Timeout.Infinite);
-        _timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
         StopPipeDecoder(ref _cancellationTokenSourceForPipeDecoder);
         _stopImpl.Invoke();
 
