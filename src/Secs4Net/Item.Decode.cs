@@ -31,9 +31,9 @@ public partial class Item
     public static unsafe Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
     {
 #if NET
-        DecodeFormatAndLengthByteCount(bytes.FirstSpan.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
+        DecodeFormatAndLengthByteCount(bytes.Slice(0, 1).ToArray()[0], out var format, out var lengthByteCount);
 #else
-        DecodeFormatAndLengthByteCount(bytes.First.Span.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
+        DecodeFormatAndLengthByteCount(bytes.Slice(0, 1).ToArray()[0], out var format, out var lengthByteCount);
 #endif
 
         var dataLengthSeq = bytes.Slice(1, lengthByteCount);
