@@ -47,7 +47,7 @@ public class ReverseEndianness
     }
 
 
-    [Benchmark(Description = "Slice & Reverse", Baseline = true)]
+    [Benchmark(Description = "SliceReverse")]
     [BenchmarkCategory("UInt16")]
     public int UInt16_SliceAndReverse()
     {
@@ -59,7 +59,7 @@ public class ReverseEndianness
         return bytes.Length;
     }
 
-    [Benchmark(Description = "ReverseEndiannessHelper")]
+    [Benchmark(Description = "ReverseEndiannessHelper", Baseline = true)]
     [BenchmarkCategory("UInt16")]
     public unsafe int UInt16_ReverseEndiannessHelper()
     {
@@ -77,7 +77,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "Slice & Reverse", Baseline = true)]
+    [Benchmark(Description = "SliceReverse")]
     [BenchmarkCategory("UInt32")]
     public int UInt32_SliceAndReverse()
     {
@@ -89,7 +89,7 @@ public class ReverseEndianness
         return bytes.Length;
     }
 
-    [Benchmark(Description = "ReverseEndiannessHelper")]
+    [Benchmark(Description = "ReverseEndiannessHelper", Baseline = true)]
     [BenchmarkCategory("UInt32")]
     public unsafe int UInt32_ReverseEndiannessHelper()
     {
@@ -107,7 +107,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "Slice & Reverse", Baseline = true)]
+    [Benchmark(Description = "SliceReverse")]
     [BenchmarkCategory("UInt64")]
     public int UInt64_SliceAndReverse()
     {
@@ -119,7 +119,7 @@ public class ReverseEndianness
         return bytes.Length;
     }
 
-    [Benchmark(Description = "ReverseEndiannessHelper")]
+    [Benchmark(Description = "ReverseEndiannessHelper", Baseline = true)]
     [BenchmarkCategory("UInt64")]
     public unsafe int UInt64_ReverseEndiannessHelper()
     {
@@ -137,7 +137,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "Slice & Reverse", Baseline = true)]
+    [Benchmark(Description = "SliceReverse")]
     [BenchmarkCategory("Int16")]
     public int Int16_SliceAndReverse()
     {
@@ -149,7 +149,7 @@ public class ReverseEndianness
         return bytes.Length;
     }
 
-    [Benchmark(Description = "ReverseEndiannessHelper")]
+    [Benchmark(Description = "ReverseEndiannessHelper", Baseline = true)]
     [BenchmarkCategory("Int16")]
     public unsafe int Int16_ReverseEndiannessHelper()
     {
@@ -167,7 +167,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "Slice & Reverse", Baseline = true)]
+    [Benchmark(Description = "SliceReverse")]
     [BenchmarkCategory("Int32")]
     public int Int32_SliceAndReverse()
     {
@@ -179,7 +179,7 @@ public class ReverseEndianness
         return bytes.Length;
     }
 
-    [Benchmark(Description = "ReverseEndiannessHelper")]
+    [Benchmark(Description = "ReverseEndiannessHelper", Baseline = true)]
     [BenchmarkCategory("Int32")]
     public unsafe int Int32_ReverseEndiannessHelper()
     {
@@ -197,7 +197,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "Slice & Reverse", Baseline = true)]
+    [Benchmark(Description = "SliceReverse")]
     [BenchmarkCategory("Int64")]
     public int Int64_SliceAndReverse()
     {
@@ -209,7 +209,7 @@ public class ReverseEndianness
         return bytes.Length;
     }
 
-    [Benchmark(Description = "ReverseEndiannessHelper")]
+    [Benchmark(Description = "ReverseEndiannessHelper", Baseline = true)]
     [BenchmarkCategory("Int64")]
     public unsafe int Int64_ReverseEndiannessHelper()
     {
@@ -227,7 +227,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "Slice & Reverse", Baseline = true)]
+    [Benchmark(Description = "SliceReverse", Baseline = true)]
     [BenchmarkCategory("Single")]
     public int Single_SliceAndReverse()
     {
@@ -257,7 +257,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "Slice & Reverse", Baseline = true)]
+    [Benchmark(Description = "SliceReverse", Baseline = true)]
     [BenchmarkCategory("Double")]
     public int Double_SliceAndReverse()
     {
