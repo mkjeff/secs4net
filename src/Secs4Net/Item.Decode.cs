@@ -28,15 +28,16 @@ public partial class Item
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [SkipLocalsInit]
-    public static unsafe Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
+    public static Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
     {
+       var formatSeq = bytes.Slice(0, 1);
 #if NET
-        DecodeFormatAndLengthByteCount(bytes.FirstSpan.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
+        DecodeFormatAndLengthByteCount(formatSeq.FirstSpan.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
 #else
-        DecodeFormatAndLengthByteCount(bytes.First.Span.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
+        DecodeFormatAndLengthByteCount(formatSeq.First.Span.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
 #endif
 
-        var dataLengthSeq = bytes.Slice(1, lengthByteCount);
+        var dataLengthSeq = bytes.Slice(formatSeq.End, lengthByteCount);
         DecodeDataLength(dataLengthSeq, out var dataLength);
         bytes = bytes.Slice(dataLengthSeq.End);
 
@@ -81,7 +82,7 @@ public partial class Item
             SecsFormat.U1 => DecodeU1(bytes),
             SecsFormat.U2 => DecodeU2(bytes),
             SecsFormat.U4 => DecodeU4(bytes),
-            _ => ThrowHelper(bytes),
+            _ => ThrowHelper(),
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -454,6 +455,6 @@ public partial class Item
         }
 
         [DoesNotReturn]
-        static Item ThrowHelper(in ReadOnlySequence<byte> _) => throw new ArgumentOutOfRangeException();
+        static Item ThrowHelper() => throw new ArgumentOutOfRangeException();
     }
 }
