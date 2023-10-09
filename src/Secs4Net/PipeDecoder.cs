@@ -55,7 +55,7 @@ public sealed class PipeDecoder
         var messageHeaderBytes = new byte[10];
         // PipeReader peek first
         var buffer = await PipeReadAsync(reader, required: 4, cancellation).ConfigureAwait(false);
-        while (true)
+        while (!cancellation.IsCancellationRequested)
         {
         Start:
             // 0: get total message length 4 bytes
@@ -113,12 +113,14 @@ public sealed class PipeDecoder
             {
                 buffer = await PipeReadAsync(reader, required: 1, cancellation).ConfigureAwait(false);
             }
+
+            var formatSeq = buffer.Slice(0, 1);
 #if NET
-            Item.DecodeFormatAndLengthByteCount(buffer.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
+            Item.DecodeFormatAndLengthByteCount(formatSeq.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
 #else
-            Item.DecodeFormatAndLengthByteCount(buffer.First.Span.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
+            Item.DecodeFormatAndLengthByteCount(formatSeq.First.Span.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
 #endif
-            buffer = buffer.Slice(1);
+            buffer = buffer.Slice(formatSeq.End);
 
             // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte
             if (IsBufferInsufficient(reader, ref buffer, required: itemContentLengthByteCount))
@@ -266,14 +268,13 @@ public sealed class PipeDecoder
 
     private sealed class ItemList
     {
-        private int _index = 0;
         private readonly Item[] _items;
 
         public int Capacity => _items.Length;
-        public int Count => _index;
+        public int Count { get; private set; }
 
         public ItemList(int size) => _items = new Item[size];
-        public void Add(Item item) => _items.DangerousGetReferenceAt(_index++) = item;
+        public void Add(Item item) => _items.DangerousGetReferenceAt(Count++) = item;
         public Item[] GetArray() => _items;
     }
 }
