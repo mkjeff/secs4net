@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Secs4Net;
+﻿namespace Secs4Net;
 
 public interface ISecsGemLogger
 {

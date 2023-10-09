@@ -77,5 +77,5 @@ public sealed class PrimaryMessageWrapper
         }
     }
 
-    public sealed override string ToString() => PrimaryMessage.ToString();
+    public override string ToString() => PrimaryMessage.ToString();
 }

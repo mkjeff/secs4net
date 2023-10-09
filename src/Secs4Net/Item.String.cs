@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -17,13 +16,13 @@ partial class Item
             : base(format)
             => _value = value;
 
-        public sealed override int Count
+        public override int Count
             => _value.Length;
 
-        public sealed override string GetString()
+        public override string GetString()
             => _value;
 
-        public sealed override void EncodeTo(IBufferWriter<byte> buffer)
+        public override void EncodeTo(IBufferWriter<byte> buffer)
         {
             if (_value.Length == 0)
             {
@@ -41,7 +40,7 @@ partial class Item
 #endif
         }
 
-        private protected sealed override bool IsEquals(Item other)
+        private protected override bool IsEquals(Item other)
             => Format == other.Format && _value.Equals(other.GetString(), StringComparison.Ordinal);
 
         private sealed class ItemDebugView

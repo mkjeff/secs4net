@@ -9,8 +9,8 @@ partial class Item
     public static Item L(IEnumerable<Item> items) => L(items.ToArray());
     public static Item L(params Item[] items) => items.Length > 0 ? new ListItem(SecsFormat.List, items) : L();
 
-    public static Item A(string? value) => string.IsNullOrEmpty(value) ? A() : new StringItem(SecsFormat.ASCII, value!);
-    public static Item J(string? value) => string.IsNullOrEmpty(value) ? J() : new StringItem(SecsFormat.JIS8, value!);
+    public static Item A(string? value) => string.IsNullOrEmpty(value) ? A() : new StringItem(SecsFormat.ASCII, value);
+    public static Item J(string? value) => string.IsNullOrEmpty(value) ? J() : new StringItem(SecsFormat.JIS8, value);
 
     [MethodImpl(AggressiveInlining)] public static Item B(params byte[] value) => B(value.AsMemory());
     [MethodImpl(AggressiveInlining)] public static Item B(IEnumerable<byte> value) => B(value.ToArray());

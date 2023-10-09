@@ -20,6 +20,6 @@
     <Compile Include="..\..\common\IsExternalInit.cs" Link="common\IsExternalInit.cs" />
     <Compile Include="..\..\common\NullableAttributes.cs" Link="common\NullableAttributes.cs" />
     <Compile Include="..\..\common\Range.cs" Link="common\Range.cs" />
-    <Compile Include="..\..\common\SkipLocalsInit.cs" Link="common\SkipLocalsInit.cs" />
+    <Compile Include="..\..\common\SkipLocalsInitAttribute.cs" Link="common\SkipLocalsInitAttribute.cs" />
   </ItemGroup>
 </Project>

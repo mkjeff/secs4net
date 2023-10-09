@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Secs4Net;
@@ -16,7 +15,7 @@ partial class Item
             : base(format)
             => _value = value;
 
-        public sealed override void Dispose()
+        public override void Dispose()
         {
             foreach (var a in _value)
             {
@@ -24,17 +23,17 @@ partial class Item
             }
         }
 
-        public sealed override int Count => _value.Length;
+        public override int Count => _value.Length;
 
-        public sealed override Item this[int index]
+        public override Item this[int index]
         {
             get => _value[index];
             set => _value[index] = value;
         }
 
-        public sealed override Item[] Items => _value;
+        public override Item[] Items => _value;
 
-        public sealed override void EncodeTo(IBufferWriter<byte> buffer)
+        public override void EncodeTo(IBufferWriter<byte> buffer)
         {
             var arr = _value;
             if (arr.Length == 0)
@@ -50,8 +49,8 @@ partial class Item
             }
         }
 
-        private protected sealed override bool IsEquals(Item other)
-            => Format == other.Format && IsListEquals(_value, Unsafe.As<ListItem>(other)!._value);
+        private protected override bool IsEquals(Item other)
+            => Format == other.Format && IsListEquals(_value, Unsafe.As<ListItem>(other)._value);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static bool IsListEquals(Item[] listLeft, Item[] listRight)

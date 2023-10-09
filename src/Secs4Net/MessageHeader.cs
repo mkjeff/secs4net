@@ -2,7 +2,6 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Secs4Net;
 
@@ -23,7 +22,7 @@ public readonly record struct MessageHeader
         BinaryPrimitives.WriteUInt16BigEndian(span, DeviceId);
         span.DangerousGetReferenceAt(2) = (byte)(S | (ReplyExpected ? 0b1000_0000 : 0));
         span.DangerousGetReferenceAt(3) = F;
-        span.DangerousGetReferenceAt(4) = (byte)0;
+        span.DangerousGetReferenceAt(4) = 0;
         span.DangerousGetReferenceAt(5) = (byte)MessageType;
         BinaryPrimitives.WriteInt32BigEndian(span[6..], Id);
         buffer.Advance(10);

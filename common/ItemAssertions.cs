@@ -2,7 +2,6 @@
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 using System;
-using System.Linq;
 
 namespace Secs4Net;
 

@@ -1,9 +1,7 @@
 ﻿using CommunityToolkit.HighPerformance;
 using System.Buffers;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Secs4Net;
 
@@ -70,17 +68,17 @@ public partial class Item
 
 #if NET
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static unsafe Span<T> Cast(Span<byte> bytes)
+            static Span<T> Cast(Span<byte> bytes)
                 => MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(bytes)), bytes.Length / sizeof(T));
 #else
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static unsafe Span<T> Cast(Span<byte> bytes)
+            static Span<T> Cast(Span<byte> bytes)
                 => new(Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes)), bytes.Length / sizeof(T));
 #endif
         }
 
         private protected sealed override bool IsEquals(Item other)
-            => Format == other.Format && _value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other)!._value.Span);
+            => Format == other.Format && _value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other)._value.Span);
 
         private sealed class ItemDebugView
         {

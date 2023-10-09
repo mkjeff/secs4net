@@ -12,7 +12,7 @@ partial class Item
             : base(format, memoryOwner.Memory)
             => _owner = memoryOwner;
 
-        public sealed override void Dispose()
+        public override void Dispose()
             => _owner.Dispose();
     }
 }
