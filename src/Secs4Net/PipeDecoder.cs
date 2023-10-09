@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
@@ -115,11 +114,8 @@ public sealed class PipeDecoder
             }
 
             var formatSeq = buffer.Slice(0, 1);
-#if NET
-            Item.DecodeFormatAndLengthByteCount(formatSeq.FirstSpan.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
-#else
-            Item.DecodeFormatAndLengthByteCount(formatSeq.First.Span.DangerousGetReferenceAt(0), out var itemFormat, out var itemContentLengthByteCount);
-#endif
+            Item.DecodeFormatAndLengthByteCount(formatSeq, out var itemFormat, out var itemContentLengthByteCount);
+
             buffer = buffer.Slice(formatSeq.End);
 
             // 3: get _itemLength bytes(size= _lengthByteCount), at most 3 byte

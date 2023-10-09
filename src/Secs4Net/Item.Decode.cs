@@ -10,8 +10,19 @@ namespace Secs4Net;
 public partial class Item
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void DecodeFormatAndLengthByteCount(byte formatAndLengthByte, out SecsFormat format, out byte lengthByteCount)
+    internal static void DecodeFormatAndLengthByteCount(in ReadOnlySequence<byte> sourceBytes, out SecsFormat format, out byte lengthByteCount)
     {
+#if NET
+        var formatSeqFirstSpan = sourceBytes.FirstSpan;
+#else
+        var formatSeqFirstSpan = sourceBytes.First.Span;
+#endif
+
+#if DEBUG
+        byte formatAndLengthByte = formatSeqFirstSpan[0];
+#else
+        byte formatAndLengthByte = formatSeqFirstSpan.DangerousGetReferenceAt(0);
+#endif
         format = (SecsFormat)(formatAndLengthByte >> 2);
         lengthByteCount = (byte)(formatAndLengthByte & 0b00000011);
     }
@@ -30,13 +41,9 @@ public partial class Item
     [SkipLocalsInit]
     public static Item DecodeFromFullBuffer(ref ReadOnlySequence<byte> bytes)
     {
-       var formatSeq = bytes.Slice(0, 1);
-#if NET
-        DecodeFormatAndLengthByteCount(formatSeq.FirstSpan.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
-#else
-        DecodeFormatAndLengthByteCount(formatSeq.First.Span.DangerousGetReferenceAt(0), out var format, out var lengthByteCount);
-#endif
-
+        var formatSeq = bytes.Slice(0, 1);
+        DecodeFormatAndLengthByteCount(formatSeq, out var format, out var lengthByteCount);
+        
         var dataLengthSeq = bytes.Slice(formatSeq.End, lengthByteCount);
         DecodeDataLength(dataLengthSeq, out var dataLength);
         bytes = bytes.Slice(dataLengthSeq.End);
