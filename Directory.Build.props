@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>2.1.1</Version>
+    <Version>2.2.0</Version>
     <Copyright>Copyright © secs4net 2021</Copyright>
     <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
     <Authors>mkjeff</Authors>
@@ -20,6 +20,6 @@
     <Compile Include="..\..\common\IsExternalInit.cs" Link="common\IsExternalInit.cs" />
     <Compile Include="..\..\common\NullableAttributes.cs" Link="common\NullableAttributes.cs" />
     <Compile Include="..\..\common\Range.cs" Link="common\Range.cs" />
-    <Compile Include="..\..\common\SkipLocalsInit.cs" Link="common\SkipLocalsInit.cs" />
+    <Compile Include="..\..\common\SkipLocalsInitAttribute.cs" Link="common\SkipLocalsInitAttribute.cs" />
   </ItemGroup>
 </Project>

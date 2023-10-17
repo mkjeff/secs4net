@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using PooledAwait;
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
@@ -244,7 +243,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         _socket = null;
     }
 
-    protected sealed override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _stoppingToken = stoppingToken;
         Start(_stoppingToken);
@@ -288,8 +287,11 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
                 decoderInput.Advance(count);
                 await decoderInput.FlushAsync(cancellation).ConfigureAwait(false);
 #else
-                var count = await _socket!.ReceiveAsync(new ArraySegment<byte>(_socketReceiveBuffer), SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false); ;
-                await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory()[..count], cancellation).ConfigureAwait(false);
+                var count = await _socket!.ReceiveAsync(new ArraySegment<byte>(_socketReceiveBuffer), SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false);
+                if (count > 0)
+                {
+                    await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory()[..count], cancellation).ConfigureAwait(false);
+                }
 #endif
             }
         }
@@ -434,7 +436,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         try
         {
             var buffer = EncodeControlMessage(msgType, id);
-            await Unsafe.As<ISecsConnection>(this)!.SendAsync(buffer, cancellation).ConfigureAwait(false);
+            await Unsafe.As<ISecsConnection>(this).SendAsync(buffer, cancellation).ConfigureAwait(false);
 
             _logger.Info("Sent Control Message: " + msgType);
             if (_replyExpectedMsgs.ContainsKey(id))

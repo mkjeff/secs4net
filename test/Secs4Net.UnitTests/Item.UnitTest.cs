@@ -135,7 +135,7 @@ public class ItemUnitTest
             stringItem.Count.Should().Be(str.Length);
         }
 
-        var arr = new short[3] { 2314, 4214, 4221 };
+        var arr = new short[] { 2314, 4214, 4221 };
         using (var arrayItem = I2(arr))
         {
             arrayItem.GetMemory<short>().ToArray().Should().BeEquivalentTo(arr);
@@ -465,5 +465,41 @@ public class ItemUnitTest
 #else
         changed.Should().Be(BitConverter.ToUInt16(arr.ToArray(), 0));
 #endif
+    }
+    
+    [Fact]
+    public void Item_Encode_Decode_Should_Be_Work_With_Empty_ReadOnlySequenceSegment()
+    {
+        var item =
+            L(
+               A("AA"),
+               A("q"));
+
+        var encodedBytes = item.GetEncodedBytes();
+        var first = new BufferSegment(Array.Empty<byte>());
+        var last = first.Append(encodedBytes);
+        var encodedSequence = new ReadOnlySequence<byte>(first,0, last,encodedBytes.Length);
+
+        var item2 = DecodeFromFullBuffer(ref encodedSequence);
+        encodedSequence.IsEmpty.Should().BeTrue();
+        item.Should().BeEquivalentTo(item2);
+    }
+}
+
+sealed class BufferSegment : ReadOnlySequenceSegment<byte>
+{
+    public BufferSegment(Memory<byte> memory)
+    {
+        Memory = memory;
+    }
+
+    public BufferSegment Append(Memory<byte> memory)
+    {
+        var segment = new BufferSegment(memory)
+        {
+            RunningIndex = RunningIndex + Memory.Length
+        };
+        Next = segment;
+        return segment;
     }
 }

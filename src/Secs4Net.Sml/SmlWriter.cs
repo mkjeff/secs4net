@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance;
 using CommunityToolkit.HighPerformance.Buffers;
 using System;
-using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;

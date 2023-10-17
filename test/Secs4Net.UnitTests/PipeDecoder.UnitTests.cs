@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.HighPerformance.Buffers;
 using FluentAssertions;
-using Secs4Net;
 using System;
 using System.IO.Pipelines;
 using System.Linq;
@@ -136,9 +135,20 @@ public class PipeDecoderUnitTests
 
         _ = Task.Run(async () =>
         {
+#if NET
+            var random = Random.Shared;
+#else
+            var random = new Random(13); 
+#endif
             foreach (var chunk in new ChunkedReadOnlyMemory<byte>(encodedBytes, size: 23))
             {
                 await Task.Delay(200); //simulate a slow connection
+
+                if (random.Next() % 2 == 0)
+                {
+                    await decoder.Input.WriteAsync(ReadOnlyMemory<byte>.Empty);
+                }
+
                 await decoder.Input.WriteAsync(chunk);
             }
         });

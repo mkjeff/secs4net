@@ -13,7 +13,7 @@ public partial class Item
     /// <param name="count">List item count or value bytes length</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SkipLocalsInit]
-    private protected static void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
+    private static void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
     {
         var lengthSpan = Unsafe.AsRef(count).AsBytes();
 

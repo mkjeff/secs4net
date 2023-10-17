@@ -1,5 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading;

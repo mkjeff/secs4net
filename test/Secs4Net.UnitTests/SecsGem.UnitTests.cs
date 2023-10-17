@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using Secs4Net;
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;

@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -25,16 +24,16 @@ partial class Item
             }, isThreadSafe: false);
         }
 
-        public sealed override void Dispose()
+        public override void Dispose()
             => _owner.Dispose();
 
-        public sealed override int Count
+        public override int Count
             => _value.Value.Length;
 
-        public sealed override string GetString()
+        public override string GetString()
             => _value.Value;
 
-        public sealed override void EncodeTo(IBufferWriter<byte> buffer)
+        public override void EncodeTo(IBufferWriter<byte> buffer)
         {
             ReadOnlySpan<byte> bytes = _owner.Memory.Span;
             if (bytes.IsEmpty)
@@ -46,7 +45,7 @@ partial class Item
             buffer.Write(bytes);
         }
 
-        private protected sealed override bool IsEquals(Item other)
+        private protected override bool IsEquals(Item other)
             => Format == other.Format && _value.Value.Equals(other.GetString(), StringComparison.Ordinal);
 
         private sealed class ItemDebugView

@@ -5,7 +5,6 @@ using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading.Channels;
 
 namespace Secs4Net;
@@ -213,7 +212,11 @@ public sealed class SecsGem : ISecsGem, IDisposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if NET 
+    public static void EncodeMessage(SecsMessage msg, int id, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
+#else
     public static unsafe void EncodeMessage(SecsMessage msg, int id, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
+#endif
     {
         buffer.GetSpan(14);
         // reserve 4 byte for total length
