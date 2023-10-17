@@ -16,7 +16,7 @@ public static class SmlWriter
 
     public static string ToSml(this SecsMessage msg)
     {
-        using var sw = new StringWriter();
+        using var sw = new StringWriter(CultureInfo.InvariantCulture);
         msg.WriteSmlTo(sw);
         return sw.ToString();
     }

@@ -1,6 +1,6 @@
 ﻿namespace Secs4Net;
 
-public enum MessageType : byte
+public enum MessageType : ushort
 {
     DataMessage = 0b0000_0000,
     SelectRequest = 0b0000_0001,
