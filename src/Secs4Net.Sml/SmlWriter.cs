@@ -28,9 +28,9 @@ public static class SmlWriter
             writer.Write(':');
         }
         writer.Write("'S");
-        writer.Write(msg.S);
+        writer.Write(msg.S.ToString(CultureInfo.InvariantCulture));
         writer.Write('F');
-        writer.Write(msg.F);
+        writer.Write(msg.F.ToString(CultureInfo.InvariantCulture));
         writer.Write('\'');
         if (msg.ReplyExpected)
         {
@@ -50,19 +50,19 @@ public static class SmlWriter
     {
         if (msg.Name is not null)
         {
-            writer.Write(msg.Name);
-            writer.Write(':');
+            await writer.WriteAsync(msg.Name);
+            await writer.WriteAsync(':');
         }
-        writer.Write("'S");
-        writer.Write(msg.S);
-        writer.Write('F');
-        writer.Write(msg.F);
-        writer.Write('\'');
+        await writer.WriteAsync("'S");
+        await writer.WriteAsync(msg.S.ToString(CultureInfo.InvariantCulture));
+        await writer.WriteAsync('F');
+        await writer.WriteAsync(msg.F.ToString(CultureInfo.InvariantCulture));
+        await writer.WriteAsync('\'');
         if (msg.ReplyExpected)
         {
-            writer.Write('W');
+            await writer.WriteAsync('W');
         }
-        writer.WriteLine();
+        await writer.WriteLineAsync();
 
         if (msg.SecsItem is not null)
         {
@@ -79,7 +79,7 @@ public static class SmlWriter
         writer.Write('<');
         writer.Write(item.Format.ToSml());
         writer.Write(" [");
-        writer.Write(item.Count);
+        writer.Write(item.Count.ToString(CultureInfo.InvariantCulture));
         writer.Write("] ");
         switch (item.Format)
         {
@@ -151,9 +151,9 @@ public static class SmlWriter
                 break;
             case SecsFormat.ASCII:
             case SecsFormat.JIS8:
-                writer.Write('\'');
-                writer.Write(item.GetString());
-                writer.Write('\'');
+                await writer.WriteAsync('\'');
+                await writer.WriteAsync(item.GetString());
+                await writer.WriteAsync('\'');
                 break;
             case SecsFormat.Binary:
                 writer.WriteHexArray(item.GetMemory<byte>());
@@ -214,7 +214,7 @@ public static class SmlWriter
 #if NET6_0
             where T : unmanaged, ISpanFormattable
 #else
-            where T: unmanaged
+            where T: unmanaged, IConvertible
 #endif
     {
         if (memory.IsEmpty)
@@ -238,7 +238,7 @@ public static class SmlWriter
 #if NET6_0
                 => writer.WriteSpanFormattableValue(value);
 #else
-                => writer.Write(value.ToString());
+                => writer.Write(value.ToString(CultureInfo.InvariantCulture));
 #endif
     }
 
