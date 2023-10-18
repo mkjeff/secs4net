@@ -33,14 +33,14 @@ public readonly record struct MessageHeader
     internal static void Decode(ReadOnlySpan<byte> buffer, out MessageHeader header)
     {
         ref var head = ref MemoryMarshal.GetReference(buffer);
-        var s = Unsafe.Add(ref head, 2);
+        var s = buffer[2];
         header = new MessageHeader
         {
-            DeviceId = BinaryPrimitives.ReadUInt16BigEndian(buffer),
+            DeviceId = (ushort)(BinaryPrimitives.ReadUInt16BigEndian(buffer) & 0b01111111_11111111),
             ReplyExpected = (s & 0b1000_0000) != 0,
-            S = (byte)(s & 0b0111_111),
-            F = Unsafe.Add(ref head, 3),
-            MessageType = (MessageType)Unsafe.Add(ref head, 5),
+            S = (byte)(s & 0b0111_1111),
+            F = buffer[3],
+            MessageType = (MessageType)buffer[5],
             Id = BinaryPrimitives.ReadInt32BigEndian(buffer[6..]),
         };
     }
