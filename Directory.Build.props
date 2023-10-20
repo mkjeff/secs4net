@@ -13,7 +13,8 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-	<EnablePackageValidation>true</EnablePackageValidation>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
