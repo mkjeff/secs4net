@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>2.2.0</Version>
-    <Copyright>Copyright © secs4net 2021</Copyright>
+    <Version>2.2.1</Version>
     <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
     <Authors>mkjeff</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -15,6 +14,8 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EnablePackageValidation>true</EnablePackageValidation>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Copyright>Copyright © secs4net 2023</Copyright>
+    <PackageProjectUrl>https://mkjeff.github.io/secs4net/</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,4 +24,5 @@
     <Compile Include="..\..\common\Range.cs" Link="common\Range.cs" />
     <Compile Include="..\..\common\SkipLocalsInitAttribute.cs" Link="common\SkipLocalsInitAttribute.cs" />
   </ItemGroup>
+
 </Project>
