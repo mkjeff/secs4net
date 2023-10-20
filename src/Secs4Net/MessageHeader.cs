@@ -32,7 +32,6 @@ public readonly record struct MessageHeader
     [SkipLocalsInit]
     internal static void Decode(ReadOnlySpan<byte> buffer, out MessageHeader header)
     {
-        ref var head = ref MemoryMarshal.GetReference(buffer);
         var s = buffer[2];
         header = new MessageHeader
         {
