@@ -29,4 +29,4 @@ jobs:
     - name: Pack
       run: dotnet pack -c Release 
     - name: Push
-      run: dotnet nuget push "*.nupkg" -k ${{ secrets.NUGET }}
+      run: dotnet nuget push "**/*.nupkg" -k ${{ secrets.NUGET }} -s https://api.nuget.org/v3/index.json
