@@ -4,7 +4,6 @@
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <UserSecretsId>dotnet-DeviceWorkerService-D257E021-F238-499C-8ACD-858186E73C0A</UserSecretsId>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
