@@ -183,8 +183,8 @@ public class SecsGemUnitTests
 
     private void SendAsyncManyMessagesAtOnce(ISecsConnection connection1, ISecsConnection connection2, CancellationToken cancellation)
     {
-        var secsGem1 = new SecsGem(optionsActive, connection1, Substitute.For<ISecsGemLogger>());
-        var secsGem2 = new SecsGem(optionsPassive, connection2, Substitute.For<ISecsGemLogger>());
+        using var secsGem1 = new SecsGem(optionsActive, connection1, Substitute.For<ISecsGemLogger>());
+        using var secsGem2 = new SecsGem(optionsPassive, connection2, Substitute.For<ISecsGemLogger>());
 
         _ = Task.Run(async () =>
         {
