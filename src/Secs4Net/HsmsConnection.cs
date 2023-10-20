@@ -413,7 +413,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
                 case MessageType.LinkTestRequest:
                     await SendControlMessage(MessageType.LinkTestResponse, header.Id, cancellation).ConfigureAwait(false);
                     break;
-                case MessageType.SeperateRequest:
+                case MessageType.SeparateRequest:
                     CommunicationStateChanging(ConnectionState.Retry);
                     break;
             }
@@ -428,7 +428,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
     private async Task SendControlMessage(MessageType msgType, int id, CancellationToken cancellation = default)
     {
         var token = ValueTaskCompletionSource<MessageType>.Create();
-        if ((byte)msgType % 2 == 1 && msgType != MessageType.SeperateRequest)
+        if ((byte)msgType % 2 == 1 && msgType != MessageType.SeparateRequest)
         {
             _replyExpectedMsgs[id] = token;
         }
@@ -505,7 +505,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
         ConnectionChanged = null;
         if (State == ConnectionState.Selected)
         {
-            await SendControlMessage(MessageType.SeperateRequest, MessageIdGenerator.NewId()).ConfigureAwait(false);
+            await SendControlMessage(MessageType.SeparateRequest, MessageIdGenerator.NewId()).ConfigureAwait(false);
         }
 
         Disconnect();
