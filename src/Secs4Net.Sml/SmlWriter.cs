@@ -11,7 +11,7 @@ namespace Secs4Net.Sml;
 
 public static class SmlWriter
 {
-    public static int SmlIndent = 4;
+    public static int SmlIndent { get; set; } = 4;
 
     public static string ToSml(this SecsMessage msg)
     {
@@ -27,11 +27,7 @@ public static class SmlWriter
             writer.Write(msg.Name);
             writer.Write(':');
         }
-        writer.Write("'S");
-        writer.Write(msg.S.ToString(CultureInfo.InvariantCulture));
-        writer.Write('F');
-        writer.Write(msg.F.ToString(CultureInfo.InvariantCulture));
-        writer.Write('\'');
+        writer.Write(FormattableString.Invariant($"'S{msg.S}F{msg.F}'"));
         if (msg.ReplyExpected)
         {
             writer.Write('W');
@@ -50,19 +46,15 @@ public static class SmlWriter
     {
         if (msg.Name is not null)
         {
-            await writer.WriteAsync(msg.Name);
-            await writer.WriteAsync(':');
+            await writer.WriteAsync(msg.Name).ConfigureAwait(false);
+            await writer.WriteAsync(':').ConfigureAwait(false);
         }
-        await writer.WriteAsync("'S");
-        await writer.WriteAsync(msg.S.ToString(CultureInfo.InvariantCulture));
-        await writer.WriteAsync('F');
-        await writer.WriteAsync(msg.F.ToString(CultureInfo.InvariantCulture));
-        await writer.WriteAsync('\'');
+        await writer.WriteAsync(FormattableString.Invariant($"'S{msg.S}F{msg.F}'")).ConfigureAwait(false);
         if (msg.ReplyExpected)
         {
-            await writer.WriteAsync('W');
+            await writer.WriteAsync('W').ConfigureAwait(false);
         }
-        await writer.WriteLineAsync();
+        await writer.WriteLineAsync().ConfigureAwait(false);
 
         if (msg.SecsItem is not null)
         {
@@ -76,11 +68,7 @@ public static class SmlWriter
     {
         var indentStr = new string(' ', indent);
         writer.Write(indentStr);
-        writer.Write('<');
-        writer.Write(item.Format.ToSml());
-        writer.Write(" [");
-        writer.Write(item.Count.ToString(CultureInfo.InvariantCulture));
-        writer.Write("] ");
+        writer.Write(FormattableString.Invariant($"<{item.Format.ToSml()} [{item.Count}] "));
         switch (item.Format)
         {
             case SecsFormat.List:
@@ -143,17 +131,17 @@ public static class SmlWriter
     {
         var indentStr = new string(' ', indent);
         await writer.WriteAsync(indentStr).ConfigureAwait(false);
-        await writer.WriteAsync($"<{item.Format.ToSml()} [{item.Count}] ").ConfigureAwait(false);
+        await writer.WriteAsync(FormattableString.Invariant($"<{item.Format.ToSml()} [{item.Count}] ")).ConfigureAwait(false);
         switch (item.Format)
         {
             case SecsFormat.List:
-                await WriteListAsnc(writer, item, indent, indentStr).ConfigureAwait(false);
+                await WriteListAsync(writer, item, indent, indentStr).ConfigureAwait(false);
                 break;
             case SecsFormat.ASCII:
             case SecsFormat.JIS8:
-                await writer.WriteAsync('\'');
-                await writer.WriteAsync(item.GetString());
-                await writer.WriteAsync('\'');
+                await writer.WriteAsync('\'').ConfigureAwait(false);
+                await writer.WriteAsync(item.GetString()).ConfigureAwait(false);
+                await writer.WriteAsync('\'').ConfigureAwait(false);
                 break;
             case SecsFormat.Binary:
                 writer.WriteHexArray(item.GetMemory<byte>());
@@ -197,7 +185,7 @@ public static class SmlWriter
 
         await writer.WriteLineAsync('>').ConfigureAwait(false);
 
-        static async Task WriteListAsnc(TextWriter writer, Item item, int indent, string indentStr)
+        static async Task WriteListAsync(TextWriter writer, Item item, int indent, string indentStr)
         {
             await writer.WriteLineAsync().ConfigureAwait(false);
             foreach (var a in item.Items)
@@ -214,7 +202,7 @@ public static class SmlWriter
 #if NET6_0
             where T : unmanaged, ISpanFormattable
 #else
-            where T: unmanaged, IConvertible
+            where T : unmanaged, IConvertible
 #endif
     {
         if (memory.IsEmpty)
@@ -329,7 +317,7 @@ public static class SmlWriter
         using var spanOwner = SpanOwner<char>.Allocate(128);
         if (value.TryFormat(spanOwner.Span, out var writtenCount, default, CultureInfo.InvariantCulture))
         {
-            writer.Write(spanOwner.Span.Slice(0, writtenCount));
+            writer.Write(spanOwner.Span[..writtenCount]);
         }
         else
         {
