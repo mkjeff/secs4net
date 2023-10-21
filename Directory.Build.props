@@ -1,28 +1,28 @@
 <Project>
-  <PropertyGroup>
-    <Version>2.2.1</Version>
-    <RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
-    <Authors>mkjeff</Authors>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Nullable>enable</Nullable>
-    <LangVersion>10.0</LangVersion>
-    <Deterministic>true</Deterministic>
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <EnablePackageValidation>true</EnablePackageValidation>
-    <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <Copyright>Copyright © secs4net 2023</Copyright>
-    <PackageProjectUrl>https://mkjeff.github.io/secs4net/</PackageProjectUrl>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Version>2.2.1</Version>
+		<RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
+		<Authors>mkjeff</Authors>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Nullable>enable</Nullable>
+		<LangVersion>10.0</LangVersion>
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<EnablePackageValidation>true</EnablePackageValidation>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<Copyright>Copyright © secs4net 2023</Copyright>
+		<PackageProjectUrl>https://mkjeff.github.io/secs4net/</PackageProjectUrl>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\common\IsExternalInit.cs" Link="common\IsExternalInit.cs" />
-    <Compile Include="..\..\common\NullableAttributes.cs" Link="common\NullableAttributes.cs" />
-    <Compile Include="..\..\common\Range.cs" Link="common\Range.cs" />
-    <Compile Include="..\..\common\SkipLocalsInitAttribute.cs" Link="common\SkipLocalsInitAttribute.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="PolySharp" Version="1.13.2" Condition="'$(TargetFramework)' != 'net6.0'">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
 </Project>

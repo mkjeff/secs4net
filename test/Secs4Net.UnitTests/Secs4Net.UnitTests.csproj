@@ -28,6 +28,7 @@
     <Compile Include="..\..\common\SecsMessageAssertions.cs" Link="common\SecsMessageAssertions.cs" />
     <Compile Include="..\..\common\ItemAssertions.cs" Link="common\ItemAssertions.cs" />
     <Compile Include="..\..\common\Usings.cs" Link="common\Usings.cs" />
+    <Compile Include="..\..\common\RuntimeHelpers.cs" Link="common\RuntimeHelpers.cs" />
   </ItemGroup>
   
 </Project>
