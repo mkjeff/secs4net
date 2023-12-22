@@ -1,12 +1,5 @@
 using BenchmarkDotNet.Running;
+using Benchmarks;
 
-namespace Secs4Net.Benchmark;
-
-public class Program
-{
-    public static void Main(string[] args)
-    {
-        BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly)
+BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly)
             .Run(args, new BenchmarkConfig());
-    }
-}

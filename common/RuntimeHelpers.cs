@@ -25,7 +25,7 @@ namespace System.Runtime.CompilerServices
 
                 if (length == 0)
                 {
-                    return Array.Empty<T>();
+                    return [];
                 }
 
                 var dest = new T[length];

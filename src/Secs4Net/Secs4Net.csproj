@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net8.0;netstandard2.0</TargetFrameworks>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<IsTrimmable>false</IsTrimmable>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">true</IsAotCompatible>
+		<PackageReadmeFile>README.md</PackageReadmeFile>	
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,21 +16,28 @@
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
 			<_Parameter1>Secs4Net.UnitTests</_Parameter1>
 		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>Benchmarks</_Parameter1>
+		</AssemblyAttribute>
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.1" />
+		<PackageReference Update="PolySharp" Version="1.14.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
 		<PackageReference Include="PooledAwait" Version="1.0.49" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
-		<PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
-		<PackageReference Include="System.IO.Pipelines" Version="6.0.3" />
-		<PackageReference Include="System.Threading.Channels" Version="6.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+		<PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+		<PackageReference Include="System.IO.Pipelines" Version="8.0.0" />
+		<PackageReference Include="System.Threading.Channels" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

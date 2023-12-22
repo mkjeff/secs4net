@@ -10,8 +10,13 @@ public partial class Item
     [DebuggerTypeProxy(typeof(MemoryItem<>.ItemDebugView))]
     [SkipLocalsInit]
     private class MemoryItem<T> : Item where T : unmanaged, IEquatable<T>
+#if NET8_0
+        , ISpanParsable<T>
+#endif
     {
         private readonly Memory<T> _value;
+
+        internal MemoryItem(SecsFormat format) : this(format, Memory<T>.Empty) { }
 
         internal MemoryItem(SecsFormat format, Memory<T> value)
             : base(format)
@@ -49,14 +54,14 @@ public partial class Item
 
         public sealed override unsafe void EncodeTo(IBufferWriter<byte> buffer)
         {
-            var memory = _value;
-            if (memory.IsEmpty)
+            var value = _value;
+            if (value.IsEmpty)
             {
                 EncodeEmptyItem(Format, buffer);
                 return;
             }
 
-            var valueByteSpan = memory.Span.AsBytes();
+            var valueByteSpan = value.Span.AsBytes();
             var byteLength = valueByteSpan.Length;
 
             EncodeItemHeader(Format, byteLength, buffer);
@@ -80,16 +85,10 @@ public partial class Item
         private protected sealed override bool IsEquals(Item other)
             => Format == other.Format && _value.Span.SequenceEqual(Unsafe.As<MemoryItem<T>>(other)._value.Span);
 
-        private sealed class ItemDebugView
+        private sealed class ItemDebugView(MemoryItem<T> item)
         {
-            private readonly MemoryItem<T> _item;
-            public ItemDebugView(MemoryItem<T> item)
-            {
-                _item = item;
-                EncodedBytes = new EncodedByteDebugView(item);
-            }
-            public Span<T> Value => _item._value.Span;
-            public EncodedByteDebugView EncodedBytes { get; }
+            public Span<T> Value => item._value.Span;
+            public EncodedByteDebugView EncodedBytes { get; } = new EncodedByteDebugView(item);
         }
     }
 }

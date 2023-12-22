@@ -1,6 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using CommunityToolkit.HighPerformance.Buffers;
-using Secs4Net.Benchmark;
+using Secs4Net;
 using System;
 using System.IO.Pipelines;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Secs4Net.Benchmarks;
+namespace Benchmarks;
 
 [Config(typeof(BenchmarkConfig))]
 [MemoryDiagnoser]

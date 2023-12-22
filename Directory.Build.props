@@ -1,11 +1,11 @@
 <Project>
 	<PropertyGroup>
-		<Version>2.2.1</Version>
+		<Version>2.3.1</Version>
 		<RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
 		<Authors>mkjeff</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Nullable>enable</Nullable>
-		<LangVersion>10.0</LangVersion>
+		<LangVersion>12.0</LangVersion>
 		<Deterministic>true</Deterministic>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>

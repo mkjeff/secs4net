@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.HighPerformance;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
@@ -20,10 +19,11 @@ public readonly record struct MessageHeader
     {
         var span = buffer.GetSpan(sizeHint: 10);
         BinaryPrimitives.WriteUInt16BigEndian(span, DeviceId);
-        span.DangerousGetReferenceAt(2) = (byte)(S | (ReplyExpected ? 0b1000_0000 : 0));
-        span.DangerousGetReferenceAt(3) = F;
-        span.DangerousGetReferenceAt(4) = 0;
-        span.DangerousGetReferenceAt(5) = (byte)MessageType;
+        ref var r0 = ref MemoryMarshal.GetReference(span);
+        Unsafe.Add(ref r0, 2) = (byte)(S | (ReplyExpected ? 0b1000_0000 : 0));
+        Unsafe.Add(ref r0, 3) = F;
+        Unsafe.Add(ref r0, 4) = 0;
+        Unsafe.Add(ref r0, 5) = (byte)MessageType;
         BinaryPrimitives.WriteInt32BigEndian(span[6..], Id);
         buffer.Advance(10);
     }

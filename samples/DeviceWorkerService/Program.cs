@@ -1,8 +1,6 @@
 using DeviceWorkerService;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Secs4Net;
-
 
 Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>

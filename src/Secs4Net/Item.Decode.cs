@@ -43,7 +43,7 @@ public partial class Item
     {
         var formatSeq = bytes.Slice(0, 1);
         DecodeFormatAndLengthByteCount(formatSeq, out var format, out var lengthByteCount);
-        
+
         var dataLengthSeq = bytes.Slice(formatSeq.End, lengthByteCount);
         DecodeDataLength(dataLengthSeq, out var dataLength);
         bytes = bytes.Slice(dataLengthSeq.End);
@@ -56,9 +56,9 @@ public partial class Item
             }
 
             var items = new Item[dataLength];
-            for (var i = 0; i < items.Length; i++)
+            foreach (ref var subItem in items.AsSpan())
             {
-                items.DangerousGetReferenceAt(i) = DecodeFromFullBuffer(ref bytes);
+                subItem = DecodeFromFullBuffer(ref bytes);
             }
 
             return L(items);
@@ -92,7 +92,6 @@ public partial class Item
             _ => ThrowHelper(),
         };
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeASCII(in ReadOnlySequence<byte> bytes)
         {
@@ -116,7 +115,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeJIS8(in ReadOnlySequence<byte> bytes)
         {
@@ -140,7 +138,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeBoolean(in ReadOnlySequence<byte> bytes)
         {
@@ -164,7 +161,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeBinary(in ReadOnlySequence<byte> bytes)
         {
@@ -188,7 +184,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeU1(in ReadOnlySequence<byte> bytes)
         {
@@ -212,7 +207,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeU2(in ReadOnlySequence<byte> bytes)
         {
@@ -240,7 +234,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeU4(in ReadOnlySequence<byte> bytes)
         {
@@ -268,7 +261,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeU8(in ReadOnlySequence<byte> bytes)
         {
@@ -296,7 +288,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeI1(in ReadOnlySequence<byte> bytes)
         {
@@ -321,7 +312,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeI2(in ReadOnlySequence<byte> bytes)
         {
@@ -349,7 +339,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeI4(in ReadOnlySequence<byte> bytes)
         {
@@ -377,7 +366,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SkipLocalsInit]
         static Item DecodeI8(in ReadOnlySequence<byte> bytes)
         {
@@ -405,7 +393,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         [SkipLocalsInit]
         static Item DecodeF4(in ReadOnlySequence<byte> bytes)
         {
@@ -433,7 +420,6 @@ public partial class Item
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         [SkipLocalsInit]
         static Item DecodeF8(in ReadOnlySequence<byte> bytes)
         {

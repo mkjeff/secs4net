@@ -152,7 +152,7 @@ internal ref struct Utf8JsonStreamReader
         return tokenStartIndex;
     }
 
-    public T? Deserialise<T>(JsonSerializerOptions? options = null)
+    public SecsMessage? Deserialize(JsonSerializerOptions? options = null)
     {
         var tokenStartIndex = DeserialisePre(out var firstSegment, out var firstSegmentStartIndex);
 
@@ -161,7 +161,7 @@ internal ref struct Utf8JsonStreamReader
                 _lastSegmentEndIndex).Slice(tokenStartIndex, _jsonReader.Position), true, default);
 
         // deserialize value
-        var result = JsonSerializer.Deserialize<T>(ref newJsonReader, options);
+        var result = JsonSerializer.Deserialize<SecsMessage>(ref newJsonReader, options);
 
         DeserialisePost();
         return result;

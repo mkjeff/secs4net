@@ -31,29 +31,22 @@ partial class Item
             }
 
             var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
-            var bytelength = encoder.GetByteCount(_value);
-            EncodeItemHeader(Format, bytelength, buffer);
-            var length = encoder.GetBytes(_value, buffer.GetSpan(bytelength));
-            buffer.Advance(bytelength);
+            var byteLength = encoder.GetByteCount(_value);
+            EncodeItemHeader(Format, byteLength, buffer);
+            var length = encoder.GetBytes(_value, buffer.GetSpan(byteLength));
+            buffer.Advance(byteLength);
 #if DEBUG
-            Debug.Assert(length == bytelength);
+            Debug.Assert(length == byteLength);
 #endif
         }
 
         private protected override bool IsEquals(Item other)
             => Format == other.Format && _value.Equals(other.GetString(), StringComparison.Ordinal);
 
-        private sealed class ItemDebugView
+        private sealed class ItemDebugView(Item.StringItem item)
         {
-            private readonly StringItem _item; 
-
-            public ItemDebugView(StringItem item)
-            {
-                _item = item;
-                EncodedBytes = new EncodedByteDebugView(item);
-            }
-            public string Value => _item._value;
-            public EncodedByteDebugView EncodedBytes { get; }
+            public string Value => item._value;
+            public EncodedByteDebugView EncodedBytes { get; } = new EncodedByteDebugView(item);
         }
     }
 }

@@ -17,7 +17,7 @@ partial class Item
 
         public override void Dispose()
         {
-            foreach (var a in _value)
+            foreach (ref readonly var a in _value.AsSpan())
             {
                 a.Dispose();
             }
@@ -35,7 +35,7 @@ partial class Item
 
         public override void EncodeTo(IBufferWriter<byte> buffer)
         {
-            var arr = _value;
+            var arr = _value.AsSpan();
             if (arr.Length == 0)
             {
                 EncodeEmptyItem(Format, buffer);
@@ -43,7 +43,7 @@ partial class Item
             }
 
             EncodeItemHeader(Format, arr.Length, buffer);
-            foreach (var item in arr)
+            foreach (ref readonly var item in arr)
             {
                 item.EncodeTo(buffer);
             }
@@ -71,19 +71,13 @@ partial class Item
             return true;
         }
 
-        private sealed class ItemDebugView
+        private sealed class ItemDebugView(ListItem item)
         {
-            private readonly ListItem _item;
-            public ItemDebugView(ListItem item)
-            {
-                _item = item;
-                EncodedBytes = new EncodedByteDebugView(item);
-            }
 
             [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-            public Item[] Items => _item._value;
+            public Item[] Items => item._value;
 
-            public EncodedByteDebugView EncodedBytes { get; }
+            public EncodedByteDebugView EncodedBytes { get; } = new EncodedByteDebugView(item);
         }
     }
 }

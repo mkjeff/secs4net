@@ -1,10 +1,11 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.Options;
+using Secs4Net;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Secs4Net.Benchmark;
+namespace Benchmarks;
 
 [Config(typeof(BenchmarkConfig))]
 //[EtwProfiler]

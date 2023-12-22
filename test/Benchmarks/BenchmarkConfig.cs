@@ -4,7 +4,7 @@ using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Loggers;
 using System.Linq;
 
-namespace Secs4Net.Benchmark;
+namespace Benchmarks;
 
 public class BenchmarkConfig : ManualConfig
 {
@@ -14,7 +14,7 @@ public class BenchmarkConfig : ManualConfig
 
         WithOption(ConfigOptions.DisableLogFile, true);
         WithOption(ConfigOptions.DontOverwriteResults, false);
-        AddLogger(ConsoleLogger.Default);
+        AddLogger(ConsoleLogger.Ascii);
         AddExporter(MarkdownExporter.GitHub);
 
         AddColumnProvider(

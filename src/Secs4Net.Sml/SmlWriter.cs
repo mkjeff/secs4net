@@ -1,10 +1,10 @@
-﻿using CommunityToolkit.HighPerformance;
-using CommunityToolkit.HighPerformance.Buffers;
+﻿using CommunityToolkit.HighPerformance.Buffers;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Secs4Net.Sml;
@@ -199,7 +199,7 @@ public static class SmlWriter
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void WriteArray<T>(this TextWriter writer, Memory<T> memory)
-#if NET6_0
+#if NET
             where T : unmanaged, ISpanFormattable
 #else
             where T : unmanaged, IConvertible
@@ -211,8 +211,8 @@ public static class SmlWriter
         }
 
         var array = memory.Span;
-        ref var rStart = ref array.DangerousGetReferenceAt(0);
-        ref var rEnd = ref array.DangerousGetReferenceAt(array.Length - 1);
+        ref var rStart = ref MemoryMarshal.GetReference(array);
+        ref var rEnd = ref Unsafe.Add(ref rStart, array.Length - 1);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             WriteValue(writer, rStart);
@@ -223,7 +223,7 @@ public static class SmlWriter
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void WriteValue(TextWriter writer, T value)
-#if NET6_0
+#if NET
                 => writer.WriteSpanFormattableValue(value);
 #else
                 => writer.Write(value.ToString(CultureInfo.InvariantCulture));
@@ -239,8 +239,8 @@ public static class SmlWriter
         }
 
         var array = memory.Span;
-        ref var rStart = ref array.DangerousGetReferenceAt(0);
-        ref var rEnd = ref array.DangerousGetReferenceAt(array.Length - 1);
+        ref var rStart = ref MemoryMarshal.GetReference(array);
+        ref var rEnd = ref Unsafe.Add(ref rStart, array.Length - 1);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             WriteValue(writer, rStart);
@@ -267,8 +267,8 @@ public static class SmlWriter
         }
 
         var array = memory.Span;
-        ref var rStart = ref array.DangerousGetReferenceAt(0);
-        ref var rEnd = ref array.DangerousGetReferenceAt(array.Length - 1);
+        ref var rStart = ref MemoryMarshal.GetReference(array);
+        ref var rEnd = ref Unsafe.Add(ref rStart, array.Length - 1);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             writer.Write(rStart.ToString());
@@ -287,8 +287,8 @@ public static class SmlWriter
         }
 
         var array = memory.Span;
-        ref var rStart = ref array.DangerousGetReferenceAt(0);
-        ref var rEnd = ref array.DangerousGetReferenceAt(array.Length - 1);
+        ref var rStart = ref MemoryMarshal.GetReference(array);
+        ref var rEnd = ref Unsafe.Add(ref rStart, array.Length - 1);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             AppendHexChars(writer, rStart);
@@ -310,7 +310,7 @@ public static class SmlWriter
         static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
     }
 
-#if NET6_0
+#if NET
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void WriteSpanFormattableValue<T>(this TextWriter writer, T value) where T : unmanaged, ISpanFormattable
     {

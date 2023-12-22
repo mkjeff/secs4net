@@ -194,7 +194,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
                     CommunicationStateChanging(ConnectionState.Connecting);
                     try
                     {
-#if NET6_0
+#if NET
                         _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
 #else
                         _socket = await server.AcceptAsync().WithCancellation(cancellation).ConfigureAwait(false);
@@ -441,7 +441,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
             _logger.Info("Sent Control Message: " + msgType);
             if (_replyExpectedMsgs.ContainsKey(id))
             {
-#if NET6_0
+#if NET
                 await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6), cancellation).ConfigureAwait(false);
 #else
                 if (await Task.WhenAny(token.Task, Task.Delay(T6, cancellation)).ConfigureAwait(false) != token.Task)
@@ -452,7 +452,7 @@ public sealed class HsmsConnection : BackgroundService, ISecsConnection, IAsyncD
 #endif
             }
         }
-#if NET6_0
+#if NET
         catch (TimeoutException)
         {
             _logger.Error($"T6 Timeout[id=0x{id:X8}]: {T6 / 1000} sec.");

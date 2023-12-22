@@ -48,17 +48,10 @@ partial class Item
         private protected override bool IsEquals(Item other)
             => Format == other.Format && _value.Value.Equals(other.GetString(), StringComparison.Ordinal);
 
-        private sealed class ItemDebugView
+        private sealed class ItemDebugView(LazyStringItem item)
         {
-            private readonly LazyStringItem _item;
-            public ItemDebugView(LazyStringItem item)
-            {
-                _item = item;
-                EncodedBytes = new EncodedByteDebugView(item);
-            }
-
-            public string Value => _item._value.Value;
-            public EncodedByteDebugView EncodedBytes { get; }
+            public string Value => item._value.Value;
+            public EncodedByteDebugView EncodedBytes { get; } = new EncodedByteDebugView(item);
         }
     }
 }

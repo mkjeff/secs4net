@@ -10,9 +10,9 @@ namespace Secs4Net.Json;
 
 public static class JsonReader
 {
-    public static Item ToItem(this JsonElement jobject)
+    public static Item ToItem(this JsonElement jsonObject)
     {
-        var json = jobject.EnumerateObject().First();
+        var json = jsonObject.EnumerateObject().First();
 #if NET
         var format = Enum.Parse<SecsFormat>(json.Name);
 #else
@@ -214,7 +214,7 @@ public static class JsonReader
         while (jsonStreamReader.TokenType != JsonTokenType.EndArray)
         {
             // deserialize object
-            var message = jsonStreamReader.Deserialise<SecsMessage>(options);
+            var message = jsonStreamReader.Deserialize(options);
             if (message is not null)
             {
                 result.Add(message);

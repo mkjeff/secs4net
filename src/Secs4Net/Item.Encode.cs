@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.HighPerformance;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -15,33 +14,31 @@ public partial class Item
     [SkipLocalsInit]
     private static void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
     {
-        var lengthSpan = Unsafe.AsRef(count).AsBytes();
-
+        ref var lengthRef0 = ref MemoryMarshal.GetReference(Unsafe.AsRef(in count).AsBytes());
+        ref var r0 = ref MemoryMarshal.GetReference(buffer.GetSpan(sizeHint: 4));
         var formatByte = (int)format << 2;
         if (count <= 0xff)
         {//	1 byte
-            var span = buffer.GetSpan(sizeHint: 2);
-            span.DangerousGetReferenceAt(0) = (byte)(formatByte | 1);
-            span.DangerousGetReferenceAt(1) = lengthSpan.DangerousGetReferenceAt(0);
+
+            Unsafe.Add(ref r0, ElementOffset0) = (byte)(formatByte | 1);
+            Unsafe.Add(ref r0, ElementOffset1) = Unsafe.Add(ref lengthRef0, ElementOffset0);
             buffer.Advance(2);
             return;
         }
         if (count <= 0xffff)
         {//	2 byte
-            var span = buffer.GetSpan(sizeHint: 3);
-            span.DangerousGetReferenceAt(0) = (byte)(formatByte | 2);
-            span.DangerousGetReferenceAt(1) = lengthSpan.DangerousGetReferenceAt(1);
-            span.DangerousGetReferenceAt(2) = lengthSpan.DangerousGetReferenceAt(0);
+            Unsafe.Add(ref r0, ElementOffset0) = (byte)(formatByte | 2);
+            Unsafe.Add(ref r0, ElementOffset1) = Unsafe.Add(ref lengthRef0, ElementOffset1);
+            Unsafe.Add(ref r0, ElementOffset2) = Unsafe.Add(ref lengthRef0, ElementOffset0);
             buffer.Advance(3);
             return;
         }
         if (count <= 0xffffff)
         {//	3 byte
-            var span = buffer.GetSpan(sizeHint: 4);
-            span.DangerousGetReferenceAt(0) = (byte)(formatByte | 3);
-            span.DangerousGetReferenceAt(1) = lengthSpan.DangerousGetReferenceAt(2);
-            span.DangerousGetReferenceAt(2) = lengthSpan.DangerousGetReferenceAt(1);
-            span.DangerousGetReferenceAt(3) = lengthSpan.DangerousGetReferenceAt(0);
+            Unsafe.Add(ref r0, ElementOffset0) = (byte)(formatByte | 3);
+            Unsafe.Add(ref r0, ElementOffset1) = Unsafe.Add(ref lengthRef0, ElementOffset2);
+            Unsafe.Add(ref r0, ElementOffset2) = Unsafe.Add(ref lengthRef0, ElementOffset1);
+            Unsafe.Add(ref r0, ElementOffset3) = Unsafe.Add(ref lengthRef0, ElementOffset0);
             buffer.Advance(4);
             return;
         }
@@ -54,11 +51,12 @@ public partial class Item
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SkipLocalsInit]
-    private protected static void EncodeEmptyItem(SecsFormat format, IBufferWriter<byte> buffer)
+    private static void EncodeEmptyItem(SecsFormat format, IBufferWriter<byte> buffer)
     {
         var span = buffer.GetSpan(sizeHint: 2);
-        span.DangerousGetReferenceAt(0) = (byte)(((int)format << 2) | 1);
-        span.DangerousGetReferenceAt(1) = 0;
+        ref var r0 = ref MemoryMarshal.GetReference(span);
+        Unsafe.Add(ref r0, ElementOffset0) = (byte)(((int)format << 2) | 1);
+        Unsafe.Add(ref r0, ElementOffset1) = 0;
         buffer.Advance(2);
     }
 }

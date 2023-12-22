@@ -44,7 +44,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
             AllowSynchronousContinuations = false,
         });
 
-    private readonly ConcurrentDictionary<int, (string? messageName, ValueTaskCompletionSource<SecsMessage> completeSource)> _replyExpectedMsgs = new();
+    private readonly ConcurrentDictionary<int, (string? messageName, ValueTaskCompletionSource<SecsMessage> completeSource)> _replyExpectedMessages = new();
     private readonly CancellationTokenSource _cancellationSourceForDataMessageProcessing = new();
     private int _recentlyMaxEncodedByteLength;
 
@@ -74,7 +74,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
         var token = ValueTaskCompletionSource<SecsMessage>.Create();
         if (message.ReplyExpected)
         {
-            _replyExpectedMsgs[id] = (message.Name, token);
+            _replyExpectedMessages[id] = (message.Name, token);
         }
 
         try
@@ -97,7 +97,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
                 return null!;
             }
 
-#if NET6_0
+#if NET
             return await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T3), cancellation).ConfigureAwait(false);
 #else
             if (await Task.WhenAny(token.Task, Task.Delay(T3, cancellation)).ConfigureAwait(false) != token.Task)
@@ -112,7 +112,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
             _hsmsConnector.Reconnect();
             throw;
         }
-#if NET6_0
+#if NET
         catch (TimeoutException)
         {
             _logger.Error($"T3 Timeout[id=0x{id:X8}]: {T3 / 1000} sec.");
@@ -121,7 +121,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
 #endif
         finally
         {
-            _replyExpectedMsgs.TryRemove(id, out _);
+            _replyExpectedMessages.TryRemove(id, out _);
         }
     }
 
@@ -179,7 +179,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
 
             // Secondary message
             _logger.MessageIn(msg, id);
-            if (_replyExpectedMsgs.TryGetValue(id, out var token))
+            if (_replyExpectedMessages.TryGetValue(id, out var token))
             {
                 msg.Name = token.messageName;
                 HandleReplyMessage(token.completeSource, msg);
@@ -208,7 +208,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
 
         _cancellationSourceForDataMessageProcessing.Cancel();
         _cancellationSourceForDataMessageProcessing.Dispose();
-        _replyExpectedMsgs.Clear();
+        _replyExpectedMessages.Clear();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

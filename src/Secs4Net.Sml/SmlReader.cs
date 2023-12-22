@@ -262,7 +262,7 @@ public static class SmlReader
     private static readonly (Func<Item>, Func<string, Item>) AParser = (A, A);
     private static readonly (Func<Item>, Func<string, Item>) JParser = (J, J);
 
-    private static readonly char[] trimElement = new char[] { ' ', '\'', '"' };
+    private static readonly char[] trimElement = [' ', '\'', '"'];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static SecsFormat ParseFormat(ReadOnlySpan<char> format)
@@ -287,7 +287,7 @@ public static class SmlReader
             _ => ThrowHelper(format),
         };
 
-#if NET6_0
+#if NET
         [DoesNotReturn]
         static SecsFormat ThrowHelper(ReadOnlySpan<char> format) => throw new SecsException($"Unknown SML format: {format}");
 #else

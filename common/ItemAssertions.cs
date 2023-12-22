@@ -65,7 +65,7 @@ internal sealed class ItemValidator
         return IsMatch(path: "item", subjectValue, expectationValue, context);
     }
 
-    private bool IsMatch(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context)
+    private static bool IsMatch(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context)
     {
         if (subject.Format != expectation.Format)
         {
@@ -130,6 +130,9 @@ internal sealed class ItemValidator
 
         bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context)
             where T : unmanaged, IEquatable<T>
+#if NET8_0
+        , ISpanParsable<T>
+#endif
         {
             var subjectSpan = subject.GetMemory<T>().Span;
             var expectationSpan = expectation.GetMemory<T>().Span;

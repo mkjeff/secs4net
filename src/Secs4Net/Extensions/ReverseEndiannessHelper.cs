@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.HighPerformance;
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
 namespace Secs4Net.Extensions;
@@ -67,137 +66,83 @@ public static class ReverseHelper
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<short> span)
     {
-        ref var rStart = ref span.DangerousGetReferenceAt(0);
-        ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+        ref var rStart = ref MemoryMarshal.GetReference(span);
+        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-#if NET6_0
             rStart = ref Unsafe.Add(ref rStart, SingleOffset);
-#else
-            rStart = ref Unsafe.Add(ref rStart, 1);
-#endif
         }
     }
 
-#if NET6_0
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-#else
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<ushort> span)
     {
-        ref var rStart = ref span.DangerousGetReferenceAt(0);
-        ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+        ref var rStart = ref MemoryMarshal.GetReference(span);
+        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-#if NET6_0
             rStart = ref Unsafe.Add(ref rStart, SingleOffset);
-#else
-            rStart = ref Unsafe.Add(ref rStart, 1);
-#endif
         }
     }
 
-#if NET6_0
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif    
-    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<int> span)
     {
-        ref var rStart = ref span.DangerousGetReferenceAt(0);
-        ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+        ref var rStart = ref MemoryMarshal.GetReference(span);
+        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-#if NET6_0
             rStart = ref Unsafe.Add(ref rStart, SingleOffset);
-#else
-            rStart = ref Unsafe.Add(ref rStart, 1);
-#endif
         }
     }
 
-#if NET6_0
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<uint> span)
     {
-        ref var rStart = ref span.DangerousGetReferenceAt(0);
-        ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+        ref var rStart = ref MemoryMarshal.GetReference(span);
+        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-#if NET6_0
             rStart = ref Unsafe.Add(ref rStart, SingleOffset);
-#else
-            rStart = ref Unsafe.Add(ref rStart, 1);
-#endif
         }
     }
 
-#if NET6_0
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<long> span)
     {
-        ref var rStart = ref span.DangerousGetReferenceAt(0);
-        ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+        ref var rStart = ref MemoryMarshal.GetReference(span);
+        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-#if NET6_0
             rStart = ref Unsafe.Add(ref rStart, SingleOffset);
-#else
-            rStart = ref Unsafe.Add(ref rStart, 1);
-#endif
         }
     }
 
-#if NET6_0
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<ulong> span)
     {
-        ref var rStart = ref span.DangerousGetReferenceAt(0);
-        ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+        ref var rStart = ref MemoryMarshal.GetReference(span);
+        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-#if NET6_0
             rStart = ref Unsafe.Add(ref rStart, SingleOffset);
-#else
-            rStart = ref Unsafe.Add(ref rStart, 1);
-#endif
         }
     }
 
-#if NET6_0
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#else
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<float> span)
     {
-        ref var rStart = ref span.DangerousGetReferenceAt(0);
-        ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+        ref var rStart = ref MemoryMarshal.GetReference(span);
+        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
 #if NET
@@ -205,20 +150,15 @@ public static class ReverseHelper
 #else
             rStart = ReadSingleBigEndian(rStart.AsBytes());
 #endif
-            rStart = ref Unsafe.Add(ref rStart, 1);
+            rStart = ref Unsafe.Add(ref rStart, SingleOffset);
         }
     }
 
-#if NET6_0
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#else
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    [SkipLocalsInit]
     public static void ReverseEndianness(this Span<double> span)
     {
-        ref var rStart = ref span.DangerousGetReferenceAt(0);
-        ref var rEnd = ref span.DangerousGetReferenceAt(span.Length);
+        ref var rStart = ref MemoryMarshal.GetReference(span);
+        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
 #if NET
@@ -226,17 +166,13 @@ public static class ReverseHelper
 #else
             rStart = ReadDoubleBigEndian(rStart.AsBytes());
 #endif
-#if NET6_0
             rStart = ref Unsafe.Add(ref rStart, SingleOffset);
-#else
-            rStart = ref Unsafe.Add(ref rStart, 1);
-#endif
         }
     }
 
 #if NETSTANDARD
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static float ReadSingleBigEndian(ReadOnlySpan<byte> source)
+    internal static float ReadSingleBigEndian(ReadOnlySpan<byte> source)
         => Int32BitsToSingle(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<int>(source)));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -244,7 +180,7 @@ public static class ReverseHelper
         => *(float*)&value;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static double ReadDoubleBigEndian(ReadOnlySpan<byte> source)
+    internal static double ReadDoubleBigEndian(ReadOnlySpan<byte> source)
         => BitConverter.Int64BitsToDouble(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(source)));
 #endif
 

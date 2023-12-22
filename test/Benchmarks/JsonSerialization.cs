@@ -1,10 +1,11 @@
 ﻿using BenchmarkDotNet.Attributes;
 using CommunityToolkit.HighPerformance.Buffers;
+using Secs4Net;
 using Secs4Net.Json;
 using System.Text;
 using System.Text.Json;
 
-namespace Secs4Net.Benchmark;
+namespace Benchmarks;
 
 [Config(typeof(BenchmarkConfig))]
 [MemoryDiagnoser(displayGenColumns: false)]
