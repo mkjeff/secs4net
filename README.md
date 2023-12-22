@@ -1,6 +1,6 @@
 # secs4net
 
-[![.NET](https://github.com/mkjeff/secs4net/actions/workflows/dotnet.yml/badge.svg)](https://github.com/mkjeff/secs4net/actions/workflows/dotnet.yml) [![NuGet](https://img.shields.io/nuget/v/secs4net.svg)](https://www.nuget.org/packages/Secs4Net)
+[![.NET](https://github.com/mkjeff/secs4net/actions/workflows/dotnet.yml/badge.svg)](https://github.com/mkjeff/secs4net/actions/workflows/dotnet.yml) [![Nuget](https://img.shields.io/nuget/dt/secs4net)](https://www.nuget.org/stats/packages/Secs4Net?groupby=Version) [![NuGet](https://img.shields.io/nuget/v/secs4net.svg)](https://www.nuget.org/packages/Secs4Net)
 
 **Project Description**  
 
