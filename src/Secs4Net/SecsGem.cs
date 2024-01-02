@@ -11,6 +11,8 @@ namespace Secs4Net;
 
 public interface ISecsGem
 {
+    ushort DeviceId { get; }
+
     /// <summary>
     /// Get primary messages from async-stream
     /// </summary>

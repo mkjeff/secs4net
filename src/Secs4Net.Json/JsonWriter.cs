@@ -81,9 +81,6 @@ public static class JsonWriter
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void WriteArrayValue<T>(Utf8JsonWriter writer, Item item, Action<Utf8JsonWriter, T> write) where T : unmanaged
-#if NET8_0
-        , ISpanParsable<T>
-#endif
         {
             var span = item.GetMemory<T>().Span;
             foreach (ref readonly var value in span)

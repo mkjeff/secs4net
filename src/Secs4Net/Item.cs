@@ -71,9 +71,6 @@ public abstract partial class Item : IEquatable<Item>, IDisposable
     /// <exception cref="IndexOutOfRangeException">When item is empty or data length less than sizeof(<typeparamref name="T"/>)</exception>
     /// <exception cref="NotSupportedException">when the item's <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
     public virtual ref T FirstValue<T>() where T : unmanaged
-#if NET8_0
-        , ISpanParsable<T>
-#endif
         => throw ThrowNotSupportException(Format);
 
     /// <summary>
@@ -83,9 +80,6 @@ public abstract partial class Item : IEquatable<Item>, IDisposable
     /// <returns></returns>
     /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
     public virtual T FirstValueOrDefault<T>(T defaultValue = default) where T : unmanaged
-#if NET8_0
-        , ISpanParsable<T>
-#endif
         => throw ThrowNotSupportException(Format);
 
     /// <summary>
@@ -93,9 +87,6 @@ public abstract partial class Item : IEquatable<Item>, IDisposable
     /// </summary>
     /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
     public virtual Memory<T> GetMemory<T>() where T : unmanaged
-#if NET8_0
-        , ISpanParsable<T>
-#endif
         => throw ThrowNotSupportException(Format);
 
     /// <summary>

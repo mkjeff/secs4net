@@ -10,9 +10,6 @@ public partial class Item
     [DebuggerTypeProxy(typeof(MemoryItem<>.ItemDebugView))]
     [SkipLocalsInit]
     private class MemoryItem<T> : Item where T : unmanaged, IEquatable<T>
-#if NET8_0
-        , ISpanParsable<T>
-#endif
     {
         private readonly Memory<T> _value;
 

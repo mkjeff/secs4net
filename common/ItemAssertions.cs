@@ -128,11 +128,7 @@ internal sealed class ItemValidator
             return false;
         }
 
-        bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context)
-            where T : unmanaged, IEquatable<T>
-#if NET8_0
-        , ISpanParsable<T>
-#endif
+        bool IsMatchArrayItem<T>(string path, Item subject, Item expectation, ItemEquivalencyValidationContext context) where T : unmanaged, IEquatable<T>
         {
             var subjectSpan = subject.GetMemory<T>().Span;
             var expectationSpan = expectation.GetMemory<T>().Span;

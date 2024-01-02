@@ -124,7 +124,7 @@ public sealed class PipeDecoder
                 buffer = await PipeReadAsync(reader, required: itemContentLengthByteCount, cancellation).ConfigureAwait(false);
             }
             var itemContentLengthBytes = buffer.Slice(0, itemContentLengthByteCount);
-            Item.DecodeDataLength(itemContentLengthBytes, out var itemContentLength);
+            var itemContentLength = Item.DecodeDataLength(itemContentLengthBytes);
             buffer = buffer.Slice(itemContentLengthBytes.End);
 
             // 4: get item content
