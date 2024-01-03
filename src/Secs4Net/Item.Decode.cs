@@ -82,7 +82,7 @@ public partial class Item
 
             (SecsFormat.JIS8, 0) => J(),
             (SecsFormat.JIS8, >= 512) => DecodeLazyStringItem(format, length, bytes),
-            (SecsFormat.JIS8, _) => DecodeStringItem(format, length, bytes, Jis8Encoding),
+            (SecsFormat.JIS8, _) => DecodeStringItem(format, length, bytes, JIS8Encoding),
 
             (SecsFormat.Binary, 0) => B(),
             (SecsFormat.Binary, >= 1024) => DecodeMemoryOwnerItem<byte>(SecsFormat.Binary, length, bytes),

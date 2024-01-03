@@ -11,7 +11,6 @@ public abstract partial class Item : IEquatable<Item>, IDisposable
     private const nuint ElementOffset1 = 1;
     private const nuint ElementOffset2 = 2;
     private const nuint ElementOffset3 = 3;
-    public static readonly Encoding Jis8Encoding = Encoding.GetEncoding(50222);
     private static readonly Item EmptyL = new ListItem(SecsFormat.List, []);
     private static readonly Item EmptyA = new StringItem(SecsFormat.ASCII, string.Empty);
     private static readonly Item EmptyJ = new StringItem(SecsFormat.JIS8, string.Empty);
@@ -27,8 +26,17 @@ public abstract partial class Item : IEquatable<Item>, IDisposable
     private static readonly Item EmptyI8 = new MemoryItem<long>(SecsFormat.I8);
     private static readonly Item EmptyF4 = new MemoryItem<float>(SecsFormat.F4);
     private static readonly Item EmptyF8 = new MemoryItem<double>(SecsFormat.F8);
+    public static Encoding JIS8Encoding { get; set; } = Encoding.UTF8;
 
     public SecsFormat Format { get; }
+
+    static Item()
+    {
+        if (!BitConverter.IsLittleEndian)
+        {
+            throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
+        }
+    }
 
     private protected Item(SecsFormat format)
     {
@@ -70,7 +78,7 @@ public abstract partial class Item : IEquatable<Item>, IDisposable
     /// <returns></returns>
     /// <exception cref="IndexOutOfRangeException">When item is empty or data length less than sizeof(<typeparamref name="T"/>)</exception>
     /// <exception cref="NotSupportedException">when the item's <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
-    public virtual ref T FirstValue<T>() where T : unmanaged
+    public virtual ref T FirstValue<T>() where T : unmanaged, IEquatable<T>
         => throw ThrowNotSupportException(Format);
 
     /// <summary>
@@ -79,14 +87,14 @@ public abstract partial class Item : IEquatable<Item>, IDisposable
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
-    public virtual T FirstValueOrDefault<T>(T defaultValue = default) where T : unmanaged
+    public virtual T FirstValueOrDefault<T>(T defaultValue = default) where T : unmanaged, IEquatable<T>
         => throw ThrowNotSupportException(Format);
 
     /// <summary>
     /// Get item array as <see cref="Memory{T}"/>
     /// </summary>
     /// <exception cref="NotSupportedException">when <see cref="Format"/> is <see cref="SecsFormat.List"/> or <see cref="SecsFormat.ASCII"/> or <see cref="SecsFormat.JIS8"/></exception>
-    public virtual Memory<T> GetMemory<T>() where T : unmanaged
+    public virtual Memory<T> GetMemory<T>() where T : unmanaged, IEquatable<T>
         => throw ThrowNotSupportException(Format);
 
     /// <summary>

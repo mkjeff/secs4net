@@ -42,6 +42,7 @@ public static class SecsExtension
         => new(Unsafe.AsPointer(ref value), sizeof(T));
 #endif
 
+#if !NET
     internal static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -77,4 +78,5 @@ public static class SecsExtension
             return await task.ConfigureAwait(false);
         }
     }
+#endif
 }

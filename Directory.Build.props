@@ -1,6 +1,6 @@
 <Project>
 	<PropertyGroup>
-		<Version>2.3.2</Version>
+		<Version>2.4.1</Version>
 		<RepositoryUrl>https://github.com/mkjeff/secs4net</RepositoryUrl>
 		<Authors>mkjeff</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -14,7 +14,7 @@
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<EnablePackageValidation>true</EnablePackageValidation>
 		<EnableWindowsTargeting>true</EnableWindowsTargeting>
-		<Copyright>Copyright © secs4net 2023</Copyright>
+		<Copyright>Copyright © secs4net 2024</Copyright>
 		<PackageProjectUrl>https://mkjeff.github.io/secs4net/</PackageProjectUrl>
 	</PropertyGroup>
 

@@ -1,5 +1,6 @@
-using CommunityToolkit.HighPerformance;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace System;
 
@@ -21,18 +22,19 @@ internal static partial class MemoryExtensions
     public static SpanSplitEnumerator<char> Split(in this ReadOnlySpan<char> span, char separator, StringSplitOptions options = StringSplitOptions.None)
         => new(span, separator, options == StringSplitOptions.RemoveEmptyEntries);
 
-    public static bool IsEmpty<T>(this SpanSplitEnumerator<T> source) where T : IEquatable<T>
+    public static bool IsEmpty<T>(this SpanSplitEnumerator<T> source) where T : unmanaged, IEquatable<T>
         => !source.MoveNext();
 
-    public static TResult[] ToArray<TResult>(ref this SpanSplitEnumerator<char> source, SpanParser<TResult> seelctor, int? size)
+    public static TResult[] ToArray<TResult>(ref this SpanSplitEnumerator<char> source, SpanParser<TResult> selector, int? size)
     {
         if (size.HasValue)
         {
             var list = new TResult[size.GetValueOrDefault()];
-            int i = 0;
+            ref var r0 = ref MemoryMarshal.GetReference(list.AsSpan());
+            uint i = 0;
             foreach (var span in source)
             {
-                list.DangerousGetReferenceAt(i++) = seelctor.Invoke(span);
+                Unsafe.Add(ref r0, i++) = selector.Invoke(span);
                 if (i == list.Length)
                 {
                     break;
@@ -46,7 +48,7 @@ internal static partial class MemoryExtensions
             var list = new List<TResult>();
             foreach (var span in source)
             {
-                list.Add(seelctor.Invoke(span));
+                list.Add(selector.Invoke(span));
             }
 
             return list.ToArray();
@@ -54,7 +56,7 @@ internal static partial class MemoryExtensions
     }
 }
 
-internal ref struct SpanSplitEnumerator<T> where T : IEquatable<T>
+internal ref struct SpanSplitEnumerator<T> where T : unmanaged, IEquatable<T>
 {
     private ReadOnlySpan<T> _sequence;
     private readonly T _separator;

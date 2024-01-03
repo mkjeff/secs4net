@@ -30,7 +30,7 @@ partial class Item
                 return;
             }
 
-            var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : Jis8Encoding;
+            var encoder = Format == SecsFormat.ASCII ? Encoding.ASCII : JIS8Encoding;
             var byteLength = encoder.GetByteCount(_value);
             EncodeItemHeader(Format, byteLength, buffer);
             var length = encoder.GetBytes(_value, buffer.GetSpan(byteLength));

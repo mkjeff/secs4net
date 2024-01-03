@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Windows.Forms;
 
 namespace SecsDevice;
@@ -11,9 +12,10 @@ static class Program
     [STAThread]
     static void Main()
     {
-
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        Secs4Net.Item.JIS8Encoding = Encoding.GetEncoding(50222);
 #if NET
-         Application.SetHighDpiMode(HighDpiMode.SystemAware);
+        Application.SetHighDpiMode(HighDpiMode.SystemAware);
 #endif
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
