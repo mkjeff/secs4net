@@ -26,6 +26,8 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Generate code coverage
+      run: dotnet test --collect "Code Coverage"
     - name: Pack
       run: dotnet pack -c Release 
     - name: Push

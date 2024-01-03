@@ -353,7 +353,7 @@ public class ReverseEndianness
     }
 
     [Benchmark(Description = "BinaryPrimitives")]
-    [BenchmarkCategory("Doulbe")]
+    [BenchmarkCategory("Double")]
     public int Double_BinaryPrimitives()
     {
         var data = _double.AsSpan();

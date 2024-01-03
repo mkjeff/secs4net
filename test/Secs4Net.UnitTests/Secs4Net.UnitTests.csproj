@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0;net8.0;net472</TargetFrameworks>
     <IsPackable>false</IsPackable>
+      <EnableStaticNativeInstrumentation>False</EnableStaticNativeInstrumentation>
+      <EnableDynamicNativeInstrumentation>False</EnableDynamicNativeInstrumentation>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,10 +16,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.CodeCoverage" Version="17.8.0" />
   </ItemGroup>
 
   <ItemGroup>
