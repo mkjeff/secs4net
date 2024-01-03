@@ -71,76 +71,103 @@ public partial class Item
         return item;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static Item DecodeDataItem(SecsFormat format, in ReadOnlySequence<byte> bytes)
     {
-        return format switch
+        var length = (int)bytes.Length;
+        return (format, length) switch
         {
-            SecsFormat.Binary => DecodeMemoryItem<byte>(SecsFormat.Binary, bytes),
-            SecsFormat.Boolean => DecodeMemoryItem<bool>(SecsFormat.Boolean, bytes),
-            SecsFormat.ASCII => DecodeStringItem(format, bytes, Encoding.ASCII),
-            SecsFormat.JIS8 => DecodeStringItem(format, bytes, Jis8Encoding),
-            SecsFormat.I8 => DecodeMemoryItem<long>(SecsFormat.I8, bytes),
-            SecsFormat.I1 => DecodeMemoryItem<sbyte>(SecsFormat.I1, bytes),
-            SecsFormat.I2 => DecodeMemoryItem<short>(SecsFormat.I2, bytes),
-            SecsFormat.I4 => DecodeMemoryItem<int>(SecsFormat.I4, bytes),
-            SecsFormat.F8 => DecodeMemoryItem<double>(SecsFormat.F8, bytes),
-            SecsFormat.F4 => DecodeMemoryItem<float>(SecsFormat.F4, bytes),
-            SecsFormat.U8 => DecodeMemoryItem<ulong>(SecsFormat.U8, bytes),
-            SecsFormat.U1 => DecodeMemoryItem<byte>(SecsFormat.U1, bytes),
-            SecsFormat.U2 => DecodeMemoryItem<ushort>(SecsFormat.U2, bytes),
-            SecsFormat.U4 => DecodeMemoryItem<uint>(SecsFormat.U4, bytes),
+            (SecsFormat.ASCII, 0) => A(),
+            (SecsFormat.ASCII, >= 512) => DecodeLazyStringItem(format, length, bytes),
+            (SecsFormat.ASCII, _) => DecodeStringItem(format, length, bytes, Encoding.ASCII),
+
+            (SecsFormat.JIS8, 0) => J(),
+            (SecsFormat.JIS8, >= 512) => DecodeLazyStringItem(format, length, bytes),
+            (SecsFormat.JIS8, _) => DecodeStringItem(format, length, bytes, Jis8Encoding),
+
+            (SecsFormat.Binary, 0) => B(),
+            (SecsFormat.Binary, >= 1024) => DecodeMemoryOwnerItem<byte>(SecsFormat.Binary, length, bytes),
+            (SecsFormat.Binary, _) => DecodeMemoryItem<byte>(SecsFormat.Binary, length, bytes),
+
+            (SecsFormat.Boolean, 0) => Boolean(),
+            (SecsFormat.Boolean, >= 1024) => DecodeMemoryOwnerItem<bool>(SecsFormat.Boolean, length, bytes),
+            (SecsFormat.Boolean, _) => DecodeMemoryItem<bool>(SecsFormat.Boolean, length, bytes),
+
+            (SecsFormat.I8, 0) => I8(),
+            (SecsFormat.I8, >= 1024) => DecodeMemoryOwnerItem<long>(SecsFormat.I8, length, bytes),
+            (SecsFormat.I8, _) => DecodeMemoryItem<long>(SecsFormat.I8, length, bytes),
+
+            (SecsFormat.I1, 0) => I1(),
+            (SecsFormat.I1, >= 1024) => DecodeMemoryOwnerItem<sbyte>(SecsFormat.I1, length, bytes),
+            (SecsFormat.I1, _) => DecodeMemoryItem<sbyte>(SecsFormat.I1, length, bytes),
+
+            (SecsFormat.I2, 0) => I2(),
+            (SecsFormat.I2, >= 1024) => DecodeMemoryOwnerItem<short>(SecsFormat.I2, length, bytes),
+            (SecsFormat.I2, _) => DecodeMemoryItem<short>(SecsFormat.I2, length, bytes),
+
+            (SecsFormat.I4, 0) => I4(),
+            (SecsFormat.I4, >= 1024) => DecodeMemoryOwnerItem<int>(SecsFormat.I4, length, bytes),
+            (SecsFormat.I4, _) => DecodeMemoryItem<int>(SecsFormat.I4, length, bytes),
+
+            (SecsFormat.F8, 0) => F8(),
+            (SecsFormat.F8, >= 1024) => DecodeMemoryOwnerItem<double>(SecsFormat.F8, length, bytes),
+            (SecsFormat.F8, _) => DecodeMemoryItem<double>(SecsFormat.F8, length, bytes),
+
+            (SecsFormat.F4, 0) => F4(),
+            (SecsFormat.F4, >= 1024) => DecodeMemoryOwnerItem<float>(SecsFormat.F4, length, bytes),
+            (SecsFormat.F4, _) => DecodeMemoryItem<float>(SecsFormat.F4, length, bytes),
+
+            (SecsFormat.U8, 0) => U8(),
+            (SecsFormat.U8, >= 1024) => DecodeMemoryOwnerItem<ulong>(SecsFormat.U8, length, bytes),
+            (SecsFormat.U8, _) => DecodeMemoryItem<ulong>(SecsFormat.U8, length, bytes),
+
+            (SecsFormat.U1, 0) => U1(),
+            (SecsFormat.U1, > 1024) => DecodeMemoryOwnerItem<byte>(SecsFormat.U1, length, bytes),
+            (SecsFormat.U1, _) => DecodeMemoryItem<byte>(SecsFormat.U1, length, bytes),
+
+            (SecsFormat.U2, 0) => U2(),
+            (SecsFormat.U2, >= 1024) => DecodeMemoryOwnerItem<ushort>(SecsFormat.U2, length, bytes),
+            (SecsFormat.U2, _) => DecodeMemoryItem<ushort>(SecsFormat.U2, length, bytes),
+
+            (SecsFormat.U4, 0) => U4(),
+            (SecsFormat.U4, >= 1024) => DecodeMemoryOwnerItem<uint>(SecsFormat.U4, length, bytes),
+            (SecsFormat.U4, _) => DecodeMemoryItem<uint>(SecsFormat.U4, length, bytes),
             _ => ThrowHelper(),
         };
 
         [SkipLocalsInit]
-        static Item DecodeStringItem(SecsFormat format, in ReadOnlySequence<byte> bytes, Encoding encoding)
+        static Item DecodeStringItem(SecsFormat format, int length, in ReadOnlySequence<byte> bytes, Encoding encoding)
         {
-            int length = (int)bytes.Length;
-            switch (length)
-            {
-                case 0:
-                    return new StringItem(format, string.Empty);
-                case >= 512:
-                    {
-                        var owner = MemoryOwner<byte>.Allocate(length);
-                        bytes.CopyTo(owner.Memory.Span);
-                        return new LazyStringItem(format, owner);
-                    }
-                default:
-                    {
-                        using var spanOwner = SpanOwner<byte>.Allocate(length);
-                        bytes.CopyTo(spanOwner.Span);
-                        return new StringItem(format, StringPool.Shared.GetOrAdd(spanOwner.Span, encoding));
-                    }
-            }
+            using var spanOwner = SpanOwner<byte>.Allocate(length);
+            bytes.CopyTo(spanOwner.Span);
+            return new StringItem(format, StringPool.Shared.GetOrAdd(spanOwner.Span, encoding));
         }
 
         [SkipLocalsInit]
-        static unsafe Item DecodeMemoryItem<T>(SecsFormat format, in ReadOnlySequence<byte> bytes) where T : unmanaged, IEquatable<T>
+        static Item DecodeLazyStringItem(SecsFormat format, int length, in ReadOnlySequence<byte> bytes)
         {
-            int length = (int)bytes.Length;
-            switch (length)
-            {
-                case 0:
-                    return new MemoryItem<T>(format);
-                case >= 1024:
-                    {
-                        var owner = MemoryOwner<T>.Allocate(length / sizeof(T));
-                        var span = owner.Span;
-                        bytes.CopyTo(span.AsBytes());
-                        ReverseEndiannessHelper<T>.Reverse(span);
-                        return new MemoryOwnerItem<T>(format, owner);
-                    }
-                default:
-                    {
-                        var memory = new T[length / sizeof(T)];
-                        var span = memory.AsSpan();
-                        bytes.CopyTo(span.AsBytes());
-                        ReverseEndiannessHelper<T>.Reverse(span);
-                        return new MemoryItem<T>(format, memory);
-                    }
-            }
+            var owner = MemoryOwner<byte>.Allocate(length);
+            bytes.CopyTo(owner.Memory.Span);
+            return new LazyStringItem(format, owner);
+        }
+
+        [SkipLocalsInit]
+        static unsafe Item DecodeMemoryItem<T>(SecsFormat format, int length, in ReadOnlySequence<byte> bytes) where T : unmanaged, IEquatable<T>
+        {
+            var memory = new T[length / sizeof(T)];
+            var span = memory.AsSpan();
+            bytes.CopyTo(span.AsBytes());
+            ReverseEndiannessHelper<T>.Reverse(span);
+            return new MemoryItem<T>(format, memory);
+        }
+
+        [SkipLocalsInit]
+        static unsafe Item DecodeMemoryOwnerItem<T>(SecsFormat format, int length, in ReadOnlySequence<byte> bytes) where T : unmanaged, IEquatable<T>
+        {
+            var owner = MemoryOwner<T>.Allocate(length / sizeof(T));
+            var span = owner.Span;
+            bytes.CopyTo(span.AsBytes());
+            ReverseEndiannessHelper<T>.Reverse(span);
+            return new MemoryOwnerItem<T>(format, owner);
         }
 
         [DoesNotReturn]

@@ -260,14 +260,13 @@ public sealed class PipeDecoder
         }
     }
 
-    private sealed class ItemList
+    private sealed class ItemList(int size)
     {
-        private readonly Item[] _items;
+        private readonly Item[] _items = new Item[size];
 
         public int Capacity => _items.Length;
         public int Count { get; private set; }
 
-        public ItemList(int size) => _items = new Item[size];
         public void Add(Item item) => _items.DangerousGetReferenceAt(Count++) = item;
         public Item[] GetArray() => _items;
     }
