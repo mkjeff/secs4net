@@ -1,40 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net6.0;net8.0;net472</TargetFrameworks>
-    <IsPackable>false</IsPackable>
-      <EnableStaticNativeInstrumentation>False</EnableStaticNativeInstrumentation>
-      <EnableDynamicNativeInstrumentation>False</EnableDynamicNativeInstrumentation>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net8.0;net472</TargetFrameworks>
+		<IsPackable>false</IsPackable>
+		<EnableStaticNativeInstrumentation>False</EnableStaticNativeInstrumentation>
+		<EnableDynamicNativeInstrumentation>False</EnableDynamicNativeInstrumentation>
+		<Format>cobertura</Format>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="6.12.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-    <PackageReference Include="NSubstitute" Version="5.1.0" />
-    <PackageReference Include="xunit" Version="2.6.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeCoverage" Version="17.8.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="FluentAssertions" Version="6.12.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+		<PackageReference Include="NSubstitute" Version="5.1.0" />
+		<PackageReference Include="xunit" Version="2.6.2" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.4">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.CodeCoverage" Version="17.8.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Secs4Net\Secs4Net.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Include="..\..\common\SecsMessageAssertions.cs" Link="common\SecsMessageAssertions.cs" />
-    <Compile Include="..\..\common\ItemAssertions.cs" Link="common\ItemAssertions.cs" />
-    <Compile Include="..\..\common\Usings.cs" Link="common\Usings.cs" />
-    <Compile Include="..\..\common\RuntimeHelpers.cs" Link="common\RuntimeHelpers.cs" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Update="PolySharp" Version="1.14.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-  
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Secs4Net\Secs4Net.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\..\common\SecsMessageAssertions.cs" Link="common\SecsMessageAssertions.cs" />
+		<Compile Include="..\..\common\ItemAssertions.cs" Link="common\ItemAssertions.cs" />
+		<Compile Include="..\..\common\Usings.cs" Link="common\Usings.cs" />
+		<Compile Include="..\..\common\RuntimeHelpers.cs" Link="common\RuntimeHelpers.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Update="PolySharp" Version="1.14.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
 </Project>
