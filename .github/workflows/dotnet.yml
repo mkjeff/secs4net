@@ -26,6 +26,10 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal --collect "Code Coverage"
+    - name: Install dotnet-coverage
+      run: dotnet tool install -g dotnet-coverage
+    - name: Convert .coverage report to cobertura
+      run: dotnet-coverage merge $GITHUB_WORKSPACE/test/**/TestResults/**/*.coverage -f cobertura -o $GITHUB_WORKSPACE/report.cobertura.xml
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       env:
