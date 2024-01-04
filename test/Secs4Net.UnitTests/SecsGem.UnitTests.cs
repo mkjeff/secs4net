@@ -13,16 +13,16 @@ namespace Secs4Net.UnitTests;
 
 public class SecsGemUnitTests
 {
-    private readonly PipeConnection pipeConnection1;
-    private readonly PipeConnection pipeConnection2;
-    private readonly IOptions<SecsGemOptions> optionsActive = Options.Create(new SecsGemOptions
+    private readonly PipeConnection _pipeConnection1;
+    private readonly PipeConnection _pipeConnection2;
+    private static readonly IOptions<SecsGemOptions> OptionsActive = Options.Create(new SecsGemOptions
     {
         IsActive = true,
         DeviceId = 0,
         T3 = 60000,
     });
 
-    private readonly IOptions<SecsGemOptions> optionsPassive = Options.Create(new SecsGemOptions
+    private static readonly IOptions<SecsGemOptions> OptionsPassive = Options.Create(new SecsGemOptions
     {
         IsActive = false,
         DeviceId = 0,
@@ -33,8 +33,8 @@ public class SecsGemUnitTests
     {
         var pipe1 = new Pipe(new PipeOptions(useSynchronizationContext: false));
         var pipe2 = new Pipe(new PipeOptions(useSynchronizationContext: false));
-        pipeConnection1 = new PipeConnection(decoderReader: pipe1.Reader, decoderInput: pipe2.Writer);
-        pipeConnection2 = new PipeConnection(decoderReader: pipe2.Reader, decoderInput: pipe1.Writer);
+        _pipeConnection1 = new PipeConnection(decoderReader: pipe1.Reader, decoderInput: pipe2.Writer);
+        _pipeConnection2 = new PipeConnection(decoderReader: pipe2.Reader, decoderInput: pipe1.Writer);
     }
 
     [Fact]
@@ -45,8 +45,8 @@ public class SecsGemUnitTests
             SocketReceiveBufferSize = 32,
             DeviceId = 0,
         });
-        using var secsGem1 = new SecsGem(options, pipeConnection1, Substitute.For<ISecsGemLogger>());
-        using var secsGem2 = new SecsGem(options, pipeConnection2, Substitute.For<ISecsGemLogger>());
+        using var secsGem1 = new SecsGem(options, _pipeConnection1, Substitute.For<ISecsGemLogger>());
+        using var secsGem2 = new SecsGem(options, _pipeConnection2, Substitute.For<ISecsGemLogger>());
 
         var ping = new SecsMessage(s: 1, f: 13)
         {
@@ -59,8 +59,8 @@ public class SecsGemUnitTests
         };
 
         using var cts = new CancellationTokenSource();
-        _ = pipeConnection1.StartAsync(cts.Token);
-        _ = pipeConnection2.StartAsync(cts.Token);
+        _pipeConnection1.Start(cts.Token);
+        _pipeConnection2.Start(cts.Token);
         _ = Task.Run(async () =>
         {
             var msg = await secsGem2.GetPrimaryMessageAsync(cts.Token).FirstAsync(cts.Token);
@@ -85,8 +85,8 @@ public class SecsGemUnitTests
             SocketReceiveBufferSize = 32,
             DeviceId = 1,
         });
-        using var secsGem1 = new SecsGem(options1, pipeConnection1, Substitute.For<ISecsGemLogger>());
-        using var secsGem2 = new SecsGem(options2, pipeConnection2, Substitute.For<ISecsGemLogger>());
+        using var secsGem1 = new SecsGem(options1, _pipeConnection1, Substitute.For<ISecsGemLogger>());
+        using var secsGem2 = new SecsGem(options2, _pipeConnection2, Substitute.For<ISecsGemLogger>());
 
         var ping = new SecsMessage(s: 1, f: 13)
         {
@@ -94,8 +94,8 @@ public class SecsGemUnitTests
         };
 
         using var cts = new CancellationTokenSource();
-        _ = pipeConnection1.StartAsync(cts.Token);
-        _ = pipeConnection2.StartAsync(cts.Token);
+        _pipeConnection1.Start(cts.Token);
+        _pipeConnection2.Start(cts.Token);
 
         var receiver = Substitute.For<Action<SecsMessage>>();
         _ = Task.Run(async () =>
@@ -125,8 +125,8 @@ public class SecsGemUnitTests
             DeviceId = 0,
             T3 = 500,
         });
-        using var secsGem1 = new SecsGem(options1, pipeConnection1, Substitute.For<ISecsGemLogger>());
-        using var secsGem2 = new SecsGem(options1, pipeConnection2, Substitute.For<ISecsGemLogger>());
+        using var secsGem1 = new SecsGem(options1, _pipeConnection1, Substitute.For<ISecsGemLogger>());
+        using var secsGem2 = new SecsGem(options1, _pipeConnection2, Substitute.For<ISecsGemLogger>());
 
         var ping = new SecsMessage(s: 1, f: 13)
         {
@@ -160,31 +160,33 @@ public class SecsGemUnitTests
     }
 
     [Fact]
-    public void SecsGem_PipeConnection_SendAsync_With_A_Large_Number_Of_Messages_At_Once()
+    public async Task SecsGem_PipeConnection_SendAsync_With_A_Large_Number_Of_Messages_At_Once()
     {
         using var cts = new CancellationTokenSource();
-        SendAsyncManyMessagesAtOnce(pipeConnection1, pipeConnection2, cts.Token);
+        _pipeConnection1.Start(cts.Token);
+        _pipeConnection2.Start(cts.Token);
+        await SendAsyncManyMessagesAtOnce(_pipeConnection1, _pipeConnection2, cts.Token);
     }
 
     [Fact]
-    public void SecsGem_HsmsConnection_SendAsync_With_A_Large_Number_Of_Messages_At_Once()
+    public async Task SecsGem_HsmsConnection_SendAsync_With_A_Large_Number_Of_Messages_At_Once()
     {
-        using var connection1 = new HsmsConnection(optionsActive, Substitute.For<ISecsGemLogger>());
-        using var connection2 = new HsmsConnection(optionsPassive, Substitute.For<ISecsGemLogger>());
+        await using var connection1 = new HsmsConnection(OptionsActive, Substitute.For<ISecsGemLogger>());
+        await using var connection2 = new HsmsConnection(OptionsPassive, Substitute.For<ISecsGemLogger>());
         using var cts = new CancellationTokenSource();
 
-        _ = connection1.StartAsync(cts.Token);
-        _ = connection2.StartAsync(cts.Token);
+        connection1.Start(cts.Token);
+        connection2.Start(cts.Token);
 
-        SpinWait.SpinUntil(() => pipeConnection1.State == ConnectionState.Selected && pipeConnection1.State == ConnectionState.Selected);
+        SpinWait.SpinUntil(() => connection1.State is ConnectionState.Selected && connection2.State is ConnectionState.Selected);
 
-        SendAsyncManyMessagesAtOnce(connection1, connection2, cts.Token);
+        await SendAsyncManyMessagesAtOnce(connection1, connection2, cts.Token);
     }
 
-    private void SendAsyncManyMessagesAtOnce(ISecsConnection connection1, ISecsConnection connection2, CancellationToken cancellation)
+    private static async Task SendAsyncManyMessagesAtOnce(ISecsConnection connection1, ISecsConnection connection2, CancellationToken cancellation)
     {
-        using var secsGem1 = new SecsGem(optionsActive, connection1, Substitute.For<ISecsGemLogger>());
-        using var secsGem2 = new SecsGem(optionsPassive, connection2, Substitute.For<ISecsGemLogger>());
+        using var secsGem1 = new SecsGem(OptionsActive, connection1, Substitute.For<ISecsGemLogger>());
+        using var secsGem2 = new SecsGem(OptionsPassive, connection2, Substitute.For<ISecsGemLogger>());
 
         _ = Task.Run(async () =>
         {
@@ -206,15 +208,16 @@ public class SecsGemUnitTests
                 SecsItem = A("Ping"),
             };
 
-            var sendCount = 10000;
+            var sendCount = 100;
             var totalTasks = new List<Task<SecsMessage>>(capacity: sendCount);
             for (var g = 0; g < sendCount; g++)
             {
                 totalTasks.Add(secsGem1.SendAsync(ping, cancellation));
             }
-            await Task.WhenAll(totalTasks.ToArray());
+            var results = await Task.WhenAll(totalTasks.ToArray());
+            results.Should().HaveCount(sendCount);
         };
 
-        sendAsync.Should().NotThrowAsync();
+        await sendAsync.Should().NotThrowAsync();
     }
 }

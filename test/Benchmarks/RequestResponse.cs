@@ -58,8 +58,8 @@ public class RequestResponse
         _secsGem2 = new SecsGem(options, _connection2, logger);
 
         _cts = new CancellationTokenSource();
-        Task.Run(() => _connection1.StartAsync(_cts.Token));
-        Task.Run(() => _connection2.StartAsync(_cts.Token));
+        _connection1.Start(_cts.Token);
+        _connection2.Start(_cts.Token);
 
         SpinWait.SpinUntil(() => _connection2.State == ConnectionState.Selected);
 
@@ -74,14 +74,21 @@ public class RequestResponse
     }
 
     [GlobalCleanup]
-    public void Cleanup()
+    public async Task Cleanup()
     {
         _cts?.Cancel();
         _cts?.Dispose();
         _secsGem1?.Dispose();
         _secsGem2?.Dispose();
-        _connection1?.Dispose();
-        _connection2?.Dispose();
+        if (_connection1 is not null)
+        {
+            await _connection1.DisposeAsync();
+        }
+
+        if (_connection2 is not null)
+        {
+            await _connection2.DisposeAsync();
+        }
     }
 
     [Benchmark(Description = "Sequential")]

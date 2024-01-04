@@ -63,7 +63,7 @@ public partial class Form1 : Form
         };
 
         btnEnable.Enabled = false;
-        _ = _connector.StartAsync(_cancellationTokenSource.Token);
+        _connector.Start(_cancellationTokenSource.Token);
         btnDisable.Enabled = true;
 
         try

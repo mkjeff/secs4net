@@ -60,10 +60,14 @@ public sealed class SecsGem : ISecsGem, IDisposable
         _hsmsConnector = hsmsConnector;
         _logger = logger;
 
-        Task.Run(() =>
-            _hsmsConnector.GetDataMessages(_cancellationSourceForDataMessageProcessing.Token)
-                .ForEachAwaitWithCancellationAsync((a, ct) =>
-                    ProcessDataMessageAsync(a.header, a.rootItem, ct), _cancellationSourceForDataMessageProcessing.Token));
+        Task.Run(async () =>
+        {
+            var cancellationToken = _cancellationSourceForDataMessageProcessing.Token;
+            await foreach (var (header, rootItem) in _hsmsConnector.GetDataMessages(cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                await ProcessDataMessageAsync(header, rootItem, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+            }
+        });
     }
 
     internal async Task<SecsMessage> SendDataMessageAsync(SecsMessage message, int id, CancellationToken cancellation)

@@ -17,8 +17,8 @@ public sealed class PipeConnection : ISecsConnection
         _decoder = new PipeDecoder(decoderReader, decoderInput);
     }
 
-    public Task StartAsync(CancellationToken cancellation)
-        => _decoder.StartAsync(cancellation);
+    public void Start(CancellationToken cancellation)
+        => Task.Run(() => _decoder.StartAsync(cancellation));
 
     Task ISecsConnection.SendAsync(ReadOnlyMemory<byte> source, CancellationToken cancellation)
         => SendAsync(source, cancellation);

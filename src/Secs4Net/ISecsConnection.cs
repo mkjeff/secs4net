@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Net;
+﻿using System.Net;
 
 namespace Secs4Net;
 
@@ -37,14 +36,10 @@ public interface ISecsConnection
     /// otherwise, return "N/A"
     /// </summary>
     string DeviceIpAddress { get; }
-
     bool LinkTestEnabled { get; set; }
-
+    void Start(CancellationToken cancellation);
     void Reconnect();
 
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
-    Task SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
-
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
-    IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation);
+    internal Task SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken);
+    internal IAsyncEnumerable<(MessageHeader header, Item? rootItem)> GetDataMessages(CancellationToken cancellation);
 }

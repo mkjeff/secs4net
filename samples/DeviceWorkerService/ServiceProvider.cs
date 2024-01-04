@@ -15,7 +15,6 @@ public static class ServiceProvider
         services.AddSingleton<ISecsConnection, HsmsConnection>();
         services.AddSingleton<ISecsGem, SecsGem>();
         services.AddSingleton<ISecsGemLogger, TLogger>();
-        services.AddHostedService(static s => (HsmsConnection)s.GetRequiredService<ISecsConnection>());
         return services;
     }
 }

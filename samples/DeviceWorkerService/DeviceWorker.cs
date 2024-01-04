@@ -41,6 +41,7 @@ internal sealed class DeviceWorker : BackgroundService
     {
         try
         {
+            _hsmsConnection.Start(stoppingToken);
             await foreach (var e in _secsGem.GetPrimaryMessageAsync(stoppingToken))
             {
                 using var primaryMessage = e.PrimaryMessage;

@@ -11,7 +11,8 @@ SECS-II/HSMS-SS/GEM implementation on .NET. This library provides an easy way to
 ## Install Nuget package
     > dotnet add package Secs4Net
 
-## Configure .NET dependency injection
+## Configure via .NET dependency injection
+[Sample code reference](https://github.com/mkjeff/secs4net/blob/base/samples/DeviceWorkerService/ServiceProvider.cs)
 ```cs
 public void ConfigureServices(IServiceCollection services)
 {
