@@ -14,10 +14,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
-		<PackageReference Update="PolySharp" Version="1.14.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 	</ItemGroup>
 
 </Project>

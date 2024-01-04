@@ -17,8 +17,8 @@
   </PropertyGroup>
    
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.10" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.11" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.11" />
   </ItemGroup>
   
   <ItemGroup>
@@ -28,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--<Compile Include="..\..\common\Encoding.Extensions.cs" Link="common\Encoding.Extensions.cs" />-->
     <Compile Include="..\..\common\EnumerableExtensions.cs" Link="common\EnumerableExtensions.cs" />
     <Compile Include="..\..\common\Usings.cs" Link="common\Usings.cs" />
   </ItemGroup>

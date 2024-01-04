@@ -20,11 +20,4 @@
     <ProjectReference Include="..\Secs4Net\Secs4Net.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="PolySharp" Version="1.14.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
 </Project>
