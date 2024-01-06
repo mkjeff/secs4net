@@ -1,24 +1,24 @@
 ```
 
-BenchmarkDotNet v0.13.10, Windows 11 (10.0.22631.2861/23H2/2023Update/SunValley3)
+BenchmarkDotNet v0.13.11, Windows 11 (10.0.22631.2861/23H2/2023Update/SunValley3)
 Unknown processor
 .NET SDK 8.0.100
   [Host]     : .NET 8.0.0 (8.0.23.53103), X64 RyuJIT AVX2
-  Job-OOEVDF : .NET 6.0.25 (6.0.2523.51912), X64 RyuJIT AVX2
-  Job-AKZPHK : .NET 8.0.0 (8.0.23.53103), X64 RyuJIT AVX2
+  Job-ZWGTBM : .NET 8.0.0 (8.0.23.53103), X64 RyuJIT AVX2
+  Job-ZQLZSO : .NET Framework 4.8.1 (4.8.9181.0), X64 RyuJIT VectorSize=256
 
 
 ```
-| Method     | Runtime  | Count | Mean       | Error     | StdDev    | Median     | Ratio        | RatioSD | Gen0   | Allocated | Alloc Ratio |
-|----------- |--------- |------ |-----------:|----------:|----------:|-----------:|-------------:|--------:|-------:|----------:|------------:|
-| **Sequential** | **.NET 6.0** | **16**    |   **573.7 μs** |  **12.73 μs** |  **37.14 μs** |   **571.3 μs** |     **baseline** |        **** | **0.9766** |  **20.05 KB** |            **** |
-| Sequential | .NET 8.0 | 16    |   569.0 μs |  10.92 μs |  30.98 μs |   552.3 μs | 1.01x faster |   0.08x |      - |  19.79 KB |  1.01x less |
-|            |          |       |            |           |           |            |              |         |        |           |             |
-| Parallel   | .NET 6.0 | 16    | 1,248.7 μs |  89.42 μs | 255.12 μs | 1,231.5 μs |     baseline |         |      - |  17.98 KB |             |
-| Parallel   | .NET 8.0 | 16    |   852.7 μs |  75.94 μs | 223.92 μs |   808.1 μs | 1.57x faster |   0.54x | 0.9766 |  17.51 KB |  1.03x less |
-|            |          |       |            |           |           |            |              |         |        |           |             |
-| **Sequential** | **.NET 6.0** | **64**    | **2,116.6 μs** |  **42.27 μs** | **123.96 μs** | **2,115.0 μs** |     **baseline** |        **** | **5.8594** |  **79.67 KB** |            **** |
-| Sequential | .NET 8.0 | 64    | 2,006.1 μs |  39.79 μs |  57.07 μs | 1,995.9 μs | 1.01x slower |   0.06x | 3.9063 |  78.66 KB |  1.01x less |
-|            |          |       |            |           |           |            |              |         |        |           |             |
-| Parallel   | .NET 6.0 | 64    | 2,291.9 μs | 243.09 μs | 701.36 μs | 2,057.5 μs |     baseline |         | 3.9063 |  69.04 KB |             |
-| Parallel   | .NET 8.0 | 64    |   974.3 μs | 100.30 μs | 269.46 μs |   948.5 μs | 2.53x faster |   1.08x |      - |  68.01 KB |  1.02x less |
+| Method     | Runtime            | Count | Mean        | Error     | StdDev      | Ratio         | RatioSD | Gen0    | Gen1    | Allocated | Alloc Ratio |
+|----------- |------------------- |------ |------------:|----------:|------------:|--------------:|--------:|--------:|--------:|----------:|------------:|
+| **Sequential** | **.NET 8.0**           | **16**    |    **514.1 μs** |   **6.62 μs** |     **5.87 μs** |  **1.37x faster** |   **0.04x** |  **0.9766** |       **-** |  **19.79 KB** |  **6.17x less** |
+| Sequential | .NET Framework 4.8 | 16    |    705.6 μs |  14.02 μs |    15.59 μs |      baseline |         | 19.5313 |  1.9531 | 122.08 KB |             |
+|            |                    |       |             |           |             |               |         |         |         |           |             |
+| Parallel   | .NET 8.0           | 16    |    817.6 μs |  51.73 μs |   151.72 μs |  7.29x faster |   1.96x |  0.9766 |       - |  17.32 KB |  6.53x less |
+| Parallel   | .NET Framework 4.8 | 16    |  5,768.9 μs | 321.92 μs |   949.19 μs |      baseline |         | 15.6250 |  7.8125 | 113.13 KB |             |
+|            |                    |       |             |           |             |               |         |         |         |           |             |
+| **Sequential** | **.NET 8.0**           | **64**    |  **1,998.2 μs** |  **17.72 μs** |    **15.70 μs** |  **1.38x faster** |   **0.03x** |  **3.9063** |       **-** |  **78.67 KB** |  **6.19x less** |
+| Sequential | .NET Framework 4.8 | 64    |  2,760.6 μs |  49.70 μs |    55.24 μs |      baseline |         | 78.1250 |  7.8125 | 486.88 KB |             |
+|            |                    |       |             |           |             |               |         |         |         |           |             |
+| Parallel   | .NET 8.0           | 64    |  1,073.7 μs |  43.21 μs |   122.58 μs | 11.55x faster |   2.35x |  3.9063 |       - |  68.08 KB |  6.23x less |
+| Parallel   | .NET Framework 4.8 | 64    | 12,282.5 μs | 606.24 μs | 1,787.51 μs |      baseline |         | 62.5000 | 15.6250 | 424.01 KB |             |

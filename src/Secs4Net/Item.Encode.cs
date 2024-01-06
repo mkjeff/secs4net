@@ -20,25 +20,25 @@ public partial class Item
         if (count <= 0xff)
         {//	1 byte
 
-            Unsafe.Add(ref r0, ElementOffset0) = (byte)(formatByte | 1);
-            Unsafe.Add(ref r0, ElementOffset1) = Unsafe.Add(ref lengthRef0, ElementOffset0);
+            Unsafe.Add(ref r0, 0u) = (byte)(formatByte | 1);
+            Unsafe.Add(ref r0, 1u) = Unsafe.Add(ref lengthRef0, 0u);
             buffer.Advance(2);
             return;
         }
         if (count <= 0xffff)
         {//	2 byte
-            Unsafe.Add(ref r0, ElementOffset0) = (byte)(formatByte | 2);
-            Unsafe.Add(ref r0, ElementOffset1) = Unsafe.Add(ref lengthRef0, ElementOffset1);
-            Unsafe.Add(ref r0, ElementOffset2) = Unsafe.Add(ref lengthRef0, ElementOffset0);
+            Unsafe.Add(ref r0, 0u) = (byte)(formatByte | 2);
+            Unsafe.Add(ref r0, 1u) = Unsafe.Add(ref lengthRef0, 1u);
+            Unsafe.Add(ref r0, 2u) = Unsafe.Add(ref lengthRef0, 0u);
             buffer.Advance(3);
             return;
         }
         if (count <= 0xffffff)
         {//	3 byte
-            Unsafe.Add(ref r0, ElementOffset0) = (byte)(formatByte | 3);
-            Unsafe.Add(ref r0, ElementOffset1) = Unsafe.Add(ref lengthRef0, ElementOffset2);
-            Unsafe.Add(ref r0, ElementOffset2) = Unsafe.Add(ref lengthRef0, ElementOffset1);
-            Unsafe.Add(ref r0, ElementOffset3) = Unsafe.Add(ref lengthRef0, ElementOffset0);
+            Unsafe.Add(ref r0, 0u) = (byte)(formatByte | 3);
+            Unsafe.Add(ref r0, 1u) = Unsafe.Add(ref lengthRef0, 2u);
+            Unsafe.Add(ref r0, 2u) = Unsafe.Add(ref lengthRef0, 1u);
+            Unsafe.Add(ref r0, 3u) = Unsafe.Add(ref lengthRef0, 0u);
             buffer.Advance(4);
             return;
         }
@@ -55,8 +55,8 @@ public partial class Item
     {
         var span = buffer.GetSpan(sizeHint: 2);
         ref var r0 = ref MemoryMarshal.GetReference(span);
-        Unsafe.Add(ref r0, ElementOffset0) = (byte)(((int)format << 2) | 1);
-        Unsafe.Add(ref r0, ElementOffset1) = 0;
+        Unsafe.Add(ref r0, 0u) = (byte)(((int)format << 2) | 1);
+        Unsafe.Add(ref r0, 1u) = 0;
         buffer.Advance(2);
     }
 }

@@ -7,10 +7,6 @@ namespace Secs4Net;
 
 public abstract partial class Item : IEquatable<Item>, IDisposable
 {
-    private const nuint ElementOffset0 = 0;
-    private const nuint ElementOffset1 = 1;
-    private const nuint ElementOffset2 = 2;
-    private const nuint ElementOffset3 = 3;
     private static readonly Item EmptyL = new ListItem(SecsFormat.List, []);
     private static readonly Item EmptyA = new StringItem(SecsFormat.ASCII, string.Empty);
     private static readonly Item EmptyJ = new StringItem(SecsFormat.JIS8, string.Empty);
@@ -34,7 +30,7 @@ public abstract partial class Item : IEquatable<Item>, IDisposable
     {
         if (!BitConverter.IsLittleEndian)
         {
-            throw new PlatformNotSupportedException("This version is only work on little endian hardware.");
+            throw new PlatformNotSupportedException("secs4net is only work on little endian platform.");
         }
     }
 

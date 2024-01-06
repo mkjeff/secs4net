@@ -77,69 +77,69 @@ public partial class Item
         return (format, length) switch
         {
             (SecsFormat.ASCII, 0) => A(),
-            (SecsFormat.ASCII, >= 512) => DecodeLazyStringItem(format, length, bytes),
-            (SecsFormat.ASCII, _) => DecodeStringItem(format, length, bytes, Encoding.ASCII),
+            (SecsFormat.ASCII, >= 512) => DecodeLazyStringItem(SecsFormat.ASCII, length, bytes),
+            (SecsFormat.ASCII, _) => A(DecodeString(length, bytes, Encoding.ASCII)),
 
             (SecsFormat.JIS8, 0) => J(),
-            (SecsFormat.JIS8, >= 512) => DecodeLazyStringItem(format, length, bytes),
-            (SecsFormat.JIS8, _) => DecodeStringItem(format, length, bytes, JIS8Encoding),
+            (SecsFormat.JIS8, >= 512) => DecodeLazyStringItem(SecsFormat.JIS8, length, bytes),
+            (SecsFormat.JIS8, _) => J(DecodeString(length, bytes, JIS8Encoding)),
 
             (SecsFormat.Binary, 0) => B(),
-            (SecsFormat.Binary, >= 1024) => DecodeMemoryOwnerItem<byte>(SecsFormat.Binary, length, bytes),
-            (SecsFormat.Binary, _) => DecodeMemoryItem<byte>(SecsFormat.Binary, length, bytes),
+            (SecsFormat.Binary, >= 1024) => B(DecodeMemoryOwner<byte>(length, bytes)),
+            (SecsFormat.Binary, _) => B(DecodeMemory<byte>(length, bytes)),
 
             (SecsFormat.Boolean, 0) => Boolean(),
-            (SecsFormat.Boolean, >= 1024) => DecodeMemoryOwnerItem<bool>(SecsFormat.Boolean, length, bytes),
-            (SecsFormat.Boolean, _) => DecodeMemoryItem<bool>(SecsFormat.Boolean, length, bytes),
+            (SecsFormat.Boolean, >= 1024) => Boolean(DecodeMemoryOwner<bool>(length, bytes)),
+            (SecsFormat.Boolean, _) => Boolean(DecodeMemory<bool>(length, bytes)),
 
             (SecsFormat.I8, 0) => I8(),
-            (SecsFormat.I8, >= 1024) => DecodeMemoryOwnerItem<long>(SecsFormat.I8, length, bytes),
-            (SecsFormat.I8, _) => DecodeMemoryItem<long>(SecsFormat.I8, length, bytes),
+            (SecsFormat.I8, >= 1024) => I8(DecodeMemoryOwner<long>(length, bytes)),
+            (SecsFormat.I8, _) => I8(DecodeMemory<long>(length, bytes)),
 
             (SecsFormat.I1, 0) => I1(),
-            (SecsFormat.I1, >= 1024) => DecodeMemoryOwnerItem<sbyte>(SecsFormat.I1, length, bytes),
-            (SecsFormat.I1, _) => DecodeMemoryItem<sbyte>(SecsFormat.I1, length, bytes),
+            (SecsFormat.I1, >= 1024) => I1(DecodeMemoryOwner<sbyte>(length, bytes)),
+            (SecsFormat.I1, _) => I1(DecodeMemory<sbyte>(length, bytes)),
 
             (SecsFormat.I2, 0) => I2(),
-            (SecsFormat.I2, >= 1024) => DecodeMemoryOwnerItem<short>(SecsFormat.I2, length, bytes),
-            (SecsFormat.I2, _) => DecodeMemoryItem<short>(SecsFormat.I2, length, bytes),
+            (SecsFormat.I2, >= 1024) => I2(DecodeMemoryOwner<short>(length, bytes)),
+            (SecsFormat.I2, _) => I2(DecodeMemory<short>(length, bytes)),
 
             (SecsFormat.I4, 0) => I4(),
-            (SecsFormat.I4, >= 1024) => DecodeMemoryOwnerItem<int>(SecsFormat.I4, length, bytes),
-            (SecsFormat.I4, _) => DecodeMemoryItem<int>(SecsFormat.I4, length, bytes),
+            (SecsFormat.I4, >= 1024) => I4(DecodeMemoryOwner<int>(length, bytes)),
+            (SecsFormat.I4, _) => I4(DecodeMemory<int>(length, bytes)),
 
             (SecsFormat.F8, 0) => F8(),
-            (SecsFormat.F8, >= 1024) => DecodeMemoryOwnerItem<double>(SecsFormat.F8, length, bytes),
-            (SecsFormat.F8, _) => DecodeMemoryItem<double>(SecsFormat.F8, length, bytes),
+            (SecsFormat.F8, >= 1024) => F8(DecodeMemoryOwner<double>(length, bytes)),
+            (SecsFormat.F8, _) => F8(DecodeMemory<double>(length, bytes)),
 
             (SecsFormat.F4, 0) => F4(),
-            (SecsFormat.F4, >= 1024) => DecodeMemoryOwnerItem<float>(SecsFormat.F4, length, bytes),
-            (SecsFormat.F4, _) => DecodeMemoryItem<float>(SecsFormat.F4, length, bytes),
+            (SecsFormat.F4, >= 1024) => F4(DecodeMemoryOwner<float>(length, bytes)),
+            (SecsFormat.F4, _) => F4(DecodeMemory<float>(length, bytes)),
 
             (SecsFormat.U8, 0) => U8(),
-            (SecsFormat.U8, >= 1024) => DecodeMemoryOwnerItem<ulong>(SecsFormat.U8, length, bytes),
-            (SecsFormat.U8, _) => DecodeMemoryItem<ulong>(SecsFormat.U8, length, bytes),
+            (SecsFormat.U8, >= 1024) => U8(DecodeMemoryOwner<ulong>(length, bytes)),
+            (SecsFormat.U8, _) => U8(DecodeMemory<ulong>(length, bytes)),
 
             (SecsFormat.U1, 0) => U1(),
-            (SecsFormat.U1, > 1024) => DecodeMemoryOwnerItem<byte>(SecsFormat.U1, length, bytes),
-            (SecsFormat.U1, _) => DecodeMemoryItem<byte>(SecsFormat.U1, length, bytes),
+            (SecsFormat.U1, >= 1024) => U1(DecodeMemoryOwner<byte>(length, bytes)),
+            (SecsFormat.U1, _) => U1(DecodeMemory<byte>(length, bytes)),
 
             (SecsFormat.U2, 0) => U2(),
-            (SecsFormat.U2, >= 1024) => DecodeMemoryOwnerItem<ushort>(SecsFormat.U2, length, bytes),
-            (SecsFormat.U2, _) => DecodeMemoryItem<ushort>(SecsFormat.U2, length, bytes),
+            (SecsFormat.U2, >= 1024) => U2(DecodeMemoryOwner<ushort>(length, bytes)),
+            (SecsFormat.U2, _) => U2(DecodeMemory<ushort>(length, bytes)),
 
             (SecsFormat.U4, 0) => U4(),
-            (SecsFormat.U4, >= 1024) => DecodeMemoryOwnerItem<uint>(SecsFormat.U4, length, bytes),
-            (SecsFormat.U4, _) => DecodeMemoryItem<uint>(SecsFormat.U4, length, bytes),
+            (SecsFormat.U4, >= 1024) => U4(DecodeMemoryOwner<uint>(length, bytes)),
+            (SecsFormat.U4, _) => U4(DecodeMemory<uint>(length, bytes)),
             _ => ThrowHelper(),
         };
 
         [SkipLocalsInit]
-        static Item DecodeStringItem(SecsFormat format, int length, in ReadOnlySequence<byte> bytes, Encoding encoding)
+        static string DecodeString(int length, in ReadOnlySequence<byte> bytes, Encoding encoding)
         {
             using var spanOwner = SpanOwner<byte>.Allocate(length);
             bytes.CopyTo(spanOwner.Span);
-            return new StringItem(format, StringPool.Shared.GetOrAdd(spanOwner.Span, encoding));
+            return StringPool.Shared.GetOrAdd(spanOwner.Span, encoding);
         }
 
         [SkipLocalsInit]
@@ -151,23 +151,23 @@ public partial class Item
         }
 
         [SkipLocalsInit]
-        static unsafe Item DecodeMemoryItem<T>(SecsFormat format, int length, in ReadOnlySequence<byte> bytes) where T : unmanaged, IEquatable<T>
+        static unsafe Memory<T> DecodeMemory<T>(int length, in ReadOnlySequence<byte> bytes) where T : unmanaged, IEquatable<T>
         {
             var memory = new T[length / sizeof(T)];
             var span = memory.AsSpan();
             bytes.CopyTo(span.AsBytes());
             ReverseEndiannessHelper<T>.Reverse(span);
-            return new MemoryItem<T>(format, memory);
+            return memory;
         }
 
         [SkipLocalsInit]
-        static unsafe Item DecodeMemoryOwnerItem<T>(SecsFormat format, int length, in ReadOnlySequence<byte> bytes) where T : unmanaged, IEquatable<T>
+        static unsafe IMemoryOwner<T> DecodeMemoryOwner<T>(int length, in ReadOnlySequence<byte> bytes) where T : unmanaged, IEquatable<T>
         {
             var owner = MemoryOwner<T>.Allocate(length / sizeof(T));
             var span = owner.Span;
             bytes.CopyTo(span.AsBytes());
             ReverseEndiannessHelper<T>.Reverse(span);
-            return new MemoryOwnerItem<T>(format, owner);
+            return owner;
         }
 
         [DoesNotReturn]

@@ -3,11 +3,11 @@ using System.Runtime.CompilerServices;
 
 namespace Secs4Net.Extensions;
 
-public static class ReverseEndiannessHelper<T> where T : unmanaged
+public unsafe static class ReverseEndiannessHelper<T> where T : unmanaged
 {
-    public static readonly unsafe delegate*<Span<T>, void> Reverse;
+    public static readonly delegate*<Span<T>, void> Reverse;
 
-    static unsafe ReverseEndiannessHelper()
+    static ReverseEndiannessHelper()
     {
         var t = typeof(T);
         if (t == typeof(ushort))
@@ -51,18 +51,16 @@ public static class ReverseEndiannessHelper<T> where T : unmanaged
     }
 }
 
-public static class ReverseHelper
+public unsafe static class ReverseHelper
 {
-    private const nuint SingleOffset = 1;
-
-    internal static readonly unsafe delegate*<Span<ushort>, void> ReverseUInt16 = &ReverseEndianness;
-    internal static readonly unsafe delegate*<Span<uint>, void> ReverseUInt32 = &ReverseEndianness;
-    internal static readonly unsafe delegate*<Span<ulong>, void> ReverseUInt64 = &ReverseEndianness;
-    internal static readonly unsafe delegate*<Span<short>, void> ReverseInt16 = &ReverseEndianness;
-    internal static readonly unsafe delegate*<Span<int>, void> ReverseInt32 = &ReverseEndianness;
-    internal static readonly unsafe delegate*<Span<long>, void> ReverseInt64 = &ReverseEndianness;
-    internal static readonly unsafe delegate*<Span<float>, void> ReverseSingle = &ReverseEndianness;
-    internal static readonly unsafe delegate*<Span<double>, void> ReverseDouble = &ReverseEndianness;
+    internal static readonly delegate*<Span<ushort>, void> ReverseUInt16 = &ReverseEndianness;
+    internal static readonly delegate*<Span<uint>, void> ReverseUInt32 = &ReverseEndianness;
+    internal static readonly delegate*<Span<ulong>, void> ReverseUInt64 = &ReverseEndianness;
+    internal static readonly delegate*<Span<short>, void> ReverseInt16 = &ReverseEndianness;
+    internal static readonly delegate*<Span<int>, void> ReverseInt32 = &ReverseEndianness;
+    internal static readonly delegate*<Span<long>, void> ReverseInt64 = &ReverseEndianness;
+    internal static readonly delegate*<Span<float>, void> ReverseSingle = &ReverseEndianness;
+    internal static readonly delegate*<Span<double>, void> ReverseDouble = &ReverseEndianness;
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -73,7 +71,7 @@ public static class ReverseHelper
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, SingleOffset);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
 
@@ -86,7 +84,7 @@ public static class ReverseHelper
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, SingleOffset);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
 
@@ -98,7 +96,7 @@ public static class ReverseHelper
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, SingleOffset);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
 
@@ -110,7 +108,7 @@ public static class ReverseHelper
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, SingleOffset);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
 
@@ -122,7 +120,7 @@ public static class ReverseHelper
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, SingleOffset);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
 
@@ -134,7 +132,7 @@ public static class ReverseHelper
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
             rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, SingleOffset);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
 
@@ -150,7 +148,7 @@ public static class ReverseHelper
 #else
             rStart = ReadSingleBigEndian(rStart.AsBytes());
 #endif
-            rStart = ref Unsafe.Add(ref rStart, SingleOffset);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
 
@@ -166,7 +164,7 @@ public static class ReverseHelper
 #else
             rStart = ReadDoubleBigEndian(rStart.AsBytes());
 #endif
-            rStart = ref Unsafe.Add(ref rStart, SingleOffset);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
 
@@ -176,7 +174,7 @@ public static class ReverseHelper
         => Int32BitsToSingle(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<int>(source)));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private unsafe static float Int32BitsToSingle(int value)
+    private static float Int32BitsToSingle(int value)
         => *(float*)&value;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

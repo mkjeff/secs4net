@@ -68,7 +68,7 @@ public class JsonUnitTest
         var deserialized = JsonSerializer.Deserialize<SecsMessage>(sml, options);
 
         deserialized.Should().NotBeNull().And.BeEquivalentTo(EmptyMessage);
-        deserialized.SecsItem.Should().BeNull();
+        deserialized!.SecsItem.Should().BeNull();
     }
 
     [Fact]

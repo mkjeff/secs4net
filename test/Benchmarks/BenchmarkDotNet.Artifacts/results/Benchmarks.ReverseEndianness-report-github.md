@@ -1,84 +1,84 @@
 ```
 
-BenchmarkDotNet v0.13.10, Windows 11 (10.0.22631.2861/23H2/2023Update/SunValley3)
+BenchmarkDotNet v0.13.11, Windows 11 (10.0.22631.2861/23H2/2023Update/SunValley3)
 Unknown processor
 .NET SDK 8.0.100
   [Host]     : .NET 8.0.0 (8.0.23.53103), X64 RyuJIT AVX2
-  Job-OOEVDF : .NET 6.0.25 (6.0.2523.51912), X64 RyuJIT AVX2
-  Job-AKZPHK : .NET 8.0.0 (8.0.23.53103), X64 RyuJIT AVX2
+  Job-ZWGTBM : .NET 8.0.0 (8.0.23.53103), X64 RyuJIT AVX2
+  Job-ZQLZSO : .NET Framework 4.8.1 (4.8.9181.0), X64 RyuJIT VectorSize=256
 
 
 ```
-| Method                  | Runtime  | Categories | Size | Mean     | Error    | StdDev   | Ratio        | RatioSD |
-|------------------------ |--------- |----------- |----- |---------:|---------:|---------:|-------------:|--------:|
-| ReverseEndiannessHelper | .NET 6.0 | Double     | 64   | 19.98 ns | 0.245 ns | 0.229 ns |     baseline |         |
-| ReverseEndiannessHelper | .NET 8.0 | Double     | 64   | 20.09 ns | 0.316 ns | 0.280 ns | 1.01x slower |   0.02x |
-|                         |          |            |      |          |          |          |              |         |
-| BinaryPrimitives        | .NET 6.0 | Double     | 64   | 18.87 ns | 0.179 ns | 0.149 ns |     baseline |         |
-| BinaryPrimitives        | .NET 8.0 | Double     | 64   | 21.14 ns | 0.258 ns | 0.229 ns | 1.12x slower |   0.01x |
-|                         |          |            |      |          |          |          |              |         |
-| ForeachRef              | .NET 6.0 | Double     | 64   | 38.59 ns | 0.680 ns | 0.636 ns |     baseline |         |
-| ForeachRef              | .NET 8.0 | Double     | 64   | 30.22 ns | 0.619 ns | 0.760 ns | 1.28x faster |   0.04x |
-|                         |          |            |      |          |          |          |              |         |
-| ReverseEndiannessHelper | .NET 6.0 | Int16      | 64   | 23.79 ns | 0.286 ns | 0.254 ns |     baseline |         |
-| ReverseEndiannessHelper | .NET 8.0 | Int16      | 64   | 18.76 ns | 0.397 ns | 0.390 ns | 1.27x faster |   0.03x |
-|                         |          |            |      |          |          |          |              |         |
-| BinaryPrimitives        | .NET 6.0 | Int16      | 64   | 16.13 ns | 0.343 ns | 0.592 ns |     baseline |         |
-| BinaryPrimitives        | .NET 8.0 | Int16      | 64   | 22.64 ns | 0.320 ns | 0.299 ns | 1.40x slower |   0.05x |
-|                         |          |            |      |          |          |          |              |         |
-| ForeachRef              | .NET 6.0 | Int16      | 64   | 28.17 ns | 0.209 ns | 0.186 ns |     baseline |         |
-| ForeachRef              | .NET 8.0 | Int16      | 64   | 18.74 ns | 0.381 ns | 0.392 ns | 1.50x faster |   0.03x |
-|                         |          |            |      |          |          |          |              |         |
-| ReverseEndiannessHelper | .NET 6.0 | Int32      | 64   | 17.82 ns | 0.379 ns | 0.355 ns |     baseline |         |
-| ReverseEndiannessHelper | .NET 8.0 | Int32      | 64   | 17.45 ns | 0.357 ns | 0.334 ns | 1.02x faster |   0.02x |
-|                         |          |            |      |          |          |          |              |         |
-| BinaryPrimitives        | .NET 6.0 | Int32      | 64   | 18.80 ns | 0.325 ns | 0.304 ns |     baseline |         |
-| BinaryPrimitives        | .NET 8.0 | Int32      | 64   | 18.87 ns | 0.255 ns | 0.239 ns | 1.00x slower |   0.02x |
-|                         |          |            |      |          |          |          |              |         |
-| ForeachRef              | .NET 6.0 | Int32      | 64   | 23.60 ns | 0.383 ns | 0.340 ns |     baseline |         |
-| ForeachRef              | .NET 8.0 | Int32      | 64   | 24.64 ns | 0.271 ns | 0.253 ns | 1.04x slower |   0.01x |
-|                         |          |            |      |          |          |          |              |         |
-| ReverseEndiannessHelper | .NET 6.0 | Int64      | 64   | 23.60 ns | 0.345 ns | 0.323 ns |     baseline |         |
-| ReverseEndiannessHelper | .NET 8.0 | Int64      | 64   | 19.37 ns | 0.412 ns | 0.405 ns | 1.22x faster |   0.03x |
-|                         |          |            |      |          |          |          |              |         |
-| BinaryPrimitives        | .NET 6.0 | Int64      | 64   | 22.41 ns | 0.269 ns | 0.252 ns |     baseline |         |
-| BinaryPrimitives        | .NET 8.0 | Int64      | 64   | 22.28 ns | 0.163 ns | 0.144 ns | 1.01x faster |   0.01x |
-|                         |          |            |      |          |          |          |              |         |
-| ForeachRef              | .NET 6.0 | Int64      | 64   | 27.05 ns | 0.438 ns | 0.410 ns |     baseline |         |
-| ForeachRef              | .NET 8.0 | Int64      | 64   | 18.31 ns | 0.338 ns | 0.316 ns | 1.48x faster |   0.02x |
-|                         |          |            |      |          |          |          |              |         |
-| ReverseEndiannessHelper | .NET 6.0 | Single     | 64   | 23.86 ns | 0.268 ns | 0.250 ns |     baseline |         |
-| ReverseEndiannessHelper | .NET 8.0 | Single     | 64   | 23.93 ns | 0.273 ns | 0.242 ns | 1.00x slower |   0.01x |
-|                         |          |            |      |          |          |          |              |         |
-| BinaryPrimitives        | .NET 6.0 | Single     | 64   | 16.75 ns | 0.358 ns | 0.397 ns |     baseline |         |
-| BinaryPrimitives        | .NET 8.0 | Single     | 64   | 17.33 ns | 0.371 ns | 0.380 ns | 1.04x slower |   0.04x |
-|                         |          |            |      |          |          |          |              |         |
-| ForeachRef              | .NET 6.0 | Single     | 64   | 26.99 ns | 0.398 ns | 0.372 ns |     baseline |         |
-| ForeachRef              | .NET 8.0 | Single     | 64   | 23.58 ns | 0.264 ns | 0.247 ns | 1.14x faster |   0.02x |
-|                         |          |            |      |          |          |          |              |         |
-| ReverseEndiannessHelper | .NET 6.0 | UInt16     | 64   | 19.66 ns | 0.414 ns | 0.387 ns |     baseline |         |
-| ReverseEndiannessHelper | .NET 8.0 | UInt16     | 64   | 28.37 ns | 0.439 ns | 0.410 ns | 1.44x slower |   0.03x |
-|                         |          |            |      |          |          |          |              |         |
-| BinaryPrimitives        | .NET 6.0 | UInt16     | 64   | 21.90 ns | 0.266 ns | 0.248 ns |     baseline |         |
-| BinaryPrimitives        | .NET 8.0 | UInt16     | 64   | 22.18 ns | 0.353 ns | 0.330 ns | 1.01x slower |   0.02x |
-|                         |          |            |      |          |          |          |              |         |
-| ForeachRef              | .NET 6.0 | UInt16     | 64   | 27.78 ns | 0.146 ns | 0.122 ns |     baseline |         |
-| ForeachRef              | .NET 8.0 | UInt16     | 64   | 20.43 ns | 0.422 ns | 0.469 ns | 1.36x faster |   0.03x |
-|                         |          |            |      |          |          |          |              |         |
-| ReverseEndiannessHelper | .NET 6.0 | UInt32     | 64   | 20.67 ns | 0.399 ns | 0.373 ns |     baseline |         |
-| ReverseEndiannessHelper | .NET 8.0 | UInt32     | 64   | 17.51 ns | 0.242 ns | 0.214 ns | 1.18x faster |   0.02x |
-|                         |          |            |      |          |          |          |              |         |
-| BinaryPrimitives        | .NET 6.0 | UInt32     | 64   | 15.43 ns | 0.314 ns | 0.430 ns |     baseline |         |
-| BinaryPrimitives        | .NET 8.0 | UInt32     | 64   | 18.74 ns | 0.310 ns | 0.290 ns | 1.22x slower |   0.05x |
-|                         |          |            |      |          |          |          |              |         |
-| ForeachRef              | .NET 6.0 | UInt32     | 64   | 31.38 ns | 0.529 ns | 0.495 ns |     baseline |         |
-| ForeachRef              | .NET 8.0 | UInt32     | 64   | 24.52 ns | 0.265 ns | 0.248 ns | 1.28x faster |   0.02x |
-|                         |          |            |      |          |          |          |              |         |
-| ReverseEndiannessHelper | .NET 6.0 | UInt64     | 64   | 19.18 ns | 0.361 ns | 0.320 ns |     baseline |         |
-| ReverseEndiannessHelper | .NET 8.0 | UInt64     | 64   | 28.41 ns | 0.381 ns | 0.357 ns | 1.48x slower |   0.03x |
-|                         |          |            |      |          |          |          |              |         |
-| BinaryPrimitives        | .NET 6.0 | UInt64     | 64   | 22.41 ns | 0.223 ns | 0.209 ns |     baseline |         |
-| BinaryPrimitives        | .NET 8.0 | UInt64     | 64   | 22.34 ns | 0.236 ns | 0.221 ns | 1.00x faster |   0.01x |
-|                         |          |            |      |          |          |          |              |         |
-| ForeachRef              | .NET 6.0 | UInt64     | 64   | 26.94 ns | 0.275 ns | 0.257 ns |     baseline |         |
-| ForeachRef              | .NET 8.0 | UInt64     | 64   | 18.48 ns | 0.348 ns | 0.326 ns | 1.46x faster |   0.03x |
+| Method                  | Runtime            | Categories | Size | Mean      | Error    | StdDev   | Ratio        | RatioSD |
+|------------------------ |------------------- |----------- |----- |----------:|---------:|---------:|-------------:|--------:|
+| ReverseEndiannessHelper | .NET 8.0           | Double     | 64   |  19.07 ns | 0.124 ns | 0.116 ns | 5.71x faster |   0.03x |
+| ReverseEndiannessHelper | .NET Framework 4.8 | Double     | 64   | 109.07 ns | 0.574 ns | 0.480 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| BinaryPrimitives        | .NET 8.0           | Double     | 64   |  21.13 ns | 0.433 ns | 0.578 ns | 4.77x faster |   0.13x |
+| BinaryPrimitives        | .NET Framework 4.8 | Double     | 64   | 100.84 ns | 0.576 ns | 0.538 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ForeachRef              | .NET 8.0           | Double     | 64   |  31.72 ns | 0.288 ns | 0.269 ns | 3.89x faster |   0.05x |
+| ForeachRef              | .NET Framework 4.8 | Double     | 64   | 123.33 ns | 0.737 ns | 0.690 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ReverseEndiannessHelper | .NET 8.0           | Int16      | 64   |  18.15 ns | 0.384 ns | 0.851 ns | 2.40x faster |   0.13x |
+| ReverseEndiannessHelper | .NET Framework 4.8 | Int16      | 64   |  43.44 ns | 0.363 ns | 0.339 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| BinaryPrimitives        | .NET 8.0           | Int16      | 64   |  21.69 ns | 0.098 ns | 0.091 ns | 1.95x faster |   0.01x |
+| BinaryPrimitives        | .NET Framework 4.8 | Int16      | 64   |  42.28 ns | 0.215 ns | 0.201 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ForeachRef              | .NET 8.0           | Int16      | 64   |  17.76 ns | 0.361 ns | 0.355 ns | 2.53x faster |   0.05x |
+| ForeachRef              | .NET Framework 4.8 | Int16      | 64   |  45.08 ns | 0.302 ns | 0.252 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ReverseEndiannessHelper | .NET 8.0           | Int32      | 64   |  16.40 ns | 0.338 ns | 0.451 ns | 3.00x faster |   0.09x |
+| ReverseEndiannessHelper | .NET Framework 4.8 | Int32      | 64   |  48.97 ns | 0.456 ns | 0.427 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| BinaryPrimitives        | .NET 8.0           | Int32      | 64   |  18.04 ns | 0.121 ns | 0.113 ns | 2.32x faster |   0.03x |
+| BinaryPrimitives        | .NET Framework 4.8 | Int32      | 64   |  41.82 ns | 0.502 ns | 0.469 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ForeachRef              | .NET 8.0           | Int32      | 64   |  23.60 ns | 0.140 ns | 0.131 ns | 1.86x faster |   0.04x |
+| ForeachRef              | .NET Framework 4.8 | Int32      | 64   |  43.95 ns | 0.871 ns | 1.003 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ReverseEndiannessHelper | .NET 8.0           | Int64      | 64   |  17.19 ns | 0.363 ns | 0.664 ns | 3.99x faster |   0.18x |
+| ReverseEndiannessHelper | .NET Framework 4.8 | Int64      | 64   |  68.19 ns | 0.518 ns | 0.484 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| BinaryPrimitives        | .NET 8.0           | Int64      | 64   |  21.40 ns | 0.142 ns | 0.118 ns | 2.79x faster |   0.03x |
+| BinaryPrimitives        | .NET Framework 4.8 | Int64      | 64   |  59.79 ns | 0.483 ns | 0.428 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ForeachRef              | .NET 8.0           | Int64      | 64   |  17.42 ns | 0.013 ns | 0.011 ns | 3.76x faster |   0.01x |
+| ForeachRef              | .NET Framework 4.8 | Int64      | 64   |  65.49 ns | 0.216 ns | 0.191 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ReverseEndiannessHelper | .NET 8.0           | Single     | 64   |  22.89 ns | 0.106 ns | 0.100 ns | 3.69x faster |   0.02x |
+| ReverseEndiannessHelper | .NET Framework 4.8 | Single     | 64   |  84.46 ns | 0.196 ns | 0.183 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| BinaryPrimitives        | .NET 8.0           | Single     | 64   |  16.47 ns | 0.346 ns | 0.371 ns | 4.52x faster |   0.10x |
+| BinaryPrimitives        | .NET Framework 4.8 | Single     | 64   |  74.65 ns | 0.416 ns | 0.389 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ForeachRef              | .NET 8.0           | Single     | 64   |  23.76 ns | 0.474 ns | 0.527 ns | 4.07x faster |   0.10x |
+| ForeachRef              | .NET Framework 4.8 | Single     | 64   |  96.36 ns | 0.105 ns | 0.098 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ReverseEndiannessHelper | .NET 8.0           | UInt16     | 64   |  26.91 ns | 0.207 ns | 0.194 ns | 1.53x faster |   0.03x |
+| ReverseEndiannessHelper | .NET Framework 4.8 | UInt16     | 64   |  41.24 ns | 0.533 ns | 0.499 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| BinaryPrimitives        | .NET 8.0           | UInt16     | 64   |  21.17 ns | 0.136 ns | 0.121 ns | 1.43x faster |   0.02x |
+| BinaryPrimitives        | .NET Framework 4.8 | UInt16     | 64   |  30.18 ns | 0.409 ns | 0.383 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ForeachRef              | .NET 8.0           | UInt16     | 64   |  17.89 ns | 0.379 ns | 0.405 ns | 2.39x faster |   0.06x |
+| ForeachRef              | .NET Framework 4.8 | UInt16     | 64   |  42.94 ns | 0.099 ns | 0.088 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ReverseEndiannessHelper | .NET 8.0           | UInt32     | 64   |  16.60 ns | 0.353 ns | 0.420 ns | 2.75x faster |   0.08x |
+| ReverseEndiannessHelper | .NET Framework 4.8 | UInt32     | 64   |  45.87 ns | 0.910 ns | 0.934 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| BinaryPrimitives        | .NET 8.0           | UInt32     | 64   |  17.99 ns | 0.136 ns | 0.127 ns | 2.35x faster |   0.02x |
+| BinaryPrimitives        | .NET Framework 4.8 | UInt32     | 64   |  42.19 ns | 0.201 ns | 0.188 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ForeachRef              | .NET 8.0           | UInt32     | 64   |  23.62 ns | 0.064 ns | 0.060 ns | 1.86x faster |   0.03x |
+| ForeachRef              | .NET Framework 4.8 | UInt32     | 64   |  43.86 ns | 0.752 ns | 0.704 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ReverseEndiannessHelper | .NET 8.0           | UInt64     | 64   |  27.47 ns | 0.205 ns | 0.160 ns | 2.45x faster |   0.02x |
+| ReverseEndiannessHelper | .NET Framework 4.8 | UInt64     | 64   |  67.38 ns | 0.262 ns | 0.205 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| BinaryPrimitives        | .NET 8.0           | UInt64     | 64   |  21.38 ns | 0.146 ns | 0.137 ns | 2.77x faster |   0.03x |
+| BinaryPrimitives        | .NET Framework 4.8 | UInt64     | 64   |  59.24 ns | 0.489 ns | 0.457 ns |     baseline |         |
+|                         |                    |            |      |           |          |          |              |         |
+| ForeachRef              | .NET 8.0           | UInt64     | 64   |  17.52 ns | 0.090 ns | 0.075 ns | 3.74x faster |   0.02x |
+| ForeachRef              | .NET Framework 4.8 | UInt64     | 64   |  65.49 ns | 0.274 ns | 0.257 ns |     baseline |         |
