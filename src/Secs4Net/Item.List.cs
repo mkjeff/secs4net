@@ -11,8 +11,8 @@ partial class Item
     {
         private readonly Item[] _value;
 
-        internal ListItem(SecsFormat format, Item[] value)
-            : base(format)
+        internal ListItem(Item[] value)
+            : base(SecsFormat.List)
             => _value = value;
 
         public override void Dispose()

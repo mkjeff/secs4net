@@ -50,6 +50,7 @@ public sealed class PipeDecoder
         CancellationToken cancellation)
     {
         var stack = new Stack<ItemList>(capacity: 8);
+        Item item;
         var totalLengthBytes = new byte[4];
         var messageHeaderBytes = new byte[10];
         // PipeReader peek first
@@ -66,9 +67,8 @@ public sealed class PipeDecoder
             totalLengthSeq.CopyTo(totalLengthBytes);
             uint messageLength = BinaryPrimitives.ReadUInt32BigEndian(totalLengthBytes);
             buffer = buffer.Slice(totalLengthSeq.End);
-#if DEBUG
-            Trace.WriteLine($"Get new message with length: {messageLength}");
-#endif
+
+            Debug.WriteLine($"Get new message with length: {messageLength}");
 
             // 1: get message header 10 bytes
             if (IsBufferInsufficient(reader, ref buffer, required: 10))
@@ -79,9 +79,8 @@ public sealed class PipeDecoder
             messageHaderSeq.CopyTo(messageHeaderBytes);
             MessageHeader.Decode(messageHeaderBytes, out var header);
             buffer = buffer.Slice(messageHaderSeq.End);
-#if DEBUG
-            Trace.WriteLine($"Get message(id:{header.Id:X8}) header");
-#endif
+
+            Debug.WriteLine($"Get message(id:{header.Id:X8}) header");
 
             if (messageLength == 10) // only message header
             {
@@ -99,9 +98,9 @@ public sealed class PipeDecoder
             if (buffer.Length >= messageLength - 10)
             {
                 var rootItem = Item.DecodeFromFullBuffer(ref buffer);
-#if DEBUG
-                Trace.WriteLine($"Get data message(id:{header.Id:X8}) with total bytes: {messageLength} and decoded directly");
-#endif
+
+                Debug.WriteLine($"Get data message(id:{header.Id:X8}) with total bytes: {messageLength} and decoded directly");
+
                 await dataMessageWriter.WriteAsync((header, rootItem), cancellation).ConfigureAwait(false);
                 continue;
             }
@@ -128,21 +127,16 @@ public sealed class PipeDecoder
             buffer = buffer.Slice(itemContentLengthBytes.End);
 
             // 4: get item content
-            Item item;
-            if (itemFormat == SecsFormat.List)
+            if (itemFormat is SecsFormat.List)
             {
                 if (itemContentLength == 0)
                 {
                     item = Item.L();
-#if DEBUG
-                    Trace.WriteLine($"Decoded List[0]");
-#endif
+                    Debug.WriteLine($"Decoded List[0]");
                 }
                 else
                 {
-#if DEBUG
-                    Trace.WriteLine($"Decoded List[{itemContentLength}]");
-#endif
+                    Debug.WriteLine($"Decoded List[{itemContentLength}]");
                     stack.Push(new ItemList(size: itemContentLength));
                     goto GetNewItem;
                 }
@@ -156,18 +150,16 @@ public sealed class PipeDecoder
                 var itemDataBytes = buffer.Slice(0, itemContentLength);
                 item = Item.DecodeDataItem(itemFormat, itemDataBytes);
                 buffer = buffer.Slice(itemDataBytes.End);
-#if DEBUG
-                Trace.WriteLine($"Decoded Item[{itemFormat}], length: {itemContentLength}");
-#endif
+                Debug.WriteLine($"Decoded Item[{itemFormat}], length: {itemContentLength}");
             }
 
             if (stack.Count > 0)
             {
                 var list = stack.Peek();
                 list.Add(item);
-                while (list.Count == list.Capacity) //stack unwind when all List's Items has decoded
+                while (list.IsFull) //stack unwind when all List's Items has decoded
                 {
-                    item = Item.L(stack.Pop().GetArray());
+                    item = Item.L(stack.Pop().Items);
                     //Trace.WriteLine($"Unwind List[{item.Count}]");
                     if (stack.Count > 0)
                     {
@@ -176,9 +168,7 @@ public sealed class PipeDecoder
                     }
                     else
                     {
-#if DEBUG
-                        Trace.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
-#endif
+                        Debug.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
                         await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
                         goto Start;
                     }
@@ -187,9 +177,7 @@ public sealed class PipeDecoder
             }
             else
             {
-#if DEBUG
-                Trace.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
-#endif
+                Debug.WriteLine($"Get data message(id:{header.Id:X8}) decoded by data chunked");
                 await dataMessageWriter.WriteAsync((header, item), cancellation).ConfigureAwait(false);
             }
         }
@@ -263,11 +251,10 @@ public sealed class PipeDecoder
     private sealed class ItemList(int size)
     {
         private readonly Item[] _items = new Item[size];
+        private int _current;
 
-        public int Capacity => _items.Length;
-        public int Count { get; private set; }
-
-        public void Add(Item item) => _items.DangerousGetReferenceAt(Count++) = item;
-        public Item[] GetArray() => _items;
+        public bool IsFull => _current == _items.Length;
+        public void Add(Item item) => _items[_current++] = item;
+        public Item[] Items => _items;
     }
 }

@@ -1,35 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net6.0;net8.0;net48</TargetFrameworks>
-    <OutputType>Exe</OutputType>
-    <LangVersion>12.0</LangVersion>
-  </PropertyGroup>
-  
-  <PropertyGroup>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <Configuration>Release</Configuration>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
-   
-  <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.11" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.11" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Secs4Net.Json\Secs4Net.Json.csproj" />
-    <ProjectReference Include="..\..\src\Secs4Net.Sml\Secs4Net.Sml.csproj" />
-    <ProjectReference Include="..\..\src\Secs4Net\Secs4Net.csproj" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net8.0;net48</TargetFrameworks>
+		<OutputType>Exe</OutputType>
+		<LangVersion>12.0</LangVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\common\EnumerableExtensions.cs" Link="common\EnumerableExtensions.cs" />
-    <Compile Include="..\..\common\Usings.cs" Link="common\Usings.cs" />
-  </ItemGroup>
-  
+	<PropertyGroup>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<DebugType>pdbonly</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Optimize>true</Optimize>
+		<Configuration>Release</Configuration>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
+		<PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.12" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Secs4Net.Json\Secs4Net.Json.csproj" />
+		<ProjectReference Include="..\..\src\Secs4Net.Sml\Secs4Net.Sml.csproj" />
+		<ProjectReference Include="..\..\src\Secs4Net\Secs4Net.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\..\common\EnumerableExtensions.cs" Link="common\EnumerableExtensions.cs" />
+		<Compile Include="..\..\common\Usings.cs" Link="common\Usings.cs" />
+	</ItemGroup>
+
 </Project>

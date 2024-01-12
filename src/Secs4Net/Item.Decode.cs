@@ -21,7 +21,7 @@ public partial class Item
 #if DEBUG
         byte formatAndLengthByte = formatSeqFirstSpan[0];
 #else
-        byte formatAndLengthByte = formatSeqFirstSpan.DangerousGetReferenceAt(0);
+        byte formatAndLengthByte = formatSeqFirstSpan.DangerousGetReference();
 #endif
         format = (SecsFormat)(formatAndLengthByte >> 2);
         lengthByteCount = (byte)(formatAndLengthByte & 0b00000011);
@@ -77,12 +77,12 @@ public partial class Item
         return (format, length) switch
         {
             (SecsFormat.ASCII, 0) => A(),
-            (SecsFormat.ASCII, >= 512) => DecodeLazyStringItem(SecsFormat.ASCII, length, bytes),
-            (SecsFormat.ASCII, _) => A(DecodeString(length, bytes, Encoding.ASCII)),
+            (SecsFormat.ASCII, >= 256) => A(Encoding.ASCII.GetString(bytes)),
+            (SecsFormat.ASCII, _) => A(DecodePooledString(length, bytes, Encoding.ASCII)),
 
             (SecsFormat.JIS8, 0) => J(),
-            (SecsFormat.JIS8, >= 512) => DecodeLazyStringItem(SecsFormat.JIS8, length, bytes),
-            (SecsFormat.JIS8, _) => J(DecodeString(length, bytes, JIS8Encoding)),
+            (SecsFormat.JIS8, >= 256) => J(JIS8Encoding.GetString(bytes)),
+            (SecsFormat.JIS8, _) => J(DecodePooledString(length, bytes, JIS8Encoding)),
 
             (SecsFormat.Binary, 0) => B(),
             (SecsFormat.Binary, >= 1024) => B(DecodeMemoryOwner<byte>(length, bytes)),
@@ -135,19 +135,12 @@ public partial class Item
         };
 
         [SkipLocalsInit]
-        static string DecodeString(int length, in ReadOnlySequence<byte> bytes, Encoding encoding)
+        static string DecodePooledString(int length, in ReadOnlySequence<byte> bytes, Encoding encoding)
         {
             using var spanOwner = SpanOwner<byte>.Allocate(length);
-            bytes.CopyTo(spanOwner.Span);
-            return StringPool.Shared.GetOrAdd(spanOwner.Span, encoding);
-        }
-
-        [SkipLocalsInit]
-        static Item DecodeLazyStringItem(SecsFormat format, int length, in ReadOnlySequence<byte> bytes)
-        {
-            var owner = MemoryOwner<byte>.Allocate(length);
-            bytes.CopyTo(owner.Memory.Span);
-            return new LazyStringItem(format, owner);
+            var span = spanOwner.Span;
+            bytes.CopyTo(span);
+            return StringPool.Shared.GetOrAdd(span, encoding);
         }
 
         [SkipLocalsInit]

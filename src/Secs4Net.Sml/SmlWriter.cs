@@ -217,7 +217,7 @@ public static class SmlWriter
         {
             WriteValue(writer, rStart);
             writer.Write(' ');
-            rStart = ref Unsafe.Add(ref rStart, 1);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
         WriteValue(writer, rStart);
 
@@ -245,7 +245,7 @@ public static class SmlWriter
         {
             WriteValue(writer, rStart);
             writer.Write(' ');
-            rStart = ref Unsafe.Add(ref rStart, 1);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
         WriteValue(writer, rStart);
 
@@ -273,7 +273,7 @@ public static class SmlWriter
         {
             writer.Write(rStart.ToString());
             writer.Write(' ');
-            rStart = ref Unsafe.Add(ref rStart, 1);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
         writer.Write(rStart.ToString());
     }
@@ -293,7 +293,7 @@ public static class SmlWriter
         {
             AppendHexChars(writer, rStart);
             writer.Write(' ');
-            rStart = ref Unsafe.Add(ref rStart, 1);
+            rStart = ref Unsafe.Add(ref rStart, 1u);
         }
         AppendHexChars(writer, rStart);
 

@@ -14,31 +14,31 @@ public partial class Item
     [SkipLocalsInit]
     private static void EncodeItemHeader(SecsFormat format, int count, IBufferWriter<byte> buffer)
     {
-        ref var lengthRef0 = ref MemoryMarshal.GetReference(Unsafe.AsRef(in count).AsBytes());
-        ref var r0 = ref MemoryMarshal.GetReference(buffer.GetSpan(sizeHint: 4));
+        ref var lengthRef0 = ref Unsafe.As<int, byte>(ref Unsafe.AsRef(in count));
+        ref var encodedRef0 = ref MemoryMarshal.GetReference(buffer.GetSpan(sizeHint: 4));
         var formatByte = (int)format << 2;
         if (count <= 0xff)
         {//	1 byte
 
-            Unsafe.Add(ref r0, 0u) = (byte)(formatByte | 1);
-            Unsafe.Add(ref r0, 1u) = Unsafe.Add(ref lengthRef0, 0u);
+            encodedRef0 = (byte)(formatByte | 1);
+            Unsafe.Add(ref encodedRef0, 1u) = lengthRef0;
             buffer.Advance(2);
             return;
         }
-        if (count <= 0xffff)
+        if (count <= 0xff_ff)
         {//	2 byte
-            Unsafe.Add(ref r0, 0u) = (byte)(formatByte | 2);
-            Unsafe.Add(ref r0, 1u) = Unsafe.Add(ref lengthRef0, 1u);
-            Unsafe.Add(ref r0, 2u) = Unsafe.Add(ref lengthRef0, 0u);
+            encodedRef0 = (byte)(formatByte | 2);
+            Unsafe.Add(ref encodedRef0, 1u) = Unsafe.Add(ref lengthRef0, 1u);
+            Unsafe.Add(ref encodedRef0, 2u) = lengthRef0;
             buffer.Advance(3);
             return;
         }
-        if (count <= 0xffffff)
+        if (count <= 0xff_ff_ff)
         {//	3 byte
-            Unsafe.Add(ref r0, 0u) = (byte)(formatByte | 3);
-            Unsafe.Add(ref r0, 1u) = Unsafe.Add(ref lengthRef0, 2u);
-            Unsafe.Add(ref r0, 2u) = Unsafe.Add(ref lengthRef0, 1u);
-            Unsafe.Add(ref r0, 3u) = Unsafe.Add(ref lengthRef0, 0u);
+            encodedRef0 = (byte)(formatByte | 3);
+            Unsafe.Add(ref encodedRef0, 1u) = Unsafe.Add(ref lengthRef0, 2u);
+            Unsafe.Add(ref encodedRef0, 2u) = Unsafe.Add(ref lengthRef0, 1u);
+            Unsafe.Add(ref encodedRef0, 3u) = lengthRef0;
             buffer.Advance(4);
             return;
         }

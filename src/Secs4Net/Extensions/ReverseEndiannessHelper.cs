@@ -143,11 +143,7 @@ public unsafe static class ReverseHelper
         ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
-#if NET
-            rStart = BinaryPrimitives.ReadSingleBigEndian(rStart.AsBytes());
-#else
-            rStart = ReadSingleBigEndian(rStart.AsBytes());
-#endif
+            ReverseEndianness(ref rStart);
             rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
@@ -159,18 +155,35 @@ public unsafe static class ReverseHelper
         ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
-#if NET
-            rStart = BinaryPrimitives.ReadDoubleBigEndian(rStart.AsBytes());
-#else
-            rStart = ReadDoubleBigEndian(rStart.AsBytes());
-#endif
+            ReverseEndianness(ref rStart);
             rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
 
-#if NETSTANDARD
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static float ReadSingleBigEndian(ReadOnlySpan<byte> source)
+    internal static void ReverseEndianness(ref float value)
+    {
+#if NET
+        value = BinaryPrimitives.ReadSingleBigEndian(value.AsReadOnlyBytes());
+#else
+        value = ReadSingleBigEndian(value.AsReadOnlyBytes());
+#endif
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void ReverseEndianness(ref double value)
+    {
+#if NET
+        value = BinaryPrimitives.ReadDoubleBigEndian(value.AsReadOnlyBytes());
+#else
+        value = ReadDoubleBigEndian(value.AsReadOnlyBytes());
+#endif
+    }
+
+#if !NET
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static float ReadSingleBigEndian(ReadOnlySpan<byte> source)
         => Int32BitsToSingle(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<int>(source)));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -178,8 +191,7 @@ public unsafe static class ReverseHelper
         => *(float*)&value;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static double ReadDoubleBigEndian(ReadOnlySpan<byte> source)
+    private static double ReadDoubleBigEndian(ReadOnlySpan<byte> source)
         => BitConverter.Int64BitsToDouble(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<long>(source)));
 #endif
-
 }

@@ -70,7 +70,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     private readonly Timer _timerLinkTest;
     private readonly ConcurrentDictionary<int, ValueTaskCompletionSource<MessageType>> _replyExpectedMsgs = new();
     private readonly int _socketReceiveBufferSize;
-#if NETSTANDARD
+#if !NET
     private readonly byte[] _socketReceiveBuffer;
 #endif
     private readonly ISecsGemLogger _logger;
@@ -98,7 +98,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         Port = options.Port;
         IsActive = options.IsActive;
         _socketReceiveBufferSize = options.SocketReceiveBufferSize;
-#if NETSTANDARD
+#if !NET
         _socketReceiveBuffer = new byte[_socketReceiveBufferSize];
 #endif
 
@@ -273,9 +273,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         {
             while (true)
             {
-#if DEBUG
                 Debug.Assert(_socket != null);
-#endif
 #if NET
                 var memory = decoderInput.GetMemory(_socketReceiveBufferSize);
                 var count = await _socket!.ReceiveAsync(memory, SocketFlags.None, cancellation).ConfigureAwait(false);
@@ -524,11 +522,9 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         {
             do
             {
-#if DEBUG
                 Debug.Assert(_socket != null);
-#endif
-                var length = await _socket!.SendAsync(buffer, SocketFlags.None, cancellation).ConfigureAwait(false);
-                //Trace.WriteLine($"Socket sent {length} bytes.");
+                var length = await _socket.SendAsync(buffer, SocketFlags.None, cancellation).ConfigureAwait(false);
+                Debug.WriteLine($"Socket sent {length} bytes.");
                 buffer = buffer[length..];
             } while (!buffer.IsEmpty);
         }
@@ -549,12 +545,10 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         {
             do
             {
-#if DEBUG
                 Debug.Assert(_socket != null);
-#endif
-                var length = await _socket!.SendAsync(arr, SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false);
+                var length = await _socket.SendAsync(arr, SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false);
                 arr = new ArraySegment<byte>(arr.Array, arr.Offset + length, arr.Count - length);
-                //Trace.WriteLine($"Socket sent {length} bytes.");
+                Debug.WriteLine($"Socket sent {length} bytes.");
             } while (arr.Count > 0);
         }
         finally

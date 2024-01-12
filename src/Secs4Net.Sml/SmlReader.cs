@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -151,12 +152,12 @@ public static class SmlReader
     {
         line = line.TrimStart();
 
-        if (line.DangerousGetReferenceAt(0) == '.')
+        if (line.DangerousGetReference() is '.')
         {
             return false;
         }
 
-        if (line.DangerousGetReferenceAt(0) == '>')
+        if (line.DangerousGetReference() is '>')
         {
             var itemList = stack.Pop();
             var item = itemList.Count > 0 ? L(itemList) : L();
@@ -175,21 +176,16 @@ public static class SmlReader
         // <format[count] smlValue
 
         int indexItemL = line.IndexOf('<') + 1;
-#if DEBUG
         Debug.Assert(indexItemL != 0);
-#endif
+
         int indexSizeL = line[indexItemL..].IndexOf('[') + indexItemL;
-#if DEBUG
         Debug.Assert(indexSizeL != -1);
-#endif
 
         var format = line[indexItemL..indexSizeL].Trim();
 
 
         int indexSizeR = line[indexSizeL..].IndexOf(']') + indexSizeL;
-#if DEBUG
         Debug.Assert(indexSizeR != -1);
-#endif
 
 #if NET
         int? size = int.TryParse(line[(indexSizeL + 1)..indexSizeR], out var s) ? s : null;
@@ -204,9 +200,8 @@ public static class SmlReader
         else
         {
             int indexItemR = line.LastIndexOf('>');
-#if DEBUG
             Debug.Assert(indexItemR != -1);
-#endif
+
             var valueStr = line.Slice(indexSizeR + 1, indexItemR - indexSizeR - 1);
             var item = Create(ParseFormat(format), valueStr, size);
             if (stack.Count > 0)
@@ -319,7 +314,24 @@ public static class SmlReader
             _ => ThrowHelper("Unknown SML format: " + format),
         };
 
-        static Item ParseArrayItem<T>(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<T[], Item> creator, SpanParser<T> converter) parser, int? size)
+#if NET8_0
+        //static Item ParseMemoryItem<T>(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<T[], Item> creator) parser, int? size)
+        //    where T : unmanaged
+
+        //    , ISpanParsable<T>
+        //{
+        //    var s = SearchValues.Create(" ");
+        //    str.IndexOf()
+        //    var range = new Range[09];
+        //    str.Split(range, ' ');
+        //    var valueStrs = str.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        //    return valueStrs.IsEmpty()
+        //        ? parser.emptyCreator()
+        //        : parser.creator(valueStrs.ToArray(parser.converter, size));
+        //}
+#endif
+
+        static Item ParseArrayItem<T>(ReadOnlySpan<char> str, (Func<Item> emptyCreator, Func<T[], Item> creator, SpanParser<T> converter) parser, int? size) where T : unmanaged
         {
             var valueStrs = str.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             return valueStrs.IsEmpty()

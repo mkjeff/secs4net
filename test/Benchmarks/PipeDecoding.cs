@@ -90,7 +90,7 @@ public class PipeDecoding
     }
 
     [Benchmark]
-    public async Task Message_Can_Decode_From_Chunked_Sequence()
+    public async Task Chunked_Sequence()
     {
         var pipe = new Pipe();
         var decoder = new PipeDecoder(pipe.Reader, pipe.Writer);

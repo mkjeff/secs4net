@@ -35,9 +35,7 @@ partial class Item
             EncodeItemHeader(Format, byteLength, buffer);
             var length = encoder.GetBytes(_value, buffer.GetSpan(byteLength));
             buffer.Advance(byteLength);
-#if DEBUG
             Debug.Assert(length == byteLength);
-#endif
         }
 
         private protected override bool IsEquals(Item other)

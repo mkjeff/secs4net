@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD
+﻿#if !NET
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 

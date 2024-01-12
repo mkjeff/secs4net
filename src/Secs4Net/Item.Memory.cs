@@ -13,8 +13,6 @@ public partial class Item
     {
         private readonly Memory<T> _value;
 
-        internal MemoryItem(SecsFormat format) : this(format, Memory<T>.Empty) { }
-
         internal MemoryItem(SecsFormat format, Memory<T> value)
             : base(format)
             => _value = value;
@@ -29,7 +27,7 @@ public partial class Item
                 ThrowHelper();
             }
 
-            return ref Unsafe.As<T, TResult>(ref span.DangerousGetReferenceAt(0));
+            return ref Unsafe.As<T, TResult>(ref MemoryMarshal.GetReference(span));
 
             [DoesNotReturn]
             static void ThrowHelper() => throw new IndexOutOfRangeException($"The item is empty or data length less than sizeof({typeof(T).Name})");
@@ -43,7 +41,7 @@ public partial class Item
                 return defaultValue;
             }
 
-            return Unsafe.As<T, TResult>(ref span.DangerousGetReferenceAt(0));
+            return Unsafe.As<T, TResult>(ref MemoryMarshal.GetReference(span));
         }
 
         public sealed override Memory<TResult> GetMemory<TResult>()
@@ -58,7 +56,7 @@ public partial class Item
                 return;
             }
 
-            var valueByteSpan = value.Span.AsBytes();
+            var valueByteSpan = MemoryMarshal.AsBytes(value.Span);
             var byteLength = valueByteSpan.Length;
 
             EncodeItemHeader(Format, byteLength, buffer);

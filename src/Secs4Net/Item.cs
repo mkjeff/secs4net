@@ -7,21 +7,6 @@ namespace Secs4Net;
 
 public abstract partial class Item : IEquatable<Item>, IDisposable
 {
-    private static readonly Item EmptyL = new ListItem(SecsFormat.List, []);
-    private static readonly Item EmptyA = new StringItem(SecsFormat.ASCII, string.Empty);
-    private static readonly Item EmptyJ = new StringItem(SecsFormat.JIS8, string.Empty);
-    private static readonly Item EmptyBoolean = new MemoryItem<bool>(SecsFormat.Boolean);
-    private static readonly Item EmptyBinary = new MemoryItem<byte>(SecsFormat.Binary);
-    private static readonly Item EmptyU1 = new MemoryItem<byte>(SecsFormat.U1);
-    private static readonly Item EmptyU2 = new MemoryItem<ushort>(SecsFormat.U2);
-    private static readonly Item EmptyU4 = new MemoryItem<uint>(SecsFormat.U4);
-    private static readonly Item EmptyU8 = new MemoryItem<ulong>(SecsFormat.U8);
-    private static readonly Item EmptyI1 = new MemoryItem<sbyte>(SecsFormat.I1);
-    private static readonly Item EmptyI2 = new MemoryItem<short>(SecsFormat.I2);
-    private static readonly Item EmptyI4 = new MemoryItem<int>(SecsFormat.I4);
-    private static readonly Item EmptyI8 = new MemoryItem<long>(SecsFormat.I8);
-    private static readonly Item EmptyF4 = new MemoryItem<float>(SecsFormat.F4);
-    private static readonly Item EmptyF8 = new MemoryItem<double>(SecsFormat.F8);
     public static Encoding JIS8Encoding { get; set; } = Encoding.UTF8;
 
     public SecsFormat Format { get; }

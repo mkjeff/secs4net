@@ -20,27 +20,28 @@ public readonly record struct MessageHeader
         var span = buffer.GetSpan(sizeHint: 10);
         BinaryPrimitives.WriteUInt16BigEndian(span, DeviceId);
         ref var r0 = ref MemoryMarshal.GetReference(span);
-        Unsafe.Add(ref r0, 2) = (byte)(S | (ReplyExpected ? 0b1000_0000 : 0));
-        Unsafe.Add(ref r0, 3) = F;
-        Unsafe.Add(ref r0, 4) = 0;
-        Unsafe.Add(ref r0, 5) = (byte)MessageType;
+        Unsafe.Add(ref r0, 2u) = (byte)(S | (ReplyExpected ? 0b1000_0000 : 0));
+        Unsafe.Add(ref r0, 3u) = F;
+        Unsafe.Add(ref r0, 4u) = 0;
+        Unsafe.Add(ref r0, 5u) = (byte)MessageType;
         BinaryPrimitives.WriteInt32BigEndian(span[6..], Id);
         buffer.Advance(10);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     [SkipLocalsInit]
-    internal static void Decode(ReadOnlySpan<byte> buffer, out MessageHeader header)
+    internal static void Decode(ReadOnlySpan<byte> span, out MessageHeader header)
     {
-        var s = buffer[2];
+        ref var r0 = ref MemoryMarshal.GetReference(span);
+        var s = Unsafe.Add(ref r0, 2u);
         header = new MessageHeader
         {
-            DeviceId = (ushort)(BinaryPrimitives.ReadUInt16BigEndian(buffer) & 0b01111111_11111111),
+            DeviceId = (ushort)(BinaryPrimitives.ReadUInt16BigEndian(span) & 0b01111111_11111111),
             ReplyExpected = (s & 0b1000_0000) != 0,
             S = (byte)(s & 0b0111_1111),
-            F = buffer[3],
-            MessageType = (MessageType)buffer[5],
-            Id = BinaryPrimitives.ReadInt32BigEndian(buffer[6..]),
+            F = Unsafe.Add(ref r0, 3u),
+            MessageType = (MessageType)Unsafe.Add(ref r0, 5u),
+            Id = BinaryPrimitives.ReadInt32BigEndian(span[6..]),
         };
     }
 }

@@ -7,10 +7,10 @@ namespace Secs4Net;
 partial class Item
 {
     public static Item L(IEnumerable<Item> items) => L(items.ToArray());
-    public static Item L(params Item[] items) => items.Length > 0 ? new ListItem(SecsFormat.List, items) : L();
+    public static Item L(params Item[] items) => items.Length > 0 ? new ListItem(items) : EmptyL;
 
-    public static Item A(string? value) => string.IsNullOrEmpty(value) ? A() : new StringItem(SecsFormat.ASCII, value);
-    public static Item J(string? value) => string.IsNullOrEmpty(value) ? J() : new StringItem(SecsFormat.JIS8, value);
+    public static Item A(string? value) => string.IsNullOrEmpty(value) ? EmptyA : new StringItem(SecsFormat.ASCII, value);
+    public static Item J(string? value) => string.IsNullOrEmpty(value) ? EmptyJ : new StringItem(SecsFormat.JIS8, value);
 
     [MethodImpl(AggressiveInlining)] public static Item B(params byte[] value) => B(value.AsMemory());
     [MethodImpl(AggressiveInlining)] public static Item B(IEnumerable<byte> value) => B(value.ToArray());
@@ -87,4 +87,20 @@ partial class Item
     [MethodImpl(AggressiveInlining)] public static Item F4() => EmptyF4;
     [MethodImpl(AggressiveInlining)] public static Item F8() => EmptyF8;
     [MethodImpl(AggressiveInlining)] public static Item Boolean() => EmptyBoolean;
+
+    private static readonly Item EmptyL = new ListItem([]);
+    private static readonly Item EmptyA = new StringItem(SecsFormat.ASCII, string.Empty);
+    private static readonly Item EmptyJ = new StringItem(SecsFormat.JIS8, string.Empty);
+    private static readonly Item EmptyBoolean = Boolean(Memory<bool>.Empty);
+    private static readonly Item EmptyBinary = B(Memory<byte>.Empty);
+    private static readonly Item EmptyU1 = U1(Memory<byte>.Empty);
+    private static readonly Item EmptyU2 = U2(Memory<ushort>.Empty);
+    private static readonly Item EmptyU4 = U4(Memory<uint>.Empty);
+    private static readonly Item EmptyU8 = U8(Memory<ulong>.Empty);
+    private static readonly Item EmptyI1 = I1(Memory<sbyte>.Empty);
+    private static readonly Item EmptyI2 = I2(Memory<short>.Empty);
+    private static readonly Item EmptyI4 = I4(Memory<int>.Empty);
+    private static readonly Item EmptyI8 = I8(Memory<long>.Empty);
+    private static readonly Item EmptyF4 = F4(Memory<float>.Empty);
+    private static readonly Item EmptyF8 = F8(Memory<double>.Empty);
 }

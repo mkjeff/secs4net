@@ -68,7 +68,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "BinaryPrimitives")]
+    //[Benchmark(Description = "BinaryPrimitives")]
     [BenchmarkCategory("UInt16")]
     public int UInt16_BinaryPrimitives()
     {
@@ -77,7 +77,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "ForeachRef")]
+    //[Benchmark(Description = "ForeachRef")]
     [BenchmarkCategory("UInt16")]
     public void UInt16_ForeachRef()
     {
@@ -108,7 +108,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "BinaryPrimitives")]
+    //[Benchmark(Description = "BinaryPrimitives")]
     [BenchmarkCategory("UInt32")]
     public int UInt32_BinaryPrimitives()
     {
@@ -117,7 +117,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "ForeachRef")]
+    //[Benchmark(Description = "ForeachRef")]
     [BenchmarkCategory("UInt32")]
     public void UInt32_ForeachRef()
     {
@@ -148,7 +148,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "BinaryPrimitives")]
+    //[Benchmark(Description = "BinaryPrimitives")]
     [BenchmarkCategory("UInt64")]
     public int UInt64_BinaryPrimitives()
     {
@@ -157,7 +157,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "ForeachRef")]
+    //[Benchmark(Description = "ForeachRef")]
     [BenchmarkCategory("UInt64")]
     public void UInt64_ForeachRef()
     {
@@ -188,7 +188,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "BinaryPrimitives")]
+    //[Benchmark(Description = "BinaryPrimitives")]
     [BenchmarkCategory("Int16")]
     public int Int16_BinaryPrimitives()
     {
@@ -197,7 +197,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "ForeachRef")]
+    //[Benchmark(Description = "ForeachRef")]
     [BenchmarkCategory("Int16")]
     public void Int16_ForeachRef()
     {
@@ -228,7 +228,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "BinaryPrimitives")]
+    //[Benchmark(Description = "BinaryPrimitives")]
     [BenchmarkCategory("Int32")]
     public int Int32_BinaryPrimitives()
     {
@@ -237,7 +237,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "ForeachRef")]
+    //[Benchmark(Description = "ForeachRef")]
     [BenchmarkCategory("Int32")]
     public void Int32_ForeachRef()
     {
@@ -268,7 +268,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "BinaryPrimitives")]
+    //[Benchmark(Description = "BinaryPrimitives")]
     [BenchmarkCategory("Int64")]
     public int Int64_BinaryPrimitives()
     {
@@ -277,7 +277,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "ForeachRef")]
+    //[Benchmark(Description = "ForeachRef")]
     [BenchmarkCategory("Int64")]
     public void Int64_ForeachRef()
     {
@@ -308,7 +308,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "BinaryPrimitives")]
+    //[Benchmark(Description = "BinaryPrimitives")]
     [BenchmarkCategory("Single")]
     public int Single_BinaryPrimitives()
     {
@@ -317,17 +317,13 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "ForeachRef")]
+    //[Benchmark(Description = "ForeachRef")]
     [BenchmarkCategory("Single")]
     public void Single_ForeachRef()
     {
         foreach (ref var a in _single.AsSpan())
         {
-#if NET
-            a = BinaryPrimitives.ReadSingleBigEndian(a.AsBytes());
-#else
-            a = ReverseHelper.ReadSingleBigEndian(a.AsBytes());
-#endif
+            ReverseHelper.ReverseEndianness(ref a);
         }
     }
 
@@ -352,7 +348,7 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "BinaryPrimitives")]
+    //[Benchmark(Description = "BinaryPrimitives")]
     [BenchmarkCategory("Double")]
     public int Double_BinaryPrimitives()
     {
@@ -361,17 +357,13 @@ public class ReverseEndianness
         return data.Length;
     }
 
-    [Benchmark(Description = "ForeachRef")]
+    //[Benchmark(Description = "ForeachRef")]
     [BenchmarkCategory("Double")]
     public void Double_ForeachRef()
     {
         foreach (ref var a in _double.AsSpan())
         {
-#if NET
-            a = BinaryPrimitives.ReadDoubleBigEndian(a.AsBytes());
-#else
-            a = ReverseHelper.ReadDoubleBigEndian(a.AsBytes());
-#endif
+            ReverseHelper.ReverseEndianness(ref a);
         }
     }
 }
