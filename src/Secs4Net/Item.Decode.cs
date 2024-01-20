@@ -77,8 +77,8 @@ public partial class Item
         return (format, length) switch
         {
             (SecsFormat.ASCII, 0) => A(),
-            (SecsFormat.ASCII, >= 256) => A(Encoding.ASCII.GetString(bytes)),
-            (SecsFormat.ASCII, _) => A(DecodePooledString(length, bytes, Encoding.ASCII)),
+            (SecsFormat.ASCII, >= 256) => A(ASCIIEncoding.GetString(bytes)),
+            (SecsFormat.ASCII, _) => A(DecodePooledString(length, bytes, ASCIIEncoding)),
 
             (SecsFormat.JIS8, 0) => J(),
             (SecsFormat.JIS8, >= 256) => J(JIS8Encoding.GetString(bytes)),
