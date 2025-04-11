@@ -286,6 +286,11 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
                     await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory()[..count], cancellation).ConfigureAwait(false);
                 }
 #endif
+                if (count == 0)
+                {
+                    Reconnect();
+                    break;
+                }
             }
         }
         catch (Exception ex)
