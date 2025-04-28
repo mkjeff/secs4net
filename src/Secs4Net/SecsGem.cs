@@ -23,8 +23,9 @@ public interface ISecsGem
     /// Send a message to device asynchronously and get reply message.
     /// </summary>
     /// <param name="message">primary message</param>
+    /// <param name="id">message id</param>
     /// <returns>Secondary message, or null if <paramref name="message" />'s <see cref="SecsMessage.ReplyExpected"/> is <see langword="false" /> </returns>
-    Task<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default);
+    Task<SecsMessage> SendAsync(SecsMessage message,int id = default, CancellationToken cancellation = default);
 }
 
 public sealed class SecsGem : ISecsGem, IDisposable
@@ -131,8 +132,8 @@ public sealed class SecsGem : ISecsGem, IDisposable
         }
     }
 
-    public Task<SecsMessage> SendAsync(SecsMessage message, CancellationToken cancellation = default)
-        => SendDataMessageAsync(message, MessageIdGenerator.NewId(), cancellation);
+    public Task<SecsMessage> SendAsync(SecsMessage message, int id = default, CancellationToken cancellation = default)
+        => SendDataMessageAsync(message, id == default ? MessageIdGenerator.NewId() : id, cancellation);
 
     public IAsyncEnumerable<PrimaryMessageWrapper> GetPrimaryMessageAsync(CancellationToken cancellation = default)
         => _primaryMessageChannel.Reader.ReadAllAsync(cancellation);
