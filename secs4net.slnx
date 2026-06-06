@@ -1,0 +1,29 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+  </Configurations>
+  <Folder Name="/sample/">
+    <Project Path="samples/DeviceWorkerService/DeviceWorkerService.csproj" />
+    <Project Path="samples/SecsDevice/SecsDevice.csproj" />
+    <Project Path="samples/WpfVisualizer/WpfVisualizer.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path=".nuget/NuGet.Config" />
+    <File Path="Directory.Build.props" />
+    <File Path="LINQPad.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Secs4Net.Json/Secs4Net.Json.csproj" />
+    <Project Path="src/Secs4Net.Sml/Secs4Net.Sml.csproj" />
+    <Project Path="src/Secs4Net/Secs4Net.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/Benchmarks/Benchmarks.csproj" />
+    <Project Path="test/Secs4Net.Json.UnitTests/Secs4Net.Json.UnitTests.csproj" />
+    <Project Path="test/Secs4Net.Sml.UnitTests/Secs4Net.Sml.UnitTests.csproj" />
+    <Project Path="test/Secs4Net.UnitTests/Secs4Net.UnitTests.csproj" />
+  </Folder>
+</Solution>
