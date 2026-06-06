@@ -1,9 +1,8 @@
 ﻿using System.Buffers.Binary;
-using System.Runtime.CompilerServices;
 
 namespace Secs4Net.Extensions;
 
-public unsafe static class ReverseEndiannessHelper<T> where T : unmanaged
+public static unsafe class ReverseEndiannessHelper<T> where T : unmanaged
 {
     public static readonly delegate*<Span<T>, void> Reverse;
 
@@ -51,7 +50,7 @@ public unsafe static class ReverseEndiannessHelper<T> where T : unmanaged
     }
 }
 
-public unsafe static class ReverseHelper
+public static unsafe class ReverseHelper
 {
     internal static readonly delegate*<Span<ushort>, void> ReverseUInt16 = &ReverseEndianness;
     internal static readonly delegate*<Span<uint>, void> ReverseUInt32 = &ReverseEndianness;
@@ -62,101 +61,67 @@ public unsafe static class ReverseHelper
     internal static readonly delegate*<Span<float>, void> ReverseSingle = &ReverseEndianness;
     internal static readonly delegate*<Span<double>, void> ReverseDouble = &ReverseEndianness;
 
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ReverseEndianness(this Span<short> span)
+    private static void ReverseEndianness(this Span<short> span)
     {
-        ref var rStart = ref MemoryMarshal.GetReference(span);
-        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
-        while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
+        foreach (ref var a in span)
         {
-            rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, 1u);
+            a = BinaryPrimitives.ReverseEndianness(a);
         }
     }
 
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ReverseEndianness(this Span<ushort> span)
+    private static void ReverseEndianness(this Span<ushort> span)
     {
-        ref var rStart = ref MemoryMarshal.GetReference(span);
-        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
-        while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
+        foreach (ref var a in span)
         {
-            rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, 1u);
+            a = BinaryPrimitives.ReverseEndianness(a);
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ReverseEndianness(this Span<int> span)
+    private static void ReverseEndianness(this Span<int> span)
     {
-        ref var rStart = ref MemoryMarshal.GetReference(span);
-        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
-        while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
+        foreach (ref var a in span)
         {
-            rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, 1u);
+            a = BinaryPrimitives.ReverseEndianness(a);
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ReverseEndianness(this Span<uint> span)
+    private static void ReverseEndianness(this Span<uint> span)
     {
-        ref var rStart = ref MemoryMarshal.GetReference(span);
-        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
-        while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
+        foreach (ref var a in span)
         {
-            rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, 1u);
+            a = BinaryPrimitives.ReverseEndianness(a);
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ReverseEndianness(this Span<long> span)
+    private static void ReverseEndianness(this Span<long> span)
     {
-        ref var rStart = ref MemoryMarshal.GetReference(span);
-        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
-        while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
+        foreach (ref var a in span)
         {
-            rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, 1u);
+            a = BinaryPrimitives.ReverseEndianness(a);
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ReverseEndianness(this Span<ulong> span)
+    private static void ReverseEndianness(this Span<ulong> span)
     {
-        ref var rStart = ref MemoryMarshal.GetReference(span);
-        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
-        while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
+        foreach (ref var a in span)
         {
-            rStart = BinaryPrimitives.ReverseEndianness(rStart);
-            rStart = ref Unsafe.Add(ref rStart, 1u);
+            a = BinaryPrimitives.ReverseEndianness(a);
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ReverseEndianness(this Span<float> span)
+    private static void ReverseEndianness(this Span<float> span)
     {
-        ref var rStart = ref MemoryMarshal.GetReference(span);
-        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
-        while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
+        foreach (ref var a in span)
         {
-            rStart = BinaryPrimitives.ReadSingleBigEndian(rStart.AsReadOnlyBytes());
-            rStart = ref Unsafe.Add(ref rStart, 1u);
+            a = BinaryPrimitives.ReadSingleBigEndian(a.AsReadOnlyBytes());
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ReverseEndianness(this Span<double> span)
+    private static void ReverseEndianness(this Span<double> span)
     {
-        ref var rStart = ref MemoryMarshal.GetReference(span);
-        ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
-        while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
+        foreach (ref var a in span)
         {
-            rStart = BinaryPrimitives.ReadDoubleBigEndian(rStart.AsReadOnlyBytes());
-            rStart = ref Unsafe.Add(ref rStart, 1u);
+            a = BinaryPrimitives.ReadDoubleBigEndian(a.AsReadOnlyBytes());
         }
     }
 }

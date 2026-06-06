@@ -1,45 +1,60 @@
 ```
 
-BenchmarkDotNet v0.13.12, Windows 11 (10.0.22631.3007/23H2/2023Update/SunValley3)
-Unknown processor
-.NET SDK 8.0.101
-  [Host]     : .NET 8.0.1 (8.0.123.58001), X64 RyuJIT AVX2
-  Job-ISCVXC : .NET 6.0.26 (6.0.2623.60508), X64 RyuJIT AVX2
-  Job-DINVIM : .NET 8.0.1 (8.0.123.58001), X64 RyuJIT AVX2
-  Job-OKZTLT : .NET Framework 4.8.1 (4.8.9181.0), X64 RyuJIT VectorSize=256
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26200.8524/25H2/2025Update/HudsonValley2)
+12th Gen Intel Core i7-12700 2.10GHz, 1 CPU, 20 logical and 12 physical cores
+.NET SDK 10.0.300
+  [Host]    : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+  .NET 10.0 : .NET 10.0.8 (10.0.8, 10.0.826.23019), X64 RyuJIT x86-64-v3
+  .NET 8.0  : .NET 8.0.27 (8.0.27, 8.0.2726.22922), X64 RyuJIT x86-64-v3
 
 
 ```
-| Method                  | Runtime            | Categories | Size | Mean      | Error    | StdDev    | Median    | Ratio        | RatioSD |
-|------------------------ |------------------- |----------- |----- |----------:|---------:|----------:|----------:|-------------:|--------:|
-| ReverseEndiannessHelper | .NET 6.0           | Double     | 64   |  36.78 ns | 0.848 ns |  2.501 ns |  37.53 ns | 6.24x faster |   0.69x |
-| ReverseEndiannessHelper | .NET 8.0           | Double     | 64   |  33.94 ns | 0.698 ns |  1.737 ns |  34.65 ns | 6.69x faster |   0.52x |
-| ReverseEndiannessHelper | .NET Framework 4.8 | Double     | 64   | 226.66 ns | 4.501 ns | 11.457 ns | 231.04 ns |     baseline |         |
-|                         |                    |            |      |           |          |           |           |              |         |
-| ReverseEndiannessHelper | .NET 6.0           | Int16      | 64   |  35.47 ns | 0.911 ns |  2.685 ns |  36.48 ns | 2.10x faster |   0.20x |
-| ReverseEndiannessHelper | .NET 8.0           | Int16      | 64   |  39.72 ns | 0.805 ns |  1.047 ns |  40.22 ns | 1.87x faster |   0.11x |
-| ReverseEndiannessHelper | .NET Framework 4.8 | Int16      | 64   |  74.31 ns | 1.507 ns |  3.640 ns |  75.52 ns |     baseline |         |
-|                         |                    |            |      |           |          |           |           |              |         |
-| ReverseEndiannessHelper | .NET 6.0           | Int32      | 64   |  28.68 ns | 0.594 ns |  1.646 ns |  29.17 ns | 2.78x faster |   0.25x |
-| ReverseEndiannessHelper | .NET 8.0           | Int32      | 64   |  27.09 ns | 0.562 ns |  1.481 ns |  27.70 ns | 2.94x faster |   0.21x |
-| ReverseEndiannessHelper | .NET Framework 4.8 | Int32      | 64   |  78.90 ns | 1.588 ns |  2.653 ns |  80.29 ns |     baseline |         |
-|                         |                    |            |      |           |          |           |           |              |         |
-| ReverseEndiannessHelper | .NET 6.0           | Int64      | 64   |  29.44 ns | 0.578 ns |  0.618 ns |  29.59 ns | 3.93x faster |   0.90x |
-| ReverseEndiannessHelper | .NET 8.0           | Int64      | 64   |  39.21 ns | 0.904 ns |  2.665 ns |  39.99 ns | 3.28x faster |   0.29x |
-| ReverseEndiannessHelper | .NET Framework 4.8 | Int64      | 64   | 128.85 ns | 4.954 ns | 14.606 ns | 134.95 ns |     baseline |         |
-|                         |                    |            |      |           |          |           |           |              |         |
-| ReverseEndiannessHelper | .NET 6.0           | Single     | 64   |  37.45 ns | 0.761 ns |  1.503 ns |  38.10 ns | 4.59x faster |   0.32x |
-| ReverseEndiannessHelper | .NET 8.0           | Single     | 64   |  34.50 ns | 0.685 ns |  0.914 ns |  34.75 ns | 4.97x faster |   0.32x |
-| ReverseEndiannessHelper | .NET Framework 4.8 | Single     | 64   | 172.60 ns | 3.468 ns |  8.763 ns | 176.16 ns |     baseline |         |
-|                         |                    |            |      |           |          |           |           |              |         |
-| ReverseEndiannessHelper | .NET 6.0           | UInt16     | 64   |  31.14 ns | 0.494 ns |  0.462 ns |  31.27 ns | 1.96x faster |   0.24x |
-| ReverseEndiannessHelper | .NET 8.0           | UInt16     | 64   |  36.98 ns | 1.316 ns |  3.880 ns |  37.95 ns | 1.73x faster |   0.17x |
-| ReverseEndiannessHelper | .NET Framework 4.8 | UInt16     | 64   |  63.23 ns | 1.307 ns |  3.853 ns |  64.30 ns |     baseline |         |
-|                         |                    |            |      |           |          |           |           |              |         |
-| ReverseEndiannessHelper | .NET 6.0           | UInt32     | 64   |  28.75 ns | 0.668 ns |  1.970 ns |  29.48 ns | 2.83x faster |   0.38x |
-| ReverseEndiannessHelper | .NET 8.0           | UInt32     | 64   |  27.35 ns | 0.615 ns |  1.813 ns |  28.06 ns | 2.96x faster |   0.36x |
-| ReverseEndiannessHelper | .NET Framework 4.8 | UInt32     | 64   |  79.82 ns | 1.614 ns |  3.187 ns |  81.08 ns |     baseline |         |
-|                         |                    |            |      |           |          |           |           |              |         |
-| ReverseEndiannessHelper | .NET 6.0           | UInt64     | 64   |  29.49 ns | 0.597 ns |  0.929 ns |  29.78 ns | 2.41x faster |   0.09x |
-| ReverseEndiannessHelper | .NET 8.0           | UInt64     | 64   |  38.88 ns | 0.978 ns |  2.884 ns |  40.00 ns | 1.91x faster |   0.36x |
-| ReverseEndiannessHelper | .NET Framework 4.8 | UInt64     | 64   |  70.88 ns | 0.913 ns |  1.550 ns |  70.64 ns |     baseline |         |
+| Method        | Runtime   | Categories | Size | Mean     | Error    | StdDev   | Median   | Ratio        | RatioSD |
+|-------------- |---------- |----------- |----- |---------:|---------:|---------:|---------:|-------------:|--------:|
+| &#39;Unsafe Loop&#39; | .NET 10.0 | Double     | 64   | 20.69 ns | 0.429 ns | 0.728 ns | 20.95 ns | 1.07x faster |   0.04x |
+| &#39;Unsafe Loop&#39; | .NET 8.0  | Double     | 64   | 22.19 ns | 0.291 ns | 0.272 ns | 22.21 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| ForeachRef    | .NET 10.0 | Double     | 64   | 19.25 ns | 0.358 ns | 0.453 ns | 19.35 ns | 1.48x faster |   0.04x |
+| ForeachRef    | .NET 8.0  | Double     | 64   | 28.45 ns | 0.215 ns | 0.191 ns | 28.46 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| &#39;Unsafe Loop&#39; | .NET 10.0 | Int16      | 64   | 15.81 ns | 0.339 ns | 0.929 ns | 15.66 ns | 1.01x slower |   0.09x |
+| &#39;Unsafe Loop&#39; | .NET 8.0  | Int16      | 64   | 15.71 ns | 0.390 ns | 1.150 ns | 15.03 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| ForeachRef    | .NET 10.0 | Int16      | 64   | 15.57 ns | 0.333 ns | 0.312 ns | 15.46 ns | 1.18x faster |   0.07x |
+| ForeachRef    | .NET 8.0  | Int16      | 64   | 18.41 ns | 0.393 ns | 1.055 ns | 18.39 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| &#39;Unsafe Loop&#39; | .NET 10.0 | Int32      | 64   | 15.53 ns | 0.330 ns | 0.711 ns | 15.37 ns | 1.12x faster |   0.07x |
+| &#39;Unsafe Loop&#39; | .NET 8.0  | Int32      | 64   | 17.40 ns | 0.370 ns | 0.667 ns | 17.62 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| ForeachRef    | .NET 10.0 | Int32      | 64   | 16.38 ns | 0.352 ns | 0.933 ns | 16.19 ns | 1.40x faster |   0.10x |
+| ForeachRef    | .NET 8.0  | Int32      | 64   | 22.79 ns | 0.479 ns | 1.071 ns | 23.11 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| &#39;Unsafe Loop&#39; | .NET 10.0 | Int64      | 64   | 16.35 ns | 0.351 ns | 1.013 ns | 16.29 ns | 1.06x slower |   0.07x |
+| &#39;Unsafe Loop&#39; | .NET 8.0  | Int64      | 64   | 15.48 ns | 0.328 ns | 0.426 ns | 15.38 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| ForeachRef    | .NET 10.0 | Int64      | 64   | 17.40 ns | 0.372 ns | 1.011 ns | 17.56 ns | 1.01x faster |   0.06x |
+| ForeachRef    | .NET 8.0  | Int64      | 64   | 17.58 ns | 0.281 ns | 0.249 ns | 17.53 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| &#39;Unsafe Loop&#39; | .NET 10.0 | Single     | 64   | 18.56 ns | 0.351 ns | 0.328 ns | 18.61 ns | 1.11x faster |   0.05x |
+| &#39;Unsafe Loop&#39; | .NET 8.0  | Single     | 64   | 20.63 ns | 0.436 ns | 0.786 ns | 20.81 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| ForeachRef    | .NET 10.0 | Single     | 64   | 16.43 ns | 0.336 ns | 0.694 ns | 16.29 ns | 1.24x faster |   0.05x |
+| ForeachRef    | .NET 8.0  | Single     | 64   | 20.40 ns | 0.144 ns | 0.127 ns | 20.33 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| &#39;Unsafe Loop&#39; | .NET 10.0 | UInt16     | 64   | 21.31 ns | 0.459 ns | 0.840 ns | 21.62 ns | 1.00x faster |   0.04x |
+| &#39;Unsafe Loop&#39; | .NET 8.0  | UInt16     | 64   | 21.33 ns | 0.259 ns | 0.242 ns | 21.33 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| ForeachRef    | .NET 10.0 | UInt16     | 64   | 16.48 ns | 0.354 ns | 0.933 ns | 16.60 ns | 1.08x faster |   0.07x |
+| ForeachRef    | .NET 8.0  | UInt16     | 64   | 17.67 ns | 0.376 ns | 0.607 ns | 17.46 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| &#39;Unsafe Loop&#39; | .NET 10.0 | UInt32     | 64   | 17.55 ns | 0.374 ns | 0.772 ns | 17.79 ns | 1.03x faster |   0.05x |
+| &#39;Unsafe Loop&#39; | .NET 8.0  | UInt32     | 64   | 18.06 ns | 0.360 ns | 0.319 ns | 18.09 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| ForeachRef    | .NET 10.0 | UInt32     | 64   | 16.44 ns | 0.351 ns | 0.875 ns | 16.40 ns | 1.43x faster |   0.08x |
+| ForeachRef    | .NET 8.0  | UInt32     | 64   | 23.39 ns | 0.357 ns | 0.334 ns | 23.48 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| &#39;Unsafe Loop&#39; | .NET 10.0 | UInt64     | 64   | 21.45 ns | 0.273 ns | 0.255 ns | 21.56 ns | 1.01x faster |   0.02x |
+| &#39;Unsafe Loop&#39; | .NET 8.0  | UInt64     | 64   | 21.59 ns | 0.412 ns | 0.385 ns | 21.79 ns |     baseline |         |
+|               |           |            |      |          |          |          |          |              |         |
+| ForeachRef    | .NET 10.0 | UInt64     | 64   | 16.96 ns | 0.363 ns | 1.019 ns | 16.57 ns | 1.05x faster |   0.06x |
+| ForeachRef    | .NET 8.0  | UInt64     | 64   | 17.69 ns | 0.221 ns | 0.173 ns | 17.66 ns |     baseline |         |
