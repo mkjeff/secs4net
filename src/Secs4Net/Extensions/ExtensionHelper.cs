@@ -32,7 +32,6 @@ public static class SecsExtension
         static string ThrowHelper(SecsFormat format) => throw new ArgumentOutOfRangeException(nameof(format), (int)format, "Invalid enum value");
     }
 
-#if NET
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static unsafe Span<byte> AsBytes<T>(this scoped ref T value) where T : unmanaged
        => MemoryMarshal.CreateSpan(ref Unsafe.As<T, byte>(ref value), sizeof(T));
@@ -40,51 +39,4 @@ public static class SecsExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static unsafe ReadOnlySpan<byte> AsReadOnlyBytes<T>(this scoped ref T value) where T : unmanaged
         => MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), sizeof(T));
-#else
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static unsafe Span<byte> AsBytes<T>(this scoped ref T value) where T : unmanaged
-        => new(Unsafe.AsPointer(ref value), sizeof(T));
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static unsafe ReadOnlySpan<byte> AsReadOnlyBytes<T>(this scoped ref T value) where T : unmanaged
-        => new(Unsafe.AsPointer(ref value), sizeof(T));
-#endif
-
-#if !NET
-    internal static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
-    {
-        var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        // This disposes the registration as soon as one of the tasks trigger
-        using (cancellationToken.Register(static state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
-        {
-            var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
-            if (resultTask == tcs.Task)
-            {
-                // Operation cancelled
-                throw new OperationCanceledException(cancellationToken);
-            }
-
-            await task.ConfigureAwait(false);
-        }
-    }
-
-    internal static async Task<T> WithCancellation<T>(this Task<T> task, CancellationToken cancellationToken)
-    {
-        var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        // This disposes the registration as soon as one of the tasks trigger
-        using (cancellationToken.Register(static state => ((TaskCompletionSource<object?>)state!).TrySetResult(null), tcs))
-        {
-            var resultTask = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
-            if (resultTask == tcs.Task)
-            {
-                // Operation cancelled
-                throw new OperationCanceledException(cancellationToken);
-            }
-
-            return await task.ConfigureAwait(false);
-        }
-    }
-#endif
 }

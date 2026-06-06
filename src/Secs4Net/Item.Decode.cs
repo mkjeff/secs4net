@@ -12,11 +12,7 @@ public partial class Item
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void DecodeFormatAndLengthByteCount(in ReadOnlySequence<byte> sourceBytes, out SecsFormat format, out byte lengthByteCount)
     {
-#if NET
         var formatSeqFirstSpan = sourceBytes.FirstSpan;
-#else
-        var formatSeqFirstSpan = sourceBytes.First.Span;
-#endif
 
 #if DEBUG
         byte formatAndLengthByte = formatSeqFirstSpan[0];

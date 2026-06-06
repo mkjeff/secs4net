@@ -13,11 +13,7 @@ public static class JsonReader
     public static Item ToItem(this JsonElement jsonObject)
     {
         var json = jsonObject.EnumerateObject().First();
-#if NET
         var format = Enum.Parse<SecsFormat>(json.Name);
-#else
-        Enum.TryParse<SecsFormat>(json.Name, out var format);
-#endif
         var value = json.Value;
         return format switch
         {

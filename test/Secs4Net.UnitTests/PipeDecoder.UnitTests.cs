@@ -135,11 +135,7 @@ public class PipeDecoderUnitTests
 
         _ = Task.Run(async () =>
         {
-#if NET
             var random = Random.Shared;
-#else
-            var random = new Random(13); 
-#endif
             foreach (var chunk in new ChunkedReadOnlyMemory<byte>(encodedBytes, size: 23))
             {
                 await Task.Delay(200); //simulate a slow connection

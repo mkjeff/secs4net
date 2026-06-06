@@ -103,28 +103,18 @@ public sealed class SecsGem : ISecsGem, IDisposable
                 return null!;
             }
 
-#if NET
             return await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T3), cancellation).ConfigureAwait(false);
-#else
-            if (await Task.WhenAny(token.Task, Task.Delay(T3, cancellation)).ConfigureAwait(false) != token.Task)
-            {
-                throw new SecsException(message, Resources.T3Timeout);
-            }
-            return token.Task.Result;
-#endif
         }
         catch (SocketException)
         {
             _hsmsConnector.Reconnect();
             throw;
         }
-#if NET
         catch (TimeoutException)
         {
             _logger.Error($"T3 Timeout[id=0x{id:X8}]: {T3 / 1000} sec.");
             throw new SecsException(message, Resources.T3Timeout);
         }
-#endif
         finally
         {
             _replyExpectedMessages.TryRemove(id, out _);
@@ -218,11 +208,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NET 
     public static void EncodeMessage(SecsMessage msg, int id, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
-#else
-    public static unsafe void EncodeMessage(SecsMessage msg, int id, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
-#endif
     {
         buffer.GetSpan(14);
         // reserve 4 byte for total length
@@ -238,11 +224,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
         }.EncodeTo(buffer);
         msg.SecsItem?.EncodeTo(buffer);
 
-#if NET
         var lengthBytes = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(buffer.WrittenSpan), 4);
-#else
-        var lengthBytes = new Span<byte>(Unsafe.AsPointer(ref MemoryMarshal.GetReference(buffer.WrittenSpan)), 4);
-#endif
         BinaryPrimitives.WriteInt32BigEndian(lengthBytes, buffer.WrittenCount - sizeof(int));
     }
 

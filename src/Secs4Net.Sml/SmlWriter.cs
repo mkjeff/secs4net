@@ -199,11 +199,7 @@ public static class SmlWriter
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void WriteArray<T>(this TextWriter writer, Memory<T> memory)
-#if NET
             where T : unmanaged, ISpanFormattable
-#else
-            where T : unmanaged, IConvertible
-#endif
     {
         if (memory.IsEmpty)
         {
@@ -223,11 +219,7 @@ public static class SmlWriter
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void WriteValue(TextWriter writer, T value)
-#if NET
                 => writer.WriteSpanFormattableValue(value);
-#else
-                => writer.Write(value.ToString(CultureInfo.InvariantCulture));
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -251,11 +243,7 @@ public static class SmlWriter
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void WriteValue(TextWriter writer, float value)
-#if NET6_0
-                => writer.WriteSpanFormattableValue(value);
-#else
-                => writer.Write(value.ToString("G9", CultureInfo.InvariantCulture));
-#endif
+            => writer.WriteSpanFormattableValue(value);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -310,7 +298,6 @@ public static class SmlWriter
         static char GetHexChar(int i) => (i < 10) ? (char)(i + 0x30) : (char)(i - 10 + 0x41);
     }
 
-#if NET
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void WriteSpanFormattableValue<T>(this TextWriter writer, T value) where T : unmanaged, ISpanFormattable
     {
@@ -324,7 +311,6 @@ public static class SmlWriter
             writer.Write(value.ToString());
         }
     }
-#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static string ToSml(this SecsFormat format)

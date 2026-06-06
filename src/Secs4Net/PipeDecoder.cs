@@ -227,9 +227,7 @@ public sealed class PipeDecoder
         return SlowPipeReadAsync(reader, required, cancellation);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-#if NET
         [AsyncMethodBuilder(typeof(PoolingAsyncValueTaskMethodBuilder<>))]
-#endif
         static async ValueTask<ReadOnlySequence<byte>> SlowPipeReadAsync(PipeReader reader, int required, CancellationToken cancellation)
         {
             while (true)

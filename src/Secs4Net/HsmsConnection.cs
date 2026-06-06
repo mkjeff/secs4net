@@ -11,9 +11,7 @@ using System.Runtime.Versioning;
 
 namespace Secs4Net;
 
-#if NET
 [UnsupportedOSPlatform("browser")]
-#endif
 public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
 {
     public event EventHandler<ConnectionState>? ConnectionChanged;
@@ -70,9 +68,6 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     private readonly Timer _timerLinkTest;
     private readonly ConcurrentDictionary<int, ValueTaskCompletionSource<MessageType>> _replyExpectedMsgs = new();
     private readonly int _socketReceiveBufferSize;
-#if !NET
-    private readonly byte[] _socketReceiveBuffer;
-#endif
     private readonly ISecsGemLogger _logger;
     private readonly PipeDecoder _pipeDecoder;
     private readonly Pipe _pipe;
@@ -98,9 +93,6 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         Port = options.Port;
         IsActive = options.IsActive;
         _socketReceiveBufferSize = options.SocketReceiveBufferSize;
-#if !NET
-        _socketReceiveBuffer = new byte[_socketReceiveBufferSize];
-#endif
 
         Task.Run(() => HandleControlMessagesAsync(_cancellationSourceForControlMessageProcessing.Token), _cancellationSourceForControlMessageProcessing.Token);
 
@@ -148,11 +140,8 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
                             Blocking = false,
                             ReceiveBufferSize = _socketReceiveBufferSize,
                         };
-#if NET
+
                         await socket.ConnectAsync(IpAddress, Port, cancellation).ConfigureAwait(false);
-#else
-                        await socket.ConnectAsync(IpAddress, Port).WithCancellation(cancellation).ConfigureAwait(false);
-#endif
 
                         _socket = socket;
                         CommunicationStateChanging(ConnectionState.Connected);
@@ -193,11 +182,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
                     CommunicationStateChanging(ConnectionState.Connecting);
                     try
                     {
-#if NET
                         _socket = await server.AcceptAsync(cancellation).ConfigureAwait(false);
-#else
-                        _socket = await server.AcceptAsync().WithCancellation(cancellation).ConfigureAwait(false);
-#endif
                         _socket.Blocking = false;
                         _socket.ReceiveBufferSize = _socketReceiveBufferSize;
                         CommunicationStateChanging(ConnectionState.Connected);
@@ -274,18 +259,11 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
             while (true)
             {
                 Debug.Assert(_socket != null);
-#if NET
                 var memory = decoderInput.GetMemory(_socketReceiveBufferSize);
                 var count = await _socket!.ReceiveAsync(memory, SocketFlags.None, cancellation).ConfigureAwait(false);
                 decoderInput.Advance(count);
                 await decoderInput.FlushAsync(cancellation).ConfigureAwait(false);
-#else
-                var count = await _socket!.ReceiveAsync(new ArraySegment<byte>(_socketReceiveBuffer), SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false);
-                if (count > 0)
-                {
-                    await decoderInput.WriteAsync(_socketReceiveBuffer.AsMemory()[..count], cancellation).ConfigureAwait(false);
-                }
-#endif
+
                 if (count == 0)
                 {
                     Reconnect();
@@ -441,24 +419,14 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
             _logger.Info("Sent Control Message: " + msgType);
             if (_replyExpectedMsgs.ContainsKey(id))
             {
-#if NET
                 await token.Task.WaitAsync(TimeSpan.FromMilliseconds(T6), cancellation).ConfigureAwait(false);
-#else
-                if (await Task.WhenAny(token.Task, Task.Delay(T6, cancellation)).ConfigureAwait(false) != token.Task)
-                {
-                    _logger.Error($"T6 Timeout[id=0x{id:X8}]: {T6 / 1000} sec.");
-                    CommunicationStateChanging(ConnectionState.Retry);
-                }
-#endif
             }
         }
-#if NET
         catch (TimeoutException)
         {
             _logger.Error($"T6 Timeout[id=0x{id:X8}]: {T6 / 1000} sec.");
             CommunicationStateChanging(ConnectionState.Retry);
         }
-#endif
         catch (Exception ex)
         {
             _logger.Error($"Unknown exception occurred when send control messages", ex);
@@ -519,7 +487,6 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     Task ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
         => SendAsync(buffer, cancellation);
 
-#if NET
     private async Task SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
     {
         await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
@@ -538,30 +505,6 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
             _sendLock.Release();
         }
     }
-#else
-    private async Task SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
-    {
-        if (!System.Runtime.InteropServices.MemoryMarshal.TryGetArray(buffer, out var arr))
-        {
-            throw new InvalidOperationException();
-        }
-        await _sendLock.WaitAsync(cancellation).ConfigureAwait(false);
-        try
-        {
-            do
-            {
-                Debug.Assert(_socket != null);
-                var length = await _socket.SendAsync(arr, SocketFlags.None).WithCancellation(cancellation).ConfigureAwait(false);
-                arr = new ArraySegment<byte>(arr.Array, arr.Offset + length, arr.Count - length);
-                Debug.WriteLine($"Socket sent {length} bytes.");
-            } while (arr.Count > 0);
-        }
-        finally
-        {
-            _sendLock.Release();
-        }
-    }
-#endif
 
     IAsyncEnumerable<(MessageHeader header, Item? rootItem)> ISecsConnection.GetDataMessages(CancellationToken cancellation)
         => _pipeDecoder.GetDataMessages(cancellation);

@@ -38,19 +38,10 @@ public static class SmlReader
     private static async Task<SecsMessage> ToSecsMessageAsync(this TextReader sr, Stack<List<Item>> stack)
     {
         var line = await sr.ReadLineAsync().ConfigureAwait(false);
-#if NET
         var (name, s, f, replyExpected) = ParseFirstLine(line);
-#else
-        var (name, s, f, replyExpected) = ParseFirstLine(line.AsSpan());
-#endif
 
         Item? rootItem = null;
-
-#if NET
         while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null && ParseItem(line, stack, ref rootItem)) { }
-#else
-        while ((line = await sr.ReadLineAsync().ConfigureAwait(false)) != null && ParseItem(line.AsSpan(), stack, ref rootItem)) { }
-#endif
 
         return new SecsMessage(s, f, replyExpected)
         {
@@ -65,28 +56,16 @@ public static class SmlReader
 
             var name = i > 0 ? line[..i].ToString() : string.Empty;
             line = line[name.Length..];
-#if NET
             i = line.IndexOf("'S", StringComparison.Ordinal) + 2;
-#else
-            i = line.IndexOf("'S".AsSpan(), StringComparison.Ordinal) + 2;
-#endif
 
             int j = line.IndexOf('F');
-
-#if NET
             var s = byte.Parse(line[i..j], provider: CultureInfo.InvariantCulture);
-#else
-            var s = byte.Parse(line[i..j].ToString(), CultureInfo.InvariantCulture);
-#endif
+
 
             line = line[(j + 1)..];
             i = line.IndexOf('\'');
 
-#if NET
             var f = byte.Parse(line[0..i], provider: CultureInfo.InvariantCulture);
-#else
-            var f = byte.Parse(line[0..i].ToString(), CultureInfo.InvariantCulture);
-#endif
 
             var replyExpected = line[i..].IndexOf('W') != -1;
             return (name, s, f, replyExpected);
@@ -95,11 +74,7 @@ public static class SmlReader
 
     public static SecsMessage ToSecsMessage(this TextReader sr)
     {
-#if NET
         ReadOnlySpan<char> line = sr.ReadLine();
-#else
-        ReadOnlySpan<char> line = sr.ReadLine().AsSpan();
-#endif
         // Parse First Line
         int i = line.IndexOf(':');
 
@@ -107,39 +82,23 @@ public static class SmlReader
 
         line = line[name.Length..];
 
-#if NET
         i = line.IndexOf("'S", StringComparison.Ordinal) + 2;
-#else
-        i = line.IndexOf("'S".AsSpan(), StringComparison.Ordinal) + 2;
-#endif
 
         int j = line.IndexOf('F');
 
-#if NET
         var s = byte.Parse(line[i..j], provider: CultureInfo.InvariantCulture);
-#else
-        var s = byte.Parse(line[i..j].ToString(), CultureInfo.InvariantCulture);
-#endif
 
         line = line[(j + 1)..];
         i = line.IndexOf('\'');
 
-#if NET
         var f = byte.Parse(line[0..i], provider: CultureInfo.InvariantCulture);
-#else
-        var f = byte.Parse(line[0..i].ToString(), CultureInfo.InvariantCulture);
-#endif
 
         var replyExpected = line[i..].IndexOf('W') != -1;
 
         Item? rootItem = null;
         var stack = new Stack<List<Item>>();
 
-#if NET
         while ((line = sr.ReadLine()) != null && ParseItem(line, stack, ref rootItem)) { }
-#else
-        while ((line = sr.ReadLine().AsSpan()) != null && ParseItem(line, stack, ref rootItem)) { }
-#endif
 
         return new SecsMessage(s, f, replyExpected)
         {
@@ -187,11 +146,7 @@ public static class SmlReader
         int indexSizeR = line[indexSizeL..].IndexOf(']') + indexSizeL;
         Debug.Assert(indexSizeR != -1);
 
-#if NET
         int? size = int.TryParse(line[(indexSizeL + 1)..indexSizeR], out var s) ? s : null;
-#else
-        int? size = int.TryParse(line[(indexSizeL + 1)..indexSizeR].ToString(), out var s) ? s : null;
-#endif
 
         if (format.DangerousGetReferenceAt(0) == 'L')
         {
@@ -218,18 +173,11 @@ public static class SmlReader
     }
 
     private static byte HexByteParser(ReadOnlySpan<char> str)
-#if NET
         => str.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
         ? byte.Parse(str[2..], NumberStyles.HexNumber, provider: CultureInfo.InvariantCulture)
         : byte.Parse(str, provider: CultureInfo.InvariantCulture);
-#else
-        => str.StartsWith("0x".AsSpan(), StringComparison.OrdinalIgnoreCase)
-        ? byte.Parse(str[2..].ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture)
-        : byte.Parse(str.ToString(), CultureInfo.InvariantCulture);
-#endif
 
     private static readonly (Func<Item>, Func<byte[], Item>, SpanParser<byte>) BinaryParser = (B, B, HexByteParser);
-#if NET
     private static readonly (Func<Item>, Func<sbyte[], Item>, SpanParser<sbyte>) I1Parser = (I1, I1, static span => sbyte.Parse(span, provider: CultureInfo.InvariantCulture));
     private static readonly (Func<Item>, Func<short[], Item>, SpanParser<short>) I2Parser = (I2, I2, static span => short.Parse(span, provider: CultureInfo.InvariantCulture));
     private static readonly (Func<Item>, Func<int[], Item>, SpanParser<int>) I4Parser = (I4, I4, static span => int.Parse(span, provider: CultureInfo.InvariantCulture));
@@ -241,19 +189,7 @@ public static class SmlReader
     private static readonly (Func<Item>, Func<float[], Item>, SpanParser<float>) F4Parser = (F4, F4, static span => float.Parse(span, provider: CultureInfo.InvariantCulture));
     private static readonly (Func<Item>, Func<double[], Item>, SpanParser<double>) F8Parser = (F8, F8, static span => double.Parse(span, provider: CultureInfo.InvariantCulture));
     private static readonly (Func<Item>, Func<bool[], Item>, SpanParser<bool>) BoolParser = (Boolean, Boolean, bool.Parse);
-#else
-    private static readonly (Func<Item>, Func<sbyte[], Item>, SpanParser<sbyte>) I1Parser = (I1, I1, static span => sbyte.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<short[], Item>, SpanParser<short>) I2Parser = (I2, I2, static span => short.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<int[], Item>, SpanParser<int>) I4Parser = (I4, I4, static span => int.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<long[], Item>, SpanParser<long>) I8Parser = (I8, I8, static span => long.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<byte[], Item>, SpanParser<byte>) U1Parser = (U1, U1, static span => byte.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<ushort[], Item>, SpanParser<ushort>) U2Parser = (U2, U2, static span => ushort.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<uint[], Item>, SpanParser<uint>) U4Parser = (U4, U4, static span => uint.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<ulong[], Item>, SpanParser<ulong>) U8Parser = (U8, U8, static span => ulong.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<float[], Item>, SpanParser<float>) F4Parser = (F4, F4, static span => float.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<double[], Item>, SpanParser<double>) F8Parser = (F8, F8, static span => double.Parse(span.ToString(), CultureInfo.InvariantCulture));
-    private static readonly (Func<Item>, Func<bool[], Item>, SpanParser<bool>) BoolParser = (Boolean, Boolean, static span => bool.Parse(span.ToString()));
-#endif
+
     private static readonly (Func<Item>, Func<string, Item>) AParser = (A, A);
     private static readonly (Func<Item>, Func<string, Item>) JParser = (J, J);
 
@@ -282,13 +218,8 @@ public static class SmlReader
             _ => ThrowHelper(format),
         };
 
-#if NET
         [DoesNotReturn]
         static SecsFormat ThrowHelper(ReadOnlySpan<char> format) => throw new SecsException($"Unknown SML format: {format}");
-#else
-        [DoesNotReturn]
-        static SecsFormat ThrowHelper(ReadOnlySpan<char> format) => throw new SecsException($"Unknown SML format: " + format.ToString());
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

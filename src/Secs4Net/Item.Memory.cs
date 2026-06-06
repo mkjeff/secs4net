@@ -66,15 +66,9 @@ public partial class Item
             ReverseEndiannessHelper<T>.Reverse(Cast(bufferByteSpan));
             buffer.Advance(byteLength);
 
-#if NET
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static Span<T> Cast(Span<byte> bytes)
                 => MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(bytes)), bytes.Length / sizeof(T));
-#else
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static Span<T> Cast(Span<byte> bytes)
-                => new(Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes)), bytes.Length / sizeof(T));
-#endif
         }
 
         private protected sealed override bool IsEquals(Item other)

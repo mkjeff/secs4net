@@ -14,9 +14,8 @@ static class Program
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         Secs4Net.Item.JIS8Encoding = Encoding.GetEncoding(50222);
-#if NET
+
         Application.SetHighDpiMode(HighDpiMode.SystemAware);
-#endif
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
         Application.Run(new Form1());
