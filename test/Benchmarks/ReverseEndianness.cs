@@ -323,7 +323,7 @@ public class ReverseEndianness
     {
         foreach (ref var a in _single.AsSpan())
         {
-            ReverseHelper.ReverseEndianness(ref a);
+            a = BinaryPrimitives.ReadSingleBigEndian(a.AsReadOnlyBytes());
         }
     }
 
@@ -363,7 +363,7 @@ public class ReverseEndianness
     {
         foreach (ref var a in _double.AsSpan())
         {
-            ReverseHelper.ReverseEndianness(ref a);
+            a = BinaryPrimitives.ReadDoubleBigEndian(a.AsReadOnlyBytes());
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+		<IsAotCompatible>true</IsAotCompatible>
 		<PackageReadmeFile>README.md</PackageReadmeFile>	
 	</PropertyGroup>
 
@@ -22,15 +22,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.0" />
+		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
 		<PackageReference Include="PooledAwait" Version="1.0.49" />
-		<PackageReference Include="System.IO.Pipelines" Version="8.0.0" />
-		<PackageReference Include="System.Threading.Channels" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+		<PackageReference Include="System.IO.Pipelines" Version="10.0.8" />
+		<PackageReference Include="System.Threading.Channels" Version="10.0.8" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.8" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -54,10 +54,6 @@
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
 			<CustomToolNamespace>Secs4Net</CustomToolNamespace>
 		</EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Update="PolySharp" Version="1.15.0" />
 	</ItemGroup>
 
 </Project>

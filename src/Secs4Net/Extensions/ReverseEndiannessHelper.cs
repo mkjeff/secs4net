@@ -143,7 +143,7 @@ public unsafe static class ReverseHelper
         ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
-            ReverseEndianness(ref rStart);
+            rStart = BinaryPrimitives.ReadSingleBigEndian(rStart.AsReadOnlyBytes());
             rStart = ref Unsafe.Add(ref rStart, 1u);
         }
     }
@@ -155,21 +155,8 @@ public unsafe static class ReverseHelper
         ref var rEnd = ref Unsafe.Add(ref rStart, span.Length);
         while (Unsafe.IsAddressLessThan(ref rStart, ref rEnd))
         {
-            ReverseEndianness(ref rStart);
+            rStart = BinaryPrimitives.ReadDoubleBigEndian(rStart.AsReadOnlyBytes());
             rStart = ref Unsafe.Add(ref rStart, 1u);
         }
-    }
-
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void ReverseEndianness(ref float value)
-    {
-        value = BinaryPrimitives.ReadSingleBigEndian(value.AsReadOnlyBytes());
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void ReverseEndianness(ref double value)
-    {
-        value = BinaryPrimitives.ReadDoubleBigEndian(value.AsReadOnlyBytes());
     }
 }

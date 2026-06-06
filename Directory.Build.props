@@ -16,13 +16,6 @@
 		<EnableWindowsTargeting>true</EnableWindowsTargeting>
 		<Copyright>Copyright © secs4net 2024</Copyright>
 		<PackageProjectUrl>https://mkjeff.github.io/secs4net/</PackageProjectUrl>
+        <UseArtifactsOutput>true</UseArtifactsOutput>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="PolySharp" Version="1.15.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
-
 </Project>
