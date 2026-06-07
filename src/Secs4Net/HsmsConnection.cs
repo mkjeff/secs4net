@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.HighPerformance.Buffers;
 using Microsoft.Extensions.Options;
-using PooledAwait;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
@@ -44,7 +43,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     private readonly Action _stopImpl;
     private readonly Timer _timer7;
     private readonly Timer _timer8;
-    private readonly ConcurrentDictionary<int, ValueTaskCompletionSource<MessageType>> _replyExpectedMsgs = new();
+    private readonly ConcurrentDictionary<int, TaskCompletionSource<MessageType>> _replyExpectedMsgs = new();
     private readonly int _socketReceiveBufferSize;
     private readonly ISecsGemLogger _logger;
     private readonly PipeDecoder _pipeDecoder;
@@ -197,6 +196,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     {
         _stoppingToken = cancellation;
         Task.Run(() => _startImpl(cancellation), cancellation);
+        Task.Run(() => StartLinkTestTimerAsync(cancellation), cancellation);
     }
 
     private async Task StartPipeDecoderConsumerAsync(CancellationToken cancellation)
@@ -371,7 +371,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     private static readonly ReadOnlyMemory<byte> ControlMessageLengthBytes = new byte[] { 0, 0, 0, 10 };
     private async Task SendControlMessage(MessageType msgType, int id, CancellationToken cancellation = default)
     {
-        var token = ValueTaskCompletionSource<MessageType>.Create();
+        var token = new TaskCompletionSource<MessageType>();
         if ((byte)msgType % 2 == 1 && msgType != MessageType.SeparateRequest)
         {
             _replyExpectedMsgs[id] = token;

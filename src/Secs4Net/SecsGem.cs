@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.HighPerformance.Buffers;
 using Microsoft.Extensions.Options;
-using PooledAwait;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
@@ -46,7 +45,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
             AllowSynchronousContinuations = false,
         });
 
-    private readonly ConcurrentDictionary<int, (string? messageName, ValueTaskCompletionSource<SecsMessage> completeSource)> _replyExpectedMessages = new();
+    private readonly ConcurrentDictionary<int, (string? messageName, TaskCompletionSource<SecsMessage> completeSource)> _replyExpectedMessages = new();
     private readonly CancellationTokenSource _cancellationSourceForDataMessageProcessing = new();
     private int _recentlyMaxEncodedByteLength;
 
@@ -77,7 +76,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
             throw new SecsException("Device is not selected");
         }
 
-        var token = ValueTaskCompletionSource<SecsMessage>.Create();
+        var token = new TaskCompletionSource<SecsMessage>();
         if (message.ReplyExpected)
         {
             _replyExpectedMessages[id] = (message.Name, token);
@@ -229,7 +228,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void HandleReplyMessage(ValueTaskCompletionSource<SecsMessage> source, SecsMessage secondaryMessage)
+    private static void HandleReplyMessage(TaskCompletionSource<SecsMessage> source, SecsMessage secondaryMessage)
     {
         if (secondaryMessage.F == 0)
         {

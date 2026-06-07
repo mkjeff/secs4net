@@ -27,7 +27,6 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
-		<PackageReference Include="PooledAwait" Version="1.0.49" />
 		<PackageReference Include="System.IO.Pipelines" Version="10.0.8" />
 		<PackageReference Include="System.Threading.Channels" Version="10.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.8" />
