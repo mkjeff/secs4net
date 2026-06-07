@@ -481,7 +481,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
             using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(LinkTestInterval));
             while (await timer.WaitForNextTickAsync(cancellation))
             {
-                if (!LinkTestEnabled || State != ConnectionState.Connected)
+                if (!LinkTestEnabled || State != ConnectionState.Selected)
                 {
                     continue;
                 }
