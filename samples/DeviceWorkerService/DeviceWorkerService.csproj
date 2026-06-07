@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-      <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
 	<PublishAot>true</PublishAot>
     <IsPackable>false</IsPackable>
 	<EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
-    <UserSecretsId>dotnet-DeviceWorkerService-D257E021-F238-499C-8ACD-858186E73C0A</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
