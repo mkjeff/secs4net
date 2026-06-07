@@ -20,28 +20,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     public int T7 { get; }
     public int T8 { get; }
     public int LinkTestInterval { get; }
-    public bool LinkTestEnabled
-    {
-        get => _linkTestEnable;
-        set
-        {
-            if (_linkTestEnable == value)
-            {
-                return;
-            }
-
-            _linkTestEnable = value;
-            if (_linkTestEnable)
-            {
-                _timerLinkTest.Change(0, LinkTestInterval);
-            }
-            else
-            {
-                _timerLinkTest.Change(Timeout.Infinite, Timeout.Infinite);
-            }
-        }
-    }
-    private bool _linkTestEnable;
+    public bool LinkTestEnabled { get; set; }
 
     public ConnectionState State { get; private set; }
     public bool IsActive { get; }
@@ -65,7 +44,6 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     private readonly Action _stopImpl;
     private readonly Timer _timer7;
     private readonly Timer _timer8;
-    private readonly Timer _timerLinkTest;
     private readonly ConcurrentDictionary<int, ValueTaskCompletionSource<MessageType>> _replyExpectedMsgs = new();
     private readonly int _socketReceiveBufferSize;
     private readonly ISecsGemLogger _logger;
@@ -106,18 +84,6 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         {
             _logger.Error($"T8 Timeout: {T8 / 1000} sec.");
             CommunicationStateChanging(ConnectionState.Retry);
-        }, null, Timeout.Infinite, Timeout.Infinite);
-
-        _timerLinkTest = new Timer(delegate
-        {
-#if !DISABLE_TIMER
-            if (State == ConnectionState.Selected)
-            {
-                _ = SendLinkTestAsync();
-            }
-
-            async FireAndForget SendLinkTestAsync() => await SendControlMessage(MessageType.LinkTestRequest, MessageIdGenerator.NewId()).ConfigureAwait(false);
-#endif
         }, null, Timeout.Infinite, Timeout.Infinite);
 
         if (IsActive)
@@ -481,7 +447,6 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         _cancellationSourceForControlMessageProcessing.Dispose();
         _timer7.Dispose();
         _timer8.Dispose();
-        _timerLinkTest.Dispose();
     }
 
     Task ISecsConnection.SendAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellation)
@@ -508,4 +473,25 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
 
     IAsyncEnumerable<(MessageHeader header, Item? rootItem)> ISecsConnection.GetDataMessages(CancellationToken cancellation)
         => _pipeDecoder.GetDataMessages(cancellation);
+    
+    private async Task StartLinkTestTimerAsync(CancellationToken cancellation)
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(LinkTestInterval));
+            while (await timer.WaitForNextTickAsync(cancellation))
+            {
+                if (!LinkTestEnabled || State != ConnectionState.Connected)
+                {
+                    continue;
+                }
+                
+                await SendControlMessage(MessageType.LinkTestRequest, MessageIdGenerator.NewId(), cancellation).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Handle cancellation gracefully
+        }
+    }
 }
