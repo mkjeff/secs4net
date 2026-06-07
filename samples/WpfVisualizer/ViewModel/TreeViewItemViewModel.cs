@@ -12,9 +12,6 @@ namespace SecsMessageVisuallizer.ViewModel
         readonly ObservableCollection<TreeViewItemViewModel> _children = new();
         readonly TreeViewItemViewModel? _parent;
 
-        bool _isExpanded;
-        bool _isSelected;
-
         protected TreeViewItemViewModel(TreeViewItemViewModel? parent, bool lazyLoadChildren)
         {
             _parent = parent;
@@ -43,17 +40,17 @@ namespace SecsMessageVisuallizer.ViewModel
         /// </summary>
         public bool IsExpanded
         {
-            get { return _isExpanded; }
+            get;
             set
             {
-                if (value != _isExpanded)
+                if (value != field)
                 {
-                    _isExpanded = value;
+                    field = value;
                     OnPropertyChanged();
                 }
 
                 // Expand all the way up to the root.
-                if (_isExpanded && _parent != null)
+                if (field && _parent != null)
                     _parent.IsExpanded = true;
 
                 // Lazy load the child items, if necessary.
@@ -71,8 +68,8 @@ namespace SecsMessageVisuallizer.ViewModel
         /// </summary>
         public bool IsSelected
         {
-            get { return _isSelected; }
-            set { SetField(ref _isSelected, value); }
+            get;
+            set { SetField(ref field, value); }
         }
 
         /// <summary>

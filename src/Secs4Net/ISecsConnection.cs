@@ -4,7 +4,7 @@ namespace Secs4Net;
 
 public interface ISecsConnection
 {
-    public event EventHandler<ConnectionState>? ConnectionChanged;
+    event EventHandler<ConnectionState>? ConnectionChanged;
 
     /// <summary>
     /// Connection state

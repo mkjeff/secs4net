@@ -51,7 +51,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     public string DeviceIpAddress
         => IsActive
         ? IpAddress.ToString()
-        : ((IPEndPoint?)_socket?.RemoteEndPoint)?.Address?.ToString() ?? "NA";
+        : ((IPEndPoint?)_socket?.RemoteEndPoint)?.Address.ToString() ?? "NA";
 
     private Socket? _socket;
     private const int DisposalNotStarted = 0;
@@ -336,7 +336,7 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     {
         try
         {
-            await foreach (var item in _pipeDecoder.GetControlMessages(cancellation).WithCancellation(cancellation).ConfigureAwait(false))
+            await foreach (var item in _pipeDecoder.GetControlMessages(cancellation).ConfigureAwait(false))
             {
                 await ProcessControlMessageAsync(item, cancellation).ConfigureAwait(continueOnCapturedContext: false);
             }
@@ -473,11 +473,11 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         ConnectionChanged = null;
         if (State == ConnectionState.Selected)
         {
-            await SendControlMessage(MessageType.SeparateRequest, MessageIdGenerator.NewId()).ConfigureAwait(false);
+            await SendControlMessage(MessageType.SeparateRequest, MessageIdGenerator.NewId()).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
 
         Disconnect();
-        _cancellationSourceForControlMessageProcessing.Cancel();
+        await _cancellationSourceForControlMessageProcessing.CancelAsync();
         _cancellationSourceForControlMessageProcessing.Dispose();
         _timer7.Dispose();
         _timer8.Dispose();
