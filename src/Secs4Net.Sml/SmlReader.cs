@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.HighPerformance;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -98,7 +97,7 @@ public static class SmlReader
         Item? rootItem = null;
         var stack = new Stack<List<Item>>();
 
-        while ((line = sr.ReadLine()) != null && ParseItem(line, stack, ref rootItem)) { }
+        while (!(line = sr.ReadLine()).IsEmpty && ParseItem(line, stack, ref rootItem)) { }
 
         return new SecsMessage(s, f, replyExpected)
         {
