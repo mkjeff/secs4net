@@ -28,7 +28,6 @@
 		</PackageReference>
 		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
 		<PackageReference Include="System.IO.Pipelines" Version="10.0.8" />
-		<PackageReference Include="System.Threading.Channels" Version="10.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.8" />
 	</ItemGroup>
 
