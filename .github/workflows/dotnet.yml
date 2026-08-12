@@ -13,6 +13,7 @@ jobs:
   build:
     permissions:
       contents: read
+      id-token: write  # enable GitHub OIDC token issuance for this job
 
     runs-on: ubuntu-latest
 
@@ -37,6 +38,12 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     - name: Pack
-      run: dotnet pack -c Release 
+      run: dotnet pack -c Release
+        # Get a short-lived NuGet API key
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{secrets.NUGET_USER}}
     - name: Push
-      run: dotnet nuget push "**/*.nupkg" --skip-duplicate -k ${{ secrets.NUGET }} -s https://api.nuget.org/v3/index.json
+      run: dotnet nuget push "**/*.nupkg" --skip-duplicate --api-key ${{steps.login.outputs.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
