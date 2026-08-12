@@ -405,14 +405,10 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
 
         static ReadOnlyMemory<byte> EncodeControlMessage(MessageType msgType, int id)
         {
+            var header = new MessageHeader { DeviceId = 0xFFFF, MessageType = msgType, Id = id };
             var buffer = new MemoryBufferWriter<byte>(new byte[14]);
             buffer.Write(ControlMessageLengthBytes.Span);
-            new MessageHeader
-            {
-                DeviceId = 0xFFFF,
-                MessageType = msgType,
-                Id = id
-            }.EncodeTo(buffer);
+            buffer.Write(header);
             return buffer.WrittenMemory;
         }
     }
@@ -439,7 +435,8 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         ConnectionChanged = null;
         if (State == ConnectionState.Selected)
         {
-            await SendControlMessage(MessageType.SeparateRequest, MessageIdGenerator.NewId()).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            await SendControlMessage(MessageType.SeparateRequest, MessageIdGenerator.NewId())
+                .ConfigureAwait(ConfigureAwaitOptions.ForceYielding | ConfigureAwaitOptions.SuppressThrowing);
         }
 
         Disconnect();
@@ -485,8 +482,9 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
                 {
                     continue;
                 }
-                
-                await SendControlMessage(MessageType.LinkTestRequest, MessageIdGenerator.NewId(), cancellation).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+                await SendControlMessage(MessageType.LinkTestRequest, MessageIdGenerator.NewId(), cancellation)
+                    .ConfigureAwait(ConfigureAwaitOptions.ForceYielding | ConfigureAwaitOptions.SuppressThrowing);
             }
         }
         catch (OperationCanceledException)

@@ -1,6 +1,5 @@
 ﻿using System.Buffers;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Secs4Net;
 
@@ -41,10 +40,10 @@ partial class Item
         private protected override bool IsEquals(Item other)
             => Format == other.Format && _value.Equals(other.GetString(), StringComparison.Ordinal);
 
-        private sealed class ItemDebugView(Item.StringItem item)
+        private sealed class ItemDebugView(StringItem item)
         {
             public string Value => item._value;
-            public EncodedByteDebugView EncodedBytes { get; } = new EncodedByteDebugView(item);
+            public EncodedByteDebugView EncodedBytes { get; } = new (item);
         }
     }
 }

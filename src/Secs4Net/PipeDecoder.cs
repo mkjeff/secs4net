@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.HighPerformance;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Buffers.Binary;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
@@ -52,7 +51,7 @@ public sealed class PipeDecoder
         var stack = new Stack<ItemList>(capacity: 8);
         Item item;
         var totalLengthBytes = new byte[4];
-        var messageHeaderBytes = new byte[10];
+        MessageHeader header = default;
         // PipeReader peek first
         var buffer = await PipeReadAsync(reader, required: 4, cancellation).ConfigureAwait(false);
         while (!cancellation.IsCancellationRequested)
@@ -75,10 +74,9 @@ public sealed class PipeDecoder
             {
                 buffer = await PipeReadAsync(reader, required: 10, cancellation).ConfigureAwait(false);
             }
-            var messageHaderSeq = buffer.Slice(buffer.Start, 10);
-            messageHaderSeq.CopyTo(messageHeaderBytes);
-            MessageHeader.Decode(messageHeaderBytes, out var header);
-            buffer = buffer.Slice(messageHaderSeq.End);
+            var messageHeaderSeq = buffer.Slice(buffer.Start, 10);
+            messageHeaderSeq.CopyTo(header);
+            buffer = buffer.Slice(messageHeaderSeq.End);
 
             Debug.WriteLine($"Get message(id:{header.Id:X8}) header");
 

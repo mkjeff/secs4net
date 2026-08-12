@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.HighPerformance.Buffers;
-
-namespace Secs4Net;
+﻿namespace Secs4Net;
 
 public sealed class PrimaryMessageWrapper
 {
@@ -36,21 +34,18 @@ public sealed class PrimaryMessageWrapper
 
         if (replyMessage is null)
         {
-            var headerBytes = new byte[10];
-            var buffer = new MemoryBufferWriter<byte>(headerBytes);
-            new MessageHeader
-            {
-                DeviceId = secsGem.DeviceId,
-                ReplyExpected = PrimaryMessage.ReplyExpected,
-                S = PrimaryMessage.S,
-                F = PrimaryMessage.F,
-                MessageType = MessageType.DataMessage,
-                Id = Id
-            }.EncodeTo(buffer);
             replyMessage = new SecsMessage(9, 7, replyExpected: false)
             {
                 Name = "Unknown Message",
-                SecsItem = Item.B(headerBytes),
+                SecsItem = Item.B([.. new MessageHeader
+                {
+                    DeviceId = secsGem.DeviceId,
+                    ReplyExpected = PrimaryMessage.ReplyExpected,
+                    S = PrimaryMessage.S,
+                    F = PrimaryMessage.F,
+                    MessageType = MessageType.DataMessage,
+                    Id = Id
+                }]),
             };
         }
         else

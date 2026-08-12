@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.HighPerformance.Buffers;
 using Microsoft.Extensions.Options;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
@@ -139,12 +140,11 @@ public sealed class SecsGem : ISecsGem, IDisposable
             {
                 _logger.MessageIn(msg, header.Id);
                 _logger.Warning("Received Unrecognized Device Id Message");
-                var headerBytes = new byte[10];
-                header.EncodeTo(new MemoryBufferWriter<byte>(headerBytes));
+                ReadOnlySpan<byte> headerBytes = header;
                 var s9f1 = new SecsMessage(9, 1, replyExpected: false)
                 {
                     Name = "Unrecognized Device Id",
-                    SecsItem = Item.B(headerBytes),
+                    SecsItem = Item.B([.. headerBytes]),
                 };
                 await SendDataMessageAsync(s9f1, MessageIdGenerator.NewId(), cancellation).ConfigureAwait(false);
                 return;
@@ -209,10 +209,7 @@ public sealed class SecsGem : ISecsGem, IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void EncodeMessage(SecsMessage msg, int id, ushort deviceId, ArrayPoolBufferWriter<byte> buffer)
     {
-        buffer.GetSpan(14);
-        // reserve 4 byte for total length
-        buffer.Advance(sizeof(int));
-        new MessageHeader
+        var header = new MessageHeader
         {
             DeviceId = deviceId,
             ReplyExpected = msg.ReplyExpected,
@@ -220,7 +217,11 @@ public sealed class SecsGem : ISecsGem, IDisposable
             F = msg.F,
             MessageType = MessageType.DataMessage,
             Id = id
-        }.EncodeTo(buffer);
+        };
+        buffer.GetSpan(14);
+        // reserve 4 byte for total length
+        buffer.Advance(sizeof(int));
+        buffer.Write(header);
         msg.SecsItem?.EncodeTo(buffer);
 
         var lengthBytes = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(buffer.WrittenSpan), 4);

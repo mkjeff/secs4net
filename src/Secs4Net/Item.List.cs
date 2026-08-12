@@ -73,11 +73,10 @@ partial class Item
 
         private sealed class ItemDebugView(ListItem item)
         {
-
             [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
             public Item[] Items => item._value;
 
-            public EncodedByteDebugView EncodedBytes { get; } = new EncodedByteDebugView(item);
+            public EncodedByteDebugView EncodedBytes { get; } = new (item);
         }
     }
 }

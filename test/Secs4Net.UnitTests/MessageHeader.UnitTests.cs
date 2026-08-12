@@ -1,3 +1,4 @@
+using System;
 using Xunit;
 
 namespace Secs4Net.UnitTests;
@@ -15,8 +16,9 @@ public class MessageHeaderUnitTests
          * Select request
          * ID: 1
          */
-        var headerBytes = new byte[] { 128, 1, 134, 11, 0, 1, 0, 0, 0, 1 };
-        MessageHeader.Decode(headerBytes, out MessageHeader header);
+        ReadOnlySpan<byte> headerBytes = [128, 1, 134, 11, 0, 1, 0, 0, 0, 1];
+        MessageHeader header = default;
+        headerBytes.CopyTo(header);
 
         Assert.Multiple(
             () => Assert.Equal(1, header.DeviceId),

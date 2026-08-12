@@ -77,7 +77,7 @@ public partial class Item
         private sealed class ItemDebugView(MemoryItem<T> item)
         {
             public Span<T> Value => item._value.Span;
-            public EncodedByteDebugView EncodedBytes { get; } = new EncodedByteDebugView(item);
+            public EncodedByteDebugView EncodedBytes { get; } = new (item);
         }
     }
 }
