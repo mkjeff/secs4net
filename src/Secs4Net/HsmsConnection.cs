@@ -250,11 +250,13 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
 
     private void StopPipeDecoder(ref CancellationTokenSource? cancellationTokenSource)
     {
-        if (cancellationTokenSource is { IsCancellationRequested: false })
+        // A received Separate.req and the receive loop seeing the closed socket can both
+        // tear down the same connection; only the caller that takes the source stops it.
+        var source = Interlocked.Exchange(ref cancellationTokenSource, null);
+        if (source is { IsCancellationRequested: false })
         {
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource.Dispose();
-            cancellationTokenSource = null;
+            source.Cancel();
+            source.Dispose();
             _pipe.Reader.Complete();
             _pipe.Writer.Complete();
             _pipe.Reset();
