@@ -178,18 +178,28 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
         StopPipeDecoder(ref _cancellationTokenSourceForPipeDecoder);
         _stopImpl.Invoke();
 
-        if (_socket is null)
+        // Reconnect (from the receive loop or a control message) and DisposeAsync can both get here.
+        // Take the socket out once, so only one caller shuts it down and disposes it.
+        var socket = Interlocked.Exchange(ref _socket, null);
+        if (socket is null)
         {
             return;
         }
 
-        if (_socket.Connected)
+        try
         {
-            _socket.Shutdown(SocketShutdown.Both);
+            if (socket.Connected)
+            {
+                socket.Shutdown(SocketShutdown.Both);
+            }
+        }
+        catch (SocketException)
+        {
+            // The peer can reset the connection between the Connected check and Shutdown (e.g. 10054).
+            // The socket is going away either way; still dispose it below.
         }
 
-        _socket.Dispose();
-        _socket = null;
+        socket.Dispose();
     }
 
     public void Start(CancellationToken cancellation)
@@ -250,15 +260,19 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
 
     private void StopPipeDecoder(ref CancellationTokenSource? cancellationTokenSource)
     {
-        if (cancellationTokenSource is { IsCancellationRequested: false })
+        // Take the source out once, as Disconnect does for the socket. Checking, cancelling and nulling the
+        // shared field in separate steps let a second caller reach Dispose() after the first had nulled it.
+        var source = Interlocked.Exchange(ref cancellationTokenSource, null);
+        if (source is null)
         {
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource.Dispose();
-            cancellationTokenSource = null;
-            _pipe.Reader.Complete();
-            _pipe.Writer.Complete();
-            _pipe.Reset();
+            return;
         }
+
+        source.Cancel();
+        source.Dispose();
+        _pipe.Reader.Complete();
+        _pipe.Writer.Complete();
+        _pipe.Reset();
     }
 
     public void Reconnect()
