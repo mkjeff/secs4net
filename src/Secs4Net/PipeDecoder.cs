@@ -80,16 +80,30 @@ public sealed class PipeDecoder
 
             Debug.WriteLine($"Get message(id:{header.Id:X8}) header");
 
-            if (messageLength == 10) // only message header
+            // Route on the message type, not on the length: control responses may carry a body
+            // (Select.rsp / Reject.req carry a 4-byte status / 10-byte reason per E37, so their
+            // total length is > 10). Length-based routing fed them to the SECS-II item decoder,
+            // which decoded the status bytes as a bogus item and desynchronized the stream.
+            if (header.MessageType != MessageType.DataMessage)
             {
-                if (header.MessageType == MessageType.DataMessage)
+                var controlBodyLength = (int)messageLength - 10;
+                if (controlBodyLength > 0)
                 {
-                    await dataMessageWriter.WriteAsync((header, rootItem: null), cancellation).ConfigureAwait(false);
+                    if (IsBufferInsufficient(reader, ref buffer, required: controlBodyLength))
+                    {
+                        buffer = await PipeReadAsync(reader, required: controlBodyLength, cancellation).ConfigureAwait(false);
+                    }
+
+                    buffer = buffer.Slice(controlBodyLength);
                 }
-                else
-                {
-                    await controlMessageWriter.WriteAsync(header, cancellation).ConfigureAwait(false);
-                }
+
+                await controlMessageWriter.WriteAsync(header, cancellation).ConfigureAwait(false);
+                continue;
+            }
+
+            if (messageLength == 10) // header-only data message
+            {
+                await dataMessageWriter.WriteAsync((header, rootItem: null), cancellation).ConfigureAwait(false);
                 continue;
             }
 
