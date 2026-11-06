@@ -52,6 +52,9 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
 
     private CancellationToken _stoppingToken;
     private CancellationTokenSource? _cancellationTokenSourceForPipeDecoder;
+
+    // The decoder of the current (or last) link. The next link's decoder waits for it.
+    private Task _pipeDecoderRun = Task.CompletedTask;
     private readonly CancellationTokenSource _cancellationSourceForControlMessageProcessing = new();
 
     public HsmsConnection(IOptions<SecsGemOptions> secsGemOptions, ISecsGemLogger logger)
@@ -217,16 +220,36 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     }
 
 
-    private async Task StartPipeDecoderProducerAsync(CancellationToken cancellation)
+    // The pipe is shared by every link, so only one link's reader and writer may use it at a time.
+    // The next link's decoder starts after the previous one has ended, and the pipe is completed and reset
+    // in between, not while the previous reader may still be inside ReadAsync.
+    private async Task RunPipeDecoderAsync(Task previous, Socket socket, CancellationToken cancellation)
+    {
+        await previous.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        try
+        {
+            await Task.WhenAll(
+                StartPipeDecoderConsumerAsync(cancellation),
+                StartPipeDecoderProducerAsync(socket, cancellation)).ConfigureAwait(false);
+        }
+        finally
+        {
+            _pipe.Reader.Complete();
+            _pipe.Writer.Complete();
+            _pipe.Reset();
+        }
+    }
+
+    // Reads the socket of its own link: by the time it reads again, _socket may hold the next link's socket or null.
+    private async Task StartPipeDecoderProducerAsync(Socket socket, CancellationToken cancellation)
     {
         var decoderInput = _pipeDecoder.Input;
         try
         {
             while (true)
             {
-                Debug.Assert(_socket != null);
                 var memory = decoderInput.GetMemory(_socketReceiveBufferSize);
-                var count = await _socket!.ReceiveAsync(memory, SocketFlags.None, cancellation).ConfigureAwait(false);
+                var count = await socket.ReceiveAsync(memory, SocketFlags.None, cancellation).ConfigureAwait(false);
                 decoderInput.Advance(count);
                 await decoderInput.FlushAsync(cancellation).ConfigureAwait(false);
 
@@ -252,12 +275,10 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
     {
         if (cancellationTokenSource is { IsCancellationRequested: false })
         {
+            // Only cancel here. The pipe is completed and reset when this link's decoder has ended (RunPipeDecoderAsync).
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
             cancellationTokenSource = null;
-            _pipe.Reader.Complete();
-            _pipe.Writer.Complete();
-            _pipe.Reset();
         }
     }
 
@@ -279,9 +300,12 @@ public sealed class HsmsConnection : ISecsConnection, IAsyncDisposable
                 break;
             case ConnectionState.Connected:
 #if !DISABLE_TIMER
-                _cancellationTokenSourceForPipeDecoder = new CancellationTokenSource();
-                Task.Run(() => StartPipeDecoderConsumerAsync(_cancellationTokenSourceForPipeDecoder.Token));
-                Task.Run(() => StartPipeDecoderProducerAsync(_cancellationTokenSourceForPipeDecoder.Token));
+                var decoderSource = new CancellationTokenSource();
+                var decoderToken = decoderSource.Token;
+                var socket = _socket!;
+                var previousDecoder = _pipeDecoderRun;
+                _cancellationTokenSourceForPipeDecoder = decoderSource;
+                _pipeDecoderRun = Task.Run(() => RunPipeDecoderAsync(previousDecoder, socket, decoderToken));
                 _logger.Info($"Start T7 Timer: {T7 / 1000} sec.");
                 _timer7.Change(T7, Timeout.Infinite);
 #endif
